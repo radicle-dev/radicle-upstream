@@ -143,7 +143,7 @@ export const getGnosisSafeMembers = async (
 export interface ProjectAnchor {
   id: string;
   projectId: string;
-  commitSha: string;
+  commitHash: string;
 }
 
 export const getOrgProjectAnchors = async (
@@ -183,13 +183,13 @@ export const getOrgProjectAnchors = async (
 
         const byteArray = ethers.utils.arrayify(project.anchor.stateMultihash);
         const decodedMultihash = multihash.decode(byteArray);
-        const decodedCommitSha = ethers.utils
+        const decodedCommitHash = ethers.utils
           .hexlify(decodedMultihash.digest)
           .replace(/^0x/, "");
         return {
           id: project.anchor.id,
           projectId: decodedProjectId,
-          commitSha: decodedCommitSha,
+          commitHash: decodedCommitHash,
         };
       }
     )

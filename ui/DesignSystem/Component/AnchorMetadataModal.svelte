@@ -18,7 +18,7 @@
   const openCommit = () => {
     router.push({
       type: "project",
-      activeView: { type: "commit", commitHash: anchor.commitSha },
+      activeView: { type: "commit", commitHash: anchor.commitHash },
       urn: anchor.projectId,
     });
   };
@@ -98,10 +98,10 @@
           </p>
           {#if replicated}
             <p class="typo-text-small typo-link" on:click={openCommit}>
-              {anchor.commitSha.slice(0, 7)}↗
+              {anchor.commitHash.slice(0, 7)}↗
             </p>
           {:else}
-            <p class="typo-text-small">{anchor.commitSha.slice(0, 7)}</p>
+            <p class="typo-text-small">{anchor.commitHash.slice(0, 7)}</p>
           {/if}
         </div>
         <div class="meta">
