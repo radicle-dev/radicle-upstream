@@ -1,7 +1,7 @@
 <script lang="typescript">
   import type { Project } from "ui/src/project";
 
-  import AnchorList from "ui/Screen/Org/AnchorList.svelte";
+  import UnresolvedAnchorList from "ui/Screen/Org/UnresolvedAnchorList.svelte";
 
   import type * as project from "ui/src/project";
   import type * as theGraphApi from "ui/src/theGraphApi";
@@ -45,7 +45,7 @@
       userUrn={session.identity.urn}
       on:select={select} />
 
-    <AnchorList anchors={unresolvedAnchors} orgAddress={address} />
+    <UnresolvedAnchorList anchors={unresolvedAnchors} orgAddress={address} />
   {:else}
     <EmptyState
       illustration={IllustrationVariant.Plant}
