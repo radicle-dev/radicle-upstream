@@ -2,6 +2,7 @@
   import { fade } from "svelte/transition";
   import type * as theGraphApi from "ui/src/theGraphApi";
 
+  import * as ipc from "ui/src/ipc";
   import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
   import * as style from "ui/src/style";
@@ -25,7 +26,7 @@
 
   // TODO: make this work across different networks
   const openTx = () => {
-    window.location.href = `https://rinkeby.etherscan.io/tx/${anchor.id}`;
+    ipc.openUrl(`https://rinkeby.etherscan.io/tx/${anchor.id}`);
   };
 </script>
 

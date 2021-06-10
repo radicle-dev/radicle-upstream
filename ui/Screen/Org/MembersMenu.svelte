@@ -1,4 +1,6 @@
 <script>
+  import * as ipc from "ui/src/ipc";
+
   import { Button, Icon } from "ui/DesignSystem/Primitive";
   import { Overlay } from "ui/DesignSystem/Component";
 
@@ -45,7 +47,9 @@
 
     <Button
       on:click={() => {
-        window.location.href = `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings`;
+        ipc.openUrl(
+          `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings`
+        );
         toggleModal();
       }}
       style="margin-top: 1rem; width: 100%; display: block; text-align: center;">

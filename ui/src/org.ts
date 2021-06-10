@@ -5,6 +5,7 @@ import EthersSafe from "@gnosis.pm/safe-core-sdk";
 import SafeServiceClient from "@gnosis.pm/safe-service-client";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
+import * as ipc from "ui/src/ipc";
 import * as notification from "ui/src//notification";
 import * as wallet from "ui/src/wallet";
 import * as theGraphApi from "ui/src/theGraphApi";
@@ -159,7 +160,9 @@ export const anchorProject = async (
       {
         label: "View on Gnosis Safe",
         handler: () => {
-          window.location.href = `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/transactions`;
+          ipc.openUrl(
+            `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/transactions`
+          );
         },
       },
     ],

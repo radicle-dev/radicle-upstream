@@ -67,7 +67,9 @@
         // `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}` for
         // mainnet
         event: () => {
-          window.location.href = `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/transactions`;
+          ipc.openUrl(
+            `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/transactions`
+          );
         },
       },
       {
