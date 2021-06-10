@@ -24,13 +24,7 @@ let proxyPath;
 let proxyArgs: string[] = [];
 
 if (isDev) {
-  if (process.env.RADICLE_UPSTREAM_PROXY_PATH) {
-    proxyPath = path.resolve(process.env.RADICLE_UPSTREAM_PROXY_PATH);
-  } else {
-    throw new Error(
-      "RADICLE_UPSTREAM_PROXY_PATH must be set when running in dev mode!"
-    );
-  }
+  proxyPath = path.join(__dirname, "../target/debug/radicle-proxy");
 
   if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
     proxyArgs =
@@ -41,6 +35,7 @@ if (isDev) {
     "hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345"
   );
   proxyArgs.push("--skip-remote-helper-install");
+  proxyArgs.push("--unsafe-fast-keystore");
 } else {
   // Packaged app, i.e. production.
   proxyPath = path.join(__dirname, "../../radicle-proxy");

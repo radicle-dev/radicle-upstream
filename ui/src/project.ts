@@ -136,7 +136,7 @@ const validateNewRepository = async (path: string): Promise<boolean> => {
 
 const projectNameConstraints = {
   presence: {
-    message: "You must provide a display name",
+    message: "You must provide a project name",
     allowEmpty: false,
   },
   firstHandleChar: {
