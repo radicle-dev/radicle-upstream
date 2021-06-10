@@ -69,7 +69,7 @@
 
   <div class="container" on:click|stopPropagation>
     {#if hover}
-      <div class="modal" out:fade={{ duration: 100, delay: 250 }}>
+      <div class="modal" out:fade|local={{ duration: 100, delay: 250 }}>
         <div class="header">
           <Icon.Anchor
             style="fill: var(--color-primary); margin-left: 0.5rem;" />
