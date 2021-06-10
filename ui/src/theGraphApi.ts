@@ -167,31 +167,29 @@ export const getOrgProjectAnchors = async (
     })
   ).data.projects;
 
-  return response
-    .map(
-      (project: {
+  return response.map(
+    (project: {
+      id: string;
+      anchor: {
         id: string;
-        anchor: {
-          id: string;
-          objectId: string;
-          stateMultihash: string;
-        };
-      }) => {
-        const decodedProjectId = urn.identitySha1Urn(
-          ethers.utils.arrayify(`0x${project.id.slice(26)}`)
-        );
+        objectId: string;
+        stateMultihash: string;
+      };
+    }) => {
+      const decodedProjectId = urn.identitySha1Urn(
+        ethers.utils.arrayify(`0x${project.id.slice(26)}`)
+      );
 
-        const byteArray = ethers.utils.arrayify(project.anchor.stateMultihash);
-        const decodedMultihash = multihash.decode(byteArray);
-        const decodedCommitHash = ethers.utils
-          .hexlify(decodedMultihash.digest)
-          .replace(/^0x/, "");
-        return {
-          id: project.anchor.id,
-          projectId: decodedProjectId,
-          commitHash: decodedCommitHash,
-        };
-      }
-    )
-    .filter(Boolean);
+      const byteArray = ethers.utils.arrayify(project.anchor.stateMultihash);
+      const decodedMultihash = multihash.decode(byteArray);
+      const decodedCommitHash = ethers.utils
+        .hexlify(decodedMultihash.digest)
+        .replace(/^0x/, "");
+      return {
+        id: project.anchor.id,
+        projectId: decodedProjectId,
+        commitHash: decodedCommitHash,
+      };
+    }
+  );
 };
