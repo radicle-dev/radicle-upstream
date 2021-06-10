@@ -52,7 +52,6 @@ export const store: Readable<Notification[]> = derived(
 
 const closeAction: Action = {
   label: "Close",
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   handler: () => {},
 };
 
