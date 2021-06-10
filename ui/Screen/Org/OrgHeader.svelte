@@ -1,8 +1,8 @@
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
-  import { Avatar, Icon } from "../../DesignSystem/Primitive";
+  import { Avatar, Icon } from "ui/DesignSystem/Primitive";
 
-  import * as style from "../../src/style";
+  import * as style from "ui/src/style";
 
   export let orgAddress: string;
   export let gnosisSafeAddress: string;

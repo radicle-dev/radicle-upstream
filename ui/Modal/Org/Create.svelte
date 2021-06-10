@@ -1,12 +1,12 @@
 <script lang="typescript">
-  import type { Identity } from "../../src/identity";
+  import type { Identity } from "ui/src/identity";
 
-  import { Copyable, Modal } from "../../DesignSystem/Component";
-  import { Avatar, Button, Emoji } from "../../DesignSystem/Primitive";
+  import { Copyable, Modal } from "ui/DesignSystem/Component";
+  import { Avatar, Button, Emoji } from "ui/DesignSystem/Primitive";
 
-  import * as org from "../../src/org";
-  import { ellipsed } from "../../src/style";
-  import * as modal from "../../src/modal";
+  import * as org from "ui/src/org";
+  import { ellipsed } from "ui/src/style";
+  import * as modal from "ui/src/modal";
 
   export let identity: Identity;
   export let walletAddress: string;
