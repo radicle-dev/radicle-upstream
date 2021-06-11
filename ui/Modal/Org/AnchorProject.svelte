@@ -14,7 +14,6 @@
   import {
     Dropdown,
     Modal,
-    Remote,
     PeerSelector,
     RevisionSelector,
   } from "ui/DesignSystem/Component";
@@ -80,21 +79,16 @@
       options={projects}
       menuStyle="width: 100%;" />
   </div>
-  <Remote
-    store={projectScreen.store}
-    let:data={{
-      peerSelection,
-      project,
-      selectedPeer,
-    }}>
+
+  {#if $projectScreenStore.status === remote.Status.Success}
     <div style="display: flex; width: 100%; margin-bottom: 1.5rem;">
       <div style="width: 100%; margin-right: 1rem;">
         <PeerSelector
           showProfile={false}
           rounded={true}
-          peers={peerSelection}
+          peers={$projectScreenStore.data.peerSelection}
           on:select={onSelectPeer}
-          selected={selectedPeer} />
+          selected={$projectScreenStore.data.selectedPeer} />
       </div>
       <div style="width: 100%;">
         {#if $projectSourceScreenStore.status === remote.Status.Success}
@@ -103,7 +97,8 @@
               null}
             on:select={onSelectRevision}
             selected={$projectSourceScreenStore.data.selectedRevision.selected}
-            defaultBranch={project.metadata.defaultBranch}
+            defaultBranch={$projectScreenStore.data.project.metadata
+              .defaultBranch}
             revisions={$projectSourceScreenStore.data.revisions} />
         {/if}
       </div>
@@ -115,7 +110,8 @@
           commit={$code.lastCommit} />
       {/if}
     {/if}
-  </Remote>
+  {/if}
+
   <div class="actions">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
     <Button
