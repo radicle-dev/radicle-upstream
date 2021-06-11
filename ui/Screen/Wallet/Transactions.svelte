@@ -1,13 +1,18 @@
 <script lang="typescript">
-  import { store as transactions, getShortMonth } from "ui/src/transaction";
+  import {
+    store as transactions,
+    getShortMonth,
+    TxStatus,
+  } from "ui/src/transaction";
   import type { Tx } from "ui/src/transaction";
 
   import TxList from "ui/DesignSystem/Component/Wallet/Transactions/TxList.svelte";
 
+  $: includedTxs = $transactions.filter(tx => tx.status === TxStatus.Included);
   $: pendingTxs = $transactions.filter(
-    tx => tx.status === "Awaiting inclusion"
+    tx => tx.status === TxStatus.AwaitingInclusion
   );
-  $: rejectedTxs = $transactions.filter(tx => tx.status === "Rejected");
+  $: rejectedTxs = $transactions.filter(tx => tx.status === TxStatus.Rejected);
 
   const groupTxs = (txs: Tx[]) => {
     const sections: Array<{ key: string; title: string; items: Tx[] }> = [];
@@ -33,7 +38,7 @@
     return sections;
   };
 
-  $: txMonthSections = groupTxs($transactions);
+  $: txMonthSections = groupTxs(includedTxs);
 </script>
 
 <style>

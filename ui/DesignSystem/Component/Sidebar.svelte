@@ -8,14 +8,14 @@
   import * as config from "ui/src/config";
   import * as wallet from "ui/src/wallet";
 
-  import Tooltip from "./Tooltip.svelte";
-  import { Avatar, Icon } from "../Primitive";
-  import SidebarItem from "./SidebarItem.svelte";
-  import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
-  import AddOrgButton from "./Sidebar/AddOrgButton.svelte";
-  import WalletStatusIndicator from "./WalletStatusIndicator.svelte";
+  import Tooltip from "ui/DesignSystem/Component/Tooltip.svelte";
+  import { Avatar, Icon } from "ui/DesignSystem/Primitive";
+  import SidebarItem from "ui/DesignSystem/Component/SidebarItem.svelte";
+  import ConnectionStatusIndicator from "ui/DesignSystem/Component/ConnectionStatusIndicator.svelte";
+  import AddOrgButton from "ui/DesignSystem/Component/Sidebar/AddOrgButton.svelte";
+  import WalletStatusIndicator from "ui/DesignSystem/Component/WalletStatusIndicator.svelte";
   import ModalSearch from "ui/Modal/Search.svelte";
-  import ModalCreateOrg from "../../Modal/Org/Create.svelte";
+  import ModalCreateOrg from "ui/Modal/Org/Create.svelte";
 
   export let identity: Identity;
 

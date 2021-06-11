@@ -37,6 +37,9 @@ const gnosisSubgraphClient = (): apolloCore.ApolloClient<unknown> => {
       uri =
         "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby";
       break;
+    case ethereum.Environment.Mainnet:
+      uri = "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe";
+      break;
   }
 
   return createApolloClient(uri);
@@ -58,6 +61,9 @@ const orgsSubgraphClient = () => {
     case ethereum.Environment.Rinkeby:
       uri =
         "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby";
+      break;
+    case ethereum.Environment.Mainnet:
+      uri = "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs";
       break;
   }
   return createApolloClient(uri);
@@ -143,7 +149,7 @@ export const getGnosisSafeMembers = async (
 export interface ProjectAnchor {
   id: string;
   projectId: string;
-  commitSha: string;
+  commitHash: string;
 }
 
 export const getOrgProjectAnchors = async (
@@ -167,31 +173,29 @@ export const getOrgProjectAnchors = async (
     })
   ).data.projects;
 
-  return response
-    .map(
-      (project: {
+  return response.map(
+    (project: {
+      id: string;
+      anchor: {
         id: string;
-        anchor: {
-          id: string;
-          objectId: string;
-          stateMultihash: string;
-        };
-      }) => {
-        const decodedProjectId = urn.identitySha1Urn(
-          ethers.utils.arrayify(`0x${project.id.slice(26)}`)
-        );
+        objectId: string;
+        stateMultihash: string;
+      };
+    }) => {
+      const decodedProjectId = urn.identitySha1Urn(
+        ethers.utils.arrayify(`0x${project.id.slice(26)}`)
+      );
 
-        const byteArray = ethers.utils.arrayify(project.anchor.stateMultihash);
-        const decodedMultihash = multihash.decode(byteArray);
-        const decodedCommitSha = ethers.utils
-          .hexlify(decodedMultihash.digest)
-          .replace(/^0x/, "");
-        return {
-          id: project.anchor.id,
-          projectId: decodedProjectId,
-          commitSha: decodedCommitSha,
-        };
-      }
-    )
-    .filter(Boolean);
+      const byteArray = ethers.utils.arrayify(project.anchor.stateMultihash);
+      const decodedMultihash = multihash.decode(byteArray);
+      const decodedCommitHash = ethers.utils
+        .hexlify(decodedMultihash.digest)
+        .replace(/^0x/, "");
+      return {
+        id: project.anchor.id,
+        projectId: decodedProjectId,
+        commitHash: decodedCommitHash,
+      };
+    }
+  );
 };

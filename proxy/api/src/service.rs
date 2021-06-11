@@ -19,9 +19,21 @@ pub struct Environment {
     /// Paths & profile id for on-disk persistence.
     pub coco_profile: profile::Profile,
     /// A reference to the key store.
-    pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
-    /// If true we are running the service in test mode.
+    pub keystore: Arc<dyn crate::keystore::Keystore + Send + Sync>,
+    /// If true, we are running the service in test mode.
     pub test_mode: bool,
+}
+
+/// Configuration for initializing [`Environment`].
+#[derive(Debug, Clone)]
+pub struct EnvironmentConfig {
+    /// If `true`, then [`Environment::temp_dir`] is set for temporary on-disk persistence and
+    /// [`Environment::test_mode`] is set to `true`.
+    pub test_mode: bool,
+
+    /// If `true`, then fast but unsafe encryption parameters are used for the keystore.
+    #[cfg(feature = "unsafe-fast-keystore")]
+    pub unsafe_fast_keystore: bool,
 }
 
 /// Error returned when creating a new [`Environment`].
@@ -40,32 +52,32 @@ pub enum Error {
 
 impl Environment {
     /// Create a new initial environment.
-    ///
-    /// If `test_mode` is `true` then `Environment::temp_dir` is set for temporary on-disk
-    /// persistence.
-    fn new(test_mode: bool) -> Result<Self, Error> {
-        if test_mode {
+    fn new(config: &EnvironmentConfig) -> Result<Self, Error> {
+        let (temp_dir, coco_profile) = if config.test_mode {
             let temp_dir = tempfile::tempdir()?;
             let coco_profile = profile::Profile::from_root(temp_dir.path(), None)?;
-            let keystore = Arc::new(keystore::memory());
-            Ok(Self {
-                key: None,
-                temp_dir: Some(temp_dir),
-                coco_profile,
-                keystore,
-                test_mode,
-            })
+            (Some(temp_dir), coco_profile)
         } else {
             let coco_profile = profile::Profile::load()?;
-            let keystore = Arc::new(keystore::file(coco_profile.paths().clone()));
-            Ok(Self {
-                key: None,
-                temp_dir: None,
-                coco_profile,
-                keystore,
-                test_mode,
-            })
-        }
+            (None, coco_profile)
+        };
+
+        #[cfg(not(feature = "unsafe-fast-keystore"))]
+        let keystore = Arc::new(keystore::file(coco_profile.paths().clone()));
+
+        #[cfg(feature = "unsafe-fast-keystore")]
+        let keystore: Arc<dyn keystore::Keystore + Send + Sync> = if config.unsafe_fast_keystore {
+            Arc::new(keystore::unsafe_fast_file(coco_profile.paths().clone()))
+        } else {
+            Arc::new(keystore::file(coco_profile.paths().clone()))
+        };
+        Ok(Self {
+            key: None,
+            temp_dir,
+            coco_profile,
+            keystore,
+            test_mode: config.test_mode,
+        })
     }
 }
 
@@ -79,6 +91,7 @@ pub struct Manager {
     message_receiver: mpsc::Receiver<Message>,
     /// The current environemtn of the services
     environment: Environment,
+    environment_config: EnvironmentConfig,
 }
 
 impl Manager {
@@ -86,14 +99,15 @@ impl Manager {
     ///
     /// If `test_mode` is `true` then `Environment::temp_dir` is set for temporary on-disk
     /// persistence.
-    pub fn new(test_mode: bool) -> Result<Self, Error> {
-        let environment = Environment::new(test_mode)?;
+    pub fn new(environment_config: EnvironmentConfig) -> Result<Self, Error> {
+        let environment = Environment::new(&environment_config)?;
         let (message_sender, message_receiver) = mpsc::channel(10);
         Ok(Self {
             reload_notify: Arc::new(Notify::new()),
             message_sender,
             message_receiver,
             environment,
+            environment_config,
         })
     }
 
@@ -109,10 +123,7 @@ impl Manager {
     pub fn environment(&mut self) -> Result<&Environment, Error> {
         while let Some(Some(message)) = self.message_receiver.recv().now_or_never() {
             match message {
-                Message::Reset => {
-                    let test_mode = self.environment.test_mode;
-                    self.environment = Environment::new(test_mode)?
-                },
+                Message::Reset => self.environment = Environment::new(&self.environment_config)?,
                 Message::SetSecretKey(key) => self.environment.key = Some(key),
                 Message::Seal => self.environment.key = None,
             }

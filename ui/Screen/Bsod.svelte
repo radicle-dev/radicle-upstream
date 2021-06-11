@@ -27,8 +27,9 @@
   };
 
   const support = () => {
-    window.location.href =
-      "https://matrix.radicle.community/#/room/#support:radicle.community";
+    ipc.openUrl(
+      "https://matrix.radicle.community/#/room/#support:radicle.community"
+    );
   };
 </script>
 

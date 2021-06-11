@@ -44,7 +44,7 @@ const projectSchema: zod.Schema<Project> = zod.object({
     .object({
       id: zod.string(),
       projectId: zod.string(),
-      commitSha: zod.string(),
+      commitHash: zod.string(),
     })
     .optional(),
 });

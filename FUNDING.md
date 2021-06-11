@@ -64,9 +64,9 @@ The funding experiences can take place in three different environments:
 
 4. `Mainnet`
 
-  In this environment, to be introduced in the future once we are ready to go mainnet,
-  the wallet will plug itself to the Radicle Contracts (to be) deployed in the Ethereum
-  Mainnet. This environment is not currently supported.
+  Production environment where everything costs real money. So far only the Org
+  and Attestation features is available on `Mainnet`, the contracts for the
+  funding (aka token streams) feature are not yet deployed on mainnet.
 
 
 #### Local environment

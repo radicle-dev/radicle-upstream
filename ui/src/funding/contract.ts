@@ -1,6 +1,7 @@
 import { BigNumber, ContractTransaction, Signer } from "ethers";
 
 import Big from "big.js";
+import * as error from "ui/src/error";
 
 import {
   Erc20Pool,
@@ -49,6 +50,11 @@ export function poolAddress(environment: ethereum.Environment): string {
       return addresses.ropsten;
     case ethereum.Environment.Rinkeby:
       return addresses.rinkeby;
+    case ethereum.Environment.Mainnet:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Token streaming contracts are not yet deployed on mainnet",
+      });
   }
 }
 

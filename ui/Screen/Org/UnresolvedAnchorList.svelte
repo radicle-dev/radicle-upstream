@@ -71,7 +71,7 @@
         <AnchorMetadataModal {anchor} {orgAddress} />
       </div>
       {#if hover}
-        <div transition:fade={{ duration: 200 }}>
+        <div transition:fade|local={{ duration: 200 }}>
           <FollowToggle
             on:follow={() => {
               onFollow(anchor.projectId);

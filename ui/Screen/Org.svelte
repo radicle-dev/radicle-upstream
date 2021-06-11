@@ -2,6 +2,7 @@
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
+  import * as org from "ui/src/org";
   import type * as theGraphApi from "ui/src/theGraphApi";
 
   import { Icon } from "ui/DesignSystem/Primitive";
@@ -63,11 +64,8 @@
       {
         title: "View on Gnosis Safe",
         icon: Icon.ArrowBoxUpRight,
-        // TODO(rudolfs): make the link go to
-        // `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}` for
-        // mainnet
         event: () => {
-          window.location.href = `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/transactions`;
+          org.openOnGnosisSafe(gnosisSafeAddress, "transactions");
         },
       },
       {

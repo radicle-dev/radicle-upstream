@@ -85,6 +85,10 @@ export const fundingEnvironmentOptions: Option<ethereum.Environment>[] = [
     title: ethereum.Environment.Rinkeby.toString(),
     value: ethereum.Environment.Rinkeby,
   },
+  {
+    title: ethereum.Environment.Mainnet.toString(),
+    value: ethereum.Environment.Mainnet,
+  },
 ];
 
 // gives back the OS you're using in hotkeys.svelte & shortcuts.svelte
