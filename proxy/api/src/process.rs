@@ -39,6 +39,10 @@ pub struct Args {
     /// don’t install the git-remote-rad binary
     #[argh(switch)]
     pub skip_remote_helper_install: bool,
+    #[cfg(feature = "unsafe-fast-keystore")]
+    /// enables fast but unsafe encryption of the keystore for development builds
+    #[argh(switch)]
+    pub unsafe_fast_keystore: bool,
 }
 
 /// Data required to run the peer and the API
@@ -63,7 +67,11 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         git_helper::setup(&proxy_path, &bin_dir)?;
     }
 
-    let mut service_manager = service::Manager::new(args.test)?;
+    let mut service_manager = service::Manager::new(service::EnvironmentConfig {
+        test_mode: args.test,
+        #[cfg(feature = "unsafe-fast-keystore")]
+        unsafe_fast_keystore: args.unsafe_fast_keystore,
+    })?;
     let mut sighup = signal(SignalKind::hangup())?;
 
     let mut handle = service_manager.handle();
