@@ -159,7 +159,7 @@
       It's used to sign and publish to the Radicle network. Be sure to store
       this in a safe place —
       <span class="typo-text-bold">
-        there is no way to access your keys without it!
+        you’ll need to enter it each time you launch the app!
       </span>
     </p>
 
