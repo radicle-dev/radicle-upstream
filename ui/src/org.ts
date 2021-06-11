@@ -5,6 +5,8 @@ import EthersSafe from "@gnosis.pm/safe-core-sdk";
 import SafeServiceClient from "@gnosis.pm/safe-service-client";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
+import type * as project from "ui/src/project";
+
 import * as ipc from "ui/src/ipc";
 import * as notification from "ui/src//notification";
 import * as wallet from "ui/src/wallet";
@@ -15,7 +17,6 @@ import * as proxy from "ui/src/proxy";
 import * as urn from "ui/src/urn";
 import * as router from "ui/src/router";
 import * as modal from "ui/src/modal";
-import type * as project from "ui/src/proxy/project";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 

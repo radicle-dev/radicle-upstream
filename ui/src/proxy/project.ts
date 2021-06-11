@@ -1,7 +1,6 @@
 import * as zod from "zod";
 import type { Fetcher, RequestOptions } from "./fetcher";
 import { Identity, identitySchema } from "./identity";
-import type * as theGraphApi from "ui/src/theGraphApi";
 
 export interface Metadata {
   name: string;
@@ -28,7 +27,6 @@ export interface Project {
   shareableEntityIdentifier: string;
   metadata: Metadata;
   stats: Stats;
-  anchor?: theGraphApi.ProjectAnchor;
 }
 
 const projectSchema: zod.Schema<Project> = zod.object({
