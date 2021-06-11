@@ -3,7 +3,7 @@
 
   import Badge from "../Component/Badge.svelte";
   import { BadgeType } from "../../src/badge";
-  import AnchorMetadataModal from "ui/DesignSystem/Component/AnchorMetadataModal.svelte";
+  import ProjectAnchorPopover from "ui/DesignSystem/Component/ProjectAnchorPopover.svelte";
 
   export let title: string;
 
@@ -48,7 +48,7 @@
       <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
     {/if}
     {#if anchor}
-      <AnchorMetadataModal {anchor} {orgAddress} replicated={true} />
+      <ProjectAnchorPopover {anchor} {orgAddress} replicated={true} />
     {/if}
   </div>
   {#if description.length > 0}

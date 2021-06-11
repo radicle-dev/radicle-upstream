@@ -6,7 +6,7 @@
   import * as search from "ui/src/search";
   import * as router from "ui/src/router";
   import {
-    AnchorMetadataModal,
+    ProjectAnchorPopover,
     FollowToggle,
     Hoverable,
     List,
@@ -68,7 +68,7 @@
     <div class="list-item" data-cy={`project-list-entry-${anchor.id}`}>
       <div class="typo-text anchor-row">
         <RadicleId urn={anchor.projectId} showIcon={false} />
-        <AnchorMetadataModal {anchor} {orgAddress} />
+        <ProjectAnchorPopover {anchor} {orgAddress} />
       </div>
       {#if hover}
         <div transition:fade|local={{ duration: 200 }}>

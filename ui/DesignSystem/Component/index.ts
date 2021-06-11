@@ -1,6 +1,5 @@
 import ActionBar from "./ActionBar.svelte";
 import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
-import AnchorMetadataModal from "./AnchorMetadataModal.svelte";
 import Badge from "./Badge.svelte";
 import BranchBox from "./BranchBox.svelte";
 import Comment from "./Comment.svelte";
@@ -29,6 +28,7 @@ import Fullscreen from "./Fullscreen.svelte";
 import Overlay from "./Overlay.svelte";
 import PeerId from "./PeerId.svelte";
 import PeerSelector from "./PeerSelector.svelte";
+import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
 import RadicleId from "./RadicleId.svelte";
@@ -53,7 +53,6 @@ import QR from "./QR.svelte";
 export {
   ActionBar,
   AdditionalActionsDropdown,
-  AnchorMetadataModal,
   Badge,
   BranchBox,
   Comment,
@@ -82,6 +81,7 @@ export {
   Overlay,
   PeerId,
   PeerSelector,
+  ProjectAnchorPopover,
   ProjectCard,
   ProjectList,
   RadicleId,
