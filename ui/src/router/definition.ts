@@ -15,6 +15,7 @@ export type ProjectView =
 export type WalletTab = "transactions" | "tokenStreams";
 
 export type Route =
+  | { type: "boot" }
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
@@ -39,7 +40,7 @@ interface OrgRoute {
 export type OrgTab = "projects" | "members";
 
 export type LoadedRoute =
-  | { type: "loading" }
+  | { type: "boot" }
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }

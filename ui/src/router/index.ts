@@ -13,11 +13,10 @@ export { unreachable } from "ui/src/unreachable";
 // This is only respected by Safari.
 const DOCUMENT_TITLE = "Radicle Upstream";
 
-const DEFAULT_ROUTE: Route = { type: "profile", activeTab: "projects" };
-const INITIAL_ROUTE: LoadedRoute = { type: "loading" };
+const BOOT_ROUTE: Route & LoadedRoute = { type: "boot" };
 
 const historyStore: svelteStore.Writable<Route[]> = svelteStore.writable([
-  DEFAULT_ROUTE,
+  BOOT_ROUTE,
 ]);
 
 // Sets the history to the given value and navigates to the last item
@@ -55,13 +54,12 @@ export const pop = async (): Promise<void> => {
   }
 };
 
-export const activeRouteStore =
-  svelteStore.writable<LoadedRoute>(INITIAL_ROUTE);
+export const activeRouteStore = svelteStore.writable<LoadedRoute>(BOOT_ROUTE);
 
 export const initialize = async (): Promise<void> => {
   let history: Route[];
   if (window.history.state === null) {
-    history = [DEFAULT_ROUTE];
+    history = [BOOT_ROUTE];
   } else {
     history = window.history.state;
   }

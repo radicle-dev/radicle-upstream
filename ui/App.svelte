@@ -6,7 +6,8 @@
   import * as wallet from "./src/wallet";
   import * as hotkeys from "ui/src/hotkeys";
   import * as remote from "ui/src/remote";
-  import { fetch, session as store, Status } from "ui/src/session";
+  import { unreachable } from "ui/src/unreachable";
+  import { fetch, session as sessionStore, Status } from "ui/src/session";
   import "ui/src/localPeer";
 
   import {
@@ -36,33 +37,39 @@
 
   const activeRouteStore = router.activeRouteStore;
 
-  $: switch ($store.status) {
-    case remote.Status.NotAsked:
-      fetch();
-      break;
+  sessionStore.subscribe(session => {
+    // We’re not using a reactive statement here to prevent this code from
+    // running when `activeRouteStore` is updated.
+    switch (session.status) {
+      case remote.Status.NotAsked:
+        fetch();
+        break;
 
-    case remote.Status.Success:
-      if ($store.data.status === Status.NoSession) {
-        hotkeys.disable();
-        router.push({ type: "onboarding" });
-      } else if ($store.data.status === Status.UnsealedSession) {
-        hotkeys.enable();
-        if (
-          $activeRouteStore.type === "onboarding" ||
-          $activeRouteStore.type === "lock"
-        ) {
-          router.push({ type: "profile", activeTab: "projects" });
+      case remote.Status.Success:
+        if (session.data.status === Status.NoSession) {
+          hotkeys.disable();
+          router.push({ type: "onboarding" });
+        } else if (session.data.status === Status.SealedSession) {
+          hotkeys.disable();
+          router.push({ type: "lock" });
+        } else if (session.data.status === Status.UnsealedSession) {
+          hotkeys.enable();
+          if (
+            $activeRouteStore.type === "onboarding" ||
+            $activeRouteStore.type === "lock"
+          ) {
+            router.push({ type: "profile", activeTab: "projects" });
+          }
+        } else {
+          unreachable(session.data);
         }
-      } else {
-        hotkeys.disable();
-        router.push({ type: "lock" });
-      }
-      break;
+        break;
 
-    case remote.Status.Error:
-      error.show($store.error);
-      break;
-  }
+      case remote.Status.Error:
+        error.show(session.error);
+        break;
+    }
+  });
 
   const walletStore = wallet.store;
   $: w = $walletStore;
@@ -91,7 +98,7 @@
 <NotificationFaucet />
 <Theme />
 
-<Remote {store} context="session" disableErrorLogging={true}>
+<Remote store={sessionStore} context="session" disableErrorLogging={true}>
   {#if $activeRouteStore.type === "designSystemGuide"}
     <DesignSystemGuide />
   {:else if $activeRouteStore.type === "lock"}
@@ -119,7 +126,7 @@
     <Settings />
   {:else if $activeRouteStore.type === "wallet"}
     <Wallet activeTab={$activeRouteStore.activeTab} />
-  {:else if $activeRouteStore.type === "loading"}
+  {:else if $activeRouteStore.type === "boot"}
     <!-- TODO: show some loading screen -->
   {:else}
     {router.unreachable($activeRouteStore)}
