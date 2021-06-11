@@ -56,7 +56,8 @@
           hotkeys.enable();
           if (
             $activeRouteStore.type === "onboarding" ||
-            $activeRouteStore.type === "lock"
+            $activeRouteStore.type === "lock" ||
+            $activeRouteStore.type === "boot"
           ) {
             router.push({ type: "profile", activeTab: "projects" });
           }
