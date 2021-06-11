@@ -2,7 +2,6 @@ import { derived, get, writable } from "svelte/store";
 import type { SvelteComponent } from "svelte";
 
 type OnHide = () => void;
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 const doNothing = () => {};
 
 type ModalOverlay = {

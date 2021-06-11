@@ -23,7 +23,7 @@ type AuthToken = string;
 
 const ROOT_PATH = path.join(__dirname, "../../../");
 
-const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/release/radicle-proxy");
+const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/debug/radicle-proxy");
 
 // IP to which all started processes will bind to.
 const HOST = "127.0.0.1";
@@ -138,6 +138,7 @@ class Node {
         "--peer-listen",
         `${HOST}:${this.peerPort}`,
         "--skip-remote-helper-install",
+        "--unsafe-fast-keystore",
       ],
       { env: { ...global.process.env, RAD_HOME: this.radHome } }
     );

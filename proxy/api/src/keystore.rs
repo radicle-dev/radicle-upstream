@@ -5,12 +5,12 @@
 
 //! Storage of secret keys.
 //!
-//! This module provides the [`Keystore`] trait and the [`file()`] and
-//! [`memory()`] functions to construct specific [`Keystore`] implementations.
+//! This module provides the [`Keystore`] trait and the [`file()`] function to construct specific
+//! [`Keystore`] implementations.
 
 use std::convert::Infallible;
 
-use radicle_daemon::{keys, librad::paths};
+use radicle_daemon::{keys, Paths};
 pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{self, Pwhash, SecretBoxError},
@@ -45,14 +45,31 @@ const KEY_PATH: &str = "librad.key";
 /// The key file is named `librad.key` and located under in the `paths` key
 /// directory.
 #[must_use]
-pub fn file(paths: paths::Paths) -> impl Keystore + Send + Sync {
-    FileStore { paths }
+pub fn file(paths: Paths) -> impl Keystore + Send + Sync {
+    FileStore {
+        paths,
+        kdf_params: *crypto::KDF_PARAMS_PROD,
+    }
+}
+
+/// Create a [`Keystore`] that is backed by an encrypted file on disk and uses weak (but fast)
+/// encrpytion parameters.
+///
+/// The key file is named `librad.key` and located under in the `paths` key directory.
+#[cfg(feature = "unsafe-fast-keystore")]
+#[must_use]
+pub fn unsafe_fast_file(paths: Paths) -> impl Keystore + Send + Sync {
+    FileStore {
+        paths,
+        kdf_params: *crypto::KDF_PARAMS_TEST,
+    }
 }
 
 /// File-backed [`Keystore`]
 struct FileStore {
     /// Determines the location of the key file when a key is loaded or written.
-    paths: paths::Paths,
+    paths: Paths,
+    kdf_params: crypto::KdfParams,
 }
 
 /// Concrete type of the [`FileStorage`] in use.
@@ -67,7 +84,7 @@ impl FileStore {
     /// Get the [`FileStorage`] backend for this key store.
     fn store(&self, passphrase: SecUtf8) -> FileStorage {
         let key_path = self.paths.keys_dir().join(KEY_PATH);
-        let crypto = Pwhash::new(passphrase, *crypto::KDF_PARAMS_PROD);
+        let crypto = Pwhash::new(passphrase, self.kdf_params);
         FileStorage::new(&key_path, crypto)
     }
 }
@@ -92,8 +109,9 @@ impl Keystore for FileStore {
     }
 }
 
-/// Create an insecure in-memory [`Keystore`].
+/// Create an insecure in-memory [`Keystore`] for testing.
 #[must_use]
+#[cfg(test)]
 pub fn memory() -> impl Keystore + Send + Sync {
     MemoryStore {
         key_and_passphrase: std::sync::Mutex::new(None),
@@ -101,11 +119,13 @@ pub fn memory() -> impl Keystore + Send + Sync {
 }
 
 /// Insecure in-memory [`Keystore`]
+#[cfg(test)]
 struct MemoryStore {
     /// Secret key and passphrase if present
     key_and_passphrase: std::sync::Mutex<Option<(keys::SecretKey, SecUtf8)>>,
 }
 
+#[cfg(test)]
 impl Keystore for MemoryStore {
     fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
         let mut key_and_passphrase = self

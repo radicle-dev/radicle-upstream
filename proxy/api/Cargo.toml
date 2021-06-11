@@ -11,6 +11,11 @@ keywords = [ "radicle", "upstream", "proxy", "git" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 default-run = "radicle-proxy"
 
+[features]
+# Enables the option to use fast but unsafe encryption and decryption
+# of the key stored on disk.
+unsafe-fast-keystore = []
+
 [dependencies]
 anyhow = "1.0"
 argh = "0.1"
@@ -41,11 +46,15 @@ warp = { version = "0.3", default-features = false }
 
 [dependencies.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "f58348609616ae23830d4578b3a53e179f5a9d40"
+rev = "831d6d91ad1a5bf60a724ff3ca0006cf61bea466"
 
 [dependencies.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "f58348609616ae23830d4578b3a53e179f5a9d40"
+rev = "831d6d91ad1a5bf60a724ff3ca0006cf61bea466"
+
+[dependencies.radicle-git-helpers]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "831d6d91ad1a5bf60a724ff3ca0006cf61bea466"
 
 [dependencies.radicle-avatar]
 git = "https://github.com/radicle-dev/radicle-avatar.git"
