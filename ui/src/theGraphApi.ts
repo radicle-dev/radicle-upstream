@@ -37,6 +37,9 @@ const gnosisSubgraphClient = (): apolloCore.ApolloClient<unknown> => {
       uri =
         "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby";
       break;
+    case ethereum.Environment.Mainnet:
+      uri = "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe";
+      break;
   }
 
   return createApolloClient(uri);
@@ -58,6 +61,9 @@ const orgsSubgraphClient = () => {
     case ethereum.Environment.Rinkeby:
       uri =
         "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby";
+      break;
+    case ethereum.Environment.Mainnet:
+      uri = "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs";
       break;
   }
   return createApolloClient(uri);

@@ -1,5 +1,5 @@
 <script>
-  import * as ipc from "ui/src/ipc";
+  import * as org from "ui/src/org";
 
   import { Button, Icon } from "ui/DesignSystem/Primitive";
   import { Overlay } from "ui/DesignSystem/Component";
@@ -12,10 +12,6 @@
   };
 
   export let gnosisSafeAddress;
-
-  // TODO(rudolfs): make the link go to
-  // `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings` for
-  // mainnet
 </script>
 
 <style>
@@ -47,9 +43,7 @@
 
     <Button
       on:click={() => {
-        ipc.openUrl(
-          `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/settings`
-        );
+        org.openOnGnosisSafe(gnosisSafeAddress, "settings");
         toggleModal();
       }}
       style="margin-top: 1rem; width: 100%; display: block; text-align: center;">

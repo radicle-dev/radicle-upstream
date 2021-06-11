@@ -2,10 +2,10 @@
   import { fade } from "svelte/transition";
   import type * as theGraphApi from "ui/src/theGraphApi";
 
-  import * as ipc from "ui/src/ipc";
   import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
   import * as style from "ui/src/style";
+  import * as org from "ui/src/org";
 
   import { Avatar, Icon } from "ui/DesignSystem/Primitive";
   import { Hoverable } from "ui/DesignSystem/Component";
@@ -22,11 +22,6 @@
       activeView: { type: "commit", commitHash: anchor.commitHash },
       urn: anchor.projectId,
     });
-  };
-
-  // TODO: make this work across different networks
-  const openTx = () => {
-    ipc.openUrl(`https://rinkeby.etherscan.io/tx/${anchor.id}`);
   };
 </script>
 
@@ -110,7 +105,11 @@
           <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
             Transaction hash
           </p>
-          <p class="typo-text-small typo-link" on:click={openTx}>
+          <p
+            class="typo-text-small typo-link"
+            on:click={() => {
+              org.openTxOnEtherscan(anchor.id);
+            }}>
             {style.ellipsed(anchor.id, 6)}↗
           </p>
         </div>

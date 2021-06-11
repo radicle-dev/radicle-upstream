@@ -1,6 +1,7 @@
 import Big from "big.js";
 import * as ethers from "ethers";
 import persistentStore from "svelte-persistent-store/dist";
+import * as config from "ui/src/config";
 
 // The Ethereum environments we support and may connect to.
 export enum Environment {
@@ -13,7 +14,8 @@ export enum Environment {
   Ropsten = "Ropsten",
   // The Rinkeby testnet  where our orgs and gnosis safe are deployed
   Rinkeby = "Rinkeby",
-  // N.B: We will support 'Mainnet' in the future
+  // Production deployment
+  Mainnet = "Mainnet",
 }
 
 // The ethereum networks we may parse from a connected wallet across
@@ -35,6 +37,8 @@ export function supportedNetwork(environment: Environment): Network {
       return Network.Ropsten;
     case Environment.Rinkeby:
       return Network.Rinkeby;
+    case Environment.Mainnet:
+      return Network.Mainnet;
   }
 }
 
@@ -56,7 +60,7 @@ export function networkFromChainId(chainId: number): Network {
 // The store where the selected Ethereum environment is persisted.
 export const selectedEnvironment = persistentStore.local.writable<Environment>(
   "ethereum-environment-v0",
-  Environment.Rinkeby
+  config.isDev ? Environment.Rinkeby : Environment.Mainnet
 );
 
 // EIP-20 token decimals for the tokens we operate with across

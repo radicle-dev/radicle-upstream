@@ -50,6 +50,60 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
       return "0xc074cDd9541960B0AA72D90c8bC642F6ae9C4032";
     case ethereum.Environment.Rinkeby:
       return "0x57962Eb188146A4942c44545a97478d64dc9e4A5";
+    case ethereum.Environment.Mainnet:
+      return "0x7c4D590168A9019995e072f9c1eCfc1fc356bEd4";
+  }
+};
+
+export const openTxOnEtherscan = (transactionId: string): void => {
+  const walletStore = svelteStore.get(wallet.store);
+
+  switch (walletStore.environment) {
+    case ethereum.Environment.Local:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Etherscan links are not supported on the Local testnet",
+      });
+    case ethereum.Environment.Ropsten:
+      ipc.openUrl(`https://ropsten.etherscan.io/tx/${transactionId}`);
+      break;
+    case ethereum.Environment.Rinkeby:
+      ipc.openUrl(`https://rinkeby.etherscan.io/tx/${transactionId}`);
+      break;
+    case ethereum.Environment.Mainnet:
+      ipc.openUrl(`https://etherscan.io/tx/${transactionId}`);
+      break;
+  }
+};
+
+export const openOnGnosisSafe = (
+  gnosisSafeAddress: string,
+  view: "transactions" | "settings"
+): void => {
+  const walletStore = svelteStore.get(wallet.store);
+
+  switch (walletStore.environment) {
+    case ethereum.Environment.Local:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Gnosis Safe links are not supported on the Local testnet",
+      });
+    case ethereum.Environment.Ropsten:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Gnosis Safe links are not supported on the Ropsten testnet",
+      });
+      break;
+    case ethereum.Environment.Rinkeby:
+      ipc.openUrl(
+        `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/${view}`
+      );
+      break;
+    case ethereum.Environment.Mainnet:
+      ipc.openUrl(
+        `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/${view}`
+      );
+      break;
   }
 };
 
@@ -72,6 +126,9 @@ const createSafeServiceClient = (): SafeServiceClient => {
       });
     case ethereum.Environment.Rinkeby:
       uri = "https://safe-transaction.rinkeby.gnosis.io";
+      break;
+    case ethereum.Environment.Mainnet:
+      uri = "https://safe-transaction.gnosis.io";
       break;
   }
 
@@ -153,16 +210,11 @@ export const anchorProject = async (
     message:
       "Your anchored project will appear once the quorum of members have confirmed the transaction",
     showIcon: true,
-    // TODO(rudolfs): make the link go to
-    // `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}` for
-    // mainnet
     actions: [
       {
         label: "View on Gnosis Safe",
         handler: () => {
-          ipc.openUrl(
-            `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/transactions`
-          );
+          openOnGnosisSafe(gnosisSafeAddress, "transactions");
         },
       },
     ],
