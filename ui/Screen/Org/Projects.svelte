@@ -4,7 +4,6 @@
   import UnresolvedAnchorList from "ui/Screen/Org/UnresolvedAnchorList.svelte";
 
   import type * as project from "ui/src/project";
-  import type * as theGraphApi from "ui/src/theGraphApi";
 
   import * as router from "ui/src/router";
   import * as sess from "ui/src/session";
@@ -17,7 +16,7 @@
 
   export let address: string;
   export let anchoredProjects: project.Project[];
-  export let unresolvedAnchors: theGraphApi.ProjectAnchor[];
+  export let unresolvedAnchors: org.ProjectAnchor[];
   export let gnosisSafeAddress: string;
 
   const select = ({ detail: project }: { detail: Project }) => {

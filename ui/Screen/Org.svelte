@@ -3,7 +3,6 @@
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
   import * as org from "ui/src/org";
-  import type * as theGraphApi from "ui/src/theGraphApi";
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import {
@@ -24,7 +23,7 @@
   export let activeTab: router.LoadedOrgTab;
   export let gnosisSafeAddress: string;
   export let address: string;
-  export let members: theGraphApi.Member[];
+  export let members: org.Member[];
   export let threshold: number;
 
   const tabs = (address: string, active: router.LoadedOrgTab) => {

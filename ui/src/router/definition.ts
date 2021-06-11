@@ -1,4 +1,3 @@
-import type * as theGraphApi from "ui/src/theGraphApi";
 import type * as project from "ui/src/project";
 import { unreachable } from "ui/src/unreachable";
 
@@ -60,13 +59,13 @@ export type LoadedOrgTab =
   | {
       type: "projects";
       anchoredProjects: project.Project[];
-      unresolvedAnchors: theGraphApi.ProjectAnchor[];
+      unresolvedAnchors: org.ProjectAnchor[];
       gnosisSafeAddress: string;
     }
   | {
       type: "members";
       threshold: number;
-      members: theGraphApi.Member[];
+      members: org.Member[];
     };
 
 interface OrgLoadedRoute {
@@ -75,7 +74,7 @@ interface OrgLoadedRoute {
   gnosisSafeAddress: string;
   activeTab: LoadedOrgTab;
   threshold: number;
-  members: theGraphApi.Member[];
+  members: org.Member[];
 }
 
 export function routeToPath(route: Route): string {

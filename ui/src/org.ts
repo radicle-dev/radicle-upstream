@@ -1,31 +1,42 @@
-import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
 import * as multihash from "multihashes";
+import * as svelteStore from "svelte/store";
 import EthersSafe from "@gnosis.pm/safe-core-sdk";
 import SafeServiceClient from "@gnosis.pm/safe-service-client";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
-
-import type * as project from "ui/src/project";
-
-import * as ipc from "ui/src/ipc";
-import * as notification from "ui/src//notification";
-import * as wallet from "ui/src/wallet";
-import * as theGraphApi from "ui/src/theGraphApi";
-import * as ethereum from "ui/src/ethereum";
-import * as error from "ui/src/error";
-import * as proxy from "ui/src/proxy";
-import * as urn from "ui/src/urn";
-import * as router from "ui/src/router";
-import * as modal from "ui/src/modal";
-
-import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
 import type {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers";
+import type * as project from "ui/src/project";
+import type {
+  Org,
+  Member,
+  MemberResponse,
+  ProjectAnchor,
+} from "ui/src/org/theGraphApi";
 
+import * as ethereum from "ui/src/ethereum";
+import * as error from "ui/src/error";
+import * as ipc from "ui/src/ipc";
+import * as modal from "ui/src/modal";
+import * as notification from "ui/src//notification";
+import * as proxy from "ui/src/proxy";
+import * as router from "ui/src/router";
 import * as transaction from "./transaction";
+import * as urn from "ui/src/urn";
+import * as wallet from "ui/src/wallet";
+
+import {
+  getOrgs,
+  getGnosisSafeMembers,
+  getOrgProjectAnchors,
+} from "ui/src/org/theGraphApi";
+
+export type { Member, MemberResponse, Org, ProjectAnchor };
+
+import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
 const orgFactoryAbi = [
   "function createOrg(address[], uint256) returns (address)",
@@ -300,7 +311,7 @@ const fetchGnosisSafeAddr = async (
   return safeAddr.toLowerCase();
 };
 
-export const orgSidebarStore = svelteStore.writable<theGraphApi.Org[] | []>([]);
+export const orgSidebarStore = svelteStore.writable<Org[] | []>([]);
 
 export const fetchOrgs = async (): Promise<void> => {
   const walletStore = svelteStore.get(wallet.store);
@@ -312,7 +323,7 @@ export const fetchOrgs = async (): Promise<void> => {
     );
   }
 
-  const orgs = await theGraphApi.getOrgs(w.connected.account.address);
+  const orgs = await getOrgs(w.connected.account.address);
   orgSidebarStore.set(orgs);
 };
 
@@ -321,7 +332,7 @@ export const fetchOrg = async (
 ): Promise<{
   orgAddress: string;
   gnosisSafeAddress: string;
-  members: theGraphApi.Member[];
+  members: Member[];
   threshold: number;
 }> => {
   const walletStore = svelteStore.get(wallet.store);
@@ -335,20 +346,20 @@ export const fetchOrg = async (
 
 const fetchMembers = async (
   gnosisSafeAddress: string
-): Promise<theGraphApi.MemberResponse> => {
-  return await theGraphApi.getGnosisSafeMembers(gnosisSafeAddress);
+): Promise<MemberResponse> => {
+  return await getGnosisSafeMembers(gnosisSafeAddress);
 };
 
 export const resolveProjectAnchors = async (
   orgAddress: string
 ): Promise<{
   anchoredProjects: project.Project[];
-  unresolvedAnchors: theGraphApi.ProjectAnchor[];
+  unresolvedAnchors: ProjectAnchor[];
 }> => {
-  const anchors = await theGraphApi.getOrgProjectAnchors(orgAddress);
+  const anchors = await getOrgProjectAnchors(orgAddress);
 
   const anchoredProjects: project.Project[] = [];
-  const unresolvedAnchors: theGraphApi.ProjectAnchor[] = [];
+  const unresolvedAnchors: ProjectAnchor[] = [];
 
   await Promise.all(
     anchors.map(async anchor => {

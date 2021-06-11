@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
 
-import type * as theGraphApi from "ui/src/theGraphApi";
+import type * as org from "ui/src/org";
 import * as error from "./error";
 import * as config from "./config";
 import type * as identity from "./identity";
@@ -27,7 +27,7 @@ export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
 export interface Project extends ProxyProject {
-  anchor?: theGraphApi.ProjectAnchor;
+  anchor?: org.ProjectAnchor;
 }
 export interface User {
   peerId: identity.PeerId;

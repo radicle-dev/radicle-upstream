@@ -1,11 +1,11 @@
 <script lang="typescript">
-  import type * as theGraphApi from "ui/src/theGraphApi";
+  import type * as org from "ui/src/org";
 
   import { ellipsed } from "ui/src/style";
 
   import { List } from "ui/DesignSystem/Component";
 
-  export let members: theGraphApi.Member[];
+  export let members: org.Member[];
 </script>
 
 <style>

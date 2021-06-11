@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
 
-  import type * as theGraphApi from "ui/src/theGraphApi";
+  import type * as org from "ui/src/org";
   import * as notification from "ui/src/notification";
   import * as search from "ui/src/search";
   import * as router from "ui/src/router";
@@ -13,7 +13,7 @@
     RadicleId,
   } from "ui/DesignSystem/Component";
 
-  export let anchors: theGraphApi.ProjectAnchor[];
+  export let anchors: org.ProjectAnchor[];
   export let orgAddress: string;
 
   const onFollow = (projectId: string) => {

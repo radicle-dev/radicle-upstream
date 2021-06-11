@@ -1,6 +1,5 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
-  import type * as theGraphApi from "ui/src/theGraphApi";
 
   import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
@@ -10,7 +9,7 @@
   import { Avatar, Icon } from "ui/DesignSystem/Primitive";
   import { Hoverable } from "ui/DesignSystem/Component";
 
-  export let anchor: theGraphApi.ProjectAnchor;
+  export let anchor: org.ProjectAnchor;
   export let orgAddress: string | undefined;
   export let replicated: boolean = false;
 

@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import type * as theGraphApi from "ui/src/theGraphApi";
+  import type * as org from "ui/src/org";
 
   import Badge from "../Component/Badge.svelte";
   import { BadgeType } from "../../src/badge";
@@ -10,7 +10,7 @@
   export let description = "";
 
   export let showMaintainerBadge: boolean = false;
-  export let anchor: theGraphApi.ProjectAnchor | undefined;
+  export let anchor: org.ProjectAnchor | undefined;
   export let orgAddress: string | undefined;
 </script>
 

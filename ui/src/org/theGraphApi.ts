@@ -1,12 +1,12 @@
 import * as apolloCore from "@apollo/client/core";
 import * as ethers from "ethers";
-import * as svelteStore from "svelte/store";
 import * as multihash from "multihashes";
+import * as svelteStore from "svelte/store";
 
-import * as wallet from "ui/src/wallet";
-import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
+import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
+import * as wallet from "ui/src/wallet";
 
 const createApolloClient = (uri: string): apolloCore.ApolloClient<unknown> => {
   return new apolloCore.ApolloClient({
