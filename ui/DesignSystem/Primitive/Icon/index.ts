@@ -1,3 +1,5 @@
+import Anchor from "./Anchor.svelte";
+import AnchorSmall from "./AnchorSmall.svelte";
 import ArrowBoxUpRight from "./ArrowBoxUpRight.svelte";
 import ArrowCollapse from "./ArrowCollapse.svelte";
 import ArrowDown from "./ArrowDown.svelte";
@@ -39,6 +41,7 @@ import EyeOpen from "./EyeOpen.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
 import Fork from "./Fork.svelte";
+import Gnosis from "./Gnosis.svelte";
 import Heart from "./Heart.svelte";
 import HeartFaceSmall from "./HeartFaceSmall.svelte";
 import House from "./House.svelte";
@@ -53,6 +56,7 @@ import MagnifyingGlass from "./MagnifyingGlass.svelte";
 import Merge from "./Merge.svelte";
 import Minus from "./Minus.svelte";
 import Network from "./Network.svelte";
+import Orgs from "./Orgs.svelte";
 import Pen from "./Pen.svelte";
 import Plus from "./Plus.svelte";
 import PlusSmall from "./PlusSmall.svelte";
@@ -73,6 +77,8 @@ import WalletStatus from "./WalletStatus.svelte";
 import Withdraw from "./Withdraw.svelte";
 
 export default {
+  Anchor,
+  AnchorSmall,
   ArrowBoxUpRight,
   ArrowCollapse,
   ArrowDown,
@@ -114,6 +120,7 @@ export default {
   File,
   Folder,
   Fork,
+  Gnosis,
   Heart,
   HeartFaceSmall,
   House,
@@ -128,6 +135,7 @@ export default {
   Merge,
   Minus,
   Network,
+  Orgs,
   Pen,
   Plus,
   PlusSmall,
