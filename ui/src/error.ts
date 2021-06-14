@@ -79,9 +79,6 @@ export enum Code {
   InsufficientGas = "InsufficientGas",
   FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
 
-  // Org related error codes
-  FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
-
   // Custom protocol error codes
   CustomProtocolUnsupportedVersion = "CustomProtocolUnsupportedVersion",
   CustomProtocolUnsupportedNamespace = "CustomProtocolUnsupportedNamespace",
