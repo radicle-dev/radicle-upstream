@@ -38,13 +38,6 @@ const projectSchema: zod.Schema<Project> = zod.object({
     commits: zod.number(),
     contributors: zod.number(),
   }),
-  anchor: zod
-    .object({
-      id: zod.string(),
-      projectId: zod.string(),
-      commitHash: zod.string(),
-    })
-    .optional(),
 });
 
 export interface FailedProject {
