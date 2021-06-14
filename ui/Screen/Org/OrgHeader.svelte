@@ -43,7 +43,7 @@
       {style.ellipsed(orgAddress)}
     </h1>
     <div class="row">
-      <Icon.Gnosis />{gnosisSafeAddress}
+      <Icon.Gnosis />{style.ellipsed(gnosisSafeAddress)}
     </div>
     <div class="row">
       <Icon.Orgs />
