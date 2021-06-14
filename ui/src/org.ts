@@ -227,11 +227,7 @@ export const anchorProject = async (
     ],
   });
 
-  // TODO: show pending anchors
-  const txs = await safeServiceClient.getPendingTransactions(
-    checksummedGnosisSafeAddress
-  );
-  console.log(txs);
+  router.push({ type: "org", address: orgAddress, activeTab: "projects" });
 };
 
 export const createOrg = async (owner: string): Promise<void> => {
