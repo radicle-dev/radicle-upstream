@@ -6,10 +6,6 @@ import * as screen from "ui/src/screen";
 import { Route, LoadedRoute, loadRoute, routeToPath } from "./definition";
 export * from "./definition";
 
-// TODO remove this and have users import the `unreachable` module
-// directly
-export { unreachable } from "ui/src/unreachable";
-
 // This is only respected by Safari.
 const DOCUMENT_TITLE = "Radicle Upstream";
 
