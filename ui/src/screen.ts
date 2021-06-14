@@ -9,3 +9,8 @@ export const unlock = (): void => {
 export const isLocked = (): boolean => {
   return document.documentElement.classList.contains("lock-screen");
 };
+
+export function withLock<T>(f: () => Promise<T>): Promise<T> {
+  lock();
+  return f().finally(() => unlock());
+}
