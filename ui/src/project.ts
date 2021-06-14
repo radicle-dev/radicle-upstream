@@ -25,9 +25,10 @@ import {
 export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
-export interface ConfirmedAnchor {
+interface ConfirmedAnchor {
   type: "confirmed";
   transactionId: string;
+  orgAddress: string;
   projectId: string;
   commitHash: string;
 }
@@ -35,6 +36,8 @@ export interface ConfirmedAnchor {
 export interface PendingAnchor {
   type: "pending";
   confirmations: number;
+  threshold: number;
+  orgAddress: string;
   projectId: string;
   commitHash: string;
 }

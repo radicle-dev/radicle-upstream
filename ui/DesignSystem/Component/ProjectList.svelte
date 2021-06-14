@@ -40,11 +40,14 @@
     class="list-item"
     data-cy={`project-list-entry-${project.metadata.name}`}>
     <ProjectCard {...projectCardProps(project)} />
-    {#if project.stats}
-      <Stats
-        branches={project.stats.branches}
-        commits={project.stats.commits}
-        contributors={project.stats.contributors} />
-    {/if}
+
+    <div style="display: flex;">
+      {#if project.stats}
+        <Stats
+          branches={project.stats.branches}
+          commits={project.stats.commits}
+          contributors={project.stats.contributors} />
+      {/if}
+    </div>
   </div>
 </List>

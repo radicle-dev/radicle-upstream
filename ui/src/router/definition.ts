@@ -101,7 +101,11 @@ export async function loadRoute(route: Route): Promise<LoadedRoute> {
 async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
   if (route.activeTab === "projects") {
     const orgScreen = await org.fetchOrg(route.address);
-    const projectAnchors = await org.resolveProjectAnchors(route.address);
+    const projectAnchors = await org.resolveProjectAnchors(
+      route.address,
+      orgScreen.gnosisSafeAddress,
+      orgScreen.threshold
+    );
     return {
       type: "org",
       address: route.address,

@@ -15,7 +15,6 @@
   } from "ui/DesignSystem/Component";
 
   export let anchors: project.Anchor[];
-  export let orgAddress: string;
 
   const onFollow = (projectId: string) => {
     search.requestProject(projectId);
@@ -69,7 +68,7 @@
     <div class="list-item" data-cy={`project-list-entry-${anchor.id}`}>
       <div class="typo-text anchor-row">
         <RadicleId urn={anchor.projectId} showIcon={false} />
-        <ProjectAnchorPopover {anchor} {orgAddress} />
+        <ProjectAnchorPopover {anchor} />
       </div>
       {#if hover}
         <div transition:fade|local={{ duration: 200 }}>

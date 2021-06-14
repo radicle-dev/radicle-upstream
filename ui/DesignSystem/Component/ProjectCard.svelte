@@ -11,7 +11,6 @@
 
   export let showMaintainerBadge: boolean = false;
   export let anchor: project.Anchor | undefined;
-  export let orgAddress: string | undefined;
 </script>
 
 <style>
@@ -48,7 +47,7 @@
       <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
     {/if}
     {#if anchor}
-      <ProjectAnchorPopover {anchor} {orgAddress} replicated={true} />
+      <ProjectAnchorPopover {anchor} replicated={true} />
     {/if}
   </div>
   {#if description.length > 0}

@@ -40,11 +40,10 @@
   {#if anchoredProjects.length !== 0 || unresolvedAnchors.length !== 0}
     <ProjectList
       projects={anchoredProjects}
-      orgAddress={address}
       userUrn={session.identity.urn}
       on:select={select} />
 
-    <UnresolvedAnchorList anchors={unresolvedAnchors} orgAddress={address} />
+    <UnresolvedAnchorList anchors={unresolvedAnchors} />
   {:else}
     <EmptyState
       illustration={IllustrationVariant.Plant}

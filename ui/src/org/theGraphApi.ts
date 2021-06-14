@@ -189,6 +189,7 @@ export const getOrgProjectAnchors = async (
         .replace(/^0x/, "");
       const anchor: project.Anchor = {
         type: "confirmed",
+        orgAddress,
         transactionId: project.anchor.id,
         projectId: decodedProjectId,
         commitHash: decodedCommitHash,

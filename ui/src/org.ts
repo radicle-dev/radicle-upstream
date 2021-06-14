@@ -345,13 +345,69 @@ const fetchMembers = async (
   return await getGnosisSafeMembers(gnosisSafeAddress);
 };
 
+export const fetchPendingAnchors = async (
+  gnosisSafeAddress: string,
+  orgAddress: string,
+  threshold: number
+): Promise<project.Anchor[]> => {
+  const checksummedGnosisSafeAddress =
+    ethers.utils.getAddress(gnosisSafeAddress);
+
+  const safeServiceClient = createSafeServiceClient();
+
+  const txs = (
+    await safeServiceClient.getPendingTransactions(checksummedGnosisSafeAddress)
+  ).results;
+
+  const isAnchor = (
+    anchor: project.PendingAnchor | undefined
+  ): anchor is project.PendingAnchor => !!anchor;
+
+  const pendingAnchors = txs
+    .map(tx => {
+      if (!tx.data) {
+        return;
+      }
+      const iface = new ethers.utils.Interface(orgAbi);
+      const parsedTx = iface.parseTransaction({ data: tx.data });
+
+      if (parsedTx.name === "anchor") {
+        const [encodedProjectUrn, encodedCommitHash] = parsedTx.args;
+        const projectId = urn.identitySha1Urn(
+          ethers.utils.arrayify(`0x${encodedProjectUrn.slice(26)}`)
+        );
+        const commitHash = encodedCommitHash.slice(26, 66);
+        const anchor: project.Anchor = {
+          type: "pending",
+          projectId,
+          commitHash,
+          threshold,
+          orgAddress,
+          confirmations: tx.confirmations ? tx.confirmations.length : 0,
+        };
+        return anchor;
+      }
+    })
+    .filter<project.PendingAnchor>(isAnchor);
+
+  return pendingAnchors;
+};
+
 export const resolveProjectAnchors = async (
-  orgAddress: string
+  orgAddress: string,
+  gnosisSafeAddress: string,
+  threshold: number
 ): Promise<{
   anchoredProjects: project.Project[];
   unresolvedAnchors: project.Anchor[];
 }> => {
-  const anchors = await getOrgProjectAnchors(orgAddress);
+  const pendingAnchors = await fetchPendingAnchors(
+    gnosisSafeAddress,
+    orgAddress,
+    threshold
+  );
+  const confirmedAnchors = await getOrgProjectAnchors(orgAddress);
+  const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
 
   const anchoredProjects: project.Project[] = [];
   const unresolvedAnchors: project.Anchor[] = [];
@@ -367,6 +423,21 @@ export const resolveProjectAnchors = async (
       }
     })
   );
+
+  // Show pending projects first.
+  anchoredProjects.sort((a, b) => {
+    if (!a.anchor || !b.anchor) {
+      return 0;
+    }
+
+    if (a.anchor.type === "pending" && b.anchor.type === "pending") {
+      return 0;
+    } else if (a.anchor.type === "pending" && b.anchor.type === "confirmed") {
+      return -1;
+    } else {
+      return 1;
+    }
+  });
 
   return { anchoredProjects, unresolvedAnchors };
 };
