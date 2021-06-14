@@ -131,7 +131,7 @@
           <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
             Commit hash
           </p>
-          {#if replicated && anchor.type === "confirmed"}
+          {#if replicated}
             <p class="typo-text-small typo-link" on:click={openCommit}>
               {anchor.commitHash.slice(0, 7)}↗
             </p>

@@ -372,11 +372,15 @@ export const fetchPendingAnchors = async (
         const projectId = urn.identitySha1Urn(
           ethers.utils.arrayify(`0x${encodedProjectUrn.slice(26)}`)
         );
-        const commitHash = encodedCommitHash.slice(26, 66);
+        const byteArray = ethers.utils.arrayify(encodedCommitHash);
+        const decodedMultihash = multihash.decode(byteArray);
+        const decodedCommitHash = ethers.utils
+          .hexlify(decodedMultihash.digest)
+          .replace(/^0x/, "");
         const anchor: project.Anchor = {
           type: "pending",
           projectId,
-          commitHash,
+          commitHash: decodedCommitHash,
           threshold,
           orgAddress,
           confirmations: tx.confirmations ? tx.confirmations.length : 0,
