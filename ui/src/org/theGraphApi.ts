@@ -187,11 +187,13 @@ export const getOrgProjectAnchors = async (
       const decodedCommitHash = ethers.utils
         .hexlify(decodedMultihash.digest)
         .replace(/^0x/, "");
-      return {
-        id: project.anchor.id,
+      const anchor: project.Anchor = {
+        transactionId: project.anchor.id,
         projectId: decodedProjectId,
         commitHash: decodedCommitHash,
       };
+
+      return anchor;
     }
   );
 };

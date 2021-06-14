@@ -26,7 +26,7 @@ export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
 export interface Anchor {
-  id: string;
+  transactionId: string;
   projectId: string;
   commitHash: string;
 }

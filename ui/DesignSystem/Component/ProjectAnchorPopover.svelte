@@ -109,9 +109,9 @@
           <p
             class="typo-text-small typo-link"
             on:click={() => {
-              org.openTxOnEtherscan(anchor.id);
+              org.openTxOnEtherscan(anchor.transactionId);
             }}>
-            {style.ellipsed(anchor.id, 6)}↗
+            {style.ellipsed(anchor.transactionId, 6)}↗
           </p>
         </div>
       </div>
