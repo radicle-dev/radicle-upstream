@@ -52,11 +52,21 @@ The funding experiences can take place in three different environments:
   Token, deployed in the Ropsten network. Reach out to the team to get some Radicle
   Tokens into your account.
 
-3. `Mainnet`
+3. `Rinkeby`
 
-  In this environment, to be introduced in the future once we are ready to go mainnet,
-  the wallet will plug itself to the Radicle Contracts (to be) deployed in the Ethereum
-  Mainnet. This environment is not currently supported.
+  Any Org related testing can only happen on Rinkeby because Gnosis Safe only
+  provides a UI for the Rinkeby testnet.
+
+  We're using the official Rinkeby DAI contract:
+    0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea
+
+  Faucet: https://app.compound.finance/ -> DAI -> Withdraw -> Faucet
+
+4. `Mainnet`
+
+  Production environment where everything costs real money. So far only the Org
+  and Attestation features is available on `Mainnet`, the contracts for the
+  funding (aka token streams) feature are not yet deployed on mainnet.
 
 
 #### Local environment
