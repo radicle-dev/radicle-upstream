@@ -24,6 +24,19 @@
       urn: anchor.projectId,
     });
   };
+
+  const openEtherscan = (txId: string) => {
+    org.openTxOnEtherscan(txId);
+    return undefined;
+  };
+
+  $: anchorColor =
+    anchor.type === "confirmed"
+      ? "--color-primary"
+      : "--color-foreground-level-5";
+  $: title = anchor.type === "confirmed" ? "Anchored in" : "Pending in";
+  $: titleColor =
+    anchor.type === "confirmed" ? "--color-primary" : "--color-background";
 </script>
 
 <style>
@@ -62,17 +75,17 @@
 </style>
 
 <Hoverable bind:hovering={hover} style="display: inline-flex;">
-  <Icon.AnchorSmall style="fill: var(--color-primary);" />
+  <Icon.AnchorSmall style={`fill: var(${anchorColor});`} />
 
   <div class="container" on:click|stopPropagation>
     {#if hover}
       <div class="modal" out:fade|local={{ duration: 100, delay: 250 }}>
         <div class="header">
           <Icon.Anchor
-            style="fill: var(--color-primary); margin-left: 0.5rem;" />
+            style={`fill: var(${anchorColor}); margin-left: 0.5rem;`} />
 
           {#if orgAddress}
-            <p class="typo-text-bold">Anchored in</p>
+            <p class="typo-text-bold" style={`color: ${titleColor}`}>{title}</p>
             <Avatar
               size="small"
               style="margin: 0 0.5rem 0 0.5rem;"
@@ -101,19 +114,20 @@
             <p class="typo-text-small">{anchor.commitHash.slice(0, 7)}</p>
           {/if}
         </div>
-        <div class="meta">
-          <Icon.Ethereum style="margin-right: 0.5rem;" />
-          <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
-            Transaction hash
-          </p>
-          <p
-            class="typo-text-small typo-link"
-            on:click={() => {
-              org.openTxOnEtherscan(anchor.transactionId);
-            }}>
-            {style.ellipsed(anchor.transactionId, 6)}↗
-          </p>
-        </div>
+
+        {#if anchor.type === "confirmed"}
+          <div class="meta">
+            <Icon.Ethereum style="margin-right: 0.5rem;" />
+            <p class="typo-text-small-bold" style="margin-right: 0.5rem;">
+              Transaction hash
+            </p>
+            <p
+              class="typo-text-small typo-link"
+              on:click={openEtherscan(anchor.transactionId)}>
+              {style.ellipsed(anchor.transactionId, 6)}↗
+            </p>
+          </div>
+        {/if}
       </div>
     {/if}
   </div>

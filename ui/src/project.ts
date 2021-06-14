@@ -25,11 +25,21 @@ import {
 export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
-export interface Anchor {
+export interface ConfirmedAnchor {
+  type: "confirmed";
   transactionId: string;
   projectId: string;
   commitHash: string;
 }
+
+export interface PendingAnchor {
+  type: "pending";
+  confirmations: number;
+  projectId: string;
+  commitHash: string;
+}
+
+export type Anchor = ConfirmedAnchor | PendingAnchor;
 
 export interface Project extends ProxyProject {
   anchor?: Anchor;
