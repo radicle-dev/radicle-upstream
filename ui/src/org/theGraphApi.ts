@@ -3,6 +3,8 @@ import * as ethers from "ethers";
 import * as multihash from "multihashes";
 import * as svelteStore from "svelte/store";
 
+import type * as project from "ui/src/project";
+
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
@@ -146,15 +148,9 @@ export const getGnosisSafeMembers = async (
   return { members: response.owners, threshold: parseInt(response.threshold) };
 };
 
-export interface ProjectAnchor {
-  id: string;
-  projectId: string;
-  commitHash: string;
-}
-
 export const getOrgProjectAnchors = async (
   orgAddress: string
-): Promise<ProjectAnchor[]> => {
+): Promise<project.Anchor[]> => {
   const response = (
     await orgsSubgraphClient().query({
       query: apolloCore.gql`

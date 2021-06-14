@@ -16,7 +16,7 @@
 
   export let address: string;
   export let anchoredProjects: project.Project[];
-  export let unresolvedAnchors: org.ProjectAnchor[];
+  export let unresolvedAnchors: project.Anchor[];
   export let gnosisSafeAddress: string;
 
   const select = ({ detail: project }: { detail: Project }) => {

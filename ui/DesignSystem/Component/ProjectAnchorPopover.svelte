@@ -1,15 +1,17 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
 
+  import type * as project from "ui/src/project";
+
+  import * as org from "ui/src/org";
   import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
   import * as style from "ui/src/style";
-  import * as org from "ui/src/org";
 
   import { Avatar, Icon } from "ui/DesignSystem/Primitive";
   import { Hoverable } from "ui/DesignSystem/Component";
 
-  export let anchor: org.ProjectAnchor;
+  export let anchor: project.Anchor;
   export let orgAddress: string | undefined;
   export let replicated: boolean = false;
 

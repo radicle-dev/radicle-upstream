@@ -1,7 +1,8 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
 
-  import type * as org from "ui/src/org";
+  import type * as project from "ui/src/project";
+
   import * as notification from "ui/src/notification";
   import * as search from "ui/src/search";
   import * as router from "ui/src/router";
@@ -13,7 +14,7 @@
     RadicleId,
   } from "ui/DesignSystem/Component";
 
-  export let anchors: org.ProjectAnchor[];
+  export let anchors: project.Anchor[];
   export let orgAddress: string;
 
   const onFollow = (projectId: string) => {

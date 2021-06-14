@@ -10,18 +10,13 @@ import type {
   TransactionResponse,
 } from "@ethersproject/providers";
 import type * as project from "ui/src/project";
-import type {
-  Org,
-  Member,
-  MemberResponse,
-  ProjectAnchor,
-} from "ui/src/org/theGraphApi";
+import type { Org, Member, MemberResponse } from "ui/src/org/theGraphApi";
 
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as ipc from "ui/src/ipc";
 import * as modal from "ui/src/modal";
-import * as notification from "ui/src//notification";
+import * as notification from "ui/src/notification";
 import * as proxy from "ui/src/proxy";
 import * as router from "ui/src/router";
 import * as transaction from "./transaction";
@@ -34,7 +29,7 @@ import {
   getOrgProjectAnchors,
 } from "ui/src/org/theGraphApi";
 
-export type { Member, MemberResponse, Org, ProjectAnchor };
+export type { Member, MemberResponse, Org };
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
@@ -354,12 +349,12 @@ export const resolveProjectAnchors = async (
   orgAddress: string
 ): Promise<{
   anchoredProjects: project.Project[];
-  unresolvedAnchors: ProjectAnchor[];
+  unresolvedAnchors: project.Anchor[];
 }> => {
   const anchors = await getOrgProjectAnchors(orgAddress);
 
   const anchoredProjects: project.Project[] = [];
-  const unresolvedAnchors: ProjectAnchor[] = [];
+  const unresolvedAnchors: project.Anchor[] = [];
 
   await Promise.all(
     anchors.map(async anchor => {

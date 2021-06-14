@@ -1,6 +1,5 @@
 import { get, writable } from "svelte/store";
 
-import type * as org from "ui/src/org";
 import * as error from "./error";
 import * as config from "./config";
 import type * as identity from "./identity";
@@ -26,8 +25,14 @@ import {
 export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
+export interface Anchor {
+  id: string;
+  projectId: string;
+  commitHash: string;
+}
+
 export interface Project extends ProxyProject {
-  anchor?: org.ProjectAnchor;
+  anchor?: Anchor;
 }
 export interface User {
   peerId: identity.PeerId;

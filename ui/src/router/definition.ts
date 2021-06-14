@@ -59,7 +59,7 @@ export type LoadedOrgTab =
   | {
       type: "projects";
       anchoredProjects: project.Project[];
-      unresolvedAnchors: org.ProjectAnchor[];
+      unresolvedAnchors: project.Anchor[];
       gnosisSafeAddress: string;
     }
   | {
