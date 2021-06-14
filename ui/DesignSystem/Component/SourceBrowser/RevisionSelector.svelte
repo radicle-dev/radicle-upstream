@@ -13,7 +13,7 @@
   export let revisions: [Branch | Tag];
   export let selected: Branch | Tag;
   export let defaultBranch: string;
-  export let style = "";
+  export let style: string | undefined = undefined;
 
   const orderRevisions = (revisions: [Branch | Tag]): [Branch | Tag] => {
     return [selected].concat(
