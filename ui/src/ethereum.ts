@@ -12,7 +12,7 @@ export enum Environment {
   Local = "Local",
   // The Ropsten testnet network
   Ropsten = "Ropsten",
-  // The Rinkeby testnet  where our orgs and gnosis safe are deployed
+  // The Rinkeby testnet for testing Orgs and Gnosis Safe functionality
   Rinkeby = "Rinkeby",
   // Production deployment
   Mainnet = "Mainnet",

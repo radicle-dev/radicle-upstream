@@ -71,6 +71,7 @@ function getProvider(
         "de5e2a8780c04964950e73b696d1bfb1"
       );
     case ethereum.Environment.Mainnet:
+      // This account is registered on rudolfs@monadic.xyz.
       return new ethers.providers.InfuraProvider(
         "mainnet",
         "7a19a4bf0af84fcc86ffb693a257fad4"

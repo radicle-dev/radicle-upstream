@@ -54,8 +54,8 @@ The funding experiences can take place in three different environments:
 
 3. `Rinkeby`
 
-  Gnosis Safe has only a test [UI for the Rinkeby testnet][ri], therefore all
-  Org related testing should happen on Rinkeby.
+  Any Org related testing can only happen on Rinkeby because Gnosis Safe only
+  provides a UI for the Rinkeby testnet.
 
   We're using the official Rinkeby DAI contract:
     0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea

@@ -72,11 +72,12 @@ export enum Code {
   UnsealedSessionExpected = "UnsealedSessionExpected",
   EmptyHistory = "EmptyHistory",
 
-  // Funding related error codes
+  // Ethereum related error codes
   WalletConnectionFailure = "WalletConnectionFailure",
   FailedOrRejectedTransaction = "FailedOrRejectedTransaction",
   UnkownTransactionFailure = "UnkownTransactionFailure",
   InsufficientGas = "InsufficientGas",
+  FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
 
   // Org related error codes
   FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
