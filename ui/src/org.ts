@@ -62,27 +62,6 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
   }
 };
 
-export const openTxOnEtherscan = (transactionId: string): void => {
-  const walletStore = svelteStore.get(wallet.store);
-
-  switch (walletStore.environment) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Etherscan links are not supported on the Local testnet",
-      });
-    case ethereum.Environment.Ropsten:
-      ipc.openUrl(`https://ropsten.etherscan.io/tx/${transactionId}`);
-      break;
-    case ethereum.Environment.Rinkeby:
-      ipc.openUrl(`https://rinkeby.etherscan.io/tx/${transactionId}`);
-      break;
-    case ethereum.Environment.Mainnet:
-      ipc.openUrl(`https://etherscan.io/tx/${transactionId}`);
-      break;
-  }
-};
-
 export const openOnGnosisSafe = (
   gnosisSafeAddress: string,
   view: "transactions" | "settings"

@@ -6,8 +6,10 @@ import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
+import * as ethereum from "ui/src/ethereum";
 import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
+import * as ipc from "ui/src/ipc";
 
 import type { SvelteComponent } from "svelte";
 import { Icon } from "../DesignSystem/Primitive";
@@ -472,3 +474,24 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
     source: error.fromJsError(e),
   });
 }
+
+export const openTxOnEtherscan = (transactionId: string): void => {
+  const environment = svelteStore.get(walletStore).environment;
+
+  switch (environment) {
+    case ethereum.Environment.Local:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Etherscan links are not supported on the Local testnet",
+      });
+    case ethereum.Environment.Ropsten:
+      ipc.openUrl(`https://ropsten.etherscan.io/tx/${transactionId}`);
+      break;
+    case ethereum.Environment.Rinkeby:
+      ipc.openUrl(`https://rinkeby.etherscan.io/tx/${transactionId}`);
+      break;
+    case ethereum.Environment.Mainnet:
+      ipc.openUrl(`https://etherscan.io/tx/${transactionId}`);
+      break;
+  }
+};

@@ -3,7 +3,7 @@
 
   import type * as project from "ui/src/project";
 
-  import * as org from "ui/src/org";
+  import * as transaction from "ui/src/transaction";
   import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
   import * as style from "ui/src/style";
@@ -24,9 +24,8 @@
     });
   };
 
-  const openEtherscan = (txId: string) => {
-    org.openTxOnEtherscan(txId);
-    return undefined;
+  const bindOpenEtherscan = (txId: string) => () => {
+    transaction.openTxOnEtherscan(txId);
   };
 
   $: anchorColor =
@@ -121,7 +120,7 @@
             </p>
             <p
               class="typo-text-small typo-link"
-              on:click={openEtherscan(anchor.transactionId)}>
+              on:click={bindOpenEtherscan(anchor.transactionId)}>
               {style.ellipsed(anchor.transactionId, 6)}↗
             </p>
           </div>
