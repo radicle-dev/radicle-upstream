@@ -60,17 +60,17 @@
         },
       },
       {
-        title: "View in browser",
-        icon: Icon.ArrowBoxUpRight,
-        event: () => {
-          org.openInBrowser(address);
-        },
-      },
-      {
         title: "View on Gnosis Safe",
         icon: Icon.ArrowBoxUpRight,
         event: () => {
           org.openOnGnosisSafe(gnosisSafeAddress, "transactions");
+        },
+      },
+      {
+        title: "View in browser",
+        icon: Icon.ArrowBoxUpRight,
+        event: () => {
+          org.openInBrowser(address);
         },
       },
       {

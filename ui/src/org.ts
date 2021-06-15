@@ -79,7 +79,6 @@ export const openOnGnosisSafe = (
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Gnosis Safe links are not supported on the Ropsten testnet",
       });
-      break;
     case ethereum.Environment.Rinkeby:
       ipc.openUrl(
         `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/${view}`
@@ -109,7 +108,6 @@ export const openInBrowser = (orgAddress: string): void => {
         message:
           "Opening links in browser are not supported for the Ropsten testnet",
       });
-      break;
     case ethereum.Environment.Rinkeby:
       ipc.openUrl(`https://app.radicle.network/orgs/${orgAddress}`);
       break;
