@@ -93,6 +93,34 @@ export const openOnGnosisSafe = (
   }
 };
 
+export const openInBrowser = (orgAddress: string): void => {
+  const walletStore = svelteStore.get(wallet.store);
+
+  switch (walletStore.environment) {
+    case ethereum.Environment.Local:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message:
+          "Opening links in browser are not supported for the Local testnet",
+      });
+    case ethereum.Environment.Ropsten:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message:
+          "Opening links in browser are not supported for the Ropsten testnet",
+      });
+      break;
+    case ethereum.Environment.Rinkeby:
+      ipc.openUrl(`https://app.radicle.network/orgs/${orgAddress}`);
+      break;
+    case ethereum.Environment.Mainnet:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Opening links in browser are not supported for mainnet yet",
+      });
+  }
+};
+
 const createSafeServiceClient = (): SafeServiceClient => {
   const walletStore = svelteStore.get(wallet.store);
   let uri;
