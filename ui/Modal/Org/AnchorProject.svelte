@@ -1,15 +1,12 @@
 <script lang="typescript">
-  import type { User } from "ui/src/project";
+  import type { User, Project } from "ui/src/project";
   import type * as urn from "ui/src/urn";
-  import type * as source from "ui/src/source";
-  import type { Writable } from "svelte/store";
-
   import * as error from "ui/src/error";
+  import * as source from "ui/src/source";
+  import * as project from "ui/src/project";
+  import * as proxy from "ui/src/proxy";
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
-  import * as projectScreen from "ui/src/screen/project";
-  import * as projectSourceScreen from "ui/src/screen/project/source";
-  import * as remote from "ui/src/remote";
 
   import { Button, Emoji } from "ui/DesignSystem/Primitive";
   import {
@@ -20,58 +17,101 @@
   } from "ui/DesignSystem/Component";
   import CommitTeaser from "ui/DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
 
-  const projectScreenStore = projectScreen.store;
-  const projectSourceScreenStore = projectSourceScreen.store;
-
   export let projects: org.ProjectOption[];
   export let orgAddress: string;
   export let gnosisSafeAddress: string;
 
-  let projectUrn: urn.Urn | undefined;
+  // Project selector
 
-  $: if (projectUrn) {
-    projectScreen.fetch(projectUrn);
+  let selectedProjectUrn: urn.Urn | undefined;
+
+  interface ProjectData {
+    project: Project;
+    peers: User[];
+    defaultBranchName: string;
+    selectedPeer: User;
   }
 
-  $: if ($projectScreenStore.status === remote.Status.Success) {
-    projectSourceScreen.fetch(
-      $projectScreenStore.data.project,
-      $projectScreenStore.data.selectedPeer
+  let projectData: ProjectData | undefined;
+
+  $: if (selectedProjectUrn) {
+    loadProjectData(selectedProjectUrn);
+  }
+
+  async function loadProjectData(projectUrn: string) {
+    projectData = undefined;
+    const prj = await proxy.client.project.get(projectUrn);
+    const peers = await proxy.client.project.listPeers(projectUrn);
+    const users = project.userList(peers);
+    projectData = {
+      project: prj,
+      peers: users,
+      defaultBranchName: prj.metadata.defaultBranch,
+      selectedPeer: users[0],
+    };
+  }
+
+  // Revision selector
+
+  interface RevisionData {
+    project: Project;
+    peerId: string;
+    revisions: Array<source.Tag | source.Branch>;
+    selectedRevision: source.Tag | source.Branch;
+    defaultBranchName: string;
+  }
+
+  let revisionData: RevisionData | undefined;
+
+  $: if (projectData) {
+    loadRevisionData(projectData);
+  }
+
+  async function loadRevisionData(projectData: ProjectData) {
+    revisionData = undefined;
+
+    const peerId = projectData.selectedPeer.peerId;
+    const project = projectData.project;
+    const { branches, tags } = await source.fetchRevisions(project.urn, peerId);
+    const revisions = [...branches, ...tags];
+    const defaultBranch = branches.find(
+      (branch: source.Branch) =>
+        branch.name === projectData.project.metadata.defaultBranch
     );
+    revisionData = {
+      project,
+      peerId,
+      revisions,
+      defaultBranchName: project.metadata.defaultBranch,
+      selectedRevision: defaultBranch || branches[0],
+    };
   }
 
-  let code: Writable<projectSourceScreen.Code>;
-  $: if ($projectSourceScreenStore.status === remote.Status.Success) {
-    code = $projectSourceScreenStore.data.code;
+  $: if (revisionData) {
+    loadCommitData(revisionData);
   }
 
-  const onSelectPeer = ({ detail: peer }: { detail: User }) => {
-    projectScreen.selectPeer(peer);
-  };
+  async function loadCommitData(revisionData: RevisionData) {
+    const commits = await source.fetchCommits(
+      revisionData.project.urn,
+      revisionData.peerId,
+      revisionData.selectedRevision
+    );
+    commit = commits.history[0];
+  }
 
-  const onSelectRevision = ({
-    detail: revision,
-  }: {
-    detail: source.Branch | source.Tag;
-  }) => {
-    projectSourceScreen.selectRevision(revision);
-  };
-
-  const createAnchor = () => {
-    if (!projectUrn || !commitHash) {
-      error.show(
-        new error.Error({
-          code: error.Code.OrgAnchorCreatationFailed,
-          message:
-            "Can't create an anchor unless projectUrn or commitHash are provided",
-          details: { projectUrn, commitHash },
-        })
-      );
+  const createAnchor = async () => {
+    if (!selectedProjectUrn || !commit) {
       return;
     }
 
     try {
-      org.anchorProject(orgAddress, gnosisSafeAddress, projectUrn, commitHash);
+      await org.anchorProject(
+        orgAddress,
+        gnosisSafeAddress,
+        selectedProjectUrn,
+        commit.sha1
+      );
     } catch (err) {
       error.show(
         new error.Error({
@@ -85,7 +125,7 @@
     modal.hide();
   };
 
-  $: commitHash = $code ? $code.lastCommit.sha1 : undefined;
+  let commit: source.CommitHeader | undefined;
 </script>
 
 <style>
@@ -95,6 +135,17 @@
     gap: 1.5rem;
     justify-content: flex-end;
   }
+
+  .revision-dropdown-container {
+    display: flex;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+  }
+
+  .revision-dropdown-container > :global(*) {
+    flex: 1;
+  }
 </style>
 
 <Modal>
@@ -103,47 +154,66 @@
 
   <div style="width: 100%; margin-bottom: 1.5rem;">
     <Dropdown
-      bind:value={projectUrn}
+      bind:value={selectedProjectUrn}
       placeholder="Select a project"
       options={projects}
       menuStyle="width: 100%;" />
   </div>
 
-  {#if $projectScreenStore.status === remote.Status.Success}
-    <div style="display: flex; width: 100%; margin-bottom: 1.5rem;">
-      <div style="width: 100%; margin-right: 1rem;">
-        <PeerSelector
-          showProfile={false}
-          rounded={true}
-          peers={$projectScreenStore.data.peerSelection}
-          on:select={onSelectPeer}
-          selected={$projectScreenStore.data.selectedPeer} />
-      </div>
-      <div style="width: 100%;">
-        {#if $projectSourceScreenStore.status === remote.Status.Success}
-          <RevisionSelector
-            loading={$projectSourceScreenStore.data.selectedRevision.request !==
-              null}
-            on:select={onSelectRevision}
-            selected={$projectSourceScreenStore.data.selectedRevision.selected}
-            defaultBranch={$projectScreenStore.data.project.metadata
-              .defaultBranch}
-            revisions={$projectSourceScreenStore.data.revisions} />
-        {/if}
-      </div>
-    </div>
-    {#if $projectSourceScreenStore.status === remote.Status.Success}
-      {#if $projectSourceScreenStore.data.code}
-        <CommitTeaser
-          style="width: 100%; margin-bottom: 1.5rem;"
-          commit={$code.lastCommit} />
+  {#if projectData}
+    <div class="revision-dropdown-container">
+      <PeerSelector
+        showProfile={false}
+        rounded={true}
+        peers={projectData.peers}
+        on:select={event => {
+          if (projectData) {
+            projectData = {
+              ...projectData,
+              selectedPeer: event.detail,
+            };
+          }
+        }}
+        selected={projectData.selectedPeer} />
+      {#if revisionData}
+        <RevisionSelector
+          loading={false}
+          on:select={event => {
+            if (revisionData) {
+              revisionData = {
+                ...revisionData,
+                selectedRevision: event.detail,
+              };
+            }
+          }}
+          selected={revisionData.selectedRevision}
+          defaultBranch={revisionData.defaultBranchName}
+          revisions={revisionData.revisions} />
+      {:else}
+        <RevisionSelector
+          loading={true}
+          on:select={event => {
+            if (revisionData) {
+              revisionData = {
+                ...revisionData,
+                selectedRevision: event.detail,
+              };
+            }
+          }}
+          selected={{ type: source.RevisionType.Branch, name: "" }}
+          defaultBranch=""
+          revisions={[]} />
       {/if}
-    {/if}
+    </div>
+  {/if}
+
+  {#if commit}
+    <CommitTeaser {commit} style="width: 100%; margin-bottom: 1.5rem" />
   {/if}
 
   <div class="actions">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
-    <Button disabled={!commitHash} on:click={createAnchor}
+    <Button disabled={!commit} on:click={createAnchor}
       >Confirm in your wallet</Button>
   </div>
 </Modal>
