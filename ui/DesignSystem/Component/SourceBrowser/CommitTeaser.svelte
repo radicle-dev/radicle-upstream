@@ -7,7 +7,7 @@
   import { Icon } from "../../Primitive";
 
   export let commit: CommitHeader;
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 
   const dispatch = createEventDispatcher();
   const onSelect = () => {
@@ -29,15 +29,15 @@
 
   .align-left {
     display: flex;
-    flex: 1;
     align-items: center;
-    max-width: 64%;
+    margin-right: 1ex;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .align-right {
+    margin-left: auto;
     display: flex;
-    flex: 1;
-    justify-content: flex-end;
   }
 
   .commit-message {
