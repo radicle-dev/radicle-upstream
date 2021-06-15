@@ -100,23 +100,19 @@ export async function loadRoute(route: Route): Promise<LoadedRoute> {
 
 async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
   if (route.activeTab === "projects") {
-    const orgScreen = await org.fetchOrg(route.address);
-    const projectAnchors = await org.resolveProjectAnchors(
-      route.address,
-      orgScreen.gnosisSafeAddress,
-      orgScreen.threshold
-    );
+    const orgWithSafe = await org.fetchOrg(route.address);
+    const projectAnchors = await org.resolveProjectAnchors(orgWithSafe);
     return {
       type: "org",
       address: route.address,
-      gnosisSafeAddress: orgScreen.gnosisSafeAddress,
-      members: orgScreen.members,
-      threshold: orgScreen.threshold,
+      gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
+      members: orgWithSafe.members,
+      threshold: orgWithSafe.threshold,
       activeTab: {
         type: "projects",
         anchoredProjects: projectAnchors.anchoredProjects,
         unresolvedAnchors: projectAnchors.unresolvedAnchors,
-        gnosisSafeAddress: orgScreen.gnosisSafeAddress,
+        gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
       },
     };
   } else if (route.activeTab === "members") {

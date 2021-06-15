@@ -29,7 +29,7 @@ import {
   getOrgProjectAnchors,
 } from "ui/src/org/theGraphApi";
 
-export type { Member, MemberResponse, Org };
+export type { Member, MemberResponse };
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
@@ -304,36 +304,32 @@ export const fetchOrgs = async (): Promise<void> => {
   orgSidebarStore.set(orgs);
 };
 
-export const fetchOrg = async (
-  orgAddress: string
-): Promise<{
+// Information about an org and the safe that controls it.
+interface OrgWithSafe {
   orgAddress: string;
   gnosisSafeAddress: string;
   members: Member[];
   threshold: number;
-}> => {
+}
+
+export const fetchOrg = async (orgAddress: string): Promise<OrgWithSafe> => {
   const walletStore = svelteStore.get(wallet.store);
   const gnosisSafeAddress = await fetchGnosisSafeAddr(
     orgAddress,
     walletStore.provider
   );
-  const { members, threshold } = await fetchMembers(gnosisSafeAddress);
+  const { members, threshold } = await getGnosisSafeMembers(gnosisSafeAddress);
   return { orgAddress, gnosisSafeAddress, members, threshold };
 };
 
-const fetchMembers = async (
-  gnosisSafeAddress: string
-): Promise<MemberResponse> => {
-  return await getGnosisSafeMembers(gnosisSafeAddress);
-};
-
-export const fetchPendingAnchors = async (
-  gnosisSafeAddress: string,
-  orgAddress: string,
-  threshold: number
-): Promise<project.Anchor[]> => {
-  const checksummedGnosisSafeAddress =
-    ethers.utils.getAddress(gnosisSafeAddress);
+// Return all anchors for the org where the anchoring transactions are
+// still pending
+const fetchPendingAnchors = async (
+  org: OrgWithSafe
+): Promise<project.PendingAnchor[]> => {
+  const checksummedGnosisSafeAddress = ethers.utils.getAddress(
+    org.gnosisSafeAddress
+  );
 
   const safeServiceClient = createSafeServiceClient();
 
@@ -367,8 +363,8 @@ export const fetchPendingAnchors = async (
           type: "pending",
           projectId,
           commitHash: decodedCommitHash,
-          threshold,
-          orgAddress,
+          threshold: org.threshold,
+          orgAddress: org.orgAddress,
           confirmations: tx.confirmations ? tx.confirmations.length : 0,
         };
         return anchor;
@@ -379,20 +375,19 @@ export const fetchPendingAnchors = async (
   return pendingAnchors;
 };
 
+// Return project information for all anchors of an org. If the project
+// of an anchor is not replicated by radicle link we include it in
+// `unresolvedAnchors`.
+//
+// Includes anchors from transactions that have not been confirmed yet.
 export const resolveProjectAnchors = async (
-  orgAddress: string,
-  gnosisSafeAddress: string,
-  threshold: number
+  org: OrgWithSafe
 ): Promise<{
   anchoredProjects: project.Project[];
   unresolvedAnchors: project.Anchor[];
 }> => {
-  const pendingAnchors = await fetchPendingAnchors(
-    gnosisSafeAddress,
-    orgAddress,
-    threshold
-  );
-  const confirmedAnchors = await getOrgProjectAnchors(orgAddress);
+  const pendingAnchors = await fetchPendingAnchors(org);
+  const confirmedAnchors = await getOrgProjectAnchors(org.orgAddress);
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
 
   const anchoredProjects: project.Project[] = [];
