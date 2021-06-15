@@ -70,7 +70,7 @@
         title: "View in browser",
         icon: Icon.ArrowBoxUpRight,
         event: () => {
-          org.openInBrowser(address);
+          ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
         },
       },
       {
