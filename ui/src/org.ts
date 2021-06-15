@@ -46,13 +46,10 @@ const orgAbi = [
 const orgFactoryAddress = (network: ethereum.Environment): string => {
   switch (network) {
     case ethereum.Environment.Local:
-      error.show(
-        new error.Error({
-          code: error.Code.FeatureNotAvailableForGivenNetwork,
-          message: "Orgs not available on the Local testnet.",
-        })
-      );
-      return "";
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Orgs not available on the Local testnet",
+      });
     case ethereum.Environment.Ropsten:
       return "0xc074cDd9541960B0AA72D90c8bC642F6ae9C4032";
     case ethereum.Environment.Rinkeby:
