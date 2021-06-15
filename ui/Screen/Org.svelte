@@ -49,17 +49,15 @@
     ];
   };
 
-  const copy = (content: string): void => {
-    if (content) ipc.copyToClipboard(content.trim());
-    notification.info({ message: "Copied to your clipboard" });
-  };
-
   const menuItems = (address: string, gnosisSafeAddress: string) => {
     return [
       {
         title: "Copy Org ID",
         icon: Icon.At,
-        event: () => copy(address),
+        event: () => {
+          ipc.copyToClipboard(address.trim());
+          notification.info({ message: "Copied to your clipboard" });
+        },
       },
       {
         title: "View on Gnosis Safe",
