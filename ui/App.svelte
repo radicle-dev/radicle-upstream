@@ -130,7 +130,7 @@
   {:else if $activeRouteStore.type === "boot"}
     <!-- TODO: show some loading screen -->
   {:else}
-    {router.unreachable($activeRouteStore)}
+    {unreachable($activeRouteStore)}
   {/if}
 
   <div slot="loading" class="error">

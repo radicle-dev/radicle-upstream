@@ -1,6 +1,7 @@
 <script lang="typescript">
   import * as modal from "../src/modal";
   import * as sess from "../src/session";
+  import { unreachable } from "ui/src/unreachable";
   import * as router from "ui/src/router";
 
   import { Button, Icon } from "../DesignSystem/Primitive";
@@ -71,6 +72,6 @@
   {:else if activeTab === "following"}
     <FollowingTab />
   {:else}
-    {router.unreachable(activeTab)}
+    {unreachable(activeTab)}
   {/if}
 </SidebarLayout>

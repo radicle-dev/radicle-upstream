@@ -1,5 +1,6 @@
 <script lang="typescript">
   import * as router from "ui/src/router";
+  import { unreachable } from "ui/src/unreachable";
 
   import type { Project } from "ui/src/project";
   import type { Patch } from "ui/src/project/patch";
@@ -56,7 +57,7 @@
         filteredPatches = patches;
         break;
       default:
-        router.unreachable(filter);
+        unreachable(filter);
         break;
     }
   }

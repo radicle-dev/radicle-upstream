@@ -5,6 +5,7 @@
   import { openPath } from "../../src/ipc";
   import * as notification from "../../src/notification";
   import * as proxy from "../../src/proxy";
+  import { unreachable } from "ui/src/unreachable";
   import * as router from "ui/src/router";
   import * as remote from "ui/src/remote";
   import type { Project, User } from "../../src/project";
@@ -179,6 +180,6 @@
   {:else if activeView.type === "patch"}
     <Patch {project} id={activeView.id} peerId={activeView.peerId} />
   {:else}
-    {router.unreachable(activeView)}
+    {unreachable(activeView)}
   {/if}
 {/if}
