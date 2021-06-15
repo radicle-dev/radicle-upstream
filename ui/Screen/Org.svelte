@@ -61,14 +61,14 @@
       },
       {
         title: "View on Gnosis Safe",
-        icon: Icon.ArrowBoxUpRight,
+        icon: Icon.Gnosis,
         event: () => {
           org.openOnGnosisSafe(gnosisSafeAddress, "transactions");
         },
       },
       {
         title: "View in browser",
-        icon: Icon.ArrowBoxUpRight,
+        icon: Icon.Globe,
         event: () => {
           ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
         },
