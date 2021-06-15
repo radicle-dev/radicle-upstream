@@ -1,5 +1,7 @@
-import * as validation from "./validation";
 import * as multibase from "multibase";
+
+import * as error from "ui/src/error";
+import * as validation from "ui/src/validation";
 
 // FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
 export type Urn = string;
@@ -54,7 +56,11 @@ export function parseIdentitySha1(urn: string): Uint8Array {
 export function identitySha1Urn(hash: Uint8Array): string {
   // a SHA-1 digest is always 20 bytes
   if (hash.length != 20) {
-    throw new Error(`SHA1 hash has invalid size: ${hash.length}`);
+    throw new error.Error({
+      code: error.Code.OrgIdentitySha1UrnError,
+      message: "SHA1 hash has invalid size",
+      details: { hash, hashLength: hash.length },
+    });
   }
   // Create a multihash by adding prefix 17 for SHA-1 and 20 for the hash length
   const multihash = new Uint8Array([17, 20, ...hash]);

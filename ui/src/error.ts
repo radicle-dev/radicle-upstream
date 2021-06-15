@@ -79,6 +79,12 @@ export enum Code {
   InsufficientGas = "InsufficientGas",
   FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
 
+  // Org related error codes
+  OrgCreateCouldNotGenerateTx = "OrgCreateCouldNotGenerateTx",
+  OrgCreateNotFoundInInterfaceLogs = "OrgCreateNotFoundInInterfaceLogs",
+  OrgFetchOrgsCalledWithNoWallet = "OrgFetchOrgsCalledWithNoWallet",
+  OrgIdentitySha1UrnError = "OrgIdentitySha1UrnError",
+
   // Custom protocol error codes
   CustomProtocolUnsupportedVersion = "CustomProtocolUnsupportedVersion",
   CustomProtocolUnsupportedNamespace = "CustomProtocolUnsupportedNamespace",

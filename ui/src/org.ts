@@ -158,7 +158,10 @@ export const anchorProject = async (
 
   const txData = orgContractInstance.data;
   if (!txData) {
-    throw new Error("Could not generate transaction");
+    throw new error.Error({
+      code: error.Code.OrgCreateCouldNotGenerateTx,
+      message: "Could not generate transaction",
+    });
   }
 
   notification.info({
@@ -249,7 +252,10 @@ export const createOrg = async (owner: string): Promise<void> => {
   });
 
   if (!orgAddress) {
-    throw new Error("Org not found in interface logs");
+    throw new error.Error({
+      code: error.Code.OrgCreateNotFoundInInterfaceLogs,
+      message: "Org not found in interface logs",
+    });
   }
 
   notification.info({
@@ -288,9 +294,10 @@ export const fetchOrgs = async (): Promise<void> => {
   const w = svelteStore.get(walletStore);
 
   if (w.status !== wallet.Status.Connected) {
-    throw new Error(
-      "Tried to call fetchOrgs while the wallet wasn't connected"
-    );
+    throw new error.Error({
+      code: error.Code.OrgFetchOrgsCalledWithNoWallet,
+      message: "Tried to call fetchOrgs while the wallet wasn't connected",
+    });
   }
 
   const orgs = await getOrgs(w.connected.account.address);
