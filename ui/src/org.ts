@@ -427,25 +427,20 @@ export interface ProjectOption {
   value: urn.Urn;
 }
 
-export const fetchProjectDropdownOptions = async (): Promise<
-  ProjectOption[]
-> => {
+export const openAnchorProjectModal = async (
+  orgAddress: string,
+  gnosisSafeAddress: string
+): Promise<void> => {
   const [tracked, contributed] = await Promise.all([
     proxy.client.project.listTracked(),
     proxy.client.project.listContributed(),
   ]);
   const allProjects = [...tracked, ...contributed];
 
-  return allProjects.map(project => {
+  const projects: ProjectOption[] = allProjects.map(project => {
     return { title: project.metadata.name, value: project.urn };
   });
-};
 
-export const openAnchorProjectModal = async (
-  orgAddress: string,
-  gnosisSafeAddress: string
-): Promise<void> => {
-  const projects = await fetchProjectDropdownOptions();
   modal.toggle(ModalAnchorProject, () => {}, {
     projects,
     orgAddress,
