@@ -194,6 +194,7 @@ export const anchorProject = async (
     message:
       "Waiting for you to confirm the anchor transaction in your connected wallet",
     showIcon: true,
+    persist: true,
   });
 
   const tx = {
@@ -233,6 +234,7 @@ export const anchorProject = async (
         },
       },
     ],
+    persist: true,
   });
 
   router.push({ type: "org", address: orgAddress, activeTab: "projects" });
@@ -249,6 +251,7 @@ export const createOrg = async (owner: string): Promise<void> => {
     message:
       "Waiting for you to confirm the org creation transaction in your connected wallet",
     showIcon: true,
+    persist: true,
   });
   const response: TransactionResponse = await orgFactory.createOrg([owner], 1);
 
