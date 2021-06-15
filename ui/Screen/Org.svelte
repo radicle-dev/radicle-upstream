@@ -3,6 +3,7 @@
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
   import * as org from "ui/src/org";
+  import { unreachable } from "ui/src/unreachable";
 
   import { Icon } from "ui/DesignSystem/Primitive";
   import {
@@ -102,7 +103,7 @@
       {:else if activeTab.type === "members"}
         <MembersMenu {gnosisSafeAddress} />
       {:else}
-        {router.unreachable(activeTab)}
+        {unreachable(activeTab)}
       {/if}
     </div>
   </ActionBar>
@@ -116,6 +117,6 @@
   {:else if activeTab.type === "members"}
     <MembersTab members={activeTab.members} />
   {:else}
-    {router.unreachable(activeTab)}
+    {unreachable(activeTab)}
   {/if}
 </SidebarLayout>
