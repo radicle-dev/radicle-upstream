@@ -22,10 +22,14 @@
   let copied = false;
 
   export const copy = (): void => {
-    if (copied) return;
+    if (copied) {
+      return;
+    }
 
     const content = copyContent.length ? copyContent : slotContent.textContent;
-    if (content) copyToClipboard(content.trim());
+    if (content) {
+      copyToClipboard(content.trim());
+    }
 
     notification.info({ message: notificationText });
 

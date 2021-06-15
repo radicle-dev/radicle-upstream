@@ -97,7 +97,9 @@ export function make(wallet: Wallet): Pool {
 
   async function loadPoolData(watcher: PoolWatcher) {
     const storedWallet = svelteStore.get(wallet);
-    if (storedWallet.status !== WalletStatus.Connected) return;
+    if (storedWallet.status !== WalletStatus.Connected) {
+      return;
+    }
     const ethAddr = storedWallet.connected.account.address;
     try {
       data.success(await watcher.poolData(ethAddr));

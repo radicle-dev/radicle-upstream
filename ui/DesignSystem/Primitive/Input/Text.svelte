@@ -27,7 +27,9 @@
   // Can't use normal `autofocus` attribute on the `inputElement`:
   // "Autofocus processing was blocked because a document's URL has a fragment".
   // preventScroll is necessary for onboarding animations to work.
-  $: if (autofocus) inputElement && inputElement.focus({ preventScroll: true });
+  $: if (autofocus) {
+    inputElement && inputElement.focus({ preventScroll: true });
+  }
 
   $: showHint = hint.length > 0 && value.length === 0;
 </script>

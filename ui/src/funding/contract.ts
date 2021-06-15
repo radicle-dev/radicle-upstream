@@ -287,10 +287,14 @@ async function getSenderData(
     // The Ethereum timestamps are in seconds
     const timestampNow = Math.floor(now.getTime() / 1000);
     // Block timestamp in the future
-    if (timestampNow < timestamp) return balance;
+    if (timestampNow < timestamp) {
+      return balance;
+    }
     const spent = amtPerSec.mul(timestampNow - timestamp);
     // Spent everything, return the unspendable reminder
-    if (spent > balance) return balance.mod(amtPerSec);
+    if (spent > balance) {
+      return balance.mod(amtPerSec);
+    }
     return balance.minus(spent);
   };
 

@@ -225,7 +225,9 @@ export const addSeed = async (seed: string): Promise<boolean> => {
   // async then the seed input form will have to be submitted twice to take any
   // effect.
   await seedValidation.validate(seed);
-  if (get(seedValidation).status !== ValidationStatus.Success) return false;
+  if (get(seedValidation).status !== ValidationStatus.Success) {
+    return false;
+  }
 
   updateCoCo({ seeds: [...get(settings).coco.seeds, seed] });
   return true;

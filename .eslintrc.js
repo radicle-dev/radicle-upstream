@@ -51,6 +51,8 @@ module.exports = {
     "no-only-tests/no-only-tests": "error",
     // Require `===` and `!==` comparisons
     eqeqeq: "error",
+    // Enforce curly braces for if/else statements for better clarity.
+    curly: "error",
 
     // We are ok with providing explict type annotations for additional
     // clarity.

@@ -27,8 +27,12 @@
 
   $: amountStore.set(amount);
   $: {
-    if ($amountStore && $amountStore.length > 0) validatingAmount = true;
-    if (validatingAmount) validation.validate($amountStore);
+    if ($amountStore && $amountStore.length > 0) {
+      validatingAmount = true;
+    }
+    if (validatingAmount) {
+      validation.validate($amountStore);
+    }
   }
 
   $: disableAmountConfirmation =

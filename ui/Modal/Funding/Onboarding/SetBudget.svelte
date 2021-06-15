@@ -16,8 +16,12 @@
   $: validation = weeklyBudgetValidationStore();
   $: budgetStore.set(budget);
   $: {
-    if ($budgetStore && $budgetStore.length > 0) validating = true;
-    if (validating) validation.validate($budgetStore);
+    if ($budgetStore && $budgetStore.length > 0) {
+      validating = true;
+    }
+    if (validating) {
+      validation.validate($budgetStore);
+    }
   }
 
   let disabled = true;

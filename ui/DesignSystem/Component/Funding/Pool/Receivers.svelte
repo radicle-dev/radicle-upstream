@@ -20,7 +20,9 @@
 
   function toggleReceiver(address: pool.Address) {
     const status = receivers.get(address);
-    if (!status) return;
+    if (!status) {
+      return;
+    }
 
     switch (status) {
       case ReceiverStatus.Added:
@@ -72,8 +74,12 @@
   $: validation = receiverValidationStore();
   $: receiverStore.set(newValue);
   $: {
-    if ($receiverStore && $receiverStore.length > 0) validating = true;
-    if (validating) validation.validate($receiverStore);
+    if ($receiverStore && $receiverStore.length > 0) {
+      validating = true;
+    }
+    if (validating) {
+      validation.validate($receiverStore);
+    }
   }
 
   let disabled = true;
