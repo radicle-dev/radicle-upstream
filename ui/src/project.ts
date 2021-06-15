@@ -142,6 +142,63 @@ const fetchBranches = async (path: string) => {
   defaultBranch.set(foundDefaultBranch || state.branches[0]);
 };
 
+// Creates a sorted user list from a peer list.
+//
+// * Filters out peers that are not replicated
+// * Only includes the local peer if we forked the project
+// * Sorts the list with the local peer at the beginning, then
+// maintainers, then contributors, then trackers.
+export const userList = (peers: Peer[]): User[] => {
+  return peers
+    .map(peer => {
+      if (peer.status.type !== PeerReplicationStatusType.Replicated) {
+        return undefined;
+      }
+
+      if (
+        peer.type === PeerType.Local &&
+        peer.status.role === PeerRole.Tracker
+      ) {
+        return undefined;
+      }
+
+      return {
+        type: peer.type,
+        peerId: peer.peerId,
+        identity: peer.status.user,
+        role: peer.status.role,
+      };
+    })
+    .filter((user): user is User => user !== undefined)
+    .sort((a, b) => {
+      if (a.role === PeerRole.Maintainer && b.role !== PeerRole.Maintainer) {
+        return -1;
+      }
+      if (a.role !== PeerRole.Maintainer && b.role === PeerRole.Maintainer) {
+        return 1;
+      }
+
+      if (a.role === PeerRole.Contributor && b.role === PeerRole.Tracker) {
+        return -1;
+      }
+      if (a.role === PeerRole.Tracker && b.role === PeerRole.Contributor) {
+        return 1;
+      }
+
+      return 0;
+    })
+    .sort((a, b) => {
+      if (a.type === PeerType.Local && b.type === PeerType.Remote) {
+        return -1;
+      }
+      if (a.type === PeerType.Remote && b.type === PeerType.Local) {
+        return 1;
+      }
+
+      return 0;
+    });
+};
+
 const validateExistingRepository = (path: string): Promise<boolean> => {
   return fetchBranches(path).then(() => {
     return (

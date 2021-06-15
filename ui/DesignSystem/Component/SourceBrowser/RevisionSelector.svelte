@@ -1,7 +1,8 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { Branch, Tag } from "../../../src/source";
+  import type { Branch, Tag } from "ui/src/source";
+  import * as config from "ui/src/config";
 
   import { Icon } from "../../Primitive";
   import Overlay from "../Overlay.svelte";
@@ -10,18 +11,25 @@
 
   export let expanded: boolean = false;
   export let loading: boolean = false;
-  export let revisions: [Branch | Tag];
+  export let revisions: Array<Branch | Tag>;
   export let selected: Branch | Tag;
   export let defaultBranch: string;
   export let style: string | undefined = undefined;
 
-  const orderRevisions = (revisions: [Branch | Tag]): [Branch | Tag] => {
-    return [selected].concat(
-      revisions.filter(
-        rev => rev.name !== selected.name || rev.type !== selected.type
-      )
-    ) as [Branch | Tag];
-  };
+  $: orderedRevisions = [
+    selected,
+    ...revisions.filter(rev => {
+      if (rev.name === selected.name && rev.type === selected.type) {
+        // Don’t show the selected revision again
+        return false;
+      } else if (rev.type === "tag") {
+        // Show tags only if in experimental mode
+        return config.isExperimental;
+      } else {
+        return true;
+      }
+    }),
+  ];
 
   const dispatch = createEventDispatcher();
   const hide = () => {
@@ -117,7 +125,7 @@
         data-cy="revision-dropdown"
         hidden={!expanded}>
         <ul>
-          {#each orderRevisions(revisions) as revision (revisionKey(revision))}
+          {#each orderedRevisions as revision (revisionKey(revision))}
             <li>
               <Entry
                 {loading}
