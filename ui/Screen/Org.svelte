@@ -78,7 +78,7 @@
         icon: Icon.Ethereum,
         disabled: true,
         event: () => {},
-        tooltip: "Not yet supported",
+        tooltip: "Coming soon",
       },
     ];
   };
