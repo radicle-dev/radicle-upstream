@@ -302,7 +302,7 @@ const fetchGnosisSafeAddr = async (
   return safeAddr.toLowerCase();
 };
 
-export const orgSidebarStore = svelteStore.writable<Org[] | []>([]);
+export const orgSidebarStore = svelteStore.writable<Org[]>([]);
 
 export const fetchOrgs = async (): Promise<void> => {
   const walletStore = svelteStore.get(wallet.store);
