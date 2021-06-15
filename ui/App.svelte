@@ -3,7 +3,6 @@
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
   import * as error from "ui/src/error";
   import * as org from "./src/org";
-  import * as wallet from "./src/wallet";
   import * as hotkeys from "ui/src/hotkeys";
   import * as remote from "ui/src/remote";
   import { unreachable } from "ui/src/unreachable";
@@ -34,6 +33,7 @@
 
   router.initialize();
   customProtocolHandler.register();
+  org.initialize();
 
   const activeRouteStore = router.activeRouteStore;
 
@@ -71,15 +71,6 @@
         break;
     }
   });
-
-  const walletStore = wallet.store;
-  $: w = $walletStore;
-
-  $: if ($w.status === wallet.Status.Connected) {
-    (async () => {
-      await org.fetchOrgs();
-    })();
-  }
 </script>
 
 <style>

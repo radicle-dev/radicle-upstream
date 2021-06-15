@@ -59,6 +59,58 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
   }
 };
 
+const ORG_POLL_INTERVAL_MS = 2000;
+
+// TODO use `ui/src/sleep` once
+// https://github.com/radicle-dev/radicle-upstream/pull/1985 is merged.
+const sleep = (timeMs: number): Promise<void> => {
+  return new Promise(resolve => {
+    setTimeout(resolve, timeMs);
+  });
+};
+
+// Update the org data for the sidebar store every
+// `ORG_POLL_INTERVAL_MS` milliseconds.
+const updateOrgsForever = async (): Promise<never> => {
+  let showError = true;
+
+  for (;;) {
+    const walletStore = svelteStore.get(wallet.store);
+    const w = svelteStore.get(walletStore);
+
+    if (w.status === wallet.Status.Connected) {
+      await fetchOrgs().then(
+        () => {
+          showError = true;
+        },
+        err => {
+          // We only show the first error that is thrown by
+          // `fetchOrgs()`. If the function keeps throwing errors we
+          // don’t show them. We reset this behavior after the fetch is
+          // successful.
+          if (showError) {
+            error.show(
+              new error.Error({
+                code: error.Code.OrgFetchFailed,
+                message: `Failed to fetch org data`,
+                source: err,
+              })
+            );
+            showError = false;
+          }
+        }
+      );
+    }
+    await sleep(ORG_POLL_INTERVAL_MS);
+  }
+};
+
+// Start a background task that continously updates the org data for
+// the sidebar.
+export const initialize = (): void => {
+  updateOrgsForever();
+};
+
 export const openOnGnosisSafe = (
   gnosisSafeAddress: string,
   view: "transactions" | "settings"
@@ -288,7 +340,7 @@ const fetchGnosisSafeAddr = async (
 
 export const orgSidebarStore = svelteStore.writable<Org[]>([]);
 
-export const fetchOrgs = async (): Promise<void> => {
+const fetchOrgs = async (): Promise<void> => {
   const walletStore = svelteStore.get(wallet.store);
   const w = svelteStore.get(walletStore);
 
