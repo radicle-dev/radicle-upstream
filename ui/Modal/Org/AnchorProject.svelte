@@ -67,6 +67,7 @@
           details: { projectUrn, commitHash },
         })
       );
+      return;
     }
 
     try {
