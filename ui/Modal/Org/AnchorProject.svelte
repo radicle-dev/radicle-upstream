@@ -26,7 +26,7 @@
   export let orgAddress: string;
   export let gnosisSafeAddress: string;
 
-  let projectUrn: urn.Urn | undefined = undefined;
+  let projectUrn: urn.Urn | undefined;
 
   $: if (projectUrn) {
     projectScreen.fetch(projectUrn);
