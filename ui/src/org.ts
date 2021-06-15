@@ -466,7 +466,6 @@ export const openAnchorProjectModal = async (
   gnosisSafeAddress: string
 ): Promise<void> => {
   const projects = await fetchProjectDropdownOptions();
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   modal.toggle(ModalAnchorProject, () => {}, {
     projects,
     orgAddress,
