@@ -374,7 +374,7 @@ export function emoji(tx: Tx): string {
   }
 }
 
-export function txIcon(tx: Tx): typeof SvelteComponent | undefined {
+export function txIcon(tx: Tx): typeof SvelteComponent {
   switch (tx.kind) {
     case TxKind.ClaimRadicleIdentity:
       return Icon.Registered;
@@ -390,6 +390,8 @@ export function txIcon(tx: Tx): typeof SvelteComponent | undefined {
       return Icon.Topup;
     case TxKind.UpdateSupport:
       return Icon.TokenStreams;
+    case TxKind.CreateOrg:
+      return Icon.Orgs;
   }
 }
 
