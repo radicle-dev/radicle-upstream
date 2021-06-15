@@ -4,6 +4,7 @@
   import { Copyable, Modal } from "ui/DesignSystem/Component";
   import { Avatar, Button, Emoji } from "ui/DesignSystem/Primitive";
 
+  import * as error from "ui/src/error";
   import * as org from "ui/src/org";
   import { ellipsed } from "ui/src/style";
   import * as modal from "ui/src/modal";
@@ -13,7 +14,17 @@
 
   const createOrg = async (owner: string): Promise<void> => {
     modal.hide();
-    await org.createOrg(owner);
+    try {
+      await org.createOrg(owner);
+    } catch (err) {
+      error.show(
+        new error.Error({
+          code: error.Code.OrgCreatationFailed,
+          message: "Oops, something went wrong could not create the org",
+          source: err,
+        })
+      );
+    }
   };
 </script>
 

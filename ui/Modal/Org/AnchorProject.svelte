@@ -4,6 +4,7 @@
   import type * as source from "ui/src/source";
   import type { Writable } from "svelte/store";
 
+  import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
   import * as projectScreen from "ui/src/screen/project";
@@ -54,6 +55,33 @@
     detail: source.Branch | source.Tag;
   }) => {
     projectSourceScreen.selectRevision(revision);
+  };
+
+  const createAnchor = () => {
+    if (!projectUrn || !commitHash) {
+      error.show(
+        new error.Error({
+          code: error.Code.OrgAnchorCreatationFailed,
+          message:
+            "Can't create an anchor unless projectUrn or commitHash are provided",
+          details: { projectUrn, commitHash },
+        })
+      );
+    }
+
+    try {
+      org.anchorProject(orgAddress, gnosisSafeAddress, projectUrn, commitHash);
+    } catch (err) {
+      error.show(
+        new error.Error({
+          code: error.Code.OrgAnchorCreatationFailed,
+          message: "Oops, something went wrong, could not create the anchor",
+          source: err,
+        })
+      );
+    }
+
+    modal.hide();
   };
 
   $: commitHash = $code ? $code.lastCommit.sha1 : undefined;
@@ -114,19 +142,7 @@
 
   <div class="actions">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
-    <Button
-      disabled={!commitHash}
-      on:click={() => {
-        if (!projectUrn || !commitHash) {
-          return;
-        }
-        org.anchorProject(
-          orgAddress,
-          gnosisSafeAddress,
-          projectUrn,
-          commitHash
-        );
-        modal.hide();
-      }}>Confirm in your wallet</Button>
+    <Button disabled={!commitHash} on:click={createAnchor}
+      >Confirm in your wallet</Button>
   </div>
 </Modal>

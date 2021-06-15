@@ -84,6 +84,8 @@ export enum Code {
   OrgCreateNotFoundInInterfaceLogs = "OrgCreateNotFoundInInterfaceLogs",
   OrgFetchOrgsCalledWithNoWallet = "OrgFetchOrgsCalledWithNoWallet",
   OrgIdentitySha1UrnError = "OrgIdentitySha1UrnError",
+  OrgCreatationFailed = "OrgCreatationFailed",
+  OrgAnchorCreatationFailed = "OrgAnchorCreatationFailed",
 
   // Custom protocol error codes
   CustomProtocolUnsupportedVersion = "CustomProtocolUnsupportedVersion",
