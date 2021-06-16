@@ -20,7 +20,7 @@
       error.show(
         new error.Error({
           code: error.Code.OrgCreatationFailed,
-          message: "Oops, something went wrong could not create the org",
+          message: "Something went wrong and the org wasn’t created",
           source: err,
         })
       );
