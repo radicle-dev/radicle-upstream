@@ -3,7 +3,7 @@ import { ProxyProcessManager } from "./proxy-process-manager";
 
 ["stdout", "stderr"].forEach(output => {
   it(`collects and writes ${output}`, async () => {
-    const redirection = output == "stderr" ? "1>&2" : "";
+    const redirection = output === "stderr" ? "1>&2" : "";
     const manager = new ProxyProcessManager({
       proxyPath: "sh",
       proxyArgs: [

@@ -49,6 +49,8 @@ module.exports = {
     "spaced-comment": ["warn", "always"],
     // Disallow focused tests
     "no-only-tests/no-only-tests": "error",
+    // Require `===` and `!==` comparisons
+    eqeqeq: "error",
 
     // We are ok with providing explict type annotations for additional
     // clarity.
