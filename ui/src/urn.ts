@@ -55,7 +55,7 @@ export function parseIdentitySha1(urn: string): Uint8Array {
 // it's the inverse of parseIdentitySha1.
 export function identitySha1Urn(hash: Uint8Array): string {
   // a SHA-1 digest is always 20 bytes
-  if (hash.length != 20) {
+  if (hash.length !== 20) {
     throw new error.Error({
       code: error.Code.OrgIdentitySha1UrnError,
       message: "SHA1 hash has invalid size",
