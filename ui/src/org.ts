@@ -22,6 +22,7 @@ import * as router from "ui/src/router";
 import * as transaction from "./transaction";
 import * as urn from "ui/src/urn";
 import * as wallet from "ui/src/wallet";
+import { sleep } from "ui/src/sleep";
 
 import {
   getOrgs,
@@ -60,14 +61,6 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
 };
 
 const ORG_POLL_INTERVAL_MS = 2000;
-
-// TODO use `ui/src/sleep` once
-// https://github.com/radicle-dev/radicle-upstream/pull/1985 is merged.
-const sleep = (timeMs: number): Promise<void> => {
-  return new Promise(resolve => {
-    setTimeout(resolve, timeMs);
-  });
-};
 
 // Update the org data for the sidebar store every
 // `ORG_POLL_INTERVAL_MS` milliseconds.
