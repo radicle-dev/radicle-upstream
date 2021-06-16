@@ -1,7 +1,6 @@
 <script lang="typescript">
   import type { User, Project } from "ui/src/project";
   import type * as urn from "ui/src/urn";
-  import * as error from "ui/src/error";
   import * as source from "ui/src/source";
   import * as project from "ui/src/project";
   import * as proxy from "ui/src/proxy";
@@ -104,25 +103,13 @@
     if (!selectedProjectUrn || !commit) {
       return;
     }
-
-    try {
-      await org.anchorProject(
-        orgAddress,
-        gnosisSafeAddress,
-        selectedProjectUrn,
-        commit.sha1
-      );
-    } catch (err) {
-      error.show(
-        new error.Error({
-          code: error.Code.OrgAnchorCreatationFailed,
-          message: "Oops, something went wrong, could not create the anchor",
-          source: err,
-        })
-      );
-    }
-
     modal.hide();
+    await org.anchorProject(
+      orgAddress,
+      gnosisSafeAddress,
+      selectedProjectUrn,
+      commit.sha1
+    );
   };
 
   let commit: source.CommitHeader | undefined;
