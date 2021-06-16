@@ -6,6 +6,7 @@ import * as error from "./error";
 import type * as identity from "./identity";
 import * as remote from "./remote";
 import { Appearance, CoCo, Settings, defaultSetttings } from "./settings";
+import * as svelteStore from "ui/src/svelteStore";
 
 import { createValidationStore, ValidationStatus } from "./validation";
 
@@ -52,30 +53,17 @@ export const unsealed = (): UnsealedSession | undefined => {
 
 // Returns when the session becomes unsealed. Throws when fetching the
 // session failed.
-export const waitUnsealed = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    let resolvedNow = false;
-    let unsubscribe: () => void | undefined;
-    // We’re using `let` so that we can access `unsubscribe` if the
-    // `susbscribe` callback is called synchronously.
-    // eslint-disable-next-line prefer-const
-    unsubscribe = sessionStore.subscribe(data => {
-      if (
-        data.status === remote.Status.Success &&
-        data.data.status === Status.UnsealedSession
-      ) {
-        if (unsubscribe) {
-          unsubscribe();
-        } else {
-          resolvedNow = true;
-        }
-        resolve();
-      } else if (data.status === remote.Status.Error) {
-        reject(data.error);
-      }
-    });
-    if (resolvedNow) {
-      unsubscribe();
+export const waitUnsealed = async (): Promise<void> => {
+  await svelteStore.waitUntil(sessionStore, data => {
+    if (
+      data.status === remote.Status.Success &&
+      data.data.status === Status.UnsealedSession
+    ) {
+      return true;
+    } else if (data.status === remote.Status.Error) {
+      throw data.error;
+    } else {
+      return false;
     }
   });
 };
