@@ -104,7 +104,10 @@
     </div>
     <div slot="right">
       {#if activeTab.type === "projects"}
-        <ProjectsMenu orgAddress={address} {gnosisSafeAddress} />
+        <ProjectsMenu
+          orgAddress={address}
+          {gnosisSafeAddress}
+          disabled={activeTab.projectCount === 0} />
       {:else if activeTab.type === "members"}
         <MembersMenu {gnosisSafeAddress} />
       {:else}

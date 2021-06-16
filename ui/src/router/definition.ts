@@ -61,6 +61,7 @@ export type LoadedOrgTab =
       anchoredProjects: project.Project[];
       unresolvedAnchors: project.Anchor[];
       gnosisSafeAddress: string;
+      projectCount: number;
     }
   | {
       type: "members";
@@ -102,6 +103,8 @@ async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
   if (route.activeTab === "projects") {
     const orgWithSafe = await org.fetchOrg(route.address);
     const projectAnchors = await org.resolveProjectAnchors(orgWithSafe);
+    const projectCount = await org.getProjectCount();
+
     return {
       type: "org",
       address: route.address,
@@ -113,6 +116,7 @@ async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
         anchoredProjects: projectAnchors.anchoredProjects,
         unresolvedAnchors: projectAnchors.unresolvedAnchors,
         gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
+        projectCount,
       },
     };
   } else if (route.activeTab === "members") {

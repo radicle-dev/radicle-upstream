@@ -499,3 +499,10 @@ export const openAnchorProjectModal = async (
     gnosisSafeAddress,
   });
 };
+
+export const getProjectCount = async (): Promise<number> => {
+  const tracked = await proxy.client.project.listTracked();
+  const contributed = await proxy.client.project.listContributed();
+
+  return tracked.length + contributed.length;
+};
