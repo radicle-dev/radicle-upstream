@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { store, Status } from "ui/src/wallet";
-  import { store as transactions } from "ui/src/transaction";
+  import { store, Status as WalletStatus } from "ui/src/wallet";
+  import { store as transactions, TxStatus } from "ui/src/transaction";
 
   import { Icon } from "../Primitive";
   import Tooltip from "./Tooltip.svelte";
@@ -11,52 +11,46 @@
 
   export let onClick: () => void;
 
-  $: pendingTxs = $transactions.filter(
-    tx => tx.status === "Awaiting inclusion"
-  );
   $: wallet = $store;
 
-  const tooltipMessage = (environment: ethereum.Environment): string => {
-    switch (environment) {
-      case ethereum.Environment.Mainnet:
-        return "Wallet · Connected";
-      default:
-        return `Wallet · Connected to ${environment}`;
+  let tooltipMessage: string;
+  let iconConnected: boolean;
+  let iconStatusColor: string | undefined;
+
+  $: {
+    if ($wallet.status === WalletStatus.Connected) {
+      const pendingTxs = $transactions.filter(
+        tx => tx.status === TxStatus.AwaitingInclusion
+      );
+
+      if (pendingTxs.length > 0) {
+        tooltipMessage = `Wallet · ${pendingTxs.length} pending transaction${
+          pendingTxs.length > 1 ? "s" : ""
+        }`;
+        iconConnected = true;
+        iconStatusColor = "var(--color-caution)";
+      } else {
+        switch (wallet.environment) {
+          case ethereum.Environment.Mainnet:
+            tooltipMessage = "Wallet · Connected";
+            break;
+          default:
+            tooltipMessage = `Wallet · Connected to ${wallet.environment}`;
+            break;
+        }
+        iconConnected = true;
+        iconStatusColor = undefined;
+      }
+    } else {
+      tooltipMessage = "Wallet · Not connected";
+      iconConnected = false;
+      iconStatusColor = undefined;
     }
-  };
+  }
 </script>
 
-<div>
-  {#if $wallet.status === Status.Connected}
-    {#if pendingTxs.length > 0}
-      <Tooltip
-        value={`Wallet · ${pendingTxs.length} pending transaction${
-          pendingTxs.length > 1 ? "s" : ""
-        }`}>
-        <SidebarItem
-          dataCy="wallet"
-          indicator
-          {active}
-          onClick={() => onClick()}>
-          <Icon.Wallet connected statusColor="var(--color-caution)" />
-        </SidebarItem>
-      </Tooltip>
-    {:else}
-      <Tooltip value={tooltipMessage(wallet.environment)}>
-        <SidebarItem
-          dataCy="wallet"
-          indicator
-          {active}
-          onClick={() => onClick()}>
-          <Icon.Wallet connected />
-        </SidebarItem>
-      </Tooltip>
-    {/if}
-  {:else}
-    <Tooltip value="Wallet · Not connected">
-      <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
-        <Icon.Wallet />
-      </SidebarItem>
-    </Tooltip>
-  {/if}
-</div>
+<Tooltip value={tooltipMessage}>
+  <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
+    <Icon.Wallet connected={iconConnected} statusColor={iconStatusColor} />
+  </SidebarItem>
+</Tooltip>
