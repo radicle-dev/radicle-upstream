@@ -1,7 +1,9 @@
 <script lang="typescript">
-  import { Emoji } from "../../Primitive";
+  import * as router from "ui/src/router";
+  import { Button, Emoji } from "../../Primitive";
 
   export let expectedNetwork = "Mainnet";
+  export let walletNetowrk: string | undefined = undefined;
 </script>
 
 <style>
@@ -36,12 +38,14 @@
 
 <div class="wrapper">
   <div class="inner">
-    <Emoji emoji="👛" size="huge" />
-    <h2>Oops!</h2>
+    <Emoji emoji="🥀" size="huge" />
+    <h2>Something’s not right…</h2>
     <p class="typo-text">
-      Your wallet is pointing to an unexpected network. Please, switch back to
-      <span class="typo-text-bold">{expectedNetwork}</span>
-      to keep using this feature.
+      Your wallet is on <span class="typo-text-bold">{walletNetowrk}</span>, but
+      Upstream is set to <span class="typo-text-bold">{expectedNetwork}</span>.
+      Make sure both your wallet and Upstream are set to the same network.
     </p>
+    <Button on:click={() => router.push({ type: "settings" })}
+      >Go to settings</Button>
   </div>
 </div>

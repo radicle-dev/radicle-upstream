@@ -115,6 +115,7 @@
           {/if}
         {:else}
           <WrongNetwork
+            walletNetowrk={w.connected.network}
             expectedNetwork={supportedNetwork($ethereumEnvironment)} />
         {/if}
       </div>
