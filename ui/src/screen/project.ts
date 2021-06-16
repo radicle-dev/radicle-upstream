@@ -26,7 +26,7 @@ export const fetch = (projectUrn: Urn): void => {
     .get(projectUrn)
     .then(async current => {
       const peers = await proxy.client.project.listPeers(projectUrn);
-      const peerSelection = filterPeers(peers);
+      const peerSelection = project.userList(peers);
       throwUnlessPeersPresent(peerSelection, projectUrn);
       screenStore.success({
         peers,
@@ -59,12 +59,12 @@ export const refreshPeers = (): void => {
     proxy.client.project
       .listPeers(current.project.urn, { abort: request.signal })
       .then(peers => {
-        const filteredPeers = filterPeers(peers);
-        throwUnlessPeersPresent(filteredPeers, current.project.urn);
+        const peerSelection = project.userList(peers);
+        throwUnlessPeersPresent(peerSelection, current.project.urn);
         screenStore.success({
           ...current,
           peers,
-          peerSelection: filteredPeers,
+          peerSelection,
           requestInProgress: null,
         });
       })
@@ -186,68 +186,6 @@ export const removePeer = (projectId: Urn, peerId: PeerId): void => {
       });
     }
   }
-};
-
-const filterPeers = (peers: project.Peer[]): project.User[] => {
-  return peers
-    .filter(
-      peer =>
-        peer.status.type === project.PeerReplicationStatusType.Replicated &&
-        !(
-          peer.type === project.PeerType.Local &&
-          peer.status.role === project.PeerRole.Tracker
-        )
-    )
-    .map(peer => {
-      const { role, user } = peer.status as project.PeerReplicated;
-      return { type: peer.type, peerId: peer.peerId, identity: user, role };
-    })
-    .filter<project.User>((user): user is project.User => user !== undefined)
-    .sort((a, b) => {
-      if (
-        a.role === project.PeerRole.Maintainer &&
-        b.role !== project.PeerRole.Maintainer
-      ) {
-        return -1;
-      }
-      if (
-        a.role !== project.PeerRole.Maintainer &&
-        b.role === project.PeerRole.Maintainer
-      ) {
-        return 1;
-      }
-
-      if (
-        a.role === project.PeerRole.Contributor &&
-        b.role === project.PeerRole.Tracker
-      ) {
-        return -1;
-      }
-      if (
-        a.role === project.PeerRole.Tracker &&
-        b.role === project.PeerRole.Contributor
-      ) {
-        return 1;
-      }
-
-      return 0;
-    })
-    .sort((a, b) => {
-      if (
-        a.type === project.PeerType.Local &&
-        b.type === project.PeerType.Remote
-      ) {
-        return -1;
-      }
-      if (
-        a.type === project.PeerType.Remote &&
-        b.type === project.PeerType.Local
-      ) {
-        return 1;
-      }
-
-      return 0;
-    });
 };
 
 const throwUnlessPeersPresent = (peers: project.User[], projectId: Urn) => {

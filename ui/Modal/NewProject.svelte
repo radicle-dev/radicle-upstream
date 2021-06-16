@@ -62,42 +62,42 @@
   };
 
   const createProject = async () => {
-    try {
-      loading = true;
-      screen.lock();
+    screen.withLock(async () => {
+      try {
+        loading = true;
 
-      const response = await proxy.client.project.create({
-        description,
-        defaultBranch: isNew
-          ? await defaultBranchForNewRepository()
-          : $defaultBranch,
-        repo: isNew
-          ? { type: "new", name, path: newRepositoryPath }
-          : { type: "existing", path: existingRepositoryPath },
-      });
+        const response = await proxy.client.project.create({
+          description,
+          defaultBranch: isNew
+            ? await defaultBranchForNewRepository()
+            : $defaultBranch,
+          repo: isNew
+            ? { type: "new", name, path: newRepositoryPath }
+            : { type: "existing", path: existingRepositoryPath },
+        });
 
-      router.push({
-        type: "project",
-        urn: response.urn,
-        activeView: { type: "files" },
-      });
-      notification.info({
-        message: `Project ${response.metadata.name} was created!`,
-      });
-    } catch (err) {
-      router.push({ type: "profile", activeTab: "projects" });
-      error.show(
-        new error.Error({
-          code: error.Code.ProjectCreationFailure,
-          message: `Could not create project: ${err.message}`,
-          source: err,
-        })
-      );
-    } finally {
-      modal.hide();
-      loading = false;
-      screen.unlock();
-    }
+        router.push({
+          type: "project",
+          urn: response.urn,
+          activeView: { type: "files" },
+        });
+        notification.info({
+          message: `Project ${response.metadata.name} was created!`,
+        });
+      } catch (err) {
+        router.push({ type: "profile", activeTab: "projects" });
+        error.show(
+          new error.Error({
+            code: error.Code.ProjectCreationFailure,
+            message: `Could not create project: ${err.message}`,
+            source: err,
+          })
+        );
+      } finally {
+        modal.hide();
+        loading = false;
+      }
+    });
   };
 
   // We unlock the screen already after the request, this is just a fail-safe
@@ -105,7 +105,6 @@
   // destroyed.
   onDestroy(() => {
     clearLocalState();
-    screen.unlock();
   });
 
   $: pathValidation = repositoryPathValidationStore(isNew);

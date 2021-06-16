@@ -4,7 +4,8 @@
   import * as error from "ui/src/error";
   import * as hotkeys from "ui/src/hotkeys";
   import * as remote from "ui/src/remote";
-  import { fetch, session as store, Status } from "ui/src/session";
+  import { unreachable } from "ui/src/unreachable";
+  import { fetch, session as sessionStore, Status } from "ui/src/session";
   import "ui/src/localPeer";
 
   import {
@@ -13,6 +14,9 @@
     ModalOverlay,
     Remote,
   } from "ui/DesignSystem/Component";
+
+  import Hotkeys from "ui/Hotkeys.svelte";
+  import Theme from "ui/Theme.svelte";
 
   import Bsod from "ui/Screen/Bsod.svelte";
   import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
@@ -25,40 +29,45 @@
   import Settings from "ui/Screen/Settings.svelte";
   import Wallet from "ui/Screen/Wallet.svelte";
 
-  import Hotkeys from "ui/Hotkeys.svelte";
-  import Theme from "ui/Theme.svelte";
+  router.initialize();
+  customProtocolHandler.register();
 
   const activeRouteStore = router.activeRouteStore;
 
-  $: switch ($store.status) {
-    case remote.Status.NotAsked:
-      fetch();
-      break;
+  sessionStore.subscribe(session => {
+    // We’re not using a reactive statement here to prevent this code from
+    // running when `activeRouteStore` is updated.
+    switch (session.status) {
+      case remote.Status.NotAsked:
+        fetch();
+        break;
 
-    case remote.Status.Success:
-      if ($store.data.status === Status.NoSession) {
-        hotkeys.disable();
-        router.push({ type: "onboarding" });
-      } else if ($store.data.status === Status.UnsealedSession) {
-        hotkeys.enable();
-        if (
-          $activeRouteStore.type === "onboarding" ||
-          $activeRouteStore.type === "lock"
-        ) {
-          router.push({ type: "profile", activeTab: "projects" });
+      case remote.Status.Success:
+        if (session.data.status === Status.NoSession) {
+          hotkeys.disable();
+          router.push({ type: "onboarding" });
+        } else if (session.data.status === Status.SealedSession) {
+          hotkeys.disable();
+          router.push({ type: "lock" });
+        } else if (session.data.status === Status.UnsealedSession) {
+          hotkeys.enable();
+          if (
+            $activeRouteStore.type === "onboarding" ||
+            $activeRouteStore.type === "lock" ||
+            $activeRouteStore.type === "boot"
+          ) {
+            router.push({ type: "profile", activeTab: "projects" });
+          }
+        } else {
+          unreachable(session.data);
         }
-      } else {
-        hotkeys.disable();
-        router.push({ type: "lock" });
-      }
-      break;
+        break;
 
-    case remote.Status.Error:
-      error.show($store.error);
-      break;
-  }
-
-  customProtocolHandler.register();
+      case remote.Status.Error:
+        error.show(session.error);
+        break;
+    }
+  });
 </script>
 
 <style>
@@ -78,7 +87,7 @@
 <NotificationFaucet />
 <Theme />
 
-<Remote {store} context="session" disableErrorLogging={true}>
+<Remote store={sessionStore} context="session" disableErrorLogging={true}>
   {#if $activeRouteStore.type === "designSystemGuide"}
     <DesignSystemGuide />
   {:else if $activeRouteStore.type === "lock"}
@@ -99,8 +108,10 @@
     <Settings />
   {:else if $activeRouteStore.type === "wallet"}
     <Wallet activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "boot"}
+    <!-- TODO: show some loading screen -->
   {:else}
-    {router.unreachable($activeRouteStore)}
+    {unreachable($activeRouteStore)}
   {/if}
 
   <div slot="loading" class="error">

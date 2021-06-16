@@ -1,5 +1,6 @@
 <script lang="typescript">
   import * as router from "ui/src/router";
+  import { unreachable } from "ui/src/unreachable";
   import { status as store } from "ui/src/localPeer";
 
   import { Icon } from "ui/DesignSystem/Primitive";
@@ -66,7 +67,7 @@
     {:else if activeTab === "requests"}
       <WaitingRoomTab />
     {:else}
-      {router.unreachable(activeTab)}
+      {unreachable(activeTab)}
     {/if}
   </div>
 </SidebarLayout>

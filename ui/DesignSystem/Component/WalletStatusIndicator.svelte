@@ -5,6 +5,7 @@
   import { Icon } from "../Primitive";
   import Tooltip from "./Tooltip.svelte";
   import SidebarItem from "./SidebarItem.svelte";
+  import * as ethereum from "ui/src/ethereum";
 
   export let active: boolean;
 
@@ -14,6 +15,15 @@
     tx => tx.status === "Awaiting inclusion"
   );
   $: wallet = $store;
+
+  const tooltipMessage = (environment: ethereum.Environment): string => {
+    switch (environment) {
+      case ethereum.Environment.Mainnet:
+        return "Wallet • Connected";
+      default:
+        return `Wallet • Connected to ${environment}`;
+    }
+  };
 </script>
 
 <div>
@@ -32,7 +42,7 @@
         </SidebarItem>
       </Tooltip>
     {:else}
-      <Tooltip value={`Wallet • Connected to ${wallet.environment}`}>
+      <Tooltip value={tooltipMessage(wallet.environment)}>
         <SidebarItem
           dataCy="wallet"
           indicator

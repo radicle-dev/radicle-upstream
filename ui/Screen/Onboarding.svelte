@@ -46,35 +46,35 @@
   };
 
   const onCreateIdentity = async (handle: string, passphrase: string) => {
-    try {
-      screen.lock();
-      createIdentityInProgress = true;
-      await session.createKeystore(passphrase);
-      // Retry until the API is up
-      const identity = await withRetry(
-        () => createIdentity({ handle }),
-        100,
-        50
-      );
-      peerId = identity.peerId;
-      state = State.SuccessView;
-    } catch (err) {
-      animateBackward();
-      state = State.EnterName;
-      error.show(
-        new error.Error({
-          code: error.Code.IdentityCreationFailure,
-          message: `Could not create identity`,
-          details: {
-            handle,
-          },
-          source: err,
-        })
-      );
-    } finally {
-      screen.unlock();
-      createIdentityInProgress = false;
-    }
+    await screen.withLock(async () => {
+      try {
+        createIdentityInProgress = true;
+        await session.createKeystore(passphrase);
+        // Retry until the API is up
+        const identity = await withRetry(
+          () => createIdentity({ handle }),
+          100,
+          50
+        );
+        peerId = identity.peerId;
+        state = State.SuccessView;
+      } catch (err) {
+        animateBackward();
+        state = State.EnterName;
+        error.show(
+          new error.Error({
+            code: error.Code.IdentityCreationFailure,
+            message: `Could not create identity`,
+            details: {
+              handle,
+            },
+            source: err,
+          })
+        );
+      } finally {
+        createIdentityInProgress = false;
+      }
+    });
   };
 </script>
 

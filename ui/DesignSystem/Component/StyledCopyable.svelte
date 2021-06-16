@@ -9,6 +9,7 @@
   export let notificationText: string = "Copied to your clipboard";
   export let truncate: boolean = false;
   export let expandable: boolean = true;
+  export let showIcon: boolean = true;
 
   const [head, tail] = value.split(/(.{8}).*(.{8})/).filter(Boolean);
 
@@ -29,7 +30,7 @@
       {copyContent}
       {notificationText}
       styleContent={hover}
-      showIcon={true}>
+      {showIcon}>
       {#if !truncate || (expandable && hover)}
         <p class="typo-text-mono">{value}</p>
       {:else}

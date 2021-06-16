@@ -2,7 +2,6 @@ import { derived, get, writable } from "svelte/store";
 import type { Readable, Writable } from "svelte/store";
 
 import * as error from "ui/src/error";
-import * as config from "ui/src/config";
 import * as patch from "ui/src/project/patch";
 import * as localPeer from "ui/src/localPeer";
 import type { Project, User } from "ui/src/project";
@@ -50,7 +49,7 @@ export interface Screen {
   patches: patch.Patch[];
   peer: User;
   project: Project;
-  revisions: [source.Branch | source.Tag];
+  revisions: Array<source.Branch | source.Tag>;
   requestInProgress: AbortController | null;
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
@@ -84,9 +83,16 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
   };
 
   try {
-    const revisions = await source.fetchRevisions(project.urn, peer.peerId);
+    const { branches, tags } = await source.fetchRevisions(
+      project.urn,
+      peer.peerId
+    );
+    const revisions = [...branches, ...tags];
     const patches = await patch.getAll(project.urn);
-    const selectedRevision = defaultRevision(project, revisions);
+    const defaultBranch = branches.find(
+      (branch: source.Branch) => branch.name === project.metadata.defaultBranch
+    );
+    const selectedRevision = defaultBranch || branches[0];
     const [history, [tree, root]] = await Promise.all([
       source.fetchCommits(project.urn, peer.peerId, selectedRevision),
       fetchTreeRoot(selectedRevision),
@@ -99,7 +105,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       patches,
       peer,
       project,
-      revisions: mapRevisions(revisions),
+      revisions,
       requestInProgress: null,
       selectedPath: derived(pathStore, store => store),
       selectedRevision: {
@@ -299,16 +305,6 @@ export const selectCommit = (commit: source.CommitHeader): void => {
   }
 };
 
-const defaultRevision = (
-  project: Project,
-  revisions: source.Revisions
-): source.Branch => {
-  const projectDefault = revisions.branches.find(
-    (branch: source.Branch) => branch.name === project.metadata.defaultBranch
-  );
-  return projectDefault ? projectDefault : revisions.branches[0];
-};
-
 const fetchBlob = async (
   project: Project,
   peer: User,
@@ -406,15 +402,4 @@ const fetchRoot = async (
       ),
     },
   };
-};
-
-const mapRevisions = (
-  revisions: source.Revisions
-): [source.Branch | source.Tag] => {
-  const branches = revisions.branches as [source.Branch | source.Tag];
-  const tags = revisions.tags as [source.Branch | source.Tag];
-  if (config.isExperimental) {
-    return branches.concat(tags) as [source.Branch | source.Tag];
-  }
-  return branches;
 };

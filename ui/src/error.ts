@@ -1,6 +1,7 @@
 import * as svelteStore from "svelte/store";
 import * as lodash from "lodash";
 
+import * as config from "ui/src/config";
 import * as notification from "./notification";
 import * as ipc from "./ipc";
 
@@ -70,12 +71,14 @@ export enum Code {
   UnknownException = "UnknownException",
   Unreachable = "Unreachable",
   UnsealedSessionExpected = "UnsealedSessionExpected",
+  EmptyHistory = "EmptyHistory",
 
-  // Funding related error codes
+  // Ethereum related error codes
   WalletConnectionFailure = "WalletConnectionFailure",
   FailedOrRejectedTransaction = "FailedOrRejectedTransaction",
   UnkownTransactionFailure = "UnkownTransactionFailure",
   InsufficientGas = "InsufficientGas",
+  FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
 
   // Custom protocol error codes
   CustomProtocolUnsupportedVersion = "CustomProtocolUnsupportedVersion",
@@ -204,8 +207,7 @@ ipc.listenProxyError(proxyError => {
   setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-if (!(window as any).Cypress) {
+if (!config.isCypressTestEnv && !config.isNodeTestEnv) {
   window.addEventListener("unhandledrejection", ev => {
     ev.preventDefault();
     show(fromUnknown(ev.reason, Code.UnhandledRejection));
