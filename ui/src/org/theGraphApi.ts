@@ -29,7 +29,7 @@ const gnosisSubgraphClient = (): apolloCore.ApolloClient<unknown> => {
     case ethereum.Environment.Local:
       throw new error.Error({
         code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Orgs are not available on the Local testnet.",
+        message: "Orgs is not available on the Local testnet.",
       });
     case ethereum.Environment.Ropsten:
       uri =
@@ -54,7 +54,7 @@ const orgsSubgraphClient = () => {
     case ethereum.Environment.Local:
       throw new error.Error({
         code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Orgs not available on the Local testnet.",
+        message: "Orgs is not available on the Local testnet.",
       });
     case ethereum.Environment.Ropsten:
       uri =
