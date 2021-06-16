@@ -136,8 +136,9 @@ context("project creation", () => {
             .pick("page")
             .should(
               "contain",
-              "Your project name has unsupported characters in it. You can " +
-                "only use basic letters, numbers, and the _ , - and . characters."
+              "Your project’s name has some characters that aren’t " +
+                "supported. You can only use basic letters, numbers, " +
+                "and the _ , - and . characters."
             );
 
           // can't start with a dash
@@ -157,7 +158,7 @@ context("project creation", () => {
             .pick("page")
             .should(
               "contain",
-              "Your project name should be at least 2 characters long."
+              "Oops, your project’s name needs to be at least 2 characters long."
             );
 
           // has to be no more than 64 characters long
@@ -167,7 +168,7 @@ context("project creation", () => {
             .pick("page")
             .should(
               "contain",
-              "Your project name should not be longer than 64 characters."
+              "Oh, your project’s name can’t have more than 64 characters."
             );
         });
       });
@@ -192,7 +193,8 @@ context("project creation", () => {
               .pick("page")
               .should(
                 "contain",
-                "Your project description should not be longer than 256 characters."
+                "Whoa Shakespeare, your project’s description can’t be " +
+                  "longer than 256 characters. Shorten it a bit!"
               );
             commands.pick("create-project-button").should("be.disabled");
           });
@@ -214,7 +216,7 @@ context("project creation", () => {
               .pick("page", "new-project")
               .should(
                 "contain",
-                "Please choose a directory that's not already a git repository."
+                "Please choose a directory that’s not already a git repository."
               )
               .should("exist");
           });
@@ -313,10 +315,7 @@ context("project creation", () => {
 
             commands
               .pick("notification")
-              .should(
-                "contain",
-                "Project new-fancy-project.xyz successfully created"
-              );
+              .should("contain", "Project new-fancy-project.xyz was created!");
 
             commands.pick("profile").click();
             commands
@@ -364,7 +363,7 @@ context("project creation", () => {
 
           commands
             .pick("notification")
-            .contains(`Project ${repoName} successfully created`)
+            .contains(`Project ${repoName} was created!`)
             .should("exist");
 
           commands.pick("profile").click();
@@ -377,7 +376,7 @@ context("project creation", () => {
 
           commands
             .pick("notification")
-            .should("contain", `Project ${repoName} successfully created`);
+            .should("contain", `Project ${repoName} was created!`);
           commands.pick("notification").contains("Close").click();
 
           // Make sure we can't add the same project twice.
