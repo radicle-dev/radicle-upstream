@@ -41,7 +41,7 @@ const orgFactoryAbi = [
 
 const orgAbi = [
   "function owner() view returns (address)",
-  "function anchor(bytes32, bytes, uint8)",
+  "function anchor(bytes32, uint32, bytes)",
 ];
 
 const orgFactoryAddress = (network: ethereum.Environment): string => {
@@ -52,11 +52,11 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
         message: "Orgs not available on the Local testnet",
       });
     case ethereum.Environment.Ropsten:
-      return "0xc074cDd9541960B0AA72D90c8bC642F6ae9C4032";
+      return "0xf36fbaB8BA78683D23c5021bfcE8A5c88731200F";
     case ethereum.Environment.Rinkeby:
-      return "0x57962Eb188146A4942c44545a97478d64dc9e4A5";
+      return "0xF3D04e874D07d680e8b26332eEae5b9B1c263121";
     case ethereum.Environment.Mainnet:
-      return "0x7c4D590168A9019995e072f9c1eCfc1fc356bEd4";
+      return "0xa15bEb4876F20018b6b4A4116B7560c5fcC9336e";
   }
 };
 
@@ -193,8 +193,8 @@ export const anchorProject = async (
 
   const orgContractInstance = await orgContract.populateTransaction.anchor(
     encodedProjectUrn,
-    encodedCommitHash,
-    ethers.constants.Zero
+    ethers.constants.Zero,
+    encodedCommitHash
   );
 
   const txData = orgContractInstance.data;
@@ -394,7 +394,9 @@ const fetchPendingAnchors = async (
       const parsedTx = iface.parseTransaction({ data: tx.data });
 
       if (parsedTx.name === "anchor") {
-        const [encodedProjectUrn, encodedCommitHash] = parsedTx.args;
+        const encodedProjectUrn = parsedTx.args[0];
+        const encodedCommitHash = parsedTx.args[2];
+
         const projectId = urn.identitySha1Urn(
           ethers.utils.arrayify(`0x${encodedProjectUrn.slice(26)}`)
         );

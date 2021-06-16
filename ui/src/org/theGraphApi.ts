@@ -160,7 +160,7 @@ export const getOrgProjectAnchors = async (
             anchor {
               id
               objectId
-              stateMultihash
+              multihash
             }
           }
         }
@@ -175,14 +175,14 @@ export const getOrgProjectAnchors = async (
       anchor: {
         id: string;
         objectId: string;
-        stateMultihash: string;
+        multihash: string;
       };
     }) => {
       const decodedProjectId = urn.identitySha1Urn(
         ethers.utils.arrayify(`0x${project.id.slice(26)}`)
       );
 
-      const byteArray = ethers.utils.arrayify(project.anchor.stateMultihash);
+      const byteArray = ethers.utils.arrayify(project.anchor.multihash);
       const decodedMultihash = multihash.decode(byteArray);
       const decodedCommitHash = ethers.utils
         .hexlify(decodedMultihash.digest)
