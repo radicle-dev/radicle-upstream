@@ -1,5 +1,6 @@
 import * as zod from "zod";
 import * as config from "../config";
+import { sleep } from "ui/src/sleep";
 
 import * as settings from "./settings";
 import * as identity from "./identity";
@@ -152,10 +153,4 @@ export const withRetry = async <T>(
     }
     await sleep(delayTime);
   }
-};
-
-const sleep = (delay: number) => {
-  return new Promise((resolve, _reject) => {
-    setTimeout(resolve, delay);
-  });
 };

@@ -298,6 +298,6 @@ export const isContributor = (users: User[]): boolean => {
   return !!users.find(
     u =>
       u.type === PeerType.Local &&
-      (u.role === PeerRole.Maintainer || u.role == PeerRole.Contributor)
+      (u.role === PeerRole.Maintainer || u.role === PeerRole.Contributor)
   );
 };
