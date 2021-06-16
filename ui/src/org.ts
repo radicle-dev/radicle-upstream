@@ -501,8 +501,10 @@ export const openAnchorProjectModal = async (
 };
 
 export const getProjectCount = async (): Promise<number> => {
-  const tracked = await proxy.client.project.listTracked();
-  const contributed = await proxy.client.project.listContributed();
+  const [tracked, contributed] = await Promise.all([
+    proxy.client.project.listTracked(),
+    proxy.client.project.listContributed(),
+  ]);
 
   return tracked.length + contributed.length;
 };

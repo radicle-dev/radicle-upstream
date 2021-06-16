@@ -101,9 +101,11 @@ export async function loadRoute(route: Route): Promise<LoadedRoute> {
 
 async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
   if (route.activeTab === "projects") {
-    const orgWithSafe = await org.fetchOrg(route.address);
+    const [projectCount, orgWithSafe] = await Promise.all([
+      org.getProjectCount(),
+      org.fetchOrg(route.address),
+    ]);
     const projectAnchors = await org.resolveProjectAnchors(orgWithSafe);
-    const projectCount = await org.getProjectCount();
 
     return {
       type: "org",
