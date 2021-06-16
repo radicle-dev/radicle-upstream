@@ -87,6 +87,7 @@ export enum Code {
   OrgIdentitySha1UrnError = "OrgIdentitySha1UrnError",
   OrgCreatationFailed = "OrgCreatationFailed",
   OrgAnchorCreatationFailed = "OrgAnchorCreatationFailed",
+  OrgFetchFailed = "OrgFetchFailed",
 
   // Custom protocol error codes
   CustomProtocolUnsupportedVersion = "CustomProtocolUnsupportedVersion",
