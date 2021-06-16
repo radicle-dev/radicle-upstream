@@ -38,7 +38,7 @@
           indicator
           {active}
           onClick={() => onClick()}>
-          <Icon.WalletStatus statusColor="var(--color-caution)" />
+          <Icon.Wallet connected statusColor="var(--color-caution)" />
         </SidebarItem>
       </Tooltip>
     {:else}
