@@ -2,7 +2,9 @@
   export let active: boolean = false;
   export let indicator: boolean = false;
   export let dataCy: string | undefined = undefined;
-  export let onClick: () => void;
+  export let onClick: (() => void) | undefined = undefined;
+
+  $: clickable = onClick !== undefined;
 </script>
 
 <style>
@@ -14,6 +16,9 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  .clickable {
     cursor: pointer;
   }
 
@@ -54,7 +59,8 @@
   class="item indicator"
   class:active
   class:indicator
+  class:clickable
   data-cy={dataCy}
-  on:click|stopPropagation={() => onClick()}>
+  on:click|stopPropagation={() => onClick && onClick()}>
   <slot />
 </div>
