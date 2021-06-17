@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import * as wallet from "ui/src/wallet";
+  import * as Wallet from "ui/src/wallet";
   import * as transaction from "ui/src/transaction";
   import * as ethereum from "ui/src/ethereum";
 
@@ -8,30 +8,30 @@
   import SidebarItem from "./SidebarItem.svelte";
 
   const selectedEnvironment = ethereum.selectedEnvironment;
-  const walletConnectionStore = wallet.store;
+  const walletStore = Wallet.store;
   const transactionStore = transaction.store;
 
   export let active: boolean;
   export let onClick: () => void;
 
-  $: walletStore = $walletConnectionStore;
+  $: wallet = $walletStore;
 
   let tooltipMessage: string;
   let iconConnected: boolean;
   let iconStatusColor: string | undefined;
 
   $: {
-    if ($walletStore.status === wallet.Status.Connected) {
+    if ($wallet.status === Wallet.Status.Connected) {
       const pendingTxs = $transactionStore.filter(
         tx => tx.status === transaction.TxStatus.AwaitingInclusion
       );
 
       const connectedNetwork = ethereum.supportedNetwork($selectedEnvironment);
-      const walletNetwork = $walletStore.connected.network;
+      const walletNetwork = $wallet.connected.network;
 
       iconConnected = true;
 
-      if (connectedNetwork !== $walletStore.connected.network) {
+      if (connectedNetwork !== $wallet.connected.network) {
         tooltipMessage = `Your wallet is on ${walletNetwork}, but Upstream is on ${connectedNetwork}`;
         iconStatusColor = "var(--color-negative)";
       } else if (pendingTxs.length > 0) {
@@ -40,10 +40,10 @@
         }`;
         iconStatusColor = "var(--color-caution)";
       } else {
-        if (walletStore.environment === ethereum.Environment.Mainnet) {
+        if (wallet.environment === ethereum.Environment.Mainnet) {
           tooltipMessage = "Connected";
         } else {
-          tooltipMessage = `Connected to ${walletStore.environment}`;
+          tooltipMessage = `Connected to ${wallet.environment}`;
         }
         iconStatusColor = undefined;
       }

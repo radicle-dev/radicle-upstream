@@ -6,7 +6,7 @@
   import * as org from "./src/org";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
-  import * as wallet from "ui/src/wallet";
+  import * as walletModule from "ui/src/wallet";
 
   import { unreachable } from "ui/src/unreachable";
   import { fetch, session as sessionStore, Status } from "ui/src/session";
@@ -38,7 +38,7 @@
   customProtocolHandler.register();
   org.initialize();
 
-  const walletStore = wallet.store;
+  const walletStore = walletModule.store;
   const activeRouteStore = router.activeRouteStore;
   const ethereumEnvironment = ethereum.selectedEnvironment;
 
@@ -77,15 +77,15 @@
     }
   });
 
-  $: e = ethereum.supportedNetwork($ethereumEnvironment);
-  $: ws = $walletStore;
-  $: w = $ws;
+  $: connectedNetwork = ethereum.supportedNetwork($ethereumEnvironment);
+  $: wallet = $walletStore;
+  $: walletState = $wallet;
 
   // If we're on an org screen and there's a wallet mismatch, go to the wallet
   // screen to inform the user about the mismatch.
   $: if (
-    w.status === wallet.Status.Connected &&
-    e !== w.connected.network &&
+    walletState.status === walletModule.Status.Connected &&
+    connectedNetwork !== walletState.connected.network &&
     $activeRouteStore.type === "org"
   ) {
     router.push({ type: "wallet", activeTab: "transactions" });
