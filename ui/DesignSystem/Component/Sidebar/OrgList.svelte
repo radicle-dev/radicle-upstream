@@ -1,10 +1,11 @@
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
   import type { Identity } from "ui/src/identity";
+  import { range } from "lodash";
 
   import { activeRouteStore, push } from "ui/src/router";
 
-  import { orgSidebarStore } from "ui/src/org";
+  import { orgSidebarStore, pendingOrgs } from "ui/src/org";
   import * as modal from "ui/src/modal";
   import * as Wallet from "ui/src/wallet";
   import * as ethereum from "ui/src/ethereum";
@@ -25,6 +26,23 @@
 </script>
 
 {#if $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
+  {#each range($pendingOrgs) as i (i)}
+    <Tooltip value="Org creation pending">
+      <SidebarItem onClick={() => {}} active={false}>
+        <Avatar
+          size="regular"
+          variant="square"
+          avatarFallback={{
+            background: {
+              r: 120,
+              g: 120,
+              b: 120,
+            },
+            emoji: "",
+          }} />
+      </SidebarItem>
+    </Tooltip>
+  {/each}
   {#each $orgSidebarStore as org (org.id)}
     <Tooltip value={org.id}>
       <SidebarItem

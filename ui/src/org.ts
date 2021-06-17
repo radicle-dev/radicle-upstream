@@ -258,33 +258,10 @@ export const anchorProject = async (
   router.push({ type: "org", address: orgAddress, activeTab: "projects" });
 };
 
-export const createOrg = async (owner: string): Promise<void> => {
-  const walletStore = svelteStore.get(wallet.store);
-  const orgFactory = new ethers.Contract(
-    orgFactoryAddress(walletStore.environment),
-    orgFactoryAbi,
-    walletStore.signer
-  );
-  notification.info({
-    message:
-      "Waiting for you to confirm the org creation transaction in your connected wallet",
-    showIcon: true,
-    persist: true,
-  });
-  const response: TransactionResponse = await orgFactory.createOrg([owner], 1);
-
-  transaction.add(transaction.createOrg(response));
-  notification.info({
-    message: "Org creation transaction confirmed, your org will appear shortly",
-    showIcon: true,
-  });
-
-  const receipt: TransactionReceipt =
-    await walletStore.provider.waitForTransaction(response.hash);
-
+const parseOrgCreatedReceipt = (receipt: TransactionReceipt): string => {
   const iface = new ethers.utils.Interface(orgFactoryAbi);
 
-  let orgAddress: string = "";
+  let orgAddress: string | undefined;
 
   receipt.logs.forEach(log => {
     try {
@@ -304,6 +281,51 @@ export const createOrg = async (owner: string): Promise<void> => {
       message: "Org not found in interface logs",
     });
   }
+
+  return orgAddress;
+};
+
+const submitCreateOrgTx = (
+  wallet: wallet.Wallet,
+  owner: string
+): Promise<TransactionResponse> => {
+  const orgFactory = new ethers.Contract(
+    orgFactoryAddress(wallet.environment),
+    orgFactoryAbi,
+    wallet.signer
+  );
+  return orgFactory.createOrg([owner], 1);
+};
+
+// Holds the number of pending org creation transactions
+export const pendingOrgs = svelteStore.writable<number>(0);
+
+export const createOrg = async (owner: string): Promise<void> => {
+  const walletStore = svelteStore.get(wallet.store);
+  notification.info({
+    message:
+      "Waiting for you to confirm the org creation transaction in your connected wallet",
+    showIcon: true,
+    persist: true,
+  });
+  const response = await submitCreateOrgTx(walletStore, owner);
+  pendingOrgs.update(x => x + 1);
+
+  transaction.add(transaction.createOrg(response));
+  notification.info({
+    message: "Org creation transaction confirmed, your org will appear shortly",
+    showIcon: true,
+  });
+
+  const receipt: TransactionReceipt =
+    await walletStore.provider.waitForTransaction(response.hash);
+
+  const orgAddress = parseOrgCreatedReceipt(receipt);
+
+  await svelteStore.waitUntil(orgSidebarStore, orgs => {
+    return orgs.some(org => org.id === orgAddress);
+  });
+  pendingOrgs.update(x => x - 1);
 
   notification.info({
     message: `Org ${orgAddress} has been created`,
