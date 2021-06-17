@@ -42,8 +42,8 @@
     <h2>Something’s not right…</h2>
     <p class="typo-text">
       Your wallet is on <span class="typo-text-bold">{walletNetowrk}</span>, but
-      Upstream is set to <span class="typo-text-bold">{expectedNetwork}</span>.
-      Make sure both your wallet and Upstream are set to the same network.
+      Upstream is on <span class="typo-text-bold">{expectedNetwork}</span>. Make
+      sure both your wallet and Upstream are set to the same network.
     </p>
     <Button on:click={() => router.push({ type: "settings" })}
       >Go to settings</Button>
