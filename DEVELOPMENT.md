@@ -1,30 +1,51 @@
-# How do we work?
+# Developer Guide
 
-Our workflow is to put changes in feature branches which we submit for review
-on GitHub as pull requests. Ideally a pull request is small and changes only
-one aspect of the code at a time. After a pull request is reviewed by at least
-one peer and passes all tests, it can be squash-merged into master.
+## Development prerequisites
 
-💡 *We require all commits to be signed for a branch to be merged into
-master. Learn more on setting up [commit signing][cs].*
+* [NodeJS](https://nodejs.org/en/)
+* [Yarn](https://yarnpkg.com/getting-started/install)
+* [Rustup](https://github.com/rust-lang/rustup)
+* Dependencies of [Cypress](https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements)
 
-To automate our release process as much as possible we're using
-[Standard Version][sv]. Commits on master should be formatted according to
-the [conventional commits specification][cc].
+## Merging changes into master
 
-Here are a couple of examples:
+Maintainers are responsible for adding contribution to the `master` branch on
+the command line. We avoid the Github UI for merging changes. See the [Licensing
+and DCO RFC][dco-rfc] for background on this.
+
+We require commits on master to be [signed with GPG][commit-sign-gpg].
+
+After successful review, Github pull requests can be merged to `master` in two
+ways with a fast-forward merge being preferred.
+
+### Fast-forward merge (preferred)
+
+1. Rebase the pull request branch onto `master` and push it. The pull request
+   branch must be only one commit ahead of master and the commit must be
+   GPG-signed.
+2. Wait for CI to pass
+3. Check out master and merge the feature branch with
+
+   ```bash
+   git checkout master
+   git merge --fast-forward origin/feature-branch
+   git push
+   ```
+
+If `master` has been updated since the rebase you need to repeat the steps.
+
+### Squash merge
+
+You can squash merge a branch with
+
+```bash
+git checkout master
+git merge --squah --signoff <branch-name>
+git push
 ```
-  fix: fix clippy on CI (#430)
-  refactor(ui): improve cypress spec reliability (#429)
-  style(ui): icon refresh (#411)
-  chore(release): 0.0.11 (#417)
-  test(ui): add missing project creation specs (#404)
-  feat(proxy): improve session (#380)
-```
 
-When a release is performed, a section in [CHANGELOG.md][ch] is automatically
-generated with all the changes from these commit messages.
-
+Please edit the commit message so that it adequately summarizes the change and
+retains all sign-offs by contributors.
 
 ## UI
 
@@ -40,19 +61,14 @@ linting and formatting are enforced locally on a pre-commit basis with
 Additionally we run the same checks as separate build steps on our CI, just to
 make sure only properly formatted and lint-free code lands into master.
 
-## Development prerequisites
-
-* [NodeJS](https://nodejs.org/en/)
-* [Yarn](https://yarnpkg.com/getting-started/install)
-* [Rustup](https://github.com/rust-lang/rustup)
-* Dependencies of [Cypress](https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements)
 
 ### Running Upstream
 
 To start Upstream run `yarn start`.
 
 Running upstream with `yarn start` will use `<repo_root>/sandbox/rad_home` as
-the default `RAD_HOME` value to isolate you development state.
+the default `RAD_HOME` value to isolate you development state. To reset the
+application state remove `<repo_root>/sandbox/rad_home`
 
 ### Using the Git remote
 
@@ -83,6 +99,7 @@ To start the app with experimental features enabled run:
 
 The feature flag is only available in development mode. It is always disabled
 in production.
+
 
 
 ### Running tests
@@ -209,9 +226,6 @@ Here's a list of all scripts that are intended for developer use:
 
     yarn dist                   # Build an installable Upstream package for the
                                 # current platform
-
-    yarn release                # Start a two-step process to cut a new
-                                # release, see DEVELOPMENT.md for more details
 
     yarn typescript:check       # Type-check all UI *.ts and *.svelte files
     yarn prettier:check         # Check UI code formatting
@@ -519,21 +533,22 @@ All Github access tokens _must_ have the `public_repo` scope.
     2. Publish the CI artifacts as release candidate binaries.
 
        ```bash
-       ./sripts/release.ts publish-rc-binaries
+       ./scripts/release.ts publish-rc-binaries
        ```
 
     3. Create QA issues for the release that link to the release candidate
        binaries.
 
        ```bash
-       ./sripts/release.ts create-qa-issues
+       ./scripts/release.ts create-qa-issues
        ```
 
     4. Test the release by walking through the QA issues.
     5. (Optional) To fix bugs, create a PR with the fixes based on the release
        candidate branch. Once it has been approved, squash merge it into the
-       release candidate  branch (see [“Merging Pull Requests"][merging-prs])
-       and continue QA.
+       release candidate branch (see [“Merging Pull Requests"][merging-prs]).
+       Then restart the “Test the release” step. (Skip creating a QA
+       issue in 2.3.)
     6. Close the QA issues.
 
 3. Publish and announce the release
@@ -541,7 +556,7 @@ All Github access tokens _must_ have the `public_repo` scope.
        `https://releases.radicle.xyz` and create and publish a release tag.
 
        ```bash
-       ./sripts/release.ts publish
+       ./scripts/release.ts publish
        ```
 
     2. Merge the pull request on `radicle.xyz`.
@@ -549,13 +564,13 @@ All Github access tokens _must_ have the `public_repo` scope.
        post should highlight the important changes in the release.
 
        ```bash
-       ./sripts/release.ts announcements
+       ./scripts/release.ts announcements
        ```
 
     4. Announce the release to the in-app update notification
 
        ```bash
-       ./sripts/release.ts set-latest-release
+       ./scripts/release.ts set-latest-release
        ```
 
     5. Update the [Homebrew
@@ -571,7 +586,7 @@ All Github access tokens _must_ have the `public_repo` scope.
     ```bash
     git checkout master
     git pull --ff-only
-    git merge release-candidates/vX.Y.Z --signoff
+    git merge release-candidate/vX.Y.Z --signoff
     git push
     ```
 
@@ -619,3 +634,5 @@ All Github access tokens _must_ have the `public_repo` scope.
 [sw]: https://support.apple.com/en-gb/guide/mac-help/mh40616/mac
 [tp]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [wa]: https://github.com/seanmonstar/warp
+[commit-sign-gpg]: https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification/signing-commits
+[doc-rfc]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests

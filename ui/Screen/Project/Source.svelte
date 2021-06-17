@@ -5,6 +5,7 @@
   import { openPath } from "../../src/ipc";
   import * as notification from "../../src/notification";
   import * as proxy from "../../src/proxy";
+  import { unreachable } from "ui/src/unreachable";
   import * as router from "ui/src/router";
   import * as remote from "ui/src/remote";
   import type { Project, User } from "../../src/project";
@@ -93,36 +94,35 @@
     project: Project,
     peer: User
   ) => {
-    try {
-      screen.lock();
-      const path = await proxy.client.project.checkout(project.urn, {
-        path: checkoutPath,
-        peerId: peer.identity.peerId,
-      });
+    await screen.withLock(async () => {
+      try {
+        const path = await proxy.client.project.checkout(project.urn, {
+          path: checkoutPath,
+          peerId: peer.identity.peerId,
+        });
 
-      notification.info({
-        message: `${project.metadata.name} checked out to ${path}`,
-        showIcon: true,
-        actions: [
-          {
-            label: "Open folder",
-            handler: () => {
-              openPath(path);
+        notification.info({
+          message: `${project.metadata.name} checked out to ${path}`,
+          showIcon: true,
+          actions: [
+            {
+              label: "Open folder",
+              handler: () => {
+                openPath(path);
+              },
             },
-          },
-        ],
-      });
-    } catch (err) {
-      error.show(
-        new error.Error({
-          code: error.Code.ProjectCheckoutFailure,
-          message: `Checkout failed: ${err.message}`,
-          source: err,
-        })
-      );
-    } finally {
-      screen.unlock();
-    }
+          ],
+        });
+      } catch (err) {
+        error.show(
+          new error.Error({
+            code: error.Code.ProjectCheckoutFailure,
+            message: `Checkout failed: ${err.message}`,
+            source: err,
+          })
+        );
+      }
+    });
   };
 
   const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
@@ -189,6 +189,6 @@
   {:else if activeView.type === "patch"}
     <Patch {project} id={activeView.id} peerId={activeView.peerId} />
   {:else}
-    {router.unreachable(activeView)}
+    {unreachable(activeView)}
   {/if}
 {/if}

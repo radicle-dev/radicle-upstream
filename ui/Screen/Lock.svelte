@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import * as screen from "../src/screen";
   import * as session from "../src/session";
 
@@ -8,11 +8,11 @@
   let unlockInProgress = false;
 
   const unlock = async () => {
-    unlockInProgress = true;
-    screen.lock();
-    await session.unseal(passphrase).finally(() => {
-      screen.unlock();
-      unlockInProgress = false;
+    await screen.withLock(async () => {
+      unlockInProgress = true;
+      await session.unseal(passphrase).finally(() => {
+        unlockInProgress = false;
+      });
     });
   };
 

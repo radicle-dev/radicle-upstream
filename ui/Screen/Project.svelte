@@ -75,7 +75,6 @@
     } else {
       router.push({
         type: "userProfile",
-        activeTab: "projects",
         urn: peer.identity.urn,
       });
     }

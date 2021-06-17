@@ -18,18 +18,6 @@ module.exports = {
       processor: "svelte3/svelte3",
     },
     {
-      files: ["*.ts", "*.json"],
-      extends: ["plugin:@typescript-eslint/recommended"],
-      rules: {
-        // TODO(sos): typescript rule changes are ignored unless explicitly associated with the override.
-        //
-        // We need to turn this one off because svelte-check needs explicit type annotations for boolean
-        // props with default values.
-        // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/no-inferrable-types.md
-        "@typescript-eslint/no-inferrable-types": "off",
-      },
-    },
-    {
       files: ["scripts/*.ts"],
       rules: {
         // Script files are not bundled so we can’t use module imports.
@@ -61,6 +49,8 @@ module.exports = {
     "spaced-comment": ["warn", "always"],
     // Disallow focused tests
     "no-only-tests/no-only-tests": "error",
+    // Require `===` and `!==` comparisons
+    eqeqeq: "error",
 
     // We are ok with providing explict type annotations for additional
     // clarity.

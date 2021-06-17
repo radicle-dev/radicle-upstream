@@ -54,6 +54,10 @@
     padding-left: 0.5rem;
   }
 
+  .pad {
+    padding-right: 0.5rem;
+  }
+
   .content {
     align-items: center;
     background-color: var(--color-foreground-level-2);
@@ -66,6 +70,7 @@
   <span
     class="basic"
     class:content={styleContent}
+    class:pad={!showIcon}
     bind:this={slotContent}
     {style}>
     <slot />

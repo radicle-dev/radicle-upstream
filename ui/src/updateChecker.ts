@@ -93,7 +93,6 @@ class UpdateChecker {
           },
           {
             label: "Dismiss",
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             handler: () => {},
           },
         ],
@@ -194,7 +193,6 @@ class UpdateChecker {
           },
           {
             label: "Dismiss",
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
             handler: () => {},
           },
         ],

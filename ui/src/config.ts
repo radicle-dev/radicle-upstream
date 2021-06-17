@@ -16,16 +16,20 @@ export const isNodeTestEnv = Boolean(
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isCypressTestEnv = Boolean((globalThis as any).cy);
 
-// `true` if the app is running in development mode
-export const isDev = window.electron ? window.electron.isDev : true;
+// `true` if the app is running in development mode or in test mode
+export const isDev =
+  isNodeTestEnv || (window.electron ? window.electron.isDev : true);
 
-// Informs whether it's running in experimental mode, where
-// features under construction are enabled and can thus be used.
-export const isExperimental = window.electron
-  ? window.electron.isExperimental
-  : false;
+// `true` if experimental features should be enabled. This is
+// controlled by the the `RADICLE_UPSTREAM_EXPERIMENTAL` flag.
+//
+// This is `true` in the cypress and node test environments.
+export const isExperimental =
+  isNodeTestEnv || (window.electron ? window.electron.isExperimental : false);
 
-const query = qs.parse(window.location.search.replace("?", ""));
+const query = qs.parse(
+  isNodeTestEnv ? "" : window.location.search.replace("?", "")
+);
 
 // The address of the proxy in `host:port` format.
 export const proxyAddress =
