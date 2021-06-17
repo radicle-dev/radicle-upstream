@@ -218,7 +218,7 @@
         <div class="section-item-single">
           <div class="info">
             <p class="typo-text-bold">
-              Seeds help you find more projects and users on the network.
+              Seeds help you find projects and users on the network.
             </p>
             <p
               style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
@@ -227,7 +227,7 @@
                 style="color: var(--color-foreground-level-5);"
                 class="typo-link"
                 href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
-                >Learn more about seeds</a>
+                >Learn more</a>
             </p>
           </div>
           <form

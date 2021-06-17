@@ -87,7 +87,7 @@ export const showNotificationsForFailedProjects = async (): Promise<void> => {
       error.show(
         new error.Error({
           code: error.Code.ProjectRequestFailure,
-          message: `The project ${failedProject.metadata.name} could not be loaded`,
+          message: `The project ${failedProject.metadata.name} couldn’t be loaded`,
           details: failedProject,
         })
       );

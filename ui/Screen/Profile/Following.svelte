@@ -85,8 +85,8 @@
         <div class="header">
           <p class="typo-text-bold">Still looking…&nbsp;</p>
           <p style="color: var(--color-foreground-level-6);">
-            These projects haven't been found in your network yet or don't
-            exist.
+            These projects haven’t been found yet. Make sure you’re connected to
+            the seed node they’re on.
           </p>
         </div>
         <List items={data.requests} let:item={request} key="urn">

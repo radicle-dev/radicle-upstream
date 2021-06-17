@@ -20,7 +20,7 @@ context("patches", () => {
     commands
       .pickWithContent(
         ["empty-state"],
-        "There’s nothing to show here at the moment."
+        "There are no patches to show at the moment. If you’re looking for someone’s patch, be sure to add their Device ID as a remote using the dropdown above."
       )
       .should("exist");
     commands

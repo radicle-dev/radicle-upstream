@@ -19,9 +19,9 @@
   const tooltipMessage = (environment: ethereum.Environment): string => {
     switch (environment) {
       case ethereum.Environment.Mainnet:
-        return "Wallet · Connected";
+        return "Wallet • Connected";
       default:
-        return `Wallet · Connected to ${environment}`;
+        return `Wallet • Connected to ${environment}`;
     }
   };
 </script>
