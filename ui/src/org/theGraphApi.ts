@@ -80,6 +80,7 @@ export interface Org {
   id: string;
   owner: string;
   creator: string;
+  timestamp: number;
 }
 
 const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
@@ -101,22 +102,32 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<Org[]> => {
     await getGnosisSafeWallets(walletOwnerAddress)
   ).data.wallets;
 
-  const orgs = (
-    await orgsSubgraphClient().query({
-      query: apolloCore.gql`
+  const orgsResponse = await orgsSubgraphClient().query<{
+    orgs: Array<{
+      id: string;
+      owner: string;
+      creator: string;
+      // This is a UNIX seconds timestamp formatted as a string
+      timestamp: string;
+    }>;
+  }>({
+    query: apolloCore.gql`
         query GetOrgs($owners: [String!]!) {
           orgs(where: { owner_in: $owners }) {
             id
             owner
             creator
+            timestamp
           }
         }
       `,
-      variables: { owners: gnosisSafeWallets.map(owner => owner.id) },
-    })
-  ).data.orgs;
+    variables: { owners: gnosisSafeWallets.map(owner => owner.id) },
+  });
 
-  return orgs;
+  return orgsResponse.data.orgs.map(org => ({
+    ...org,
+    timestamp: Number.parseInt(org.timestamp),
+  }));
 };
 
 export interface Member {

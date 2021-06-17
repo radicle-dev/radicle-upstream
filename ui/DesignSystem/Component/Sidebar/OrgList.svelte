@@ -26,23 +26,6 @@
 </script>
 
 {#if $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
-  {#each range($pendingOrgs) as i (i)}
-    <Tooltip value="Org creation pending">
-      <SidebarItem onClick={() => {}} active={false}>
-        <Avatar
-          size="regular"
-          variant="square"
-          avatarFallback={{
-            background: {
-              r: 120,
-              g: 120,
-              b: 120,
-            },
-            emoji: "",
-          }} />
-      </SidebarItem>
-    </Tooltip>
-  {/each}
   {#each $orgSidebarStore as org (org.id)}
     <Tooltip value={org.id}>
       <SidebarItem
@@ -58,6 +41,23 @@
             org.id,
             radicleAvatar.Usage.Any
           )} />
+      </SidebarItem>
+    </Tooltip>
+  {/each}
+  {#each range($pendingOrgs) as i (i)}
+    <Tooltip value="Org creation pending">
+      <SidebarItem>
+        <Avatar
+          size="regular"
+          variant="square"
+          avatarFallback={{
+            background: {
+              r: 120,
+              g: 120,
+              b: 120,
+            },
+            emoji: "",
+          }} />
       </SidebarItem>
     </Tooltip>
   {/each}

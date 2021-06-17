@@ -1,3 +1,4 @@
+import * as lodash from "lodash";
 import * as ethers from "ethers";
 import * as multihash from "multihashes";
 import EthersSafe from "@gnosis.pm/safe-core-sdk";
@@ -370,7 +371,8 @@ const fetchOrgs = async (): Promise<void> => {
   }
 
   const orgs = await getOrgs(w.connected.account.address);
-  orgSidebarStore.set(orgs);
+  const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
+  orgSidebarStore.set(sortedOrgs);
 };
 
 // Information about an org and the safe that controls it.
