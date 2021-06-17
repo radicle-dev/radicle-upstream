@@ -5,7 +5,6 @@ import BranchBox from "./BranchBox.svelte";
 import Comment from "./Comment.svelte";
 import CompareBranches from "./CompareBranches.svelte";
 import Copyable from "./Copyable.svelte";
-import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 import Dai from "./Dai.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
@@ -39,7 +38,6 @@ import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
 import Sidebar from "./Sidebar.svelte";
-import SidebarItem from "./SidebarItem.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
 import StyledCopyable from "./StyledCopyable.svelte";
@@ -59,7 +57,6 @@ export {
   Comment,
   CompareBranches,
   Copyable,
-  ConnectionStatusIndicator,
   Dai,
   Dropdown,
   EmptyState,
@@ -95,7 +92,6 @@ export {
   RevisionSelector,
   SegmentedControl,
   Sidebar,
-  SidebarItem,
   SidebarLayout,
   Spinner,
   StyledCopyable,

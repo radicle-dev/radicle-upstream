@@ -3,8 +3,8 @@
   import * as transaction from "ui/src/transaction";
   import * as ethereum from "ui/src/ethereum";
 
-  import { Icon } from "../Primitive";
-  import Tooltip from "./Tooltip.svelte";
+  import { Icon } from "ui/DesignSystem/Primitive";
+  import Tooltip from "ui/DesignSystem/Component/Tooltip.svelte";
   import SidebarItem from "./SidebarItem.svelte";
 
   const selectedEnvironment = ethereum.selectedEnvironment;

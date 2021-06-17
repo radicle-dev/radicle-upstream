@@ -10,7 +10,6 @@
     BranchBox,
     CompareBranches,
     Copyable,
-    ConnectionStatusIndicator,
     EmptyState,
     FollowToggle,
     Fullscreen,
@@ -845,9 +844,6 @@
           primaryActionText="Take the first action!"
           secondaryActionText="Take the secondary action!" />
         <EmptyState text="Hey, I'm a tent." emoji="🎪" />
-      </Swatch>
-      <Swatch>
-        <ConnectionStatusIndicator />
       </Swatch>
     </Section>
   </div>

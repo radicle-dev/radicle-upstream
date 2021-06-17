@@ -9,9 +9,10 @@
   import * as wallet from "ui/src/wallet";
 
   import { Avatar } from "ui/DesignSystem/Primitive";
-  import { Tooltip, SidebarItem } from "ui/DesignSystem/Component";
-  import AddOrgButton from "./AddOrgButton.svelte";
+  import { Tooltip } from "ui/DesignSystem/Component";
   import ModalCreateOrg from "ui/Modal/Org/Create.svelte";
+  import AddOrgButton from "./AddOrgButton.svelte";
+  import SidebarItem from "./SidebarItem.svelte";
 
   export let identity: Identity;
 
