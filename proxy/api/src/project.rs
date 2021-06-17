@@ -243,7 +243,7 @@ impl Projects {
 
             let project = project.fulfill(stats);
 
-            let refs = match state::list_owner_project_refs(peer, project.urn.clone()).await {
+            let refs = match state::load_refs(peer, project.urn.clone()).await {
                 Err(err) => {
                     log::warn!("Failure for '{}': {}", project.urn, err);
                     projects.failures.push(Failure::SignedRefs(project));

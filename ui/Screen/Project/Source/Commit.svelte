@@ -120,7 +120,7 @@
             <span class="typo-mono"
               >&lt;{$commit.data.header.author.email}&gt;</span>
           </p>
-          {#if $commit.data.header.committer.email != $commit.data.header.author.email}
+          {#if $commit.data.header.committer.email !== $commit.data.header.author.email}
             <p class="field">
               Committed by
               <span class="author typo-semi-bold">

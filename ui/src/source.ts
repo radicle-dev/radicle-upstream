@@ -273,7 +273,7 @@ export const getLocalState = (path: string): Promise<LocalState> => {
 
 const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
-    if (entry.info.objectType != ObjectType.Blob) {
+    if (entry.info.objectType !== ObjectType.Blob) {
       continue;
     }
     if (/^readme\b/i.test(entry.path)) {

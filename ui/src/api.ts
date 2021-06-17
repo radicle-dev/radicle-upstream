@@ -1,6 +1,7 @@
 import qs from "qs";
 
 import * as config from "./config";
+import { sleep } from "ui/src/sleep";
 
 interface Options {
   query?: Record<string, unknown>;
@@ -115,12 +116,6 @@ export const set = async <T>(
     })
   );
 
-const delay = (delay: number) => {
-  return new Promise((resolve, _reject) => {
-    setTimeout(resolve, delay);
-  });
-};
-
 export const withRetry = async <T>(
   request: () => Promise<T>,
   delayTime: number,
@@ -134,6 +129,6 @@ export const withRetry = async <T>(
         throw error;
       }
     }
-    await delay(delayTime);
+    await sleep(delayTime);
   }
 };

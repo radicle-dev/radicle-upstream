@@ -299,7 +299,9 @@ function weightForStatus(status: ReceiverStatus): number {
 function newSetOfReceivers(current: Receivers, changes: Receivers): Receivers {
   const merged = new Map([...current, ...changes]);
   return new Map(
-    [...merged].filter(([_address, status]) => status != ReceiverStatus.Removed)
+    [...merged].filter(
+      ([_address, status]) => status !== ReceiverStatus.Removed
+    )
   );
 }
 
