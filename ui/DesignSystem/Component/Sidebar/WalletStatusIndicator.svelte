@@ -26,43 +26,36 @@
         tx => tx.status === transaction.TxStatus.AwaitingInclusion
       );
 
-      if (pendingTxs.length > 0) {
-        tooltipMessage = `Wallet · ${pendingTxs.length} pending transaction${
+      const connectedNetwork = ethereum.supportedNetwork($selectedEnvironment);
+      const walletNetwork = $walletStore.connected.network;
+
+      iconConnected = true;
+
+      if (connectedNetwork !== $walletStore.connected.network) {
+        tooltipMessage = `Your wallet is on ${walletNetwork}, but Upstream is on ${connectedNetwork}`;
+        iconStatusColor = "var(--color-negative)";
+      } else if (pendingTxs.length > 0) {
+        tooltipMessage = `${pendingTxs.length} pending transaction${
           pendingTxs.length > 1 ? "s" : ""
         }`;
-        iconConnected = true;
         iconStatusColor = "var(--color-caution)";
       } else {
         if (walletStore.environment === ethereum.Environment.Mainnet) {
-          tooltipMessage = "Wallet · Connected";
+          tooltipMessage = "Connected";
         } else {
-          tooltipMessage = `Wallet · Connected to ${walletStore.environment}`;
+          tooltipMessage = `Connected to ${walletStore.environment}`;
         }
-        iconConnected = true;
         iconStatusColor = undefined;
       }
     } else {
-      tooltipMessage = "Wallet · Not connected";
+      tooltipMessage = "Not connected";
       iconConnected = false;
       iconStatusColor = undefined;
-    }
-
-    if ($walletStore.status === wallet.Status.Connected) {
-      const connectedNetwork = ethereum.supportedNetwork($selectedEnvironment);
-      const walletNetowrk = $walletStore.connected.network;
-
-      if (connectedNetwork !== $walletStore.connected.network) {
-        tooltipMessage =
-          `Wallet · Your wallet is on ${walletNetowrk}, but Upstream is on ` +
-          `${connectedNetwork}`;
-        iconConnected = true;
-        iconStatusColor = "var(--color-negative)";
-      }
     }
   }
 </script>
 
-<Tooltip value={tooltipMessage}>
+<Tooltip value={`Wallet • ${tooltipMessage}`}>
   <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
     <Icon.Wallet connected={iconConnected} statusColor={iconStatusColor} />
   </SidebarItem>
