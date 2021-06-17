@@ -16,9 +16,7 @@ context("lock screen", () => {
     commands.pick("unlock-button").should("exist");
     commands.pick("passphrase-input").type("wrong-pw");
     commands.pick("unlock-button").click();
-    cy.contains(/Could not unlock the session: incorrect passphrase/).should(
-      "exist"
-    );
+    cy.contains(/That’s the wrong passphrase./).should("exist");
     commands.pick("passphrase-input").should("have.value", "wrong-pw");
     commands.pick("unlock-button").should("not.be.disabled");
   });

@@ -7,7 +7,7 @@ import * as ipc from "./ipc";
 
 interface ErrorParams {
   // A unique code for easy identification of the error.
-  code: Code;
+  code?: Code;
   // Message that is displayed to the user if the error is shown.
   message: string;
   // Arbitrary additional information associated with the error
@@ -24,7 +24,7 @@ interface ErrorParams {
 // contextual information.
 export class Error extends globalThis.Error {
   // A unique code for easy identification of the error.
-  readonly code: Code;
+  readonly code?: Code;
   // Message that is displayed to the user if the error is shown.
   readonly message: string;
   // An optional stack trace
