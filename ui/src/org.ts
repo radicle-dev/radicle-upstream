@@ -401,10 +401,13 @@ const fetchPendingAnchors = async (
   );
 
   const safeServiceClient = createSafeServiceClient();
-
-  const txs = (
-    await safeServiceClient.getPendingTransactions(checksummedGnosisSafeAddress)
-  ).results;
+  const response = await safeServiceClient.getPendingTransactions(
+    checksummedGnosisSafeAddress
+  );
+  // Despite the return type the `results` field may be not set because
+  // of a bug in the safe client.
+  // https://github.com/gnosis/safe-core-sdk/pull/31#issuecomment-863245875
+  const txs = response.results || [];
 
   const isAnchor = (
     anchor: project.PendingAnchor | undefined
