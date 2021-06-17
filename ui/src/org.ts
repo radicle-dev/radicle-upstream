@@ -1,6 +1,5 @@
 import * as ethers from "ethers";
 import * as multihash from "multihashes";
-import * as svelteStore from "svelte/store";
 import EthersSafe from "@gnosis.pm/safe-core-sdk";
 import SafeServiceClient from "@gnosis.pm/safe-service-client";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
@@ -12,6 +11,7 @@ import type {
 import type * as project from "ui/src/project";
 import type { Org, Member, MemberResponse } from "ui/src/org/theGraphApi";
 
+import * as svelteStore from "ui/src/svelteStore";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as ipc from "ui/src/ipc";
@@ -69,31 +69,34 @@ const updateOrgsForever = async (): Promise<never> => {
 
   for (;;) {
     const walletStore = svelteStore.get(wallet.store);
-    const w = svelteStore.get(walletStore);
 
-    if (w.status === wallet.Status.Connected) {
-      await fetchOrgs().then(
-        () => {
-          showError = true;
-        },
-        err => {
-          // We only show the first error that is thrown by
-          // `fetchOrgs()`. If the function keeps throwing errors we
-          // don’t show them. We reset this behavior after the fetch is
-          // successful.
-          if (showError) {
-            error.show(
-              new error.Error({
-                code: error.Code.OrgFetchFailed,
-                message: `Failed to fetch org data`,
-                source: err,
-              })
-            );
-            showError = false;
-          }
+    await svelteStore.waitUntil(
+      walletStore,
+      w => w.status === wallet.Status.Connected
+    );
+
+    await fetchOrgs().then(
+      () => {
+        showError = true;
+      },
+      err => {
+        // We only show the first error that is thrown by
+        // `fetchOrgs()`. If the function keeps throwing errors we
+        // don’t show them. We reset this behavior after the fetch is
+        // successful.
+        if (showError) {
+          error.show(
+            new error.Error({
+              code: error.Code.OrgFetchFailed,
+              message: `Failed to fetch org data`,
+              source: err,
+            })
+          );
+          showError = false;
         }
-      );
-    }
+      }
+    );
+
     await sleep(ORG_POLL_INTERVAL_MS);
   }
 };
