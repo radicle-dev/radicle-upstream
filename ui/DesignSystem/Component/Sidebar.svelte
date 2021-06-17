@@ -1,26 +1,19 @@
 <script lang="typescript">
-  import * as radicleAvatar from "radicle-avatar";
   import { activeRouteStore, push } from "ui/src/router";
 
-  import { orgSidebarStore } from "ui/src/org";
   import type { Identity } from "ui/src/identity";
   import * as modal from "ui/src/modal";
   import * as config from "ui/src/config";
-  import * as wallet from "ui/src/wallet";
 
   import Tooltip from "ui/DesignSystem/Component/Tooltip.svelte";
   import { Avatar, Icon } from "ui/DesignSystem/Primitive";
   import SidebarItem from "ui/DesignSystem/Component/SidebarItem.svelte";
   import ConnectionStatusIndicator from "ui/DesignSystem/Component/ConnectionStatusIndicator.svelte";
-  import AddOrgButton from "ui/DesignSystem/Component/Sidebar/AddOrgButton.svelte";
   import WalletStatusIndicator from "ui/DesignSystem/Component/WalletStatusIndicator.svelte";
   import ModalSearch from "ui/Modal/Search.svelte";
-  import ModalCreateOrg from "ui/Modal/Org/Create.svelte";
+  import OrgList from "ui/Screen/Org/Sidebar/OrgList.svelte";
 
   export let identity: Identity;
-
-  const walletStore = wallet.store;
-  $: w = $walletStore;
 </script>
 
 <style>
@@ -80,38 +73,8 @@
           variant="circle" />
       </SidebarItem>
     </Tooltip>
-    {#if $w.status === wallet.Status.Connected}
-      {#each $orgSidebarStore as org (org.id)}
-        <Tooltip value={org.id}>
-          <SidebarItem
-            indicator={true}
-            onClick={() =>
-              push({ type: "org", address: org.id, activeTab: "projects" })}
-            active={$activeRouteStore.type === "org" &&
-              $activeRouteStore.address === org.id}>
-            <Avatar
-              size="regular"
-              variant="square"
-              avatarFallback={radicleAvatar.generate(
-                org.id,
-                radicleAvatar.Usage.Any
-              )} />
-          </SidebarItem>
-        </Tooltip>
-      {/each}
-      <Tooltip value="Create an org">
-        <SidebarItem
-          onClick={() =>
-            modal.toggle(ModalCreateOrg, () => {}, {
-              identity,
-              walletAddress:
-                $w.status === wallet.Status.Connected
-                  ? $w.connected.account.address
-                  : null,
-            })}>
-          <AddOrgButton />
-        </SidebarItem>
-      </Tooltip>
+    {#if config.isDev}
+      <OrgList {identity} />
     {/if}
   </div>
   <div class="bottom">
