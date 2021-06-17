@@ -1,10 +1,13 @@
 <script lang="typescript">
-  import * as router from "ui/src/router";
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
   import * as error from "ui/src/error";
-  import * as org from "./src/org";
+  import * as ethereum from "ui/src/ethereum";
   import * as hotkeys from "ui/src/hotkeys";
+  import * as org from "./src/org";
   import * as remote from "ui/src/remote";
+  import * as router from "ui/src/router";
+  import * as wallet from "ui/src/wallet";
+
   import { unreachable } from "ui/src/unreachable";
   import { fetch, session as sessionStore, Status } from "ui/src/session";
   import "ui/src/localPeer";
@@ -35,7 +38,9 @@
   customProtocolHandler.register();
   org.initialize();
 
+  const walletStore = wallet.store;
   const activeRouteStore = router.activeRouteStore;
+  const ethereumEnvironment = ethereum.selectedEnvironment;
 
   sessionStore.subscribe(session => {
     // We’re not using a reactive statement here to prevent this code from
@@ -71,6 +76,20 @@
         break;
     }
   });
+
+  $: e = ethereum.supportedNetwork($ethereumEnvironment);
+  $: ws = $walletStore;
+  $: w = $ws;
+
+  // If we're on an org screen and there's a wallet mismatch, go to the wallet
+  // screen to inform the user about the mismatch.
+  $: if (
+    w.status === wallet.Status.Connected &&
+    e !== w.connected.network &&
+    $activeRouteStore.type === "org"
+  ) {
+    router.push({ type: "wallet", activeTab: "transactions" });
+  }
 </script>
 
 <style>

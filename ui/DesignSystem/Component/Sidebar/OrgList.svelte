@@ -7,20 +7,24 @@
   import { orgSidebarStore } from "ui/src/org";
   import * as modal from "ui/src/modal";
   import * as wallet from "ui/src/wallet";
+  import * as ethereum from "ui/src/ethereum";
+
+  const ethereumEnvironment = ethereum.selectedEnvironment;
+  const walletStore = wallet.store;
 
   import { Avatar } from "ui/DesignSystem/Primitive";
   import { Tooltip } from "ui/DesignSystem/Component";
+
   import ModalCreateOrg from "ui/Modal/Org/Create.svelte";
   import AddOrgButton from "./AddOrgButton.svelte";
   import SidebarItem from "./SidebarItem.svelte";
 
   export let identity: Identity;
 
-  const walletStore = wallet.store;
   $: w = $walletStore;
 </script>
 
-{#if $w.status === wallet.Status.Connected}
+{#if $w.status === wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $w.connected.network}
   {#each $orgSidebarStore as org (org.id)}
     <Tooltip value={org.id}>
       <SidebarItem
