@@ -74,7 +74,7 @@
       {
         title: "Patches",
         active: active.type === "patches",
-        icon: Icon.Commit,
+        icon: Icon.Revision,
         counter: screen.patches.filter(patch => !patch.merged).length,
         onClick: () => {
           router.push({

@@ -44,8 +44,12 @@
   $: budgetValidation = weeklyBudgetValidationStore();
   $: budgetStore.set(budget);
   $: {
-    if ($budgetStore && $budgetStore.length > 0) validatingBudget = true;
-    if (validatingBudget) budgetValidation.validate($budgetStore);
+    if ($budgetStore && $budgetStore.length > 0) {
+      validatingBudget = true;
+    }
+    if (validatingBudget) {
+      budgetValidation.validate($budgetStore);
+    }
   }
 
   // Flags whether the view is in editing mode.

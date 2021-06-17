@@ -48,7 +48,9 @@
       return shortcut.modifierKey ? match && modifierKey : match;
     });
 
-    if (!shortcut) return;
+    if (!shortcut) {
+      return;
+    }
 
     switch (shortcut.key) {
       case hotkeys.ShortcutKey.Help:

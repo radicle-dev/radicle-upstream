@@ -15,11 +15,17 @@
   const handleClick = (ev: MouseEvent) => {
     const component = $current;
     const inside = component && component.contains(ev.target as HTMLDivElement);
-    if (!inside) close();
+    if (!inside) {
+      close();
+    }
   };
 
-  $: if (expanded) open(container);
-  $: if ($current !== container) dispatch("hide");
+  $: if (expanded) {
+    open(container);
+  }
+  $: if ($current !== container) {
+    dispatch("hide");
+  }
 </script>
 
 <svelte:window on:click={handleClick} />

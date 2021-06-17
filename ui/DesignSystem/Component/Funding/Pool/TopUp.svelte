@@ -19,8 +19,12 @@
   $: validation = balanceValidationStore(balance);
   $: amountStore.set(amount);
   $: {
-    if ($amountStore && $amountStore.length > 0) validating = true;
-    if (validating) validation.validate($amountStore);
+    if ($amountStore && $amountStore.length > 0) {
+      validating = true;
+    }
+    if (validating) {
+      validation.validate($amountStore);
+    }
   }
 
   $: disabled = $validation.status !== ValidationStatus.Success;

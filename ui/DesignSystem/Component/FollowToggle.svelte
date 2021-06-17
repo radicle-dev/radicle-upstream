@@ -14,7 +14,9 @@
 
   const dispatch = createEventDispatcher();
   const click = () => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     following = !following;
     dispatch(following ? "follow" : "unfollow");

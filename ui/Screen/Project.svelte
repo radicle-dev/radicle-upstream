@@ -45,7 +45,9 @@
   const trackTooltip = "Unfollowing is not yet supported";
 
   export const copy = (content: string): void => {
-    if (content) copyToClipboard(content.trim());
+    if (content) {
+      copyToClipboard(content.trim());
+    }
     notification.info({ message: "Copied to your clipboard" });
   };
 

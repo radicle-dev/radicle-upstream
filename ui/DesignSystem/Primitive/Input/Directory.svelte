@@ -18,7 +18,9 @@
 
   const openFileDialog = async () => {
     path = await getDirectoryPath();
-    if (path) dispatch("selected");
+    if (path) {
+      dispatch("selected");
+    }
   };
 </script>
 
