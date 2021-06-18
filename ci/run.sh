@@ -48,6 +48,10 @@ cp .buildkite/.gitconfig "$HOME/"
 cat "$HOME/.gitconfig"
 log-group-end
 
+log-group-start "License compliance"
+time yarn run license-compliance
+log-group-end
+
 log-group-start "Run proxy fmt"
 time cargo fmt --all -- --check
 log-group-end
