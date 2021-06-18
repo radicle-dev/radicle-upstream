@@ -5,11 +5,13 @@
   import * as modal from "ui/src/modal";
   import * as config from "ui/src/config";
 
-  import Tooltip from "./Tooltip.svelte";
-  import { Avatar, Icon } from "../Primitive";
-  import SidebarItem from "./SidebarItem.svelte";
-  import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
-  import WalletStatusIndicator from "./WalletStatusIndicator.svelte";
+  import { Avatar, Icon } from "ui/DesignSystem/Primitive";
+  import Tooltip from "ui/DesignSystem/Component/Tooltip.svelte";
+
+  import SidebarItem from "./Sidebar/SidebarItem.svelte";
+  import ConnectionStatusIndicator from "./Sidebar/ConnectionStatusIndicator.svelte";
+  import WalletStatusIndicator from "./Sidebar/WalletStatusIndicator.svelte";
+
   import ModalSearch from "ui/Modal/Search.svelte";
 
   export let identity: Identity;

@@ -5,7 +5,6 @@ import BranchBox from "./BranchBox.svelte";
 import Comment from "./Comment.svelte";
 import CompareBranches from "./CompareBranches.svelte";
 import Copyable from "./Copyable.svelte";
-import ConnectionStatusIndicator from "./ConnectionStatusIndicator.svelte";
 import Dai from "./Dai.svelte";
 import Dropdown from "./Dropdown.svelte";
 import EmptyState from "./EmptyState.svelte";
@@ -56,7 +55,6 @@ export {
   Comment,
   CompareBranches,
   Copyable,
-  ConnectionStatusIndicator,
   Dai,
   Dropdown,
   EmptyState,

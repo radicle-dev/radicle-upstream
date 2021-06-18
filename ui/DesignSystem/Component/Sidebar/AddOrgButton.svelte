@@ -1,5 +1,5 @@
 <script>
-  import { Icon } from "../../Primitive";
+  import { Icon } from "ui/DesignSystem/Primitive";
 
   export let disabled = false;
 </script>
