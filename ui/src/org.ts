@@ -156,7 +156,7 @@ export const anchorProject = async (
     });
   }
 
-  notification.info({
+  const confirmNotification = notification.info({
     message:
       "Waiting for you to confirm the anchor transaction in your connected wallet",
     showIcon: true,
@@ -169,6 +169,7 @@ export const anchorProject = async (
     data: txData,
     operation: OperationType.Call,
   });
+  confirmNotification.remove();
 
   notification.info({
     message:
@@ -182,7 +183,6 @@ export const anchorProject = async (
         },
       },
     ],
-    persist: true,
   });
 
   router.push({ type: "org", address: orgAddress, activeTab: "projects" });
@@ -232,13 +232,14 @@ export const pendingOrgs = svelteStore.writable<number>(0);
 
 export const createOrg = async (owner: string): Promise<void> => {
   const walletStore = svelteStore.get(wallet.store);
-  notification.info({
+  const confirmNotification = notification.info({
     message:
       "Waiting for you to confirm the org creation transaction in your connected wallet",
     showIcon: true,
     persist: true,
   });
   const response = await submitCreateOrgTx(walletStore, owner);
+  confirmNotification.remove();
   pendingOrgs.update(x => x + 1);
 
   transaction.add(transaction.createOrg(response));
