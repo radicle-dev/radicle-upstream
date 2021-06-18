@@ -1,5 +1,7 @@
-import * as validation from "./validation";
 import * as multibase from "multibase";
+
+import * as error from "ui/src/error";
+import * as validation from "ui/src/validation";
 
 // FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
 export type Urn = string;
@@ -18,7 +20,7 @@ const urnConstraints = {
 export const urnValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(urnConstraints);
 
-// Parses the identity URN and returns its SHA-1 root hash
+// Takes a Radicle URN and returns its payload as a binary encoded SHA1
 export function parseIdentitySha1(urn: string): Uint8Array {
   const matches = urn.match(GET_URN_ID) || [];
   const id = matches[1];
@@ -47,4 +49,21 @@ export function parseIdentitySha1(urn: string): Uint8Array {
   }
   // Drop multihash header, keep only the payload
   return hash.slice(2);
+}
+
+// Takes a binary encoded SHA1 and encodes it into a Radicle URN --
+// it's the inverse of parseIdentitySha1.
+export function identitySha1Urn(hash: Uint8Array): string {
+  // a SHA-1 digest is always 20 bytes
+  if (hash.length !== 20) {
+    throw new error.Error({
+      code: error.Code.OrgIdentitySha1UrnError,
+      message: "SHA1 hash has invalid size",
+      details: { hash, hashLength: hash.length },
+    });
+  }
+  // Create a multihash by adding prefix 17 for SHA-1 and 20 for the hash length
+  const multihash = new Uint8Array([17, 20, ...hash]);
+  const payload = multibase.encode("base32z", multihash);
+  return `rad:git:${new TextDecoder().decode(payload)}`;
 }

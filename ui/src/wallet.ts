@@ -66,6 +66,7 @@ function getProvider(
         "66fa0f92a54e4d8c9483ffdc6840d77b"
       );
     case ethereum.Environment.Rinkeby:
+      // This account is registered on igor.zuk@protonmail.com.
       return new ethers.providers.InfuraProvider(
         "rinkeby",
         "de5e2a8780c04964950e73b696d1bfb1"
@@ -268,8 +269,18 @@ class WalletConnectSigner extends ethers.Signer {
     return accountAddress;
   }
 
-  async signMessage(_message: ethers.Bytes | string): Promise<string> {
-    throw new Error("not implemented");
+  async signMessage(message: ethers.Bytes | string): Promise<string> {
+    const prefix = ethers.utils.toUtf8Bytes(
+      `\x19Ethereum Signed Message:\n${message.length}`
+    );
+    const msg = ethers.utils.concat([prefix, message]);
+    const address = await this.getAddress();
+    const keccakMessage = ethers.utils.keccak256(msg);
+    const signature = await this.walletConnect.signMessage([
+      address.toLowerCase(),
+      keccakMessage,
+    ]);
+    return signature;
   }
 
   async sendTransaction(

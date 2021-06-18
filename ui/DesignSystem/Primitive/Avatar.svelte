@@ -11,6 +11,7 @@
   export let imageUrl: string = "";
   export let avatarFallback: Avatar | undefined = undefined;
   export let title: string = "";
+  export let animate = false;
 
   export let variant: "circle" | "square" = "circle";
 
@@ -117,6 +118,21 @@
     height: 32px;
     border-radius: 16px;
   }
+
+  .pulsate {
+    opacity: 1;
+    animation: pulsate 3.5s ease-out infinite;
+  }
+
+  @keyframes pulsate {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
 </style>
 
 <div data-cy={dataCy} class={`container ${size}`} {style}>
@@ -125,6 +141,7 @@
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}
+      class:pulsate={animate}
       style="background: {background(avatarFallback)}"
       data-cy="emoji">
       <Emoji {size} emoji={avatarFallback.emoji} />

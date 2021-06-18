@@ -1,3 +1,8 @@
+import type * as project from "ui/src/project";
+import { unreachable } from "ui/src/unreachable";
+
+import * as org from "ui/src/org";
+
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type ProfileTab = "projects" | "following";
 export type ProjectView =
@@ -13,6 +18,7 @@ export type Route =
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
+  | OrgRoute
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; urn: string }
@@ -24,11 +30,20 @@ export type Route =
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "settings" };
 
+interface OrgRoute {
+  type: "org";
+  address: string;
+  activeTab: OrgTab;
+}
+
+export type OrgTab = "projects" | "members";
+
 export type LoadedRoute =
   | { type: "boot" }
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
+  | OrgLoadedRoute
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; urn: string }
@@ -39,6 +54,29 @@ export type LoadedRoute =
     }
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "settings" };
+
+export type LoadedOrgTab =
+  | {
+      type: "projects";
+      anchoredProjects: project.Project[];
+      unresolvedAnchors: project.Anchor[];
+      gnosisSafeAddress: string;
+      projectCount: number;
+    }
+  | {
+      type: "members";
+      threshold: number;
+      members: org.Member[];
+    };
+
+interface OrgLoadedRoute {
+  type: "org";
+  address: string;
+  gnosisSafeAddress: string;
+  activeTab: LoadedOrgTab;
+  threshold: number;
+  members: org.Member[];
+}
 
 export function routeToPath(route: Route): string {
   let subRoute = "";
@@ -54,7 +92,50 @@ export function routeToPath(route: Route): string {
 
 export async function loadRoute(route: Route): Promise<LoadedRoute> {
   switch (route.type) {
+    case "org":
+      return loadOrgRoute(route);
     default:
       return route;
+  }
+}
+
+async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
+  if (route.activeTab === "projects") {
+    const [projectCount, orgWithSafe] = await Promise.all([
+      org.getProjectCount(),
+      org.fetchOrg(route.address),
+    ]);
+    const projectAnchors = await org.resolveProjectAnchors(orgWithSafe);
+
+    return {
+      type: "org",
+      address: route.address,
+      gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
+      members: orgWithSafe.members,
+      threshold: orgWithSafe.threshold,
+      activeTab: {
+        type: "projects",
+        anchoredProjects: projectAnchors.anchoredProjects,
+        unresolvedAnchors: projectAnchors.unresolvedAnchors,
+        gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
+        projectCount,
+      },
+    };
+  } else if (route.activeTab === "members") {
+    const orgScreen = await org.fetchOrg(route.address);
+    return {
+      type: "org",
+      address: route.address,
+      gnosisSafeAddress: orgScreen.gnosisSafeAddress,
+      members: orgScreen.members,
+      threshold: orgScreen.threshold,
+      activeTab: {
+        type: "members",
+        members: orgScreen.members,
+        threshold: orgScreen.threshold,
+      },
+    };
+  } else {
+    return unreachable(route.activeTab);
   }
 }

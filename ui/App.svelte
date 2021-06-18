@@ -1,9 +1,13 @@
 <script lang="typescript">
-  import * as router from "ui/src/router";
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
   import * as error from "ui/src/error";
+  import * as ethereum from "ui/src/ethereum";
   import * as hotkeys from "ui/src/hotkeys";
+  import * as org from "./src/org";
   import * as remote from "ui/src/remote";
+  import * as router from "ui/src/router";
+  import * as walletModule from "ui/src/wallet";
+
   import { unreachable } from "ui/src/unreachable";
   import { fetch, session as sessionStore, Status } from "ui/src/session";
   import "ui/src/localPeer";
@@ -23,6 +27,7 @@
   import Lock from "ui/Screen/Lock.svelte";
   import NetworkDiagnostics from "ui/Screen/NetworkDiagnostics.svelte";
   import Onboarding from "ui/Screen/Onboarding.svelte";
+  import Org from "ui/Screen/Org.svelte";
   import Profile from "ui/Screen/Profile.svelte";
   import UserProfile from "ui/Screen/UserProfile.svelte";
   import Project from "ui/Screen/Project.svelte";
@@ -31,8 +36,11 @@
 
   router.initialize();
   customProtocolHandler.register();
+  org.initialize();
 
+  const walletStore = walletModule.store;
   const activeRouteStore = router.activeRouteStore;
+  const ethereumEnvironment = ethereum.selectedEnvironment;
 
   sessionStore.subscribe(session => {
     // We’re not using a reactive statement here to prevent this code from
@@ -68,6 +76,20 @@
         break;
     }
   });
+
+  $: connectedNetwork = ethereum.supportedNetwork($ethereumEnvironment);
+  $: wallet = $walletStore;
+  $: walletState = $wallet;
+
+  // If we're on an org screen and there's a wallet mismatch, go to the wallet
+  // screen to inform the user about the mismatch.
+  $: if (
+    walletState.status === walletModule.Status.Connected &&
+    connectedNetwork !== walletState.connected.network &&
+    $activeRouteStore.type === "org"
+  ) {
+    router.push({ type: "wallet", activeTab: "transactions" });
+  }
 </script>
 
 <style>
@@ -100,6 +122,13 @@
     <UserProfile urn={$activeRouteStore.urn} />
   {:else if $activeRouteStore.type === "networkDiagnostics"}
     <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "org"}
+    <Org
+      activeTab={$activeRouteStore.activeTab}
+      address={$activeRouteStore.address}
+      gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}
+      threshold={$activeRouteStore.threshold}
+      members={$activeRouteStore.members} />
   {:else if $activeRouteStore.type === "project"}
     <Project
       activeView={$activeRouteStore.activeView}

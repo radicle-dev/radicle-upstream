@@ -10,7 +10,7 @@ import type { Urn } from "./urn";
 import * as validation from "./validation";
 import * as proxy from "./proxy";
 import {
-  Project,
+  Project as ProxyProject,
   Metadata,
   Stats,
   Request,
@@ -22,9 +22,31 @@ import {
   PeerReplicated,
 } from "./proxy/project";
 
-export type { Project, Metadata, Stats, Request, Peer, PeerReplicated };
+export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
+interface ConfirmedAnchor {
+  type: "confirmed";
+  transactionId: string;
+  orgAddress: string;
+  projectId: string;
+  commitHash: string;
+}
+
+export interface PendingAnchor {
+  type: "pending";
+  confirmations: number;
+  threshold: number;
+  orgAddress: string;
+  projectId: string;
+  commitHash: string;
+}
+
+export type Anchor = ConfirmedAnchor | PendingAnchor;
+
+export interface Project extends ProxyProject {
+  anchor?: Anchor;
+}
 export interface User {
   peerId: identity.PeerId;
   type: PeerType;

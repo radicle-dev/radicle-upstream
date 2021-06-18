@@ -11,6 +11,7 @@
   import SidebarItem from "./Sidebar/SidebarItem.svelte";
   import ConnectionStatusIndicator from "./Sidebar/ConnectionStatusIndicator.svelte";
   import WalletStatusIndicator from "./Sidebar/WalletStatusIndicator.svelte";
+  import OrgList from "./Sidebar/OrgList.svelte";
 
   import ModalSearch from "ui/Modal/Search.svelte";
 
@@ -74,6 +75,9 @@
           variant="circle" />
       </SidebarItem>
     </Tooltip>
+    {#if config.isDev}
+      <OrgList {identity} />
+    {/if}
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">

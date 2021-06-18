@@ -138,27 +138,18 @@
   }
 </script>
 
-<style>
-  .revision-selector-wrapper {
-    width: 18rem;
-    position: relative;
-    margin-right: 2rem;
-  }
-</style>
-
 {#if $store.status === remote.Status.Success}
   <ActionBar>
     <div slot="left">
       <div style="display: flex">
         {#if !patchesTabSelected}
-          <div class="revision-selector-wrapper">
-            <RevisionSelector
-              loading={$store.data.selectedRevision.request !== null}
-              on:select={onSelectRevision}
-              selected={$store.data.selectedRevision.selected}
-              defaultBranch={project.metadata.defaultBranch}
-              revisions={$store.data.revisions} />
-          </div>
+          <RevisionSelector
+            style="width: 18rem; margin-right: 2rem;"
+            loading={$store.data.selectedRevision.request !== null}
+            on:select={onSelectRevision}
+            selected={$store.data.selectedRevision.selected}
+            defaultBranch={project.metadata.defaultBranch}
+            revisions={$store.data.revisions} />
         {/if}
 
         <TabBar tabs={tabs(activeView, $store.data)} />
