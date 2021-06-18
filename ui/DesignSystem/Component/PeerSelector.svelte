@@ -12,8 +12,10 @@
   import Peer from "./PeerSelector/Peer.svelte";
 
   export let expanded: boolean = false;
+  export let rounded: boolean = false;
   export let peers: User[];
   export let selected: User;
+  export let showProfile: boolean = isExperimental;
   let dropdownHeight: number;
 
   const orderPeers = (peers: User[]): User[] => {
@@ -41,7 +43,6 @@
     hide();
     dispatch("select", peer);
   };
-  const showProfile = isExperimental;
 </script>
 
 <style>
@@ -105,6 +106,14 @@
     justify-content: center;
   }
 
+  .rounded {
+    border-top-right-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem !important;
+    border-top-left-radius: 0.5rem;
+    border-bottom-left-radius: 0.5rem;
+    border: 1px solid var(--color-foreground-level-3);
+  }
+
   .entry {
     align-items: center;
     background-color: var(--color-background);
@@ -135,6 +144,7 @@
   style="position: relative; user-select: none;">
   <div
     class="peer-selector typo-overflow-ellipsis"
+    class:rounded
     data-cy="peer-selector"
     hidden={expanded}
     on:click|stopPropagation={show}>
@@ -149,6 +159,7 @@
       bind:clientHeight={dropdownHeight}
       class="peer-dropdown"
       hidden={!expanded}
+      class:rounded
       style={`border-bottom-right-radius: ${
         dropdownHeight > 40 ? "0.5rem" : "0"
       }`}>
