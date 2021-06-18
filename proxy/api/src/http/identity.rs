@@ -169,7 +169,7 @@ mod test {
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                state::get_user(&ctx.peer, urn.clone())
+                state::get_local(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -249,7 +249,7 @@ mod test {
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                state::get_user(&ctx.peer, urn.clone())
+                state::get_local(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -329,7 +329,7 @@ mod test {
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                state::get_user(&ctx.peer, urn.clone())
+                state::get_local(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -412,7 +412,7 @@ mod test {
             };
             let id = identity::create(&ctx.peer, metadata).await?;
 
-            let owner = state::get_user(&ctx.peer, id.urn.clone()).await?.unwrap();
+            let owner = state::get_local(&ctx.peer, id.urn.clone()).await?.unwrap();
 
             session::initialize(&ctx.store, id, &ctx.default_seeds)?;
 

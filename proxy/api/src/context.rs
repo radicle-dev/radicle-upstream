@@ -216,7 +216,7 @@ impl Unsealed {
         let (peer_control, peer, run_handle) = {
             let config = config::default(signer, tmp_dir.path())?;
             let disco = config::static_seed_discovery(&[]);
-            let coco_peer = Peer::new(config, disco, store.clone(), RunConfig::default());
+            let coco_peer = Peer::new(config, disco, store.clone(), RunConfig::default())?;
             let peer = coco_peer.peer.clone();
 
             let peer_control = coco_peer.control();

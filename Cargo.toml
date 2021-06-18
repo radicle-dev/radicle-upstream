@@ -6,8 +6,8 @@ members = [
 
 [patch.crates-io.git2]
 git = "https://github.com/radicle-dev/git2-rs.git"
-rev = "5971ca18d73eed39384193899177dfb7ac2d0a05"
+rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
 
 [patch.crates-io.libgit2-sys]
 git = "https://github.com/radicle-dev/git2-rs.git"
-rev = "5971ca18d73eed39384193899177dfb7ac2d0a05"
+rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"

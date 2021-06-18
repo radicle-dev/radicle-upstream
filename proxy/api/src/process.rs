@@ -265,7 +265,7 @@ async fn rig(
         );
         let disco = radicle_daemon::config::StreamDiscovery::new(seeds_receiver);
 
-        let peer = radicle_daemon::Peer::new(config, disco, store.clone(), coco_run_config());
+        let peer = radicle_daemon::Peer::new(config, disco, store.clone(), coco_run_config())?;
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {

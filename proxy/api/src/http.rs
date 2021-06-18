@@ -113,7 +113,7 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(LocalIdentity,)> {
             let session =
                 crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
 
-            let user = state::get_user(&ctx.peer, session.identity.urn)
+            let user = state::get_local(&ctx.peer, session.identity.urn)
                 .await
                 .expect("failed to get local identity")
                 .expect("the local identity is missing");

@@ -10,6 +10,8 @@ use std::{env, io, path};
 
 use directories::ProjectDirs;
 
+use radicle_daemon::profile::ProfileId;
+
 /// Errors when setting up configuration paths and variables.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -34,7 +36,7 @@ pub fn dirs() -> ProjectDirs {
 }
 
 /// Returns the directory for the application store
-pub fn store_dir(profile_id: &str) -> path::PathBuf {
+pub fn store_dir(profile_id: &ProfileId) -> path::PathBuf {
     let store_root = match std::env::var_os("RAD_HOME") {
         None => {
             let dirs = dirs();
@@ -42,7 +44,7 @@ pub fn store_dir(profile_id: &str) -> path::PathBuf {
         },
         Some(root) => path::Path::new(&root).to_path_buf(),
     };
-    store_root.join(profile_id).join("store")
+    store_root.join(profile_id.as_str()).join("store")
 }
 
 /// Returns the path to a folder containing helper binaries.

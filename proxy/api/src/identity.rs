@@ -198,7 +198,7 @@ pub async fn get(
     peer: &net::peer::Peer<BoxedSigner>,
     id: Urn,
 ) -> Result<Option<Identity>, error::Error> {
-    match state::get_user(peer, id).await? {
+    match state::get_local(peer, id).await? {
         Some(user) => Ok(Some(
             (peer.peer_id(), user.into_inner().into_inner()).into(),
         )),
