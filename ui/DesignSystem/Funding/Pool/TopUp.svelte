@@ -1,8 +1,8 @@
 <script lang="typescript">
   import Button from "../../Button.svelte";
-  import Emoji from "../../Emoji.svelte";
-  import Input from "../../Input";
   import Dai from "../../Dai.svelte";
+  import Emoji from "../../Emoji.svelte";
+  import TextInput from "../../TextInput.svelte";
 
   import { amountStore, balanceValidationStore } from "ui/src/funding/pool";
   import { ValidationStatus } from "ui/src/validation";
@@ -54,7 +54,7 @@
   You can top up a couple of weeks worth of support or just enough for this
   week.
 </p>
-<Input.Text
+<TextInput
   dataCy="modal-amount-input"
   bind:value={amount}
   validation={$validation}
@@ -64,7 +64,7 @@
   <div slot="left" style="position: absolute; top: 1px; left: 12px;">
     <Dai />
   </div>
-</Input.Text>
+</TextInput>
 <div class="submit">
   <Button
     variant="transparent"

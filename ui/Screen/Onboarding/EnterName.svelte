@@ -4,7 +4,7 @@
   import { ValidationStatus } from "../../src/validation";
   import * as onboarding from "../../src/onboarding";
 
-  import { Button, Emoji, Input } from "ui/DesignSystem";
+  import { Button, Emoji, TextInput } from "ui/DesignSystem";
 
   const dispatch = createEventDispatcher();
 
@@ -99,7 +99,7 @@
       You’ll need a display name to use Radicle. This isn’t unique across the
       network, but it will help others recognize you more easily.
     </p>
-    <Input.Text
+    <TextInput
       autofocus
       placeholder="Enter a display name (e.g. coolprogrammer3000)"
       bind:inputElement={nameInput}

@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Button, Dai, Emoji, Input } from "ui/DesignSystem";
+  import { Button, Dai, Emoji, TextInput } from "ui/DesignSystem";
 
   import {
     budgetStore,
@@ -60,7 +60,7 @@
   Set your weekly budget for outgoing support. This amount will flow to your
   receivers in real time.
 </p>
-<Input.Text
+<TextInput
   dataCy="modal-amount-input"
   bind:value={budget}
   validation={$validation}
@@ -70,7 +70,7 @@
   <div slot="left" style="position: absolute; top: 1px; left: 12px;">
     <Dai />
   </div>
-</Input.Text>
+</TextInput>
 <div class="submit">
   <Button
     variant="transparent"

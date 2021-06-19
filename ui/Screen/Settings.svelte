@@ -25,11 +25,11 @@
   import {
     Button,
     Icon,
-    Input,
     PeerId,
     SegmentedControl,
     SidebarLayout,
     StyledCopyable,
+    TextInput,
   } from "ui/DesignSystem";
   import ModalShortcuts from "../Modal/Shortcuts.svelte";
 
@@ -237,7 +237,7 @@
             on:submit|preventDefault
             data-cy="seed-entry-form">
             <div class="seed-entry-field">
-              <Input.Text
+              <TextInput
                 dataCy="seed-input"
                 bind:value={seedInputValue}
                 placeholder="Enter a seed address here"

@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import Icon from "../Icon";
+  import Icon from "./Icon";
   import Spinner from "../Spinner.svelte";
   import KeyHint from "../KeyHint.svelte";
 

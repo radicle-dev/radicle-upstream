@@ -1,7 +1,7 @@
 <script lang="typescript">
   import { get } from "svelte/store";
 
-  import { Button, Dai, Emoji, Input, TxButton } from "ui/DesignSystem";
+  import { Button, Dai, Emoji, TextInput, TxButton } from "ui/DesignSystem";
 
   import * as modal from "ui/src/modal";
   import {
@@ -117,7 +117,7 @@
       >?
     </p>
     <div class="input">
-      <Input.Text
+      <TextInput
         dataCy="modal-amount-input"
         bind:value={amount}
         validation={$validation}
@@ -127,7 +127,7 @@
         <div slot="left" style="position: absolute; top: 1px; left: 12px;">
           <Dai />
         </div>
-      </Input.Text>
+      </TextInput>
     </div>
     <div class="submit">
       <Button

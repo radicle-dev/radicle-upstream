@@ -27,11 +27,12 @@
   import {
     Button,
     Dropdown,
+    DirectoryInput,
     Emoji,
-    Input,
     Modal,
     RadioOption,
     RemoteHelperHint,
+    TextInput,
     Tooltip,
   } from "ui/DesignSystem";
   import { CSSPosition } from "ui/src/style";
@@ -206,7 +207,7 @@
         }}
         dataCy="new-project">
         <div slot="option-body">
-          <Input.Directory
+          <DirectoryInput
             placeholder="Where to create the repository"
             validation={$pathValidation}
             bind:path={newRepositoryPath}
@@ -229,7 +230,7 @@
         }}
         dataCy="existing-project">
         <div slot="option-body">
-          <Input.Directory
+          <DirectoryInput
             placeholder="Choose an existing repository"
             validation={$pathValidation}
             bind:path={existingRepositoryPath} />
@@ -274,7 +275,7 @@
         ? "The project’s name is taken from the chosen repository"
         : ""}
       position={CSSPosition.Top}>
-      <Input.Text
+      <TextInput
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
@@ -283,7 +284,7 @@
         disabled={isExisting} />
     </Tooltip>
 
-    <Input.Text
+    <TextInput
       dataCy="description"
       style="margin-top: 1rem; margin-bottom: 1rem;"
       placeholder="Project description"

@@ -1,7 +1,7 @@
 <script lang="typescript">
   import Button from "../../Button.svelte";
   import Icon from "../../Icon";
-  import Input from "../../Input";
+  import TextInput from "../../TextInput.svelte";
 
   import Receiver from "./Receiver.svelte";
 
@@ -121,7 +121,7 @@
 
   {#if editing}
     <div class="row">
-      <Input.Text
+      <TextInput
         disabled={updating}
         bind:value={newValue}
         placeholder="Enter an Ethereum address"

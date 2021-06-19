@@ -1,6 +1,13 @@
 <script lang="typescript">
   import { onMount } from "svelte";
-  import { Button, Dai, Icon, Input, Remote, TxButton } from "ui/DesignSystem";
+  import {
+    Button,
+    Dai,
+    Icon,
+    Remote,
+    TextInput,
+    TxButton,
+  } from "ui/DesignSystem";
 
   import Receivers from "ui/DesignSystem/Funding/Pool/Receivers.svelte";
   import ModalTopUp from "../../../../Modal/Funding/Pool/TopUp.svelte";
@@ -173,7 +180,7 @@
         <h3>Support</h3>
         <span class="row" style="margin-left: 0.875rem">
           {#if editing}
-            <Input.Text
+            <TextInput
               dataCy="budget-input"
               bind:value={budget}
               validation={$budgetValidation}
@@ -186,7 +193,7 @@
                 style="position: absolute; top: 0.0625rem; left: 0.75rem;">
                 <Dai />
               </div>
-            </Input.Text>
+            </TextInput>
           {:else}
             <p class="typo-text-bold">
               <Dai>{poolData.weeklyBudget.toNumber()}</Dai>

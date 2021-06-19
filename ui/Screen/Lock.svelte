@@ -2,7 +2,7 @@
   import * as screen from "../src/screen";
   import * as session from "../src/session";
 
-  import { Button, Emoji, Input } from "ui/DesignSystem";
+  import { Button, Emoji, PasswordInput } from "ui/DesignSystem";
 
   let passphrase = "";
   let unlockInProgress = false;
@@ -49,7 +49,7 @@
   </p>
 
   <div class="form">
-    <Input.Password
+    <PasswordInput
       autofocus
       placeholder="Enter your passphrase"
       bind:value={passphrase}

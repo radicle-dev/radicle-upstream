@@ -4,10 +4,12 @@ import Avatar from "./Avatar.svelte";
 import Badge from "./Badge.svelte";
 import BranchBox from "./BranchBox.svelte";
 import Button from "./Button.svelte";
+import Checkbox from "./Checkbox.svelte";
 import Comment from "./Comment.svelte";
 import CompareBranches from "./CompareBranches.svelte";
 import Copyable from "./Copyable.svelte";
 import Dai from "./Dai.svelte";
+import DirectoryInput from "./DirectoryInput.svelte";
 import Dropdown from "./Dropdown.svelte";
 import Emoji from "./Emoji.svelte";
 import EmptyState from "./EmptyState.svelte";
@@ -19,7 +21,6 @@ import Hoverable from "./Hoverable.svelte";
 import Icon from "./Icon";
 import Identity from "./Identity.svelte";
 import Illustration from "./Illustration.svelte";
-import Input from "./Input";
 import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
@@ -30,6 +31,7 @@ import NavigationButtons from "./Registration/NavigationButtons.svelte";
 import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Overlay from "./Overlay.svelte";
+import PasswordInput from "./PasswordInput.svelte";
 import PeerId from "./PeerId.svelte";
 import PeerSelector from "./PeerSelector.svelte";
 import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
@@ -43,6 +45,7 @@ import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
+import Select from "./Select.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
@@ -50,6 +53,8 @@ import Stats from "./Stats.svelte";
 import StyledCopyable from "./StyledCopyable.svelte";
 import SupportButton from "./SupportButton.svelte";
 import TabBar from "./TabBar.svelte";
+import TextInput from "./TextInput.svelte";
+import Textarea from "./Textarea.svelte";
 import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
@@ -62,10 +67,12 @@ export {
   Badge,
   BranchBox,
   Button,
+  Checkbox,
   Comment,
   CompareBranches,
   Copyable,
   Dai,
+  DirectoryInput,
   Dropdown,
   Emoji,
   EmptyState,
@@ -77,7 +84,6 @@ export {
   Icon,
   Identity,
   Illustration,
-  Input,
   KeyHint,
   Label,
   List,
@@ -88,6 +94,7 @@ export {
   Notification,
   NotificationFaucet,
   Overlay,
+  PasswordInput,
   PeerId,
   PeerSelector,
   ProjectAnchorPopover,
@@ -101,6 +108,7 @@ export {
   RemoteHelperHint,
   RevisionSelector,
   SegmentedControl,
+  Select,
   Sidebar,
   SidebarLayout,
   Spinner,
@@ -108,6 +116,8 @@ export {
   StyledCopyable,
   SupportButton,
   TabBar,
+  TextInput,
+  Textarea,
   Timeline,
   Tooltip,
   Topbar,
