@@ -12,9 +12,9 @@ import Box from "./Box.svelte";
 import Branch from "./Branch.svelte";
 import Chat from "./Chat.svelte";
 import Check from "./Check.svelte";
+import CheckBox from "./CheckBox.svelte";
 import CheckCircle from "./CheckCircle.svelte";
 import CheckSmall from "./CheckSmall.svelte";
-import CheckBox from "./CheckBox.svelte";
 import ChevronDown from "./ChevronDown.svelte";
 import ChevronLeft from "./ChevronLeft.svelte";
 import ChevronLeftRight from "./ChevronLeftRight.svelte";
@@ -25,8 +25,8 @@ import Commit from "./Commit.svelte";
 import Computer from "./Computer.svelte";
 import Copy from "./Copy.svelte";
 import CopySmall from "./CopySmall.svelte";
-import CrossCircle from "./CrossCircle.svelte";
 import Cross from "./Cross.svelte";
+import CrossCircle from "./CrossCircle.svelte";
 import CrossSmall from "./CrossSmall.svelte";
 import CurrencyDAI from "./CurrencyDAI.svelte";
 import CurrencyUSD from "./CurrencyUSD.svelte";
@@ -91,9 +91,9 @@ export default {
   Branch,
   Chat,
   Check,
+  CheckBox,
   CheckCircle,
   CheckSmall,
-  CheckBox,
   ChevronDown,
   ChevronLeft,
   ChevronLeftRight,
@@ -104,8 +104,8 @@ export default {
   Computer,
   Copy,
   CopySmall,
-  CrossCircle,
   Cross,
+  CrossCircle,
   CrossSmall,
   CurrencyDAI,
   CurrencyUSD,
