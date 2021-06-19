@@ -3,8 +3,8 @@
 
   import {
     Button,
+    DirectoryInput,
     Icon,
-    Input,
     Overlay,
     RemoteHelperHint,
     Tooltip,
@@ -52,7 +52,7 @@
   <div class="clone-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">{helpText}</p>
 
-    <Input.DirectoryInput
+    <DirectoryInput
       style="margin-bottom: 0.5rem;"
       placeholder="~/path/to/directory"
       buttonVariant="outline"
