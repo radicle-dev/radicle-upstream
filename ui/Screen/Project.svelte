@@ -21,10 +21,10 @@
     Header,
     Remote,
     SidebarLayout,
-  } from "ui/DesignSystem/Component";
-  import { Button, Icon } from "ui/DesignSystem/Primitive";
+  } from "ui/DesignSystem";
+  import { Button, Icon } from "ui/DesignSystem";
   import ProjectHeader from "./Project/ProjectHeader.svelte";
-  import PeerSelector from "ui/DesignSystem/Component/PeerSelector.svelte";
+  import PeerSelector from "ui/DesignSystem/PeerSelector.svelte";
   import ModalManagePeers from "ui/Modal/ManagePeers.svelte";
 
   import Source from "./Project/Source.svelte";

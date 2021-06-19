@@ -2,19 +2,14 @@
   import { createEventDispatcher } from "svelte";
 
   import type { Urn } from "../../src/urn";
-  import type { User } from "../../src/project";
+  import type { User } from "ui/src/project";
 
-  import { BadgeType } from "../../src/badge";
-  import { CSSPosition } from "../../src/style";
-  import { PeerType, PeerRole } from "../../src/project";
+  import { BadgeType } from "ui/src/badge";
+  import { CSSPosition } from "ui/src/style";
+  import { PeerType, PeerRole } from "ui/src/project";
 
-  import { Avatar } from "../../DesignSystem/Primitive";
-  import {
-    Badge,
-    FollowToggle,
-    PeerId,
-    Tooltip,
-  } from "../../DesignSystem/Component";
+  import { Avatar } from "ui/DesignSystem";
+  import { Badge, FollowToggle, PeerId, Tooltip } from "ui/DesignSystem";
 
   export let peer: User;
   export let projectUrn: Urn;

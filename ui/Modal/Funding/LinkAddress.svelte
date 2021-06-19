@@ -1,8 +1,8 @@
 <script lang="typescript">
-  import { Remote } from "ui/DesignSystem/Component";
+  import { Remote } from "ui/DesignSystem";
 
-  import { Avatar, Button, Emoji, Icon } from "ui/DesignSystem/Primitive";
-  import { Copyable, TxButton } from "ui/DesignSystem/Component";
+  import { Avatar, Button, Emoji, Icon } from "ui/DesignSystem";
+  import { Copyable, TxButton } from "ui/DesignSystem";
 
   import {
     ClaimsContract,
@@ -11,9 +11,9 @@
   import { lastClaimed } from "../../src/attestation/lastClaimed";
   import * as identity from "../../src/identity";
   import { store as walletStore } from "../../src/wallet";
-  import { session } from "../../src/session";
+  import { session } from "ui/src/session";
 
-  import * as modal from "../../src/modal";
+  import * as modal from "ui/src/modal";
 
   function onCancel(): void {
     modal.hide();

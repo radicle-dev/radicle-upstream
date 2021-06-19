@@ -1,8 +1,8 @@
 <script lang="typescript">
   import type { Identity } from "ui/src/identity";
 
-  import { Copyable, Modal } from "ui/DesignSystem/Component";
-  import { Avatar, Button, Emoji } from "ui/DesignSystem/Primitive";
+  import { Copyable, Modal } from "ui/DesignSystem";
+  import { Avatar, Button, Emoji } from "ui/DesignSystem";
 
   import * as org from "ui/src/org";
   import { ellipsed } from "ui/src/style";

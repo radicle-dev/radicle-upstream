@@ -1,11 +1,11 @@
 <script lang="typescript">
-  import { Button, Emoji, Input } from "../../../DesignSystem/Primitive";
-  import { Dai } from "../../../DesignSystem/Component";
+  import { Button, Emoji, Input } from "ui/DesignSystem";
+  import { Dai } from "ui/DesignSystem";
 
   import {
     budgetStore,
     weeklyBudgetValidationStore,
-  } from "../../../src/funding/pool";
+  } from "ui/src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
   export let budget = "";

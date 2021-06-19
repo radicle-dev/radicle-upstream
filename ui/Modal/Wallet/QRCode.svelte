@@ -1,6 +1,6 @@
 <script lang="typescript">
-  import { Copyable, Modal, QR } from "ui/DesignSystem/Component";
-  import { Emoji } from "ui/DesignSystem/Primitive";
+  import { Copyable, Modal, QR } from "ui/DesignSystem";
+  import { Emoji } from "ui/DesignSystem";
 
   import { uriStore } from "ui/src/wallet";
   import { ellipsed } from "ui/src/style";

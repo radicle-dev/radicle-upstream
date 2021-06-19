@@ -1,11 +1,11 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Button, Input, Icon } from "../../../DesignSystem/Primitive";
-  import { RemoteHelperHint, Tooltip } from "../../../DesignSystem/Component";
-  import Overlay from "../../../DesignSystem/Component/Overlay.svelte";
+  import { Button, Input, Icon } from "ui/DesignSystem";
+  import { RemoteHelperHint, Tooltip } from "ui/DesignSystem";
+  import Overlay from "ui/DesignSystem/Overlay.svelte";
 
-  import { dismissRemoteHelperHint, settings } from "../../../src/session.ts";
+  import { dismissRemoteHelperHint, settings } from "../ui/src/session.ts";
 
   // Whether this button should be displayed as a "Fork" button.
   export let fork = false;

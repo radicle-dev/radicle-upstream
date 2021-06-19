@@ -1,8 +1,8 @@
 <script lang="typescript">
   import * as svelteStore from "svelte/store";
 
-  import { Button } from "../../../DesignSystem/Primitive";
-  import TopUp from "../../../DesignSystem/Component/Funding/Pool/TopUp.svelte";
+  import { Button } from "ui/DesignSystem";
+  import TopUp from "ui/DesignSystem/Funding/Pool/TopUp.svelte";
 
   import { store as walletStore } from "../../../src/wallet";
 

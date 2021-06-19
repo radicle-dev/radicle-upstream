@@ -1,5 +1,5 @@
 <script>
-  import { Copyable, Tooltip } from "../../DesignSystem/Component";
+  import { Copyable, Tooltip } from "ui/DesignSystem";
 
   export let style = null;
   export let color = null;

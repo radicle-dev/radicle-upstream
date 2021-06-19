@@ -1,7 +1,7 @@
 <script lang="typescript">
-  import { Button, Icon } from "../../../DesignSystem/Primitive";
-  import { Copyable, Overlay } from "../../../DesignSystem/Component";
-  import * as Patch from "../../../src/project/patch";
+  import { Button, Icon } from "ui/DesignSystem";
+  import { Copyable, Overlay } from "ui/DesignSystem";
+  import * as Patch from "ui/src/project/patch";
 
   export let patch: Patch.Patch;
   export let myPeerId: string;

@@ -1,10 +1,10 @@
 <script lang="typescript">
   import * as router from "ui/src/router";
 
-  import type { Project } from "../../src/project";
+  import type { Project } from "ui/src/project";
   import { fetchProjects, projects as store } from "../../src/userProfile";
 
-  import { Error, ProjectList, Remote } from "../../DesignSystem/Component";
+  import { Error, ProjectList, Remote } from "ui/DesignSystem";
 
   export let urn: string;
 

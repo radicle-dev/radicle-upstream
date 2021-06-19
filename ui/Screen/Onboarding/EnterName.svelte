@@ -4,7 +4,7 @@
   import { ValidationStatus } from "../../src/validation";
   import * as onboarding from "../../src/onboarding";
 
-  import { Button, Emoji, Input } from "../../DesignSystem/Primitive";
+  import { Button, Emoji, Input } from "ui/DesignSystem";
 
   const dispatch = createEventDispatcher();
 

@@ -287,7 +287,7 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { Button, Title, Icon, Input } from "../DesignSystem/Primitive";
+      import { Button, Title, Icon, Input } from "ui/DesignSystem";
     </script>
 
     <Icon.House />
@@ -303,7 +303,7 @@ complexity. Currently you'll find the following types of components in the
 
     ```html
     <script>
-      import { RadicleLogo } from "../DesignSystem/Component";
+      import { RadicleLogo } from "ui/DesignSystem";
     </script>
 
     <RadicleLogo />

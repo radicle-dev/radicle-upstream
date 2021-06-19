@@ -18,8 +18,8 @@
   import { ValidationStatus } from "ui/src/validation";
   import { urnValidationStore } from "ui/src/urn";
 
-  import { Icon, Input } from "ui/DesignSystem/Primitive";
-  import { FollowToggle, Remote } from "ui/DesignSystem/Component";
+  import { Icon, Input } from "ui/DesignSystem";
+  import { FollowToggle, Remote } from "ui/DesignSystem";
 
   let id: string;
 

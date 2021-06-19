@@ -1,10 +1,6 @@
 <script>
   import IssueCard from "./Issues/IssueCard.svelte";
-  import {
-    EmptyState,
-    List,
-    SegmentedControl,
-  } from "../../DesignSystem/Component";
+  import { EmptyState, List, SegmentedControl } from "ui/DesignSystem";
 
   const filterOptions = [
     {

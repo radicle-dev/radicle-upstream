@@ -4,7 +4,7 @@
   import * as hotkeys from "../src/hotkeys";
   import { Variant as IllustrationVariant } from "../src/illustration";
 
-  import { Illustration, KeyHint, Modal } from "../DesignSystem/Component";
+  import { Illustration, KeyHint, Modal } from "ui/DesignSystem";
 
   const shortcuts = [
     ...hotkeys.shortcuts,

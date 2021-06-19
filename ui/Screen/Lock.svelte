@@ -2,7 +2,7 @@
   import * as screen from "../src/screen";
   import * as session from "../src/session";
 
-  import { Button, Emoji, Input } from "../DesignSystem/Primitive";
+  import { Button, Emoji, Input } from "ui/DesignSystem";
 
   let passphrase = "";
   let unlockInProgress = false;

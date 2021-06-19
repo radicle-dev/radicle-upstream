@@ -22,13 +22,13 @@
   import { updateChecker } from "../src/updateChecker";
   import * as modal from "../src/modal";
 
-  import { Button, Icon, Input } from "../DesignSystem/Primitive";
+  import { Button, Icon, Input } from "ui/DesignSystem";
   import {
     PeerId,
     SidebarLayout,
     SegmentedControl,
     StyledCopyable,
-  } from "../DesignSystem/Component";
+  } from "ui/DesignSystem";
   import ModalShortcuts from "../Modal/Shortcuts.svelte";
 
   const updateTheme = (event: CustomEvent) =>

@@ -24,14 +24,14 @@
   import type { Settings } from "ui/src/settings";
   import { dismissRemoteHelperHint, settings } from "ui/src/session";
 
-  import { Button, Emoji, Input } from "../DesignSystem/Primitive";
+  import { Button, Emoji, Input } from "ui/DesignSystem";
   import {
     Dropdown,
     Modal,
     RadioOption,
     RemoteHelperHint,
     Tooltip,
-  } from "../DesignSystem/Component";
+  } from "ui/DesignSystem";
   import { CSSPosition } from "ui/src/style";
 
   type RepoType = "new" | "existing";

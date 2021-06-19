@@ -4,7 +4,7 @@
   import { CSSPosition } from "../src/style";
   import { ValidationStatus } from "../src/validation.ts";
 
-  import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
+  import { Avatar, Button, Icon, Input } from "ui/DesignSystem";
   import {
     AdditionalActionsDropdown,
     BranchBox,
@@ -24,7 +24,7 @@
     SupportButton,
     StyledCopyable,
     Tooltip,
-  } from "../DesignSystem/Component";
+  } from "ui/DesignSystem";
 
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";

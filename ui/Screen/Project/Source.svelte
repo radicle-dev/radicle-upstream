@@ -1,14 +1,14 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
 
-  import * as error from "../../src/error";
-  import { openPath } from "../../src/ipc";
-  import * as notification from "../../src/notification";
+  import * as error from "ui/src/error";
+  import { openPath } from "ui/src/ipc";
+  import * as notification from "ui/src/notification";
   import * as proxy from "../../src/proxy";
   import { unreachable } from "ui/src/unreachable";
   import * as router from "ui/src/router";
   import * as remote from "ui/src/remote";
-  import type { Project, User } from "../../src/project";
+  import type { Project, User } from "ui/src/project";
   import {
     fetch,
     watchPatchUpdates,
@@ -20,9 +20,9 @@
   import type { Branch, Tag } from "../../src/source";
   import * as screen from "../../src/screen";
 
-  import ActionBar from "../../DesignSystem/Component/ActionBar.svelte";
-  import TabBar from "ui/DesignSystem/Component/TabBar.svelte";
-  import RevisionSelector from "../../DesignSystem/Component/SourceBrowser/RevisionSelector.svelte";
+  import ActionBar from "ui/DesignSystem/ActionBar.svelte";
+  import TabBar from "ui/DesignSystem/TabBar.svelte";
+  import RevisionSelector from "ui/DesignSystem/SourceBrowser/RevisionSelector.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
   import PatchButton from "./Source/PatchButton.svelte";
@@ -33,7 +33,7 @@
   import PatchList from "./Source/PatchList.svelte";
   import Patch from "./Source/Patch.svelte";
 
-  import { Icon } from "ui/DesignSystem/Primitive";
+  import { Icon } from "ui/DesignSystem";
   export let project: Project;
   export let selectedPeer: User;
   export let isContributor: boolean;

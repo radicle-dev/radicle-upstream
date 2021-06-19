@@ -1,15 +1,15 @@
 <script lang="typescript">
   import { get } from "svelte/store";
 
-  import { Dai, TxButton } from "../../../DesignSystem/Component";
-  import { Button, Emoji, Input } from "../../../DesignSystem/Primitive";
+  import { Dai, TxButton } from "ui/DesignSystem";
+  import { Button, Emoji, Input } from "ui/DesignSystem";
 
-  import * as modal from "../../../src/modal";
+  import * as modal from "ui/src/modal";
   import {
     amountStore,
     balanceValidationStore,
     store,
-  } from "../../../src/funding/pool";
+  } from "ui/src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
   import Big from "big.js";

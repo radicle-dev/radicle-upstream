@@ -1,11 +1,11 @@
 <script lang="typescript">
   import { get } from "svelte/store";
 
-  import { TxButton } from "../../../DesignSystem/Component";
-  import TopUp from "../../../DesignSystem/Component/Funding/Pool/TopUp.svelte";
+  import { TxButton } from "ui/DesignSystem";
+  import TopUp from "ui/DesignSystem/Funding/Pool/TopUp.svelte";
 
-  import * as modal from "../../../src/modal";
-  import { store } from "../../../src/funding/pool";
+  import * as modal from "ui/src/modal";
+  import { store } from "ui/src/funding/pool";
 
   import Big from "big.js";
 

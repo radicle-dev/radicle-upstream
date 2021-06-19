@@ -3,13 +3,8 @@
   import { unreachable } from "ui/src/unreachable";
   import { status as store } from "ui/src/localPeer";
 
-  import { Icon } from "ui/DesignSystem/Primitive";
-  import {
-    ActionBar,
-    Header,
-    TabBar,
-    SidebarLayout,
-  } from "ui/DesignSystem/Component";
+  import { Icon } from "ui/DesignSystem";
+  import { ActionBar, Header, TabBar, SidebarLayout } from "ui/DesignSystem";
 
   import ConnectedPeersTab from "ui/Screen/NetworkDiagnostics/ConnectedPeers.svelte";
   import WaitingRoomTab from "ui/Screen/NetworkDiagnostics/WaitingRoom.svelte";

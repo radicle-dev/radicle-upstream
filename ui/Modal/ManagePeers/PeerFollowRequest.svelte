@@ -2,9 +2,9 @@
   import { createEventDispatcher } from "svelte";
 
   import type { Urn } from "../../src/urn";
-  import type { User } from "../../src/project";
+  import type { User } from "ui/src/project";
 
-  import { FollowToggle, StyledCopyable } from "../../DesignSystem/Component";
+  import { FollowToggle, StyledCopyable } from "ui/DesignSystem";
 
   export let peer: User;
   export let projectUrn: Urn;

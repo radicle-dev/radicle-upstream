@@ -7,14 +7,14 @@
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
 
-  import { Button, Emoji } from "ui/DesignSystem/Primitive";
+  import { Button, Emoji } from "ui/DesignSystem";
   import {
     Dropdown,
     Modal,
     PeerSelector,
     RevisionSelector,
-  } from "ui/DesignSystem/Component";
-  import CommitTeaser from "ui/DesignSystem/Component/SourceBrowser/CommitTeaser.svelte";
+  } from "ui/DesignSystem";
+  import CommitTeaser from "ui/DesignSystem/SourceBrowser/CommitTeaser.svelte";
 
   export let projects: org.ProjectOption[];
   export let orgAddress: string;

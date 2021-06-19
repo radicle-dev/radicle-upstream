@@ -2,8 +2,8 @@
   import { createEventDispatcher } from "svelte";
   import { isDev } from "ui/src/config";
 
-  import { PeerId } from "ui/DesignSystem/Component";
-  import { Button } from "ui/DesignSystem/Primitive";
+  import { PeerId } from "ui/DesignSystem";
+  import { Button } from "ui/DesignSystem";
 
   export let peerId: string;
 

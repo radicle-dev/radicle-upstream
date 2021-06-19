@@ -5,7 +5,7 @@
   import * as org from "ui/src/org";
   import { unreachable } from "ui/src/unreachable";
 
-  import { Icon } from "ui/DesignSystem/Primitive";
+  import { Icon } from "ui/DesignSystem";
   import {
     ActionBar,
     AdditionalActionsDropdown,
@@ -13,7 +13,7 @@
     Header,
     SidebarLayout,
     TabBar,
-  } from "ui/DesignSystem/Component";
+  } from "ui/DesignSystem";
 
   import ProjectsTab from "ui/Screen/Org/Projects.svelte";
   import MembersTab from "ui/Screen/Org/Members.svelte";

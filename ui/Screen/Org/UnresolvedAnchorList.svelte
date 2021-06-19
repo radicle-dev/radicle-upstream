@@ -12,7 +12,7 @@
     Hoverable,
     List,
     RadicleId,
-  } from "ui/DesignSystem/Component";
+  } from "ui/DesignSystem";
 
   export let anchors: project.Anchor[];
 

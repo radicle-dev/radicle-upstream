@@ -4,7 +4,7 @@
   import { ValidationStatus, getValidationState } from "../../src/validation";
   import type { ValidationState } from "../../src/validation";
 
-  import { Button, Input } from "../../DesignSystem/Primitive";
+  import { Button, Input } from "ui/DesignSystem";
 
   export let disabled = false;
 

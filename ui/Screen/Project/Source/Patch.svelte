@@ -5,7 +5,7 @@
   import type { PatchDetails } from "ui/src/project/patch";
   import * as patch from "ui/src/project/patch";
 
-  import { Remote } from "ui/DesignSystem/Component";
+  import { Remote } from "ui/DesignSystem";
 
   import PatchLoaded from "./PatchLoaded.svelte";
 
