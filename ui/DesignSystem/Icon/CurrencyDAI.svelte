@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   export let dataCy = "";
   export let style = "";
 </script>

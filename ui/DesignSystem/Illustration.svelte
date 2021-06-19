@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { Variant } from "ui/src/illustration";
 
   export let dataCy = "";

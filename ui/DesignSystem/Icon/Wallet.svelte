@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import IconWrapper from "./IconWrapper.svelte";
 
   export let dataCy: string | undefined = undefined;

@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import StyledCopyable from "./StyledCopyable.svelte";
   import Icon from "./Icon";
 

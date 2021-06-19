@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { slide } from "svelte/transition";
 
   export let title = "";

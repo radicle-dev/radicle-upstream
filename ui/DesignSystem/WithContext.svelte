@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { setContext } from "svelte";
 
   export let data: unknown;

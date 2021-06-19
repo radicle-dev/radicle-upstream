@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import Button from "./Button.svelte";
 
   import type { ButtonVariant } from "ui/src/style";

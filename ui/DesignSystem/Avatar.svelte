@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import type { Avatar } from "ui/src/proxy/identity";
 
   import Emoji from "./Emoji.svelte";

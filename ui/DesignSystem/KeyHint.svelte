@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { osModifierKey } from "ui/src/hotkeys";
 
   export let hint = "";

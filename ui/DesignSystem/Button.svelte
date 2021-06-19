@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import type { SvelteComponent } from "svelte";
 
   import type { ButtonVariant as Variant } from "ui/src/style";

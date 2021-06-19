@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
   import type { Avatar as AvatarT } from "ui/src/proxy/identity";
