@@ -7,7 +7,7 @@
 
   import {
     ActionBar,
-    AdditionalActionsDropdown,
+    ThreeDotsMenu,
     FollowToggle,
     Header,
     Icon,
@@ -93,8 +93,7 @@
       {threshold} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
-      <AdditionalActionsDropdown
-        menuItems={menuItems(address, gnosisSafeAddress)} />
+      <ThreeDotsMenu menuItems={menuItems(address, gnosisSafeAddress)} />
     </div>
   </Header>
 

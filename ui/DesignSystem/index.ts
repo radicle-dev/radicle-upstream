@@ -1,5 +1,4 @@
 import ActionBar from "./ActionBar.svelte";
-import AdditionalActionsDropdown from "./AdditionalActionsDropdown.svelte";
 import Avatar from "./Avatar.svelte";
 import Badge from "./Badge.svelte";
 import BranchBox from "./BranchBox.svelte";
@@ -54,6 +53,7 @@ import SupportButton from "./SupportButton.svelte";
 import TabBar from "./TabBar.svelte";
 import TextInput from "./TextInput.svelte";
 import Textarea from "./Textarea.svelte";
+import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
 import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
@@ -61,7 +61,6 @@ import TxButton from "./TxButton.svelte";
 
 export {
   ActionBar,
-  AdditionalActionsDropdown,
   Avatar,
   Badge,
   BranchBox,
@@ -116,6 +115,7 @@ export {
   TabBar,
   TextInput,
   Textarea,
+  ThreeDotsMenu,
   Timeline,
   Tooltip,
   Topbar,

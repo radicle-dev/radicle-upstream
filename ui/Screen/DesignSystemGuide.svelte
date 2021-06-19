@@ -5,7 +5,6 @@
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
-    AdditionalActionsDropdown,
     Avatar,
     BranchBox,
     Button,
@@ -28,6 +27,7 @@
     StyledCopyable,
     SupportButton,
     TextInput,
+    ThreeDotsMenu,
     Tooltip,
   } from "ui/DesignSystem";
 
@@ -89,7 +89,7 @@
     emoji: "💡",
   };
 
-  const additionalActionsDropdownItems = [
+  const threeDotsMenuItems = [
     {
       title: "Add something",
       icon: Icon.Plus,
@@ -734,9 +734,9 @@
 
     <Section title="Misc" subTitle="Everything else">
       <Swatch>
-        <AdditionalActionsDropdown
+        <ThreeDotsMenu
           headerTitle="Copy this title"
-          menuItems={additionalActionsDropdownItems} />
+          menuItems={threeDotsMenuItems} />
       </Swatch>
 
       <Swatch>
