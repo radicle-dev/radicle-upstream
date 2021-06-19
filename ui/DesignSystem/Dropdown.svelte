@@ -1,9 +1,9 @@
 <script lang="typescript">
-  import { Icon } from "./";
   import type { Avatar } from "ui/src/proxy/identity";
 
   import Option from "./Dropdown/Option.svelte";
   import Overlay from "./Overlay.svelte";
+  import Icon from "./Icon";
 
   type OptionT =
     | { value: string; title: string }

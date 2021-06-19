@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Avatar } from "./";
+  import Avatar from "./Avatar.svelte";
   import Remote from "./Remote.svelte";
 
   import { session } from "ui/src/session";

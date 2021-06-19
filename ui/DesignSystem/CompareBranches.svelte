@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Icon } from "./";
+  import Icon from "./Icon";
   import BranchBox from "./BranchBox.svelte";
 
   export let baseBranch: string;

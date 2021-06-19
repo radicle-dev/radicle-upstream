@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Icon } from "./";
+  import Icon from "./Icon";
 
   export let style = "";
   export let color = "var(--color-foreground-level-6)";

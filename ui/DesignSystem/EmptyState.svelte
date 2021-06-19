@@ -3,7 +3,8 @@
 
   import { Variant as IllustrationVariant } from "ui/src/illustration";
 
-  import { Button, Emoji } from "./";
+  import Button from "./Button.svelte";
+  import Emoji from "./Emoji.svelte";
   import Illustration from "./Illustration.svelte";
 
   const dispatch = createEventDispatcher();

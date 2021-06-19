@@ -1,6 +1,6 @@
 <script lang="ts">
   import StyledCopyable from "./StyledCopyable.svelte";
-  import { Icon } from "./";
+  import Icon from "./Icon";
 
   export let style = "";
   export let urn = "";

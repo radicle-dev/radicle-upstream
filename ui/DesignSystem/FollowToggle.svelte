@@ -2,7 +2,8 @@
   import { createEventDispatcher } from "svelte";
 
   import type { ButtonVariant } from "ui/src/style";
-  import { Button, Icon } from "./";
+  import Button from "./Button.svelte";
+  import Icon from "./Icon";
 
   export let disabled: boolean = false;
   export let following: boolean = false;

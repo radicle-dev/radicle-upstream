@@ -1,6 +1,6 @@
 <script lang="typescript">
   import StyledCopyable from "./StyledCopyable.svelte";
-  import { Icon } from "./";
+  import Icon from "./Icon";
 
   export let style: string = "";
   export let peerId: string = "";

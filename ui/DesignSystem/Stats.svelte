@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Icon } from "./";
+  import Icon from "./Icon";
 
   export let contributors: number;
   export let branches: number;

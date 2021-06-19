@@ -4,7 +4,7 @@
 
   import { CSSPosition } from "ui/src/style";
 
-  import { Icon } from "./";
+  import Icon from "./Icon";
   import Overlay from "./Overlay.svelte";
   import Tooltip from "./Tooltip.svelte";
   import StyledCopyable from "./StyledCopyable.svelte";

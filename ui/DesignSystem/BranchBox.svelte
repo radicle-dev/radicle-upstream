@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Icon } from "./";
+  import Icon from "./Icon";
 
   export let name: string;
   export let style: string = "";

@@ -1,7 +1,7 @@
 <script lang="typescript">
   import * as router from "ui/src/router";
 
-  import { Icon } from "./";
+  import Icon from "./Icon";
 
   export let style = "";
   export let contentStyle = "";

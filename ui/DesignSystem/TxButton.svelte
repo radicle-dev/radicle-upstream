@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { Button } from "./";
+  import Button from "./Button.svelte";
 
   import type { ButtonVariant } from "ui/src/style";
+
   import * as notification from "ui/src/notification";
   import * as error from "ui/src/error";
   import * as transaction from "ui/src/transaction";

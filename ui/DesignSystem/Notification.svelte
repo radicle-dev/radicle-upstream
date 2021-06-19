@@ -1,7 +1,8 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
   import type { Notification } from "ui/src/notification";
-  import { Icon } from "./";
+
+  import Icon from "./Icon";
 
   export let notification: Notification;
   export let style = "";
