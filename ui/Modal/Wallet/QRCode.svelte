@@ -1,10 +1,21 @@
 <script lang="typescript">
-  import { Copyable, Emoji, Modal, QR } from "ui/DesignSystem";
+  import { qrcode } from "pure-svg-code";
+
+  import { Copyable, Emoji, Modal } from "ui/DesignSystem";
 
   import { uriStore } from "ui/src/wallet";
   import { ellipsed } from "ui/src/style";
 
   $: uri = $uriStore || "";
+
+  $: svgString = qrcode({
+    content: uri,
+    width: 225,
+    height: 225,
+    color: "black",
+    background: "white",
+    ecl: "M",
+  });
 </script>
 
 <style>
@@ -45,7 +56,9 @@
     </p>
 
     <div class="qrcode-wrapper">
-      <QR key={uri} />
+      <div data-cy="qr-code">
+        {@html svgString}
+      </div>
       <p class="typo-text-bold connector">
         <Copyable showIcon={true} styleContent={false} copyContent={uri}>
           <p class="typo-text-small-mono">{ellipsed(uri, 5)}</p>
