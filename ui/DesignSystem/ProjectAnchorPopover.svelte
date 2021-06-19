@@ -8,8 +8,7 @@
   import * as router from "ui/src/router";
   import * as style from "ui/src/style";
 
-  import { Avatar, Icon } from "ui/DesignSystem";
-  import { Hoverable } from "ui/DesignSystem";
+  import { Avatar, Hoverable, Icon } from "ui/DesignSystem";
 
   export let anchor: project.Anchor;
   export let replicated: boolean = false;

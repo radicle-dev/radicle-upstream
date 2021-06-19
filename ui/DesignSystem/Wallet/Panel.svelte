@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { Icon } from "ui/DesignSystem";
-  import { Copyable, Tooltip } from "ui/DesignSystem";
+  import { Copyable, Icon, Tooltip } from "ui/DesignSystem";
 
   import * as wallet from "ui/src/wallet";
   import { ellipsed } from "ui/src/style";

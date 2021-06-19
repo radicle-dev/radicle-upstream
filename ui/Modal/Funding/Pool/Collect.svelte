@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { Dai, Remote, TxButton } from "ui/DesignSystem";
-  import { Button, Emoji } from "ui/DesignSystem";
+  import { Button, Dai, Emoji, Remote, TxButton } from "ui/DesignSystem";
 
   import * as modal from "ui/src/modal";
   import { store } from "ui/src/funding/pool";

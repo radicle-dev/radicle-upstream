@@ -1,9 +1,14 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Button, Input, Icon } from "ui/DesignSystem";
-  import { RemoteHelperHint, Tooltip } from "ui/DesignSystem";
-  import Overlay from "ui/DesignSystem/Overlay.svelte";
+  import {
+    Button,
+    Icon,
+    Input,
+    Overlay,
+    RemoteHelperHint,
+    Tooltip,
+  } from "ui/DesignSystem";
 
   import { dismissRemoteHelperHint, settings } from "../ui/src/session.ts";
 

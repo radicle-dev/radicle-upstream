@@ -5,8 +5,7 @@
   import * as modal from "ui/src/modal";
   import * as config from "ui/src/config";
 
-  import { Avatar, Icon } from "ui/DesignSystem";
-  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
+  import { Avatar, Icon, Tooltip } from "ui/DesignSystem";
 
   import SidebarItem from "./Sidebar/SidebarItem.svelte";
   import ConnectionStatusIndicator from "./Sidebar/ConnectionStatusIndicator.svelte";

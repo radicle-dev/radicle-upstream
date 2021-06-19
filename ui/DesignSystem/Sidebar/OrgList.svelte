@@ -13,8 +13,7 @@
   const ethereumEnvironment = ethereum.selectedEnvironment;
   const walletStore = Wallet.store;
 
-  import { Avatar } from "ui/DesignSystem";
-  import { Tooltip } from "ui/DesignSystem";
+  import { Avatar, Tooltip } from "ui/DesignSystem";
 
   import ModalCreateOrg from "ui/Modal/Org/Create.svelte";
   import AddOrgButton from "./AddOrgButton.svelte";

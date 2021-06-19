@@ -1,8 +1,7 @@
 <script lang="typescript">
   import { get } from "svelte/store";
 
-  import { Dai, TxButton } from "ui/DesignSystem";
-  import { Button, Emoji, Input } from "ui/DesignSystem";
+  import { Button, Dai, Emoji, Input, TxButton } from "ui/DesignSystem";
 
   import * as modal from "ui/src/modal";
   import {

@@ -3,10 +3,7 @@
   import { BadgeType } from "ui/src/badge";
   import type { Branch, Tag } from "ui/src/source";
 
-  import IconBranch from "ui/DesignSystem/Icon/Branch.svelte";
-  import IconLabel from "ui/DesignSystem/Icon/Label.svelte";
-  import Spinner from "ui/DesignSystem/Spinner.svelte";
-  import Badge from "ui/DesignSystem/Badge.svelte";
+  import { Badge, Icon, Spinner } from "ui/DesignSystem";
 
   export let loading: boolean = false;
   export let defaultBranch: boolean = false;
@@ -52,12 +49,12 @@
   {#if loading}
     <Spinner />
   {:else if revision.type === RevisionType.Branch}
-    <IconBranch
+    <Icon.Branch
       dataCy="branch-icon"
       style="vertical-align: bottom; fill: var(--color-foreground-level-4);
       flex-shrink: 0;" />
   {:else if revision.type === RevisionType.Tag}
-    <IconLabel
+    <Icon.Label
       dataCy="tag-icon"
       style="vertical-align: bottom; fill: var(--color-foreground-level-4);
     flex-shrink: 0;" />

@@ -1,6 +1,5 @@
 <script>
-  import { Markdown } from "ui/DesignSystem";
-  import { Comment, Timeline } from "ui/DesignSystem";
+  import { Comment, Markdown, Timeline } from "ui/DesignSystem";
   import BackButton from "./BackButton.svelte";
 
   $: openClass = issue.open ? "open" : "closed";

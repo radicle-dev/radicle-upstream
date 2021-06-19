@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { Button, Emoji } from "ui/DesignSystem";
-  import Spinner from "ui/DesignSystem/Spinner.svelte";
+  import { Button, Emoji, Spinner } from "ui/DesignSystem";
   import ModalLinkAddress from "../../Modal/Funding/LinkAddress.svelte";
 
   import * as modal from "ui/src/modal";

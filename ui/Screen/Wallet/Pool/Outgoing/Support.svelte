@@ -1,7 +1,6 @@
 <script lang="typescript">
   import { onMount } from "svelte";
-  import { Button, Icon, Input } from "ui/DesignSystem";
-  import { Dai, Remote, TxButton } from "ui/DesignSystem";
+  import { Button, Dai, Icon, Input, Remote, TxButton } from "ui/DesignSystem";
 
   import Receivers from "ui/DesignSystem/Funding/Pool/Receivers.svelte";
   import ModalTopUp from "../../../../Modal/Funding/Pool/TopUp.svelte";

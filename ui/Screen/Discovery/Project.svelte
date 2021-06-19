@@ -1,6 +1,11 @@
 <script>
-  import { Avatar } from "ui/DesignSystem";
-  import { FollowToggle, RadicleId, Stats, Tooltip } from "ui/DesignSystem";
+  import {
+    Avatar,
+    FollowToggle,
+    RadicleId,
+    Stats,
+    Tooltip,
+  } from "ui/DesignSystem";
 
   export let project = null;
 

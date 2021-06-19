@@ -18,13 +18,14 @@
   import type { Urn } from "ui/src/urn";
   import {
     AdditionalActionsDropdown,
+    Button,
     Header,
+    Icon,
+    PeerSelector,
     Remote,
     SidebarLayout,
   } from "ui/DesignSystem";
-  import { Button, Icon } from "ui/DesignSystem";
   import ProjectHeader from "./Project/ProjectHeader.svelte";
-  import PeerSelector from "ui/DesignSystem/PeerSelector.svelte";
   import ModalManagePeers from "ui/Modal/ManagePeers.svelte";
 
   import Source from "./Project/Source.svelte";

@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { Button, Emoji, Input } from "ui/DesignSystem";
-  import { Dai } from "ui/DesignSystem";
+  import { Button, Dai, Emoji, Input } from "ui/DesignSystem";
 
   import {
     budgetStore,

@@ -1,13 +1,14 @@
 <script lang="typescript">
   import { fetchUser, user as store } from "../src/userProfile";
 
-  import { Icon } from "ui/DesignSystem";
-
-  import ActionBar from "ui/DesignSystem/ActionBar.svelte";
-  import Header from "ui/DesignSystem/Header.svelte";
-  import TabBar from "ui/DesignSystem/TabBar.svelte";
-  import Remote from "ui/DesignSystem/Remote.svelte";
-  import SidebarLayout from "ui/DesignSystem/SidebarLayout.svelte";
+  import {
+    ActionBar,
+    Header,
+    Icon,
+    Remote,
+    SidebarLayout,
+    TabBar,
+  } from "ui/DesignSystem";
 
   import UserProfileHeader from "./UserProfile/UserProfileHeader.svelte";
   import ProjectsTab from "ui/Screen/UserProfile/Projects.svelte";

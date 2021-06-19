@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { Button, Emoji } from "ui/DesignSystem";
-  import { TxButton } from "ui/DesignSystem";
+  import { Button, Emoji, TxButton } from "ui/DesignSystem";
 
   export let onCancel: () => void;
   export let onConfirm: () => Promise<void>;

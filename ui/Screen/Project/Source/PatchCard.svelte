@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { CompareBranches } from "ui/DesignSystem";
-  import { Avatar, Icon } from "ui/DesignSystem";
+  import { Avatar, CompareBranches, Icon } from "ui/DesignSystem";
 
   import type { Patch } from "ui/src/project/patch";
 

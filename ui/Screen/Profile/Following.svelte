@@ -13,15 +13,16 @@
   import type { Urn } from "../../src/urn";
 
   import {
+    Button,
     EmptyState,
+    FollowToggle,
     Hoverable,
+    Icon,
     List,
     ProjectList,
-    Remote,
     RadicleId,
-    FollowToggle,
+    Remote,
   } from "ui/DesignSystem";
-  import { Button, Icon } from "ui/DesignSystem";
 
   const session = sess.getUnsealedFromContext();
   const onCancel = (urn: Urn): void => {

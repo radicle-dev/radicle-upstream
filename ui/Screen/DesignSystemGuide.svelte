@@ -4,25 +4,28 @@
   import { CSSPosition } from "../src/style";
   import { ValidationStatus } from "../src/validation.ts";
 
-  import { Avatar, Button, Icon, Input } from "ui/DesignSystem";
   import {
     AdditionalActionsDropdown,
+    Avatar,
     BranchBox,
+    Button,
     CompareBranches,
     Copyable,
+    Dropdown,
     EmptyState,
     FollowToggle,
     Fullscreen,
-    Dropdown,
+    Icon,
     Illustration,
+    Input,
     Notification,
     ProjectCard,
-    SegmentedControl,
     RadicleId,
+    SegmentedControl,
     Spinner,
     Stats,
-    SupportButton,
     StyledCopyable,
+    SupportButton,
     Tooltip,
   } from "ui/DesignSystem";
 

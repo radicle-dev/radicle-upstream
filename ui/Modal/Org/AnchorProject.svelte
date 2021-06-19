@@ -7,9 +7,10 @@
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
 
-  import { Button, Emoji } from "ui/DesignSystem";
   import {
+    Button,
     Dropdown,
+    Emoji,
     Modal,
     PeerSelector,
     RevisionSelector,

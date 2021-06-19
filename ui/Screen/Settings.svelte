@@ -22,11 +22,13 @@
   import { updateChecker } from "../src/updateChecker";
   import * as modal from "../src/modal";
 
-  import { Button, Icon, Input } from "ui/DesignSystem";
   import {
+    Button,
+    Icon,
+    Input,
     PeerId,
-    SidebarLayout,
     SegmentedControl,
+    SidebarLayout,
     StyledCopyable,
   } from "ui/DesignSystem";
   import ModalShortcuts from "../Modal/Shortcuts.svelte";

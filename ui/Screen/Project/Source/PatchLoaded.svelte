@@ -7,8 +7,7 @@
   import type { GroupedCommitsHistory } from "ui/src/source";
   import type { Patch } from "ui/src/project/patch";
 
-  import { Avatar, Icon, Markdown } from "ui/DesignSystem";
-  import { CompareBranches } from "ui/DesignSystem";
+  import { Avatar, CompareBranches, Icon, Markdown } from "ui/DesignSystem";
   import History from "ui/DesignSystem/SourceBrowser/History.svelte";
   import CheckoutPatchButton from "./CheckoutPatchButton.svelte";
   import AcceptPatchButton from "./AcceptPatchButton.svelte";

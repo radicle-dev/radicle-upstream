@@ -1,8 +1,7 @@
 <script>
   import * as org from "ui/src/org";
 
-  import { Button, Icon } from "ui/DesignSystem";
-  import { Overlay } from "ui/DesignSystem";
+  import { Button, Icon, Overlay } from "ui/DesignSystem";
 
   let expanded = false;
 

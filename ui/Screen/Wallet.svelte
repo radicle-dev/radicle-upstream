@@ -22,8 +22,7 @@
   import Transactions from "./Wallet/Transactions.svelte";
   import LinkAddress from "./Wallet/LinkAddress.svelte";
 
-  import { EmptyState, SidebarLayout, TabBar } from "ui/DesignSystem";
-  import { Icon } from "ui/DesignSystem";
+  import { EmptyState, Icon, SidebarLayout, TabBar } from "ui/DesignSystem";
 
   export let activeTab: router.WalletTab;
 

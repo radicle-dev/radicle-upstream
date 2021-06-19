@@ -8,8 +8,13 @@
   import { CSSPosition } from "ui/src/style";
   import { PeerType, PeerRole } from "ui/src/project";
 
-  import { Avatar } from "ui/DesignSystem";
-  import { Badge, FollowToggle, PeerId, Tooltip } from "ui/DesignSystem";
+  import {
+    Avatar,
+    Badge,
+    FollowToggle,
+    PeerId,
+    Tooltip,
+  } from "ui/DesignSystem";
 
   export let peer: User;
   export let projectUrn: Urn;

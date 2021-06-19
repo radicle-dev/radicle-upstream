@@ -1,8 +1,7 @@
 <script lang="typescript">
   import type { Avatar as AvatarT } from "ui/src/proxy/identity";
 
-  import { Avatar } from "ui/DesignSystem";
-  import { PeerId } from "ui/DesignSystem";
+  import { Avatar, PeerId } from "ui/DesignSystem";
 
   export let name: string;
   export let peerId: string;

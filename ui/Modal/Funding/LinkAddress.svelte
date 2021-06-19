@@ -1,8 +1,13 @@
 <script lang="typescript">
-  import { Remote } from "ui/DesignSystem";
-
-  import { Avatar, Button, Emoji, Icon } from "ui/DesignSystem";
-  import { Copyable, TxButton } from "ui/DesignSystem";
+  import {
+    Avatar,
+    Button,
+    Copyable,
+    Emoji,
+    Icon,
+    Remote,
+    TxButton,
+  } from "ui/DesignSystem";
 
   import {
     ClaimsContract,

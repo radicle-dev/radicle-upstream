@@ -5,12 +5,12 @@
   import * as org from "ui/src/org";
   import { unreachable } from "ui/src/unreachable";
 
-  import { Icon } from "ui/DesignSystem";
   import {
     ActionBar,
     AdditionalActionsDropdown,
     FollowToggle,
     Header,
+    Icon,
     SidebarLayout,
     TabBar,
   } from "ui/DesignSystem";

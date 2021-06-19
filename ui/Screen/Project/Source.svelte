@@ -20,8 +20,7 @@
   import type { Branch, Tag } from "../../src/source";
   import * as screen from "../../src/screen";
 
-  import ActionBar from "ui/DesignSystem/ActionBar.svelte";
-  import TabBar from "ui/DesignSystem/TabBar.svelte";
+  import { ActionBar, Icon, TabBar } from "ui/DesignSystem";
   import RevisionSelector from "ui/DesignSystem/SourceBrowser/RevisionSelector.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
@@ -33,7 +32,6 @@
   import PatchList from "./Source/PatchList.svelte";
   import Patch from "./Source/Patch.svelte";
 
-  import { Icon } from "ui/DesignSystem";
   export let project: Project;
   export let selectedPeer: User;
   export let isContributor: boolean;

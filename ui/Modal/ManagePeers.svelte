@@ -11,8 +11,7 @@
   } from "../src/screen/project";
   import type { Urn } from "../src/urn";
 
-  import { Button, Emoji, Input } from "ui/DesignSystem";
-  import { List, Modal, Remote } from "ui/DesignSystem";
+  import { Button, Emoji, Input, List, Modal, Remote } from "ui/DesignSystem";
 
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";

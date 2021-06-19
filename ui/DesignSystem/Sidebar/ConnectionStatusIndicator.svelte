@@ -1,8 +1,8 @@
 <script lang="typescript">
   import { status, StatusType } from "ui/src/localPeer";
 
-  import { Icon } from "ui/DesignSystem";
-  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
+  import Icon from "../Icon";
+  import Tooltip from "../Tooltip.svelte";
 
   import Syncing from "./ConnectionStatusIndicator/Syncing.svelte";
   import Offline from "./ConnectionStatusIndicator/Offline.svelte";

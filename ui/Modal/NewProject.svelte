@@ -24,9 +24,11 @@
   import type { Settings } from "ui/src/settings";
   import { dismissRemoteHelperHint, settings } from "ui/src/session";
 
-  import { Button, Emoji, Input } from "ui/DesignSystem";
   import {
+    Button,
     Dropdown,
+    Emoji,
+    Input,
     Modal,
     RadioOption,
     RemoteHelperHint,
