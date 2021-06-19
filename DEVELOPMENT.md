@@ -238,7 +238,7 @@ Here's a list of all scripts that are intended for developer use:
                                 #   - saved preferences
 
 
-#### Styling
+### Styling
 
 The main entry point of the electron renderer is `public/index.html`. This is
 the file where any global styling which is not managed by Svelte should be
@@ -252,7 +252,7 @@ overrides, components expose a `style` prop:
 ```
 
 
-#### Typography
+### Typography
 
 The design system provides a constrained set of typographic styles. This
 consists of a set of styled headers, a set of styled paragraphs and a set of
@@ -282,7 +282,7 @@ since the library we use doesn't allow us to overwrite the styles without using
 global declarations. If you have any questions or improvements, open an issue
 and we're happy to help you along.
 
-#### Colors
+### Colors
 
 The design system supports multiple color palettes via themes which can be
 changed in the Settings screen.
