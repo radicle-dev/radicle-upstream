@@ -1,7 +1,7 @@
 <script lang="typescript">
   import Icon from "../Icon";
-  import Spinner from ".././/Spinner.svelte";
-  import KeyHint from ".././/KeyHint.svelte";
+  import Spinner from "../Spinner.svelte";
+  import KeyHint from "../KeyHint.svelte";
 
   import type { ValidationState } from "ui/src/validation";
   import { ValidationStatus as Status } from "ui/src/validation";

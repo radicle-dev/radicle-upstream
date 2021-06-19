@@ -3,7 +3,7 @@
   import { PeerRole, PeerType } from "ui/src/project";
   import type { User } from "ui/src/project";
 
-  import Avatar from ".//Avatar.svelte";
+  import Avatar from "../Avatar.svelte";
   import Badge from "../Badge.svelte";
 
   export let peer: User;

@@ -2,7 +2,7 @@
   import type { CommitStats } from "ui/src/source";
   import type { Diff } from "ui/src/source/diff";
 
-  import IconFile from ".//Icon/File.svelte";
+  import Icon from "../Icon";
 
   import FileDiff from "./FileDiff.svelte";
 
@@ -69,14 +69,14 @@
 <div>
   {#each diff.created as path (path)}
     <header class="file-header">
-      <IconFile style="margin-right: 8px;" />
+      <Icon.File style="margin-right: 8px;" />
       <p class="typo-text-bold">{path}</p>
       <span class="diff-type created">created</span>
     </header>
   {/each}
   {#each diff.deleted as path (path)}
     <header class="file-header">
-      <IconFile style="margin-right: 8px;" />
+      <Icon.File style="margin-right: 8px;" />
       <p class="typo-text-bold">{path}</p>
       <span class="diff-type deleted">deleted</span>
     </header>

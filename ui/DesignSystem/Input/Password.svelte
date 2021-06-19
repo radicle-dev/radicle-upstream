@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import Icon from "../Icon";
-  import KeyHint from ".././/KeyHint.svelte";
+  import KeyHint from "../KeyHint.svelte";
 
   import type { ValidationState } from "ui/src/validation";
   import { ValidationStatus } from "ui/src/validation";

@@ -6,8 +6,9 @@
   import type { User } from "ui/src/project";
   import { CSSPosition } from "ui/src/style";
 
-  import { Icon } from "./";
-  import { Overlay, Tooltip } from "./";
+  import Icon from "./Icon";
+  import Overlay from "./Overlay.svelte";
+  import Tooltip from "./Tooltip.svelte";
 
   import Peer from "./PeerSelector/Peer.svelte";
 

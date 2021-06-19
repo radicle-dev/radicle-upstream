@@ -3,7 +3,7 @@
 
   import { copyToClipboard } from "ui/src/ipc";
   import * as notification from "ui/src/notification";
-  import Icon from ".//Icon";
+  import Icon from "./Icon";
 
   export let style = "";
   export let copyContent = "";
