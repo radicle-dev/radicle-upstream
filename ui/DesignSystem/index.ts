@@ -36,7 +36,6 @@ import PeerSelector from "./PeerSelector.svelte";
 import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
-import QR from "./QR.svelte";
 import RadicleId from "./RadicleId.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
@@ -98,7 +97,6 @@ export {
   ProjectAnchorPopover,
   ProjectCard,
   ProjectList,
-  QR,
   RadicleId,
   RadicleLogo,
   RadioOption,
