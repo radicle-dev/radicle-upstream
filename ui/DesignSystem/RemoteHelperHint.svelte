@@ -1,7 +1,7 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Icon } from "ui/DesignSystem";
+  import Icon from "./Icon";
   import Copyable from "./Copyable.svelte";
   import Hoverable from "./Hoverable.svelte";
 

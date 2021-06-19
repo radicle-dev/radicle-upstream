@@ -1,5 +1,7 @@
 <script>
-  import { Avatar, Button, Input } from "ui/DesignSystem";
+  import Avatar from "./Avatar.svelte";
+  import Button from "./Button.svelte";
+  import Input from "./Input";
 
   export let style = null;
   export let user = null;

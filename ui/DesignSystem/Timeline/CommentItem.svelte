@@ -1,5 +1,7 @@
 <script>
-  import { Avatar, Markdown } from "ui/DesignSystem";
+  import Avatar from "../Avatar.svelte";
+  import Markdown from "../Markdown.svelte";
+
   export let item = null;
 </script>
 

@@ -1,6 +1,7 @@
 <script lang="typescript">
   import * as router from "ui/src/router";
-  import { Button, Emoji } from "ui/DesignSystem";
+  import Button from "../Button.svelte";
+  import Emoji from "../Emoji.svelte";
 
   export let expectedNetwork = "Mainnet";
   export let walletNetwork: string;

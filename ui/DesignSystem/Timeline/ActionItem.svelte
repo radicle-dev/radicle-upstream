@@ -1,5 +1,6 @@
 <script>
-  import { Avatar, Icon } from "ui/DesignSystem";
+  import Avatar from "../Avatar.svelte";
+  import Icon from "../Icon";
   import Label from "../Label.svelte";
 
   export let item = null;

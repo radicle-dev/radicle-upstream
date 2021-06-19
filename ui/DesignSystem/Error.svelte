@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import { Icon } from "ui/DesignSystem";
+  import Icon from "./Icon";
 
   export let message = "Something went wrong";
 </script>

@@ -3,7 +3,9 @@
   import { BadgeType } from "ui/src/badge";
   import type { Branch, Tag } from "ui/src/source";
 
-  import { Badge, Icon, Spinner } from "ui/DesignSystem";
+  import Badge from "../../Badge.svelte";
+  import Icon from "../../Icon";
+  import Spinner from "../../Spinner.svelte";
 
   export let loading: boolean = false;
   export let defaultBranch: boolean = false;

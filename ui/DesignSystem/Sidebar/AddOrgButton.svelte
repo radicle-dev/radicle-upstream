@@ -1,5 +1,5 @@
 <script>
-  import { Icon } from "ui/DesignSystem";
+  import Icon from "../Icon";
 
   export let disabled = false;
 </script>

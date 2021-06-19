@@ -1,9 +1,9 @@
 <script lang="typescript">
   import type * as project from "ui/src/project";
 
-  import Badge from ".//Badge.svelte";
+  import Badge from "./Badge.svelte";
   import { BadgeType } from "ui/src/badge";
-  import ProjectAnchorPopover from "ui/DesignSystem/ProjectAnchorPopover.svelte";
+  import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
 
   export let title: string;
 
