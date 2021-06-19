@@ -1,6 +1,6 @@
 <script>
-  import Icon from "../Icon";
-  import Spinner from "../Spinner.svelte";
+  import Icon from "./Icon";
+  import Spinner from "./Spinner.svelte";
 
   import { ValidationStatus } from "ui/src/validation.ts";
 

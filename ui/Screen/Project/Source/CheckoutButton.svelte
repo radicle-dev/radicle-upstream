@@ -10,7 +10,7 @@
     Tooltip,
   } from "ui/DesignSystem";
 
-  import { dismissRemoteHelperHint, settings } from "../ui/src/session.ts";
+  import { dismissRemoteHelperHint, settings } from "ui/src/session.ts";
 
   // Whether this button should be displayed as a "Fork" button.
   export let fork = false;

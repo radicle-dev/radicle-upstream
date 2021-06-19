@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { Button } from "./";
+  import Button from "../Button.svelte";
 
   export let disableSubmit = null;
   export let submitLabel = "Next";

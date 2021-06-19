@@ -2,7 +2,7 @@
   import { createEventDispatcher } from "svelte";
 
   import type { Avatar as AvatarT } from "ui/src/proxy/identity";
-  import Avatar from "./Avatar.svelte";
+  import Avatar from "../Avatar.svelte";
 
   const dispatch = createEventDispatcher();
 

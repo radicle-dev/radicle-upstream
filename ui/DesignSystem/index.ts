@@ -45,7 +45,6 @@ import Remote from "./Remote.svelte";
 import RemoteHelperHint from "./RemoteHelperHint.svelte";
 import RevisionSelector from "./SourceBrowser/RevisionSelector.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
-import Select from "./Select.svelte";
 import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
@@ -108,7 +107,6 @@ export {
   RemoteHelperHint,
   RevisionSelector,
   SegmentedControl,
-  Select,
   Sidebar,
   SidebarLayout,
   Spinner,

@@ -5,8 +5,8 @@
   import type { ButtonVariant } from "ui/src/style";
   import type { ValidationState } from "ui/src/validation";
 
-  import Button from "../Button.svelte";
-  import TextInput from "./Text.svelte";
+  import Button from "./Button.svelte";
+  import TextInput from "./TextInput.svelte";
 
   export let placeholder = "";
   export let style = "";

@@ -1,7 +1,7 @@
 <script>
   import Avatar from "./Avatar.svelte";
   import Button from "./Button.svelte";
-  import Input from "./Input";
+  import Textarea from "./Textarea.svelte";
 
   export let style = null;
   export let user = null;
@@ -32,7 +32,7 @@
     variant="circle"
     imageUrl={user.avatar_url} />
   <section>
-    <Input.Textarea placeholder="Leave a comment" style="flex: 1" />
+    <Textarea placeholder="Leave a comment" style="flex: 1" />
     <div class="comment-meta">
       <p
         class="typo-text-small"
