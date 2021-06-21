@@ -43,6 +43,13 @@ export interface Action {
   readonly handler: () => void;
 }
 
+// Handle to remove notifications. Returned when a notification is
+// created
+export interface Handle {
+  // Don’t show the notification anymore
+  remove(): void;
+}
+
 const notificationsStore = writable<Notification[]>([]);
 
 export const store: Readable<Notification[]> = derived(
@@ -97,7 +104,7 @@ export const create = (
   };
 };
 
-const show = (variant: Variant, params: NotificationParams): void => {
+const show = (variant: Variant, params: NotificationParams): Handle => {
   const notification = create(variant, params);
   notificationsStore.update(notifications => [notification, ...notifications]);
 
@@ -106,15 +113,19 @@ const show = (variant: Variant, params: NotificationParams): void => {
       remove(notification.id);
     }, config.NOTIFICATION_TIMEOUT);
   }
+
+  return {
+    remove: () => remove(notification.id),
+  };
 };
 
-export const error = (params: NotificationParams): void =>
+export const error = (params: NotificationParams): Handle =>
   show(Variant.Error, params);
 
-export const info = (params: NotificationParams): void =>
+export const info = (params: NotificationParams): Handle =>
   show(Variant.Info, params);
 
-export const primary = (params: NotificationParams): void =>
+export const primary = (params: NotificationParams): Handle =>
   show(Variant.Primary, params);
 
 const remove = (id: number): void => {
