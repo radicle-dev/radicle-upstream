@@ -198,16 +198,14 @@
           <h3>Devices</h3>
         </header>
         <div class="section-item">
-          <div>
-            <p>
-              Share your Device ID with others to be added as a remote.
-              <br /><a
-                style="color: var(--color-foreground-level-5);"
-                class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
-                >Learn more about managing devices</a>
-            </p>
-          </div>
+          <p>
+            Share your Device ID with others to be added as a remote.
+            <br /><a
+              style="color: var(--color-foreground-level-5);"
+              class="typo-link"
+              href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
+              >Learn more about managing devices</a>
+          </p>
           <div class="action">
             <PeerId peerId={session.identity.peerId} />
           </div>
@@ -219,20 +217,18 @@
           <h3>Network</h3>
         </header>
         <div class="section-item-single">
-          <div>
-            <p class="typo-text-bold">
-              Seeds help you find projects and users on the network.
-            </p>
-            <p
-              style="color: var(--color-foreground-level-6); margin-bottom: 1.5rem;">
-              Enter seed addresses that you’d like to connect to here.
-              <a
-                style="color: var(--color-foreground-level-5);"
-                class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
-                >Learn more</a>
-            </p>
-          </div>
+          <p class="typo-text-bold">
+            Seeds help you find projects and users on the network.
+          </p>
+          <p
+            style="color: var(--color-foreground-level-6); margin-bottom: 1.5rem;">
+            Enter seed addresses that you’d like to connect to here.
+            <a
+              style="color: var(--color-foreground-level-5);"
+              class="typo-link"
+              href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
+              >Learn more</a>
+          </p>
           <form
             class="seed-entry-form"
             on:submit|preventDefault
@@ -326,9 +322,7 @@
             <h3>Funding</h3>
           </header>
           <div class="section-item">
-            <div>
-              <p class="typo-text-bold">Funding environment</p>
-            </div>
+            <p class="typo-text-bold">Funding environment</p>
             <div class="action">
               <SegmentedControl
                 active={$ethereumEnvironment}
@@ -344,9 +338,7 @@
           <h3>Feedback</h3>
         </header>
         <div class="section-item">
-          <div>
-            <p class="typo-text-bold">Get in touch directly</p>
-          </div>
+          <p class="typo-text-bold">Get in touch directly</p>
           <div class="action">
             <a
               class="typo-link"
@@ -356,9 +348,7 @@
           </div>
         </div>
         <div class="section-item">
-          <div>
-            <p class="typo-text-bold">Join the community chat</p>
-          </div>
+          <p class="typo-text-bold">Join the community chat</p>
           <div class="action">
             <a class="typo-link" href="https://matrix.radicle.community">
               matrix.radicle.community
@@ -372,12 +362,10 @@
           <h3>Version</h3>
         </header>
         <div class="section-item" style="padding-bottom: 0">
-          <div>
-            <p style="color: var(--color-foreground-level-6);">
-              Version
-              {version}
-            </p>
-          </div>
+          <p style="color: var(--color-foreground-level-6);">
+            Version
+            {version}
+          </p>
           {#if $latestVersionInfo}
             <div class="action">
               There’s a new version of Radicle Upstream
