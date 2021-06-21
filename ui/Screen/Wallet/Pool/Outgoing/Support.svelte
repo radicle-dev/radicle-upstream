@@ -1,23 +1,29 @@
 <script lang="typescript">
   import { onMount } from "svelte";
-  import { Button, Icon, Input } from "../../../../DesignSystem/Primitive";
-  import { Dai, Remote, TxButton } from "../../../../DesignSystem/Component";
+  import {
+    Button,
+    Dai,
+    Icon,
+    Remote,
+    TextInput,
+    TxButton,
+  } from "ui/DesignSystem";
 
-  import Receivers from "../../../../DesignSystem/Component/Funding/Pool/Receivers.svelte";
+  import Receivers from "ui/DesignSystem/Funding/Pool/Receivers.svelte";
   import ModalTopUp from "../../../../Modal/Funding/Pool/TopUp.svelte";
   import ModalWithdraw from "../../../../Modal/Funding/Pool/Withdraw.svelte";
 
-  import * as modal from "../../../../src/modal";
-  import * as remote from "../../../../src/remote";
-  import * as fundingPool from "../../../../src/funding/pool";
-  import { TxKind, ongoing } from "../../../../src/transaction";
-  import { store as txs } from "../../../../src/transaction";
+  import * as modal from "ui/src/modal";
+  import * as remote from "ui/src/remote";
+  import * as fundingPool from "ui/src/funding/pool";
+  import { TxKind, ongoing } from "ui/src/transaction";
+  import { store as txs } from "ui/src/transaction";
 
   import {
     budgetStore,
     weeklyBudgetValidationStore,
-  } from "../../../../src/funding/pool";
-  import { ValidationStatus } from "../../../../src/validation";
+  } from "ui/src/funding/pool";
+  import { ValidationStatus } from "ui/src/validation";
 
   import Big from "big.js";
 
@@ -174,7 +180,7 @@
         <h3>Support</h3>
         <span class="row" style="margin-left: 0.875rem">
           {#if editing}
-            <Input.Text
+            <TextInput
               dataCy="budget-input"
               bind:value={budget}
               validation={$budgetValidation}
@@ -187,7 +193,7 @@
                 style="position: absolute; top: 0.0625rem; left: 0.75rem;">
                 <Dai />
               </div>
-            </Input.Text>
+            </TextInput>
           {:else}
             <p class="typo-text-bold">
               <Dai>{poolData.weeklyBudget.toNumber()}</Dai>

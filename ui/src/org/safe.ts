@@ -70,11 +70,6 @@ export function appUrl(
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Gnosis Safe links are not supported on the Local testnet",
       });
-    case Ethereum.Environment.Ropsten:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Gnosis Safe links are not supported on the Ropsten testnet",
-      });
     case Ethereum.Environment.Rinkeby:
       domain = `rinkeby.gnosis-safe.io`;
       break;
@@ -95,12 +90,6 @@ function createSafeServiceClient(
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message:
           "Pending Gnosis Safe transactions are not available on the Local testnet.",
-      });
-    case Ethereum.Environment.Ropsten:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message:
-          "Pending Gnosis Safe transactions are not available on the Ropsten testnet.",
       });
     case Ethereum.Environment.Rinkeby:
       uri = "https://safe-transaction.rinkeby.gnosis.io";

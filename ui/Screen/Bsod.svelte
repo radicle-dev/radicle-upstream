@@ -2,7 +2,7 @@
   import type { SvelteComponent } from "svelte";
   import type * as svelteStore from "svelte/store";
 
-  import { Button, Emoji, Icon } from "../DesignSystem/Primitive";
+  import { Button, Emoji, Icon } from "ui/DesignSystem";
 
   import * as notification from "../src/notification";
   import * as ipc from "../src/ipc";

@@ -17,14 +17,15 @@
   import * as sess from "ui/src/session";
   import type { Urn } from "ui/src/urn";
   import {
-    AdditionalActionsDropdown,
+    Button,
     Header,
+    Icon,
+    PeerSelector,
     Remote,
     SidebarLayout,
-  } from "ui/DesignSystem/Component";
-  import { Button, Icon } from "ui/DesignSystem/Primitive";
+    ThreeDotsMenu,
+  } from "ui/DesignSystem";
   import ProjectHeader from "./Project/ProjectHeader.svelte";
-  import PeerSelector from "ui/DesignSystem/Component/PeerSelector.svelte";
   import ModalManagePeers from "ui/Modal/ManagePeers.svelte";
 
   import Source from "./Project/Source.svelte";
@@ -133,7 +134,7 @@
           on:mouseenter={mouseenter}
           on:mouseleave={mouseleave}
           style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
-        <AdditionalActionsDropdown menuItems={menuItems(project)} />
+        <ThreeDotsMenu menuItems={menuItems(project)} />
       </div>
     </Header>
     <Source

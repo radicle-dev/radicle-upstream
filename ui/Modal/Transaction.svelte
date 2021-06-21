@@ -1,8 +1,7 @@
 <script lang="typescript">
-  import { Copyable, Identity, Modal } from "ui/DesignSystem/Component";
-  import { Emoji, Icon } from "ui/DesignSystem/Primitive";
-  import TxSpinner from "ui/DesignSystem/Component/Transaction/Spinner.svelte";
-  import Summary from "ui/DesignSystem/Component/Transaction/Summary.svelte";
+  import { Copyable, Emoji, Icon, Identity, Modal } from "ui/DesignSystem";
+  import TxSpinner from "ui/DesignSystem/Transaction/Spinner.svelte";
+  import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
 
   import { ellipsed } from "ui/src/style";
   import {

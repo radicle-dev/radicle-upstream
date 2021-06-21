@@ -12,7 +12,7 @@ import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 import * as ipc from "ui/src/ipc";
 
 import type { SvelteComponent } from "svelte";
-import { Icon } from "../DesignSystem/Primitive";
+import { Icon } from "ui/DesignSystem";
 
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
@@ -486,9 +486,6 @@ export const openTxOnEtherscan = (transactionId: string): void => {
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Etherscan links are not supported on the Local testnet",
       });
-    case ethereum.Environment.Ropsten:
-      ipc.openUrl(`https://ropsten.etherscan.io/tx/${transactionId}`);
-      break;
     case ethereum.Environment.Rinkeby:
       ipc.openUrl(`https://rinkeby.etherscan.io/tx/${transactionId}`);
       break;

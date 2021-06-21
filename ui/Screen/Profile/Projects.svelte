@@ -1,19 +1,14 @@
 <script lang="typescript">
   import ModalNewProject from "../../Modal/NewProject.svelte";
 
-  import * as modal from "../../src/modal";
-  import { fetchList, projects as store } from "../../src/project";
-  import type { Project } from "../../src/project";
+  import * as modal from "ui/src/modal";
+  import { fetchList, projects as store } from "ui/src/project";
+  import type { Project } from "ui/src/project";
   import { showNotificationsForFailedProjects } from "../../src/profile";
   import * as router from "ui/src/router";
-  import * as sess from "../../src/session";
+  import * as sess from "ui/src/session";
 
-  import {
-    EmptyState,
-    Error,
-    ProjectList,
-    Remote,
-  } from "../../DesignSystem/Component";
+  import { EmptyState, Error, ProjectList, Remote } from "ui/DesignSystem";
 
   const session = sess.getUnsealedFromContext();
 

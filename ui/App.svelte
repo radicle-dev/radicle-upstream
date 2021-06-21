@@ -17,7 +17,7 @@
     NotificationFaucet,
     ModalOverlay,
     Remote,
-  } from "ui/DesignSystem/Component";
+  } from "ui/DesignSystem";
 
   import Hotkeys from "ui/Hotkeys.svelte";
   import Theme from "ui/Theme.svelte";

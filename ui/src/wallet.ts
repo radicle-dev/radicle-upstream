@@ -60,11 +60,6 @@ function getProvider(
   switch (environment) {
     case ethereum.Environment.Local:
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");
-    case ethereum.Environment.Ropsten:
-      return new ethers.providers.InfuraProvider(
-        "ropsten",
-        "66fa0f92a54e4d8c9483ffdc6840d77b"
-      );
     case ethereum.Environment.Rinkeby:
       // This account is registered on igor.zuk@protonmail.com.
       return new ethers.providers.InfuraProvider(

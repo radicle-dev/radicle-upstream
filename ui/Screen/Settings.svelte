@@ -22,13 +22,15 @@
   import { updateChecker } from "../src/updateChecker";
   import * as modal from "../src/modal";
 
-  import { Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
+    Button,
+    Icon,
     PeerId,
-    SidebarLayout,
     SegmentedControl,
+    SidebarLayout,
     StyledCopyable,
-  } from "../DesignSystem/Component";
+    TextInput,
+  } from "ui/DesignSystem";
   import ModalShortcuts from "../Modal/Shortcuts.svelte";
 
   const updateTheme = (event: CustomEvent) =>
@@ -236,7 +238,7 @@
             on:submit|preventDefault
             data-cy="seed-entry-form">
             <div class="seed-entry-field">
-              <Input.Text
+              <TextInput
                 dataCy="seed-input"
                 bind:value={seedInputValue}
                 placeholder="Enter a seed address here"

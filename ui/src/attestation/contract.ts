@@ -13,7 +13,6 @@ import { parseIdentitySha1 } from "../urn";
 const addresses = {
   claims: {
     local: "0x785e8de68df899d77ce689f863e4166849c8bfd5",
-    ropsten: "0xF8F22AA794DDA79aC0C634a381De0226f369bCCe",
     rinkeby: "0x6c7b50EA0AFB02d73AE3846B3B9EBC31808300a6",
     mainnet: "0x4a7DFda4F2e9F062965cC87f775841fB58AEA83e",
   },
@@ -24,8 +23,6 @@ export function claimsAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
       return addresses.claims.local;
-    case ethereum.Environment.Ropsten:
-      return addresses.claims.ropsten;
     case ethereum.Environment.Rinkeby:
       return addresses.claims.rinkeby;
     case ethereum.Environment.Mainnet:

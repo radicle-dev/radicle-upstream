@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Remote } from "ui/DesignSystem/Component";
+  import { Remote } from "ui/DesignSystem";
 
   import Outgoing from "./Pool/Outgoing.svelte";
   import Incoming from "./Pool/Incoming.svelte";

@@ -5,10 +5,10 @@
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
 
-  import { Icon } from "ui/DesignSystem/Primitive";
+  import { Icon } from "ui/DesignSystem";
   import BackButton from "ui/Screen/Project/BackButton.svelte";
 
-  import Changeset from "ui/DesignSystem/Component/SourceBrowser/Changeset.svelte";
+  import Changeset from "ui/DesignSystem/SourceBrowser/Changeset.svelte";
 
   export let commitHash: string;
 

@@ -1,5 +1,5 @@
 <script>
-  import { Icon } from "../../../DesignSystem/Primitive";
+  import { Icon } from "ui/DesignSystem";
 
   export let issue = null;
 

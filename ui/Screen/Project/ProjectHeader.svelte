@@ -1,8 +1,7 @@
 <script lang="typescript">
-  import type { Stats } from "../../src/project";
+  import type { Stats } from "ui/src/project";
 
-  import { Icon } from "../../DesignSystem/Primitive";
-  import { RadicleId } from "../../DesignSystem/Component";
+  import { Icon, RadicleId } from "ui/DesignSystem";
 
   export let name: string;
   export let urn: string;

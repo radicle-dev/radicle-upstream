@@ -1,5 +1,5 @@
 <script lang="typescript">
-  import Modal from "ui/DesignSystem/Component/Modal.svelte";
+  import Modal from "ui/DesignSystem/Modal.svelte";
   import Erc20Allowance from "./Onboarding/Erc20Allowance.svelte";
   import Intro from "./Onboarding/Intro.svelte";
   import SetBudget from "./Onboarding/SetBudget.svelte";

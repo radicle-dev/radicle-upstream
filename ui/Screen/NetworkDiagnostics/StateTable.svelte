@@ -1,6 +1,6 @@
 <script lang="typescript">
   import type { RoomState } from "ui/src/waitingRoom";
-  import StyledCopyable from "ui/DesignSystem/Component/StyledCopyable.svelte";
+  import StyledCopyable from "ui/DesignSystem/StyledCopyable.svelte";
 
   export let state: RoomState;
 </script>
