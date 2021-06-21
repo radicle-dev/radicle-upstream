@@ -12,7 +12,7 @@ import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 import * as ipc from "ui/src/ipc";
 
 import type { SvelteComponent } from "svelte";
-import { Icon } from "../DesignSystem/Primitive";
+import { Icon } from "ui/DesignSystem";
 
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);

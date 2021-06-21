@@ -1,8 +1,7 @@
 <script lang="typescript">
   import * as style from "ui/src/style";
   import * as org from "ui/src/org";
-  import { Button, Icon } from "ui/DesignSystem/Primitive";
-  import { Tooltip } from "ui/DesignSystem/Component";
+  import { Button, Icon, Tooltip } from "ui/DesignSystem";
 
   export let orgAddress: string;
   export let gnosisSafeAddress: string;

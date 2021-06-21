@@ -3,25 +3,26 @@
 
   import ModalSearch from "../../Modal/Search.svelte";
 
-  import { FADE_DURATION } from "../../src/config";
-  import * as modal from "../../src/modal";
+  import { FADE_DURATION } from "ui/src/config";
+  import * as modal from "ui/src/modal";
   import { following as store, fetchFollowing } from "../../src/profile";
   import * as proxy from "../../src/proxy";
   import * as router from "ui/src/router";
-  import type { Project } from "../../src/project";
-  import * as sess from "../../src/session";
+  import type { Project } from "ui/src/project";
+  import * as sess from "ui/src/session";
   import type { Urn } from "../../src/urn";
 
   import {
+    Button,
     EmptyState,
+    FollowToggle,
     Hoverable,
+    Icon,
     List,
     ProjectList,
-    Remote,
     RadicleId,
-    FollowToggle,
-  } from "../../DesignSystem/Component";
-  import { Button, Icon } from "../../DesignSystem/Primitive";
+    Remote,
+  } from "ui/DesignSystem";
 
   const session = sess.getUnsealedFromContext();
   const onCancel = (urn: Urn): void => {

@@ -6,7 +6,7 @@
   } from "ui/src/transaction";
   import type { Tx } from "ui/src/transaction";
 
-  import TxList from "ui/DesignSystem/Component/Wallet/Transactions/TxList.svelte";
+  import TxList from "ui/DesignSystem/Wallet/Transactions/TxList.svelte";
 
   $: includedTxs = $transactions.filter(tx => tx.status === TxStatus.Included);
   $: pendingTxs = $transactions.filter(

@@ -1,9 +1,9 @@
 <script lang="typescript">
-  import { Button, Emoji } from "../../../../DesignSystem/Primitive";
+  import { Button, Emoji } from "ui/DesignSystem";
   import ModalPoolOnboarding from "../../../../Modal/Funding/Onboarding.svelte";
 
-  import * as modal from "../../../../src/modal";
-  import * as fundingPool from "../../../../src/funding/pool";
+  import * as modal from "ui/src/modal";
+  import * as fundingPool from "ui/src/funding/pool";
 
   export let pool: fundingPool.Pool;
   // Whether the onboarding tx is ongoing and this screen

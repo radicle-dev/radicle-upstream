@@ -18,8 +18,7 @@
   import { ValidationStatus } from "ui/src/validation";
   import { urnValidationStore } from "ui/src/urn";
 
-  import { Icon, Input } from "ui/DesignSystem/Primitive";
-  import { FollowToggle, Remote } from "ui/DesignSystem/Component";
+  import { FollowToggle, Icon, Remote, TextInput } from "ui/DesignSystem";
 
   let id: string;
 
@@ -142,7 +141,7 @@
 
 <div class="container" data-cy="search-modal">
   <div class="search-bar">
-    <Input.Text
+    <TextInput
       autofocus
       bind:value={$inputStore}
       dataCy="search-input"
@@ -154,7 +153,7 @@
       <div slot="left">
         <Icon.MagnifyingGlass />
       </div>
-    </Input.Text>
+    </TextInput>
   </div>
 
   <div class="result" class:tracked class:untracked>

@@ -1,6 +1,6 @@
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
-  import { Avatar, Icon } from "ui/DesignSystem/Primitive";
+  import { Avatar, Icon } from "ui/DesignSystem";
 
   import * as style from "ui/src/style";
 

@@ -237,104 +237,8 @@ Here's a list of all scripts that are intended for developer use:
                                 #   - monorepo
                                 #   - saved preferences
 
-### Design System
 
-The overall look of Upstream is governed by a style guide which is continuously
-being improved and extended. This style guide is translated into code forming
-the design system. The design system contains all design primitives which, in
-turn, can be composed to create rich user experiences.
-
-Most of the components defined by the design system can be conveniently seen on
-one page within Upstream by pressing <kbd>shift</kbd> + <kbd>D</kbd>. This will
-bring up the Design System Guide modal.
-
-The purpose of the Design System Guide is to showcase all available primitives
-and components. Having them all on a single screen allows us to see how changes
-to components affect all variations at a glance. Therefore newly created
-components should always be added to the Guide, explaining all the different
-variations and use cases.
-
-
-#### File structure
-
-In Svelte everything is a component, so to be able to build a complex
-application and still be able to navigate the code and make changes quickly, we
-organize our components in groups defined by use-case, re-usability and
-complexity. Currently you'll find the following types of components in the
-`DesignSystem` directory:
-
-  - `Primitive`: simple, yet highly reusable components like typography,
-    buttons, form elements, spacing, positioning and other utilities.
-
-    Components of this type are usually just wrappers around standard HTML
-    elements with custom styling.
-
-    There are currently two ways of organizing primitives:
-
-      - as all-in-one components where the type of the component is passed down
-        via a `variant` prop. This is for components which have a very similar
-        markup, but whose styling differs across variants.  Examples in this
-        category are: buttons, typography and positioning helpers.
-
-      - as namespaced components, where the component markup is very different
-        across variants, for example: form elements and icons.
-
-    To decide which way to write a new primitive component, start by looking at
-    how it's going to be used in code and then optimise for ergonomics.
-
-    All public primitives are exported via a central `index.js` file, which
-    makes consumption straightforward:
-
-    ```html
-    <script>
-      import { Button, Title, Icon, Input } from "../DesignSystem/Primitive";
-    </script>
-
-    <Icon.House />
-    <Button variant="outline">OK</Button>
-    ```
-
-  - `Component`: reusable low-to-high complexity components.
-
-    Sub-folders in `DesignSystem/Component` should only be created for breaking
-    up larger components into smaller fragments. If a component is broken up in
-    fragments, make sure to only export the component which is intended for
-    public use.
-
-    ```html
-    <script>
-      import { RadicleLogo } from "../DesignSystem/Component";
-    </script>
-
-    <RadicleLogo />
-    ```
-
-Next to `DesignSystem`, you'll find a directory called `Screens`. Screens bring
-together components from the Design System forming what a user in the UI sees
-as a whole screen. More complex screens, similar to components, can be broken
-down into multiple fragments. In this case the screen will contain data
-fetching and routing logic for the fragments. Fragments should be placed in a
-directory named after the screen, like so:
-
-```sh
-.
-├── RegisterProject                    # fragment directory
-│   ├── ConfirmTransactionStep.svelte
-│   ├── PickNameStep.svelte
-│   ├── PickWalletStep.svelte
-│   └── TransactionSummaryStep.svelte
-└── RegisterProject.svelte             # screen
-```
-
-Finally, our file and directory naming rules are as follows:
-
-  - Svelte components and directories containing components - PascalCase;
-  - everything else, including `*.js` files and folders - camelCase;
-  - all folders in `/ui` should be named in singular form as they represent a
-    type, not content.
-
-
-#### Styling
+### Styling
 
 The main entry point of the electron renderer is `public/index.html`. This is
 the file where any global styling which is not managed by Svelte should be
@@ -348,7 +252,7 @@ overrides, components expose a `style` prop:
 ```
 
 
-#### Typography
+### Typography
 
 The design system provides a constrained set of typographic styles. This
 consists of a set of styled headers, a set of styled paragraphs and a set of
@@ -378,7 +282,7 @@ since the library we use doesn't allow us to overwrite the styles without using
 global declarations. If you have any questions or improvements, open an issue
 and we're happy to help you along.
 
-#### Colors
+### Colors
 
 The design system supports multiple color palettes via themes which can be
 changed in the Settings screen.

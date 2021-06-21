@@ -4,18 +4,20 @@
   import { unreachable } from "ui/src/unreachable";
   import * as router from "ui/src/router";
 
-  import { Button, Icon } from "../DesignSystem/Primitive";
+  import {
+    ActionBar,
+    Button,
+    Header,
+    Icon,
+    SidebarLayout,
+    TabBar,
+  } from "ui/DesignSystem";
 
-  import ActionBar from "../DesignSystem/Component/ActionBar.svelte";
-  import Header from "../DesignSystem/Component/Header.svelte";
-  import TabBar from "ui/DesignSystem/Component/TabBar.svelte";
-  import SidebarLayout from "../DesignSystem/Component/SidebarLayout.svelte";
+  import FollowingTab from "./Profile/Following.svelte";
   import ProfileHeader from "./Profile/ProfileHeader.svelte";
+  import ProjectsTab from "./Profile/Projects.svelte";
 
-  import ModalNewProject from "../Modal/NewProject.svelte";
-
-  import FollowingTab from "ui/Screen/Profile/Following.svelte";
-  import ProjectsTab from "ui/Screen//Profile/Projects.svelte";
+  import ModalNewProject from "ui/Modal/NewProject.svelte";
 
   export let activeTab: router.ProfileTab;
 

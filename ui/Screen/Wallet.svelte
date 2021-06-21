@@ -14,16 +14,15 @@
   } from "ui/src/attestation/status";
   import { store, Status } from "ui/src/wallet";
 
-  import ConnectWallet from "ui/DesignSystem/Component/Wallet/Connect.svelte";
-  import WalletPanel from "ui/DesignSystem/Component/Wallet/Panel.svelte";
-  import WrongNetwork from "ui/DesignSystem/Component/Wallet/WrongNetwork.svelte";
+  import ConnectWallet from "ui/DesignSystem/Wallet/Connect.svelte";
+  import WalletPanel from "ui/DesignSystem/Wallet/Panel.svelte";
+  import WrongNetwork from "ui/DesignSystem/Wallet/WrongNetwork.svelte";
 
   import Pool from "./Wallet/Pool.svelte";
   import Transactions from "./Wallet/Transactions.svelte";
   import LinkAddress from "./Wallet/LinkAddress.svelte";
 
-  import { EmptyState, SidebarLayout, TabBar } from "ui/DesignSystem/Component";
-  import { Icon } from "ui/DesignSystem/Primitive";
+  import { EmptyState, Icon, SidebarLayout, TabBar } from "ui/DesignSystem";
 
   export let activeTab: router.WalletTab;
 

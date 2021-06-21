@@ -9,7 +9,7 @@
   import * as sess from "ui/src/session";
   import * as org from "ui/src/org";
 
-  import { EmptyState, ProjectList } from "ui/DesignSystem/Component";
+  import { EmptyState, ProjectList } from "ui/DesignSystem";
   import { Variant as IllustrationVariant } from "ui/src/illustration";
 
   const session = sess.getUnsealedFromContext();
