@@ -1,8 +1,8 @@
 :root {
-  --color-primary: #5555ff;
-  --color-primary-level-1: #e3e3ff;
-  --color-primary-level-2: #bfbffc;
-  --color-primary-level-6: #313166;
+  --color-primary: rgba(85, 85, 255, 1);
+  --color-primary-level-1: rgba(85, 85, 255, 0.17);
+  --color-primary-level-2: rgba(85, 85, 255, 0.37);
+  --color-primary-level-6: rgba(85, 85, 255, 0.87);
   --color-positive: #53db53;
   --color-positive-level-1: #e3ffe3;
   --color-positive-level-2: #b5ffb5;
