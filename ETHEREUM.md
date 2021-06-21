@@ -1,8 +1,5 @@
-## Radicle Funding
-
-Welcome to the developer's documentation on the Radicle Funding.
-
-### Overview
+## Features based on Ethereum
+### Funding
 
 Three moving pieces back the Radicle Funding experiences:
 
@@ -16,60 +13,61 @@ incoming support funds, and others, translate into ethereum transactions.
 
 For users to approve those transactions originated in the app, they need to
 establish a connection between an Ethereum wallet and the app. We provide this
-capability through a WalletConnect integration. A substantial number of Ethereum
-wallets support WalletConnect. [You can find the complete list here][wcw].
+capability through a WalletConnect integration. A substantial number of
+Ethereum wallets support WalletConnect. You can find the complete list
+[here][wcw].
 
 Once a wallet is connected to the app, the funding experiences become available
-to the user. The user can now set up and edit their support, receive funds, etc.
-All of these actions translate into transactions the user must review, (i.e.,
-approve or reject) on their connected wallet.
+to the user. The user can now set up and edit their support, receive funds,
+etc.  All of these actions translate into transactions the user must review,
+(i.e., approve or reject) on their connected wallet.
 
-These same transactions are provided and ran by the [Radicle Contracts][rc], our
-custom Ethereum smart-contracts.
+These same transactions are provided and ran by the [Radicle Contracts][rc],
+our custom Ethereum smart-contracts.
 
-### Ethereum environments
+### Orgs
 
-The funding experiences can take place in three different environments:
+Radicle orgs allow users to maintain an auditable and transparent history of
+project state on Ethereum. This enables new workflows around your main branch
+that is now anchored and secured on Ethereum. Anchors can be used to trigger
+off-chain actions like the distribution of developer rewards, software
+releases, or any job you’d like. Org contracts may be controlled by arbitrary
+addresses. At the moment we deploy a [Gnosis safe contract][gnosis] as the
+controller when creating an org.
+
+Read more about Orgs [here][org].
+
+## Ethereum environments
 
 1. `Local`
 
-  In this environment, the Radicle Contracts are deployed to development Ethereum
-  node running locally and we use a local test wallet that can communicate with it.
-  The "DAI" token used in this environment is our custom Radicle Token. See the
-  [local environment](#local-environment) section to learn how to get set up.
+  In this environment Radicle Contracts are deployed to a development Ethereum
+  node running locally and we use a local test wallet that can communicate with
+  it. The "DAI" token used in this environment is our custom Radicle Token.
+  See the [local environment][loc] section to learn how to get set up.
 
+2. `Rinkeby`
 
-2. `Ropsten`
+  In this environment, the app will plug itself with the Radicle Contracts
+  deployed in the Rinkeby network and Infura is used as a service provider. We
+  recommend that you use a real wallet to ensure that we are testing using
+  real-world conditions.
 
-  In this environment, the app will plug itself with the Radicle Contracts deployed
-  in the Ropsten network and Infura is used as a service provider. We recommend that
-  you use a real wallet to ensure that we are testing using real-world conditions.
-
-  You will need fake Ropsten Eth (aka `rEth`) to pay the incurring transactions fees.
-  No real money will be charged.
-
-  As in the `Local` environment, here the "DAI" token used is also our custom Radicle
-  Token, deployed in the Ropsten network. Reach out to the team to get some Radicle
-  Tokens into your account.
-
-3. `Rinkeby`
-
-  Any Org related testing can only happen on Rinkeby because Gnosis Safe only
-  provides a UI for the Rinkeby testnet.
+  You will need [Rinkeby Eth] to pay the incurring transactions fees. No real
+  money will be used.
 
   We're using the official Rinkeby DAI contract:
     0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea
 
   Faucet: https://app.compound.finance/ -> DAI -> Withdraw -> Faucet
 
-4. `Mainnet`
+3. `Mainnet`
 
   Production environment where everything costs real money. So far only the Org
   and Attestation features is available on `Mainnet`, the contracts for the
-  funding (aka token streams) feature are not yet deployed on mainnet.
+  funding (aka token streams) feature are not yet deployed.
 
-
-#### Local environment
+### Local environment
 
 In the local environment, we set up these three pieces as follows:
 
@@ -82,13 +80,13 @@ In the local environment, we set up these three pieces as follows:
 
 - A local ganache instance
 
-  Ganache provides a local Ethereum RPC client for testing and development. We deploy the
-  Radicle Contracts to this instance. Here, we also set an initial
+  Ganache provides a local Ethereum RPC client for testing and development. We
+  deploy the Radicle Contracts to this instance. Here, we also set an initial
   balance of the account we choose for development purposes.
 
-  For peace of mind, note that this instance has no connection to other networks
-  such as mainnet or testnet. Therefore, no real assets used ever. Feel free
-  to play around!
+  For peace of mind, note that this instance has no connection to other
+  networks such as mainnet or testnet. Therefore, no real assets used ever.
+  Feel free to play around!
 
 ![Radicle Funding Development Set up][dev-setup]
 
@@ -125,7 +123,12 @@ tabs:
 - Once the app is running, enable the funding feature in the Upstream settings
 
 
+
 [wcw]:https://walletconnect.org/wallets/
 [wctw]:https://github.com/radicle-dev/walletconnect-test-wallet
 [rc]:https://github.com/radicle-dev/radicle-contracts
 [dev-setup]:./funding-dev-setup.svg "Radicle Funding Development Set up"
+[org]: https://radicle.community/t/feature-update-orgs/2132
+[fauc]: https://faucet.rinkeby.io
+[loc]: #local-environment
+[gnosis]: https://help.gnosis-safe.io/en/articles/3876456-what-is-gnosis-safe

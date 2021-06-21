@@ -486,9 +486,6 @@ export const openTxOnEtherscan = (transactionId: string): void => {
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Etherscan links are not supported on the Local testnet",
       });
-    case ethereum.Environment.Ropsten:
-      ipc.openUrl(`https://ropsten.etherscan.io/tx/${transactionId}`);
-      break;
     case ethereum.Environment.Rinkeby:
       ipc.openUrl(`https://rinkeby.etherscan.io/tx/${transactionId}`);
       break;

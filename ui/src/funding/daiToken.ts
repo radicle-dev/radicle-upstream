@@ -13,7 +13,6 @@ export { ERC20 };
 
 const addresses = {
   local: "0xff1d4d289bf0aaaf918964c57ac30481a67728ef",
-  ropsten: "0x31f42841c2db5173425b5223809cf3a38fede360",
   rinkeby: "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
   mainnet: "0x6b175474e89094c44da98b954eedeac495271d0f",
 };
@@ -23,8 +22,6 @@ export function daiTokenAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
       return addresses.local;
-    case ethereum.Environment.Ropsten:
-      return addresses.ropsten;
     case ethereum.Environment.Rinkeby:
       return addresses.rinkeby;
     case ethereum.Environment.Mainnet:

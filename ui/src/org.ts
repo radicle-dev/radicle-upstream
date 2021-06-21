@@ -54,8 +54,6 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Orgs not available on the Local testnet",
       });
-    case ethereum.Environment.Ropsten:
-      return "0xf36fbaB8BA78683D23c5021bfcE8A5c88731200F";
     case ethereum.Environment.Rinkeby:
       return "0xF3D04e874D07d680e8b26332eEae5b9B1c263121";
     case ethereum.Environment.Mainnet:

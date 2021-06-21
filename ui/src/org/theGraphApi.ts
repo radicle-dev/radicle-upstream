@@ -31,10 +31,6 @@ const gnosisSubgraphClient = (): apolloCore.ApolloClient<unknown> => {
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Orgs is not available on the Local testnet.",
       });
-    case ethereum.Environment.Ropsten:
-      uri =
-        "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-ropsten";
-      break;
     case ethereum.Environment.Rinkeby:
       uri =
         "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby";
@@ -56,10 +52,6 @@ const orgsSubgraphClient = () => {
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Orgs is not available on the Local testnet.",
       });
-    case ethereum.Environment.Ropsten:
-      uri =
-        "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-ropsten";
-      break;
     case ethereum.Environment.Rinkeby:
       uri =
         "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby";
