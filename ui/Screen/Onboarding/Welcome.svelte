@@ -1,8 +1,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { RadicleLogo } from "../../DesignSystem/Component";
-  import { Button } from "../../DesignSystem/Primitive";
+  import { Button, RadicleLogo } from "ui/DesignSystem";
 
   const dispatch = createEventDispatcher();
 

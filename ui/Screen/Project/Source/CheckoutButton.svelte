@@ -1,11 +1,16 @@
 <script>
   import { createEventDispatcher } from "svelte";
 
-  import { Button, Input, Icon } from "../../../DesignSystem/Primitive";
-  import { RemoteHelperHint, Tooltip } from "../../../DesignSystem/Component";
-  import Overlay from "../../../DesignSystem/Component/Overlay.svelte";
+  import {
+    Button,
+    DirectoryInput,
+    Icon,
+    Overlay,
+    RemoteHelperHint,
+    Tooltip,
+  } from "ui/DesignSystem";
 
-  import { dismissRemoteHelperHint, settings } from "../../../src/session.ts";
+  import { dismissRemoteHelperHint, settings } from "ui/src/session.ts";
 
   // Whether this button should be displayed as a "Fork" button.
   export let fork = false;
@@ -47,7 +52,7 @@
   <div class="clone-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">{helpText}</p>
 
-    <Input.Directory
+    <DirectoryInput
       style="margin-bottom: 0.5rem;"
       placeholder="~/path/to/directory"
       buttonVariant="outline"

@@ -4,27 +4,32 @@
   import { CSSPosition } from "../src/style";
   import { ValidationStatus } from "../src/validation.ts";
 
-  import { Avatar, Button, Icon, Input } from "../DesignSystem/Primitive";
   import {
-    AdditionalActionsDropdown,
+    Avatar,
     BranchBox,
+    Button,
+    Checkbox,
     CompareBranches,
     Copyable,
+    Dropdown,
     EmptyState,
     FollowToggle,
     Fullscreen,
-    Dropdown,
+    Icon,
     Illustration,
     Notification,
+    PasswordInput,
     ProjectCard,
-    SegmentedControl,
     RadicleId,
+    SegmentedControl,
     Spinner,
     Stats,
-    SupportButton,
     StyledCopyable,
+    SupportButton,
+    TextInput,
+    ThreeDotsMenu,
     Tooltip,
-  } from "../DesignSystem/Component";
+  } from "ui/DesignSystem";
 
   import Section from "./DesignSystemGuide/Section.svelte";
   import Swatch from "./DesignSystemGuide/Swatch.svelte";
@@ -84,7 +89,7 @@
     emoji: "💡",
   };
 
-  const additionalActionsDropdownItems = [
+  const threeDotsMenuItems = [
     {
       title: "Add something",
       icon: Icon.Plus,
@@ -368,38 +373,36 @@
       title="Form elements"
       subTitle="Inputs, text areas, dropdowns, etc.">
       <Swatch>
-        <Input.Text placeholder="Hey, I'm an input." />
+        <TextInput placeholder="Hey, I'm an input." />
       </Swatch>
 
       <Swatch>
-        <Input.Text
-          placeholder="Hey, I'm a full-width input."
-          style="flex: 1" />
+        <TextInput placeholder="Hey, I'm a full-width input." style="flex: 1" />
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           placeholder="Hey, I'm a full-width input with a hint"
           hint="I'm a hint"
           style="flex: 1" />
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           style="flex: 1;"
           disabled
           placeholder="Hey, I'm a disabled input with a placeholder." />
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           style="flex: 1;"
           disabled
           value="I'm a disabled input with a value." />
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           placeholder="And I'm an input with a validation error."
           style="flex: 1"
           validation={{
@@ -409,7 +412,7 @@
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           placeholder="Enter user name"
           style="width: 100%"
           showSuccessCheck
@@ -420,7 +423,7 @@
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           placeholder="Enter user name"
           style="width: 100%"
           showSuccessCheck
@@ -431,11 +434,11 @@
               size="small"
               imageUrl="https://avatars1.githubusercontent.com/u/40774" />
           </div>
-        </Input.Text>
+        </TextInput>
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           placeholder="Enter user name"
           style="width: 100%"
           showLeftItem={true}
@@ -444,11 +447,11 @@
           <div slot="left">
             <Avatar size="small" avatarFallback={avatarFallback1} />
           </div>
-        </Input.Text>
+        </TextInput>
       </Swatch>
 
       <Swatch>
-        <Input.Text
+        <TextInput
           placeholder="Enter user name."
           style="width: 100%"
           showLeftItem={true}
@@ -460,21 +463,21 @@
           <div slot="left">
             <Avatar size="small" avatarFallback={avatarFallback2} />
           </div>
-        </Input.Text>
+        </TextInput>
       </Swatch>
 
       <Swatch>
-        <Input.Password
+        <PasswordInput
           style="width: 100%;"
           placeholder="Please enter a password" />
       </Swatch>
 
       <Swatch>
-        <Input.Password style="width: 100%;" value="my super long password" />
+        <PasswordInput style="width: 100%;" value="my super long password" />
       </Swatch>
 
       <Swatch>
-        <Input.Password
+        <PasswordInput
           style="width: 100%;"
           value="too short"
           validation={{
@@ -484,7 +487,7 @@
       </Swatch>
 
       <Swatch>
-        <Input.Checkbox>How about a checkbox?</Input.Checkbox>
+        <Checkbox>How about a checkbox?</Checkbox>
       </Swatch>
 
       <Swatch>
@@ -731,9 +734,9 @@
 
     <Section title="Misc" subTitle="Everything else">
       <Swatch>
-        <AdditionalActionsDropdown
+        <ThreeDotsMenu
           headerTitle="Copy this title"
-          menuItems={additionalActionsDropdownItems} />
+          menuItems={threeDotsMenuItems} />
       </Swatch>
 
       <Swatch>

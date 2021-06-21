@@ -1,15 +1,14 @@
 <script lang="typescript">
   import { get } from "svelte/store";
 
-  import { Dai, TxButton } from "../../../DesignSystem/Component";
-  import { Button, Emoji, Input } from "../../../DesignSystem/Primitive";
+  import { Button, Dai, Emoji, TextInput, TxButton } from "ui/DesignSystem";
 
-  import * as modal from "../../../src/modal";
+  import * as modal from "ui/src/modal";
   import {
     amountStore,
     balanceValidationStore,
     store,
-  } from "../../../src/funding/pool";
+  } from "ui/src/funding/pool";
   import { ValidationStatus } from "../../../src/validation";
 
   import Big from "big.js";
@@ -118,7 +117,7 @@
       >?
     </p>
     <div class="input">
-      <Input.Text
+      <TextInput
         dataCy="modal-amount-input"
         bind:value={amount}
         validation={$validation}
@@ -128,7 +127,7 @@
         <div slot="left" style="position: absolute; top: 1px; left: 12px;">
           <Dai />
         </div>
-      </Input.Text>
+      </TextInput>
     </div>
     <div class="submit">
       <Button

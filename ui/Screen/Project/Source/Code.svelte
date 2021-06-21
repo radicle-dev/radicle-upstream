@@ -1,14 +1,14 @@
 <script lang="typescript">
   import * as router from "ui/src/router";
-  import { selectPath, store } from "../../../src/screen/project/source";
-  import { fetchTree } from "../../../src/source";
-  import type { Sha1 } from "../../../src/source";
+  import { selectPath, store } from "ui/src/screen/project/source";
+  import { fetchTree } from "ui/src/source";
+  import type { Sha1 } from "ui/src/source";
   import type { Urn } from "../../../src/urn";
 
-  import Remote from "../../../DesignSystem/Component/Remote.svelte";
+  import Remote from "ui/DesignSystem/Remote.svelte";
 
-  import FileView from "../../../DesignSystem/Component/SourceBrowser/FileView.svelte";
-  import Tree from "../../../DesignSystem/Component/SourceBrowser/Tree.svelte";
+  import FileView from "ui/DesignSystem/SourceBrowser/FileView.svelte";
+  import Tree from "ui/DesignSystem/SourceBrowser/Tree.svelte";
 
   const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {
     router.push({

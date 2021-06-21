@@ -1,9 +1,8 @@
 <script lang="typescript">
-  import { Button, Emoji } from "ui/DesignSystem/Primitive";
-  import Spinner from "ui/DesignSystem/Component/Spinner.svelte";
+  import { Button, Emoji, Spinner } from "ui/DesignSystem";
   import ModalLinkAddress from "../../Modal/Funding/LinkAddress.svelte";
 
-  import * as modal from "../../src/modal";
+  import * as modal from "ui/src/modal";
   import { lastClaimed } from "../../src/attestation/lastClaimed";
   import { store as walletStore } from "../../src/wallet";
 

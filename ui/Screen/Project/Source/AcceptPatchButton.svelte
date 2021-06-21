@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { Button, Icon } from "ui/DesignSystem/Primitive";
-  import { Copyable, Overlay } from "ui/DesignSystem/Component";
+  import { Button, Copyable, Icon, Overlay } from "ui/DesignSystem";
   import * as Patch from "ui/src/project/patch";
 
   export let patch: Patch.Patch;

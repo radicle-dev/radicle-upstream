@@ -1,10 +1,10 @@
 <script lang="typescript">
-  import { selectCommit, store } from "../../../src/screen/project/source";
-  import type { CommitHeader } from "../../../src/source";
+  import { selectCommit, store } from "ui/src/screen/project/source";
+  import type { CommitHeader } from "ui/src/source";
 
-  import { Remote } from "../../../DesignSystem/Component";
+  import { Remote } from "ui/DesignSystem";
 
-  import History from "../../../DesignSystem/Component/SourceBrowser/History.svelte";
+  import History from "ui/DesignSystem/SourceBrowser/History.svelte";
 
   const onSelect = ({ detail: commit }: { detail: CommitHeader }) => {
     selectCommit(commit);

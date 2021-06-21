@@ -5,15 +5,15 @@
   import * as org from "ui/src/org";
   import { unreachable } from "ui/src/unreachable";
 
-  import { Icon } from "ui/DesignSystem/Primitive";
   import {
     ActionBar,
-    AdditionalActionsDropdown,
+    ThreeDotsMenu,
     FollowToggle,
     Header,
+    Icon,
     SidebarLayout,
     TabBar,
-  } from "ui/DesignSystem/Component";
+  } from "ui/DesignSystem";
 
   import ProjectsTab from "ui/Screen/Org/Projects.svelte";
   import MembersTab from "ui/Screen/Org/Members.svelte";
@@ -93,8 +93,7 @@
       {threshold} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
-      <AdditionalActionsDropdown
-        menuItems={menuItems(address, gnosisSafeAddress)} />
+      <ThreeDotsMenu menuItems={menuItems(address, gnosisSafeAddress)} />
     </div>
   </Header>
 

@@ -1,9 +1,8 @@
 <script lang="typescript">
-  import { Dai, Remote, TxButton } from "../../../DesignSystem/Component";
-  import { Button, Emoji } from "../../../DesignSystem/Primitive";
+  import { Button, Dai, Emoji, Remote, TxButton } from "ui/DesignSystem";
 
-  import * as modal from "../../../src/modal";
-  import { store } from "../../../src/funding/pool";
+  import * as modal from "ui/src/modal";
+  import { store } from "ui/src/funding/pool";
 
   $: pool = $store;
 

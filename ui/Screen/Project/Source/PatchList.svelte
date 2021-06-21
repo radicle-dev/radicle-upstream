@@ -4,11 +4,7 @@
 
   import type { Project } from "ui/src/project";
   import type { Patch } from "ui/src/project/patch";
-  import {
-    EmptyState,
-    List,
-    SegmentedControl,
-  } from "ui/DesignSystem/Component";
+  import { EmptyState, List, SegmentedControl } from "ui/DesignSystem";
   import PatchCard from "./PatchCard.svelte";
 
   export let patches: Patch[];

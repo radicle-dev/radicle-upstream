@@ -11,8 +11,14 @@
   } from "../src/screen/project";
   import type { Urn } from "../src/urn";
 
-  import { Button, Emoji, Input } from "../DesignSystem/Primitive";
-  import { List, Modal, Remote } from "../DesignSystem/Component";
+  import {
+    Button,
+    Emoji,
+    List,
+    Modal,
+    Remote,
+    TextInput,
+  } from "ui/DesignSystem";
 
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
@@ -74,7 +80,7 @@
 
     <form class="peer-entry-form" on:submit|preventDefault>
       <div class="peer-entry-field">
-        <Input.Text
+        <TextInput
           dataCy="peer-input"
           bind:value={newPeer}
           placeholder="Enter a Device ID here"

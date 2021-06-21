@@ -1,6 +1,5 @@
 <script lang="typescript">
-  import { Avatar } from "ui/DesignSystem/Primitive";
-  import { List, StyledCopyable } from "ui/DesignSystem/Component";
+  import { Avatar, List, StyledCopyable } from "ui/DesignSystem";
   import type * as org from "ui/src/org";
 
   export let members: org.Member[];

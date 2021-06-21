@@ -1,8 +1,6 @@
 import * as lodash from "lodash";
 import * as ethers from "ethers";
 import * as multihash from "multihashes";
-import EthersSafe from "@gnosis.pm/safe-core-sdk";
-import SafeServiceClient from "@gnosis.pm/safe-service-client";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
 import type {
@@ -11,6 +9,7 @@ import type {
 } from "@ethersproject/providers";
 import type * as project from "ui/src/project";
 import type { Org, MemberResponse } from "ui/src/org/theGraphApi";
+import * as Safe from "./org/safe";
 
 import * as svelteStore from "ui/src/svelteStore";
 import type * as identity from "ui/src/proxy/identity";
@@ -55,8 +54,6 @@ const orgFactoryAddress = (network: ethereum.Environment): string => {
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Orgs not available on the Local testnet",
       });
-    case ethereum.Environment.Ropsten:
-      return "0xf36fbaB8BA78683D23c5021bfcE8A5c88731200F";
     case ethereum.Environment.Rinkeby:
       return "0xF3D04e874D07d680e8b26332eEae5b9B1c263121";
     case ethereum.Environment.Mainnet:
@@ -115,58 +112,13 @@ export const openOnGnosisSafe = (
   gnosisSafeAddress: string,
   view: "transactions" | "settings"
 ): void => {
-  const walletStore = svelteStore.get(wallet.store);
-
-  switch (walletStore.environment) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Gnosis Safe links are not supported on the Local testnet",
-      });
-    case ethereum.Environment.Ropsten:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Gnosis Safe links are not supported on the Ropsten testnet",
-      });
-    case ethereum.Environment.Rinkeby:
-      ipc.openUrl(
-        `https://rinkeby.gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/${view}`
-      );
-      break;
-    case ethereum.Environment.Mainnet:
-      ipc.openUrl(
-        `https://gnosis-safe.io/app/#/safes/${gnosisSafeAddress}/${view}`
-      );
-      break;
-  }
-};
-
-const createSafeServiceClient = (): SafeServiceClient => {
-  const walletStore = svelteStore.get(wallet.store);
-  let uri;
-
-  switch (walletStore.environment) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message:
-          "Pending Gnosis Safe transactions are not available on the Local testnet.",
-      });
-    case ethereum.Environment.Ropsten:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message:
-          "Pending Gnosis Safe transactions are not available on the Ropsten testnet.",
-      });
-    case ethereum.Environment.Rinkeby:
-      uri = "https://safe-transaction.rinkeby.gnosis.io";
-      break;
-    case ethereum.Environment.Mainnet:
-      uri = "https://safe-transaction.gnosis.io";
-      break;
-  }
-
-  return new SafeServiceClient(uri);
+  ipc.openUrl(
+    Safe.appUrl(
+      svelteStore.get(wallet.store).environment,
+      gnosisSafeAddress,
+      view
+    )
+  );
 };
 
 export const anchorProject = async (
@@ -179,14 +131,6 @@ export const anchorProject = async (
   const checksummedGnosisSafeAddress =
     ethers.utils.getAddress(gnosisSafeAddress);
   const checksummedOrgAddress = ethers.utils.getAddress(orgAddress);
-  const safeSdk = await EthersSafe.create(
-    ethers,
-    checksummedGnosisSafeAddress,
-    walletStore.signer
-  );
-
-  const safeServiceClient = createSafeServiceClient();
-
   const encodedProjectUrn = ethers.utils.zeroPad(
     urn.parseIdentitySha1(projectUrn),
     32
@@ -219,30 +163,12 @@ export const anchorProject = async (
     persist: true,
   });
 
-  const tx = {
+  await Safe.signAndProposeTransaction(walletStore, gnosisSafeAddress, {
     to: checksummedOrgAddress,
     value: "0",
     data: txData,
     operation: OperationType.Call,
-  };
-  const estimation = await safeServiceClient.estimateSafeTransaction(
-    checksummedGnosisSafeAddress,
-    tx
-  );
-  const transaction = await safeSdk.createTransaction({
-    ...tx,
-    safeTxGas: Number(estimation.safeTxGas),
   });
-  const safeTxHash = await safeSdk.getTransactionHash(transaction);
-
-  const signature = await safeSdk.signTransactionHash(safeTxHash);
-
-  await safeServiceClient.proposeTransaction(
-    checksummedGnosisSafeAddress,
-    transaction.data,
-    safeTxHash,
-    signature
-  );
 
   notification.info({
     message:
@@ -440,19 +366,11 @@ export const fetchMembers = async (
 const fetchPendingAnchors = async (
   org: OrgWithSafe
 ): Promise<project.PendingAnchor[]> => {
-  const checksummedGnosisSafeAddress = ethers.utils.getAddress(
+  const walletStore = svelteStore.get(wallet.store);
+  const txs = await Safe.getPendingTransactions(
+    walletStore.environment,
     org.gnosisSafeAddress
   );
-
-  const safeServiceClient = createSafeServiceClient();
-  const response = await safeServiceClient.getPendingTransactions(
-    checksummedGnosisSafeAddress
-  );
-  // Despite the return type the `results` field may be not set because
-  // of a bug in the safe client.
-  // https://github.com/gnosis/safe-core-sdk/pull/31#issuecomment-863245875
-  const txs = response.results || [];
-
   const isAnchor = (
     anchor: project.PendingAnchor | undefined
   ): anchor is project.PendingAnchor => !!anchor;

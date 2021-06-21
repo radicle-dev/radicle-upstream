@@ -6,12 +6,10 @@ import * as config from "ui/src/config";
 // The Ethereum environments we support and may connect to.
 export enum Environment {
   // A local node for testing and development. The test wallet we use
-  // for this environment may be in the 'Ropsten', 'Mainnet', or other
-  // network. However, those would not be the real 'Ropsten' and 'Mainnet'
+  // for this environment may be in the 'Rinkeby', 'Mainnet', or other
+  // network. However, those would not be the real 'Rinkeby' and 'Mainnet'
   // networks, respectively, but simply fake ones for testing purposes.
   Local = "Local",
-  // The Ropsten testnet network
-  Ropsten = "Ropsten",
   // The Rinkeby testnet for testing Orgs and Gnosis Safe functionality
   Rinkeby = "Rinkeby",
   // Production deployment
@@ -22,7 +20,6 @@ export enum Environment {
 // all `Environment`s. See `supportedNetwork` to learn which networks
 // each Environment supports.
 export enum Network {
-  Ropsten = "Ropsten",
   Rinkeby = "Rinkeby",
   Mainnet = "Mainnet",
   Other = "Other",
@@ -33,8 +30,6 @@ export function supportedNetwork(environment: Environment): Network {
   switch (environment) {
     case Environment.Local:
       return Network.Mainnet;
-    case Environment.Ropsten:
-      return Network.Ropsten;
     case Environment.Rinkeby:
       return Network.Rinkeby;
     case Environment.Mainnet:
@@ -48,8 +43,6 @@ export function networkFromChainId(chainId: number): Network {
   switch (chainId) {
     case 1:
       return Network.Mainnet;
-    case 3:
-      return Network.Ropsten;
     case 4:
       return Network.Rinkeby;
     default:

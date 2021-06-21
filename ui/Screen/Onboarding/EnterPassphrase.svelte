@@ -4,7 +4,7 @@
   import { ValidationStatus, getValidationState } from "../../src/validation";
   import type { ValidationState } from "../../src/validation";
 
-  import { Button, Input } from "../../DesignSystem/Primitive";
+  import { Button, PasswordInput } from "ui/DesignSystem";
 
   export let disabled = false;
 
@@ -163,7 +163,7 @@
       </span>
     </p>
 
-    <Input.Password
+    <PasswordInput
       bind:inputElement={passphraseInput}
       on:enter={() => {
         repeatedPassphraseInput.focus();
@@ -179,7 +179,7 @@
 
     <div class="repeat" hidden={!passphrase}>
       <p style="margin-bottom: 0.5rem;">And enter it again, just to be safe.</p>
-      <Input.Password
+      <PasswordInput
         bind:inputElement={repeatedPassphraseInput}
         on:enter={next}
         dataCy="repeat-passphrase-input"
