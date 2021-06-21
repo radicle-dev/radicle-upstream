@@ -1,3 +1,9 @@
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 //! Configuration vital to the setup and alteration of the application.
 
 use std::{env, io, path};

@@ -1,3 +1,9 @@
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 // A task executor that runs only one task concurrently. If a new task
 // is run, any previously running task is aborted and the promise
 // returned from `run()` will return undefined.

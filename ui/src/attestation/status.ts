@@ -1,3 +1,9 @@
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 import { Signer, ethers } from "ethers";
 import * as svelteStore from "svelte/store";
 import type { Identity } from "../identity";
