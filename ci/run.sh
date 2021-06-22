@@ -29,7 +29,7 @@ ln -s "${rust_target_cache}" ./target
 declare -r cargo_deny_cache="$CACHE_FOLDER/cargo-deny"
 mkdir -p "$cargo_deny_cache"
 mkdir -p ~/.cargo
-ln -s "$cargo_deny_cache" ~/.cargo/advisory-db
+ln -sf "$cargo_deny_cache" ~/.cargo/advisory-db
 
 if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
   free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
