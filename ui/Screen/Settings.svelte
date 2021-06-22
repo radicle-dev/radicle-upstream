@@ -98,7 +98,7 @@
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: 64px auto;
+    margin: 4rem auto;
     min-width: var(--content-min-width);
     padding: 0 var(--content-padding);
   }
@@ -109,9 +109,9 @@
   }
 
   section header {
-    margin: 16px 0 24px 0;
+    margin: 1rem 0 0.5rem;
     border-bottom: 1px solid var(--color-foreground-level-3);
-    padding: 12px;
+    padding: 0.75rem;
     display: flex;
     justify-content: space-between;
   }
@@ -120,21 +120,18 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 24px;
-    padding: 0 12px;
+    padding: 1rem 0.75rem;
   }
 
   .section-item-single {
     align-items: center;
-    margin-bottom: 24px;
-    padding: 0 12px;
+    padding: 1rem 0.75rem;
   }
 
   .action {
     display: flex;
     justify-content: flex-end;
-    align-items: center;
-    margin-left: 16px;
+    margin-left: 1rem;
   }
 
   .seed-entry-form {
@@ -164,7 +161,7 @@
     align-items: center;
     justify-content: space-between;
     border-top: 1px solid var(--color-foreground-level-2);
-    padding: 1.5rem 1rem 1.5rem 1rem;
+    padding: 1.5rem 0.5rem;
     cursor: default;
   }
 
@@ -175,9 +172,13 @@
   .title {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 32px;
+    margin-bottom: 2rem;
     align-items: flex-end;
     padding: 0 0.75rem;
+  }
+
+  .border {
+    border-bottom: 1px solid var(--color-foreground-level-1);
   }
 </style>
 
@@ -197,16 +198,14 @@
           <h3>Devices</h3>
         </header>
         <div class="section-item">
-          <div class="info">
-            <p>
-              Share your Device ID with others to be added as a remote.
-              <br /><a
-                style="color: var(--color-foreground-level-5);"
-                class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
-                >Learn more about managing devices</a>
-            </p>
-          </div>
+          <p>
+            Share your Device ID with others to be added as a remote.
+            <br /><a
+              style="color: var(--color-foreground-level-5);"
+              class="typo-link"
+              href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
+              >Learn more about managing devices</a>
+          </p>
           <div class="action">
             <PeerId peerId={session.identity.peerId} />
           </div>
@@ -218,20 +217,18 @@
           <h3>Network</h3>
         </header>
         <div class="section-item-single">
-          <div class="info">
-            <p class="typo-text-bold">
-              Seeds help you find projects and users on the network.
-            </p>
-            <p
-              style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
-              Enter seed addresses that you’d like to connect to here.
-              <a
-                style="color: var(--color-foreground-level-5);"
-                class="typo-link"
-                href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
-                >Learn more</a>
-            </p>
-          </div>
+          <p class="typo-text-bold">
+            Seeds help you find projects and users on the network.
+          </p>
+          <p
+            style="color: var(--color-foreground-level-6); margin-bottom: 1.5rem;">
+            Enter seed addresses that you’d like to connect to here.
+            <a
+              style="color: var(--color-foreground-level-5);"
+              class="typo-link"
+              href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
+              >Learn more</a>
+          </p>
           <form
             class="seed-entry-form"
             on:submit|preventDefault
@@ -241,7 +238,7 @@
                 dataCy="seed-input"
                 bind:value={seedInputValue}
                 placeholder="Enter a seed address here"
-                style="margin-right: 8px; min-width: 224px; width: 100%;"
+                style="margin-right: 8px; min-width: 21.5rem; width: 100%;"
                 validation={$seedValidation} />
               <Button
                 dataCy="add-seed"
@@ -272,9 +269,13 @@
         <header>
           <h3>Appearance</h3>
         </header>
-        <div class="section-item">
-          <div class="info">
+        <div class="section-item border">
+          <div>
             <p class="typo-text-bold">Theme</p>
+            <p style="color: var(--color-foreground-level-6);">
+              Dark mode might be easier on the eyes, but some just want to
+              follow the light. Only true h4x0rs know.
+            </p>
           </div>
           <div class="action">
             <SegmentedControl
@@ -283,9 +284,13 @@
               on:select={updateTheme} />
           </div>
         </div>
-        <div class="section-item">
-          <div class="info">
+        <div class="section-item border">
+          <div>
             <p class="typo-text-bold">UI Font</p>
+            <p style="color: var(--color-foreground-level-6);">
+              This is the font you’ll read most often around the app. In fact,
+              it’s the one you’re reading right now.
+            </p>
           </div>
           <div class="action">
             <SegmentedControl
@@ -295,8 +300,12 @@
           </div>
         </div>
         <div class="section-item">
-          <div class="info">
+          <div>
             <p class="typo-text-bold">Code Font</p>
+            <p style="color: var(--color-foreground-level-6);">
+              This is the font source code is displayed in on repositories. It’s
+              also used for hashes.
+            </p>
           </div>
           <div class="action">
             <SegmentedControl
@@ -313,9 +322,7 @@
             <h3>Funding</h3>
           </header>
           <div class="section-item">
-            <div class="info">
-              <p class="typo-text-bold">Funding environment</p>
-            </div>
+            <p class="typo-text-bold">Funding environment</p>
             <div class="action">
               <SegmentedControl
                 active={$ethereumEnvironment}
@@ -331,9 +338,7 @@
           <h3>Feedback</h3>
         </header>
         <div class="section-item">
-          <div class="info">
-            <p class="typo-text-bold">Get in touch directly</p>
-          </div>
+          <p class="typo-text-bold">Get in touch directly</p>
           <div class="action">
             <a
               class="typo-link"
@@ -343,9 +348,7 @@
           </div>
         </div>
         <div class="section-item">
-          <div class="info">
-            <p class="typo-text-bold">Join the community chat</p>
-          </div>
+          <p class="typo-text-bold">Join the community chat</p>
           <div class="action">
             <a class="typo-link" href="https://matrix.radicle.community">
               matrix.radicle.community
@@ -358,13 +361,11 @@
         <header>
           <h3>Version</h3>
         </header>
-        <div class="section-item">
-          <div class="info">
-            <p style="color: var(--color-foreground-level-6);">
-              Version
-              {version}
-            </p>
-          </div>
+        <div class="section-item" style="padding-bottom: 0">
+          <p style="color: var(--color-foreground-level-6);">
+            Version
+            {version}
+          </p>
           {#if $latestVersionInfo}
             <div class="action">
               There’s a new version of Radicle Upstream
@@ -380,9 +381,7 @@
           {/if}
         </div>
         <div class="section-item">
-          <div class="info">
-            Notification (Allow Upstream to make requests to the web)
-          </div>
+          <div>Notification (Allow Upstream to make requests to the web)</div>
           <div class="action">
             <SegmentedControl
               active={$appUpdateNotificationEnabled}
@@ -396,8 +395,8 @@
         <header>
           <h3>Legal</h3>
         </header>
-        <div class="section-item">
-          <div class="info">
+        <div class="section-item border">
+          <div>
             <p class="typo-text-bold">Twemoji</p>
             <p style="color: var(--color-foreground-level-6);">
               Copyright 2020 Twitter, Inc and other contributors. Licensed under
@@ -405,8 +404,8 @@
             </p>
           </div>
         </div>
-        <div class="section-item">
-          <div class="info">
+        <div class="section-item border">
+          <div>
             <p class="typo-text-bold">Inter</p>
             <p style="color: var(--color-foreground-level-6);">
               Inter font by Rasmus Andersson licensed under the SIL Open Font
@@ -415,7 +414,7 @@
           </div>
         </div>
         <div class="section-item">
-          <div class="info">
+          <div>
             <p class="typo-text-bold">Source Code Pro</p>
             <p style="color: var(--color-foreground-level-6);">
               Source Code Pro font by Adobe Fonts distributed under the SIL Open

@@ -50,8 +50,8 @@ ENV RUST_VERSION=nightly-2021-05-09 \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
     RUSTUP_HOME=/usr/local/rustup \
-    RUSTUP_VERSION=1.23.1 \
-    RUSTUP_SHA256=ed7773edaf1d289656bdec2aacad12413b38ad0193fff54b2231f5140a4b07c5
+    RUSTUP_VERSION=1.24.3 \
+    RUSTUP_SHA256=3dc5ef50861ee18657f9db2eeb7392f9c2a6c95c90ab41e45ab4ca71476b4338
 
 RUN set -eux; \
     curl -sfLSO "https://static.rust-lang.org/rustup/archive/${RUSTUP_VERSION}/x86_64-unknown-linux-gnu/rustup-init"; \
@@ -63,7 +63,10 @@ RUN set -eux; \
     rustup --version; \
     cargo --version; \
     rustc --version; \
-    rustup component add clippy rustfmt;
+    rustup component add clippy rustfmt; \
+    cargo install cargo-deny; \
+    rm -rf /usr/local/cargo/registry; \
+    rm /usr/local/cargo/.package-cache;
 
 VOLUME /cache
 ENV CARGO_HOME=/cache/cargo

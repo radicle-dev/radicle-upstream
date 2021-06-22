@@ -21,10 +21,15 @@ log-group-start "Installing yarn dependencies"
 yarn install --immutable
 log-group-end
 
-log-group-start "Loading proxy target cache"
+log-group-start "Linking cache"
 declare -r rust_target_cache="$CACHE_FOLDER/proxy-target"
 mkdir -p "$rust_target_cache"
 ln -s "${rust_target_cache}" ./target
+
+declare -r cargo_deny_cache="$CACHE_FOLDER/cargo-deny"
+mkdir -p "$cargo_deny_cache"
+mkdir -p ~/.cargo
+ln -s "$cargo_deny_cache" ~/.cargo/advisory-db
 
 if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
   free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
@@ -50,6 +55,10 @@ log-group-end
 
 log-group-start "License compliance"
 time yarn run license-compliance
+log-group-end
+
+log-group-start "License compliance"
+time cargo deny check
 log-group-end
 
 log-group-start "Run proxy fmt"
