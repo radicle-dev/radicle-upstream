@@ -1,4 +1,11 @@
 #!/bin/bash
+
+# Copyright © 2021 The Radicle Upstream Contributors
+#
+# This file is part of radicle-upstream, distributed under the GPLv3
+# with Radicle Linking Exception. For full terms see the included
+# LICENSE file.
+
 set -Eeou pipefail
 
 TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
@@ -29,7 +36,7 @@ ln -s "${rust_target_cache}" ./target
 declare -r cargo_deny_cache="$CACHE_FOLDER/cargo-deny"
 mkdir -p "$cargo_deny_cache"
 mkdir -p ~/.cargo
-ln -s "$cargo_deny_cache" ~/.cargo/advisory-db
+ln -sf "$cargo_deny_cache" ~/.cargo/advisory-db
 
 if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
   free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
@@ -55,6 +62,7 @@ log-group-end
 
 log-group-start "License compliance"
 time yarn run license-compliance
+time ./scripts/license-header.ts check
 log-group-end
 
 log-group-start "License compliance"

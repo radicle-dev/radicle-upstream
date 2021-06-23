@@ -1,3 +1,9 @@
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 //! Datastructure and machinery to safely share the common dependencies across components.
 
 use std::{net::SocketAddr, sync::Arc};

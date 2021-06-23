@@ -1,3 +1,10 @@
+<!--
+ Copyright © 2021 The Radicle Upstream Contributors
+
+ This file is part of radicle-upstream, distributed under the GPLv3
+ with Radicle Linking Exception. For full terms see the included
+ LICENSE file.
+-->
 <script lang="typescript">
   import Modal from "ui/DesignSystem/Modal.svelte";
   import Erc20Allowance from "./Onboarding/Erc20Allowance.svelte";

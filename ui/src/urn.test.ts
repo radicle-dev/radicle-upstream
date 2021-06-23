@@ -1,10 +1,16 @@
+/** @jest-environment node */
+
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 /**
- * The jsdom environment lacks `TextEncoder` required by `multibase`,
- * see https://github.com/multiformats/js-multibase/issues/90,
- * will be solved by https://github.com/jsdom/jsdom/issues/2524
- *
- * @jest-environment node
- *
+ * We are using the 'node' Jest environemtn because the 'jsdom' environment
+ * lacks `TextEncoder` required by `multibase`, see
+ * https://github.com/multiformats/js-multibase/issues/90, will be solved by
+ * https://github.com/jsdom/jsdom/issues/2524
  */
 
 import { Code, Error } from "ui/src/error";

@@ -1,3 +1,9 @@
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 //! Recovery and conversion of [`error::Error`] to proper JSON responses, which expose variants
 //! for API consumers to act on.
 

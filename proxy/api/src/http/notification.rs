@@ -1,3 +1,9 @@
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 //! Unidirectional stream of events happening in the proxy. This enables exposing tailing logs to
 //! users, or widgets which show topology information like how many and what peers are connected.
 

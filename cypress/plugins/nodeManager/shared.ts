@@ -1,3 +1,9 @@
+// Copyright © 2021 The Radicle Upstream Contributors
+//
+// This file is part of radicle-upstream, distributed under the GPLv3
+// with Radicle Linking Exception. For full terms see the included
+// LICENSE file.
+
 // Types and constants shared between `plugin.ts` and `commands.ts`. These
 // types can't be in `plugin.ts`, because Cypress plugins run in a separate
 // Nodejs environment and can directly use Nodejs libraries, the Cypress tests
