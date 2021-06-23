@@ -67,21 +67,38 @@
       rgba(0, 0, 0, 0) 100%
     );
   }
+
+  .icon {
+    transition: all 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
+    display: flex;
+  }
+
+  .icon-holder:hover .icon {
+    transform: scale(1.15);
+  }
+
+  .icon-holder:active .icon {
+    transform: scale(0.95);
+  }
 </style>
 
 <div class="wrapper" data-cy="sidebar">
   <div class="top">
     <Tooltip value={identity.metadata.handle}>
-      <SidebarItem
-        dataCy="profile"
-        indicator
-        active={$activeRouteStore.type === "profile"}
-        onClick={() => push({ type: "profile", activeTab: "projects" })}>
-        <Avatar
-          size="regular"
-          avatarFallback={identity.avatarFallback}
-          variant="circle" />
-      </SidebarItem>
+      <div class="icon-holder">
+        <SidebarItem
+          dataCy="profile"
+          indicator
+          active={$activeRouteStore.type === "profile"}
+          onClick={() => push({ type: "profile", activeTab: "projects" })}>
+          <div class="icon">
+            <Avatar
+              size="regular"
+              avatarFallback={identity.avatarFallback}
+              variant="circle" />
+          </div>
+        </SidebarItem>
+      </div>
     </Tooltip>
     {#if config.isDev}
       <OrgList {identity} />
@@ -89,9 +106,13 @@
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
-      <SidebarItem dataCy="search" onClick={() => modal.toggle(ModalSearch)}>
-        <Icon.MagnifyingGlass />
-      </SidebarItem>
+      <div class="icon-holder">
+        <SidebarItem dataCy="search" onClick={() => modal.toggle(ModalSearch)}>
+          <div class="icon indicator">
+            <Icon.MagnifyingGlass />
+          </div>
+        </SidebarItem>
+      </div>
     </Tooltip>
     {#if config.isDev}
       <WalletStatusIndicator
@@ -100,13 +121,17 @@
     {/if}
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
-      <SidebarItem
-        dataCy="settings"
-        indicator
-        active={$activeRouteStore.type === "settings"}
-        onClick={() => push({ type: "settings" })}>
-        <Icon.Settings />
-      </SidebarItem>
+      <div class="icon-holder">
+        <SidebarItem
+          dataCy="settings"
+          indicator
+          active={$activeRouteStore.type === "settings"}
+          onClick={() => push({ type: "settings" })}>
+          <div class="icon">
+            <Icon.Settings />
+          </div>
+        </SidebarItem>
+      </div>
     </Tooltip>
   </div>
 </div>

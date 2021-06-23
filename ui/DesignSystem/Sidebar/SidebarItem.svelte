@@ -53,10 +53,6 @@
     border-bottom-right-radius: 4px;
   }
 
-  .indicator :global(div:hover svg) {
-    fill: var(--color-primary);
-  }
-
   .indicator.active :global(svg) {
     fill: var(--color-primary);
   }

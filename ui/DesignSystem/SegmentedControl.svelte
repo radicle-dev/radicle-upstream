@@ -48,20 +48,22 @@
     margin: 0.25rem;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);
+    transition: all 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
   .segmented-control button:focus {
     outline: none;
   }
   .segmented-control button.active {
-    background-color: var(--color-foreground-level-1);
+    background-color: var(--color-foreground-level-2);
     color: var(--color-primary);
   }
   .segmented-control button:hover {
-    background-color: var(--color-foreground-level-1);
+    background-color: var(--color-foreground-level-2);
+    transform: scale(1.05);
   }
   .segmented-control button:active {
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-primary-level-2);
+    background-color: var(--color-foreground-level-2);
+    transform: scale(0.95);
   }
 </style>
 

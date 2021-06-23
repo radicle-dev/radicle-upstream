@@ -41,6 +41,19 @@
     align-items: center;
     cursor: help;
   }
+
+  .icon {
+    transition: all 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
+    display: flex;
+  }
+
+  .icon-holder:hover .icon {
+    transform: scale(1.15);
+  }
+
+  .icon-holder:active .icon {
+    transform: scale(0.95);
+  }
 </style>
 
 <div>
@@ -49,8 +62,12 @@
       value={`Network • You’re connected to ${connectedPeerCount(
         $status.connectedPeers
       )}`}>
-      <div class="item indicator" data-cy="connection-status-online">
-        <Icon.Network />
+      <div class="icon-holder">
+        <div class="item indicator" data-cy="connection-status-online">
+          <div class="icon">
+            <Icon.Network />
+          </div>
+        </div>
       </div>
     </Tooltip>
   {:else if $status.type === StatusType.Syncing}
@@ -58,20 +75,32 @@
       value={`Network • Syncing with ${peerCount(
         $status.syncs
       )} to get new content from your network`}>
-      <div class="item indicator" data-cy="connection-status-syncing">
-        <Syncing />
+      <div class="icon-holder">
+        <div class="item indicator" data-cy="connection-status-syncing">
+          <div class="icon">
+            <Syncing />
+          </div>
+        </div>
       </div>
     </Tooltip>
   {:else if $status.type === StatusType.Offline || $status.type === StatusType.Started}
     <Tooltip value="Network • You’re not connected to any peers">
-      <div class="item indicator" data-cy="connection-status-offline">
-        <Offline />
+      <div class="icon-holder">
+        <div class="item indicator" data-cy="connection-status-offline">
+          <div class="icon">
+            <Offline />
+          </div>
+        </div>
       </div>
     </Tooltip>
   {:else if $status.type === StatusType.Stopped}
     <Tooltip value="Network • The app couldn't start your peer">
-      <div class="item indicator" data-cy="connection-status-stopped">
-        <Offline style="fill: var(--color-negative);" />
+      <div class="icon-holder">
+        <div class="item indicator" data-cy="connection-status-stopped">
+          <div class="icon">
+            <Offline style="fill: var(--color-negative);" />
+          </div>
+        </div>
       </div>
     </Tooltip>
   {/if}
