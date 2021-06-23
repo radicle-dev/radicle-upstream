@@ -9,24 +9,21 @@ import * as svelteStore from "svelte/store";
 
 import type { Big } from "big.js";
 import * as ethers from "ethers";
-import * as ethersBytes from "@ethersproject/bytes";
+
+import * as daiToken from "ui/src/funding/daiToken";
+import * as error from "ui/src/error";
+import * as modal from "ui/src/modal";
+
+import ModalWalletQRCode from "ui/Modal/Wallet/QRCode.svelte";
+
+import * as ethereum from "ui/src/ethereum";
 import {
-  Deferrable,
-  defineReadOnly,
-  resolveProperties,
-} from "@ethersproject/properties";
-import type {
-  Provider,
-  TransactionRequest,
-  TransactionResponse,
-} from "@ethersproject/abstract-provider";
-
-import * as daiToken from "../src/funding/daiToken";
-import * as error from "../src/error";
-import * as ethereum from "../src/ethereum";
-import * as modal from "../src/modal";
-
-import ModalWalletQRCode from "../Modal/Wallet/QRCode.svelte";
+  Network,
+  Environment,
+  networkFromChainId,
+} from "ui/src/ethereum/environment";
+import { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
+import * as ethereumDebug from "ui/src/ethereum/debug";
 
 export enum Status {
   Connected = "CONNECTED",
@@ -41,7 +38,7 @@ export type State =
 
 export interface Connected {
   account: Account;
-  network: ethereum.Network;
+  network: Network;
 }
 
 export interface Account {
@@ -51,7 +48,7 @@ export interface Account {
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
-  environment: ethereum.Environment;
+  environment: Environment;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   provider: ethers.providers.Provider;
@@ -60,19 +57,17 @@ export interface Wallet extends svelteStore.Readable<State> {
   destroy(): void;
 }
 
-function getProvider(
-  environment: ethereum.Environment
-): ethers.providers.Provider {
+function getProvider(environment: Environment): ethers.providers.Provider {
   switch (environment) {
-    case ethereum.Environment.Local:
+    case Environment.Local:
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");
-    case ethereum.Environment.Rinkeby:
+    case Environment.Rinkeby:
       // This account is registered on igor.zuk@protonmail.com.
       return new ethers.providers.InfuraProvider(
         "rinkeby",
         "de5e2a8780c04964950e73b696d1bfb1"
       );
-    case ethereum.Environment.Mainnet:
+    case Environment.Mainnet:
       // This account is registered on rudolfs@monadic.xyz.
       return new ethers.providers.InfuraProvider(
         "mainnet",
@@ -82,7 +77,7 @@ function getProvider(
 }
 
 function build(
-  environment: ethereum.Environment,
+  environment: Environment,
   provider: ethers.providers.Provider
 ): Wallet {
   const stateStore = svelteStore.writable<State>({
@@ -192,7 +187,7 @@ function build(
           daiBalance,
           ethBalance,
         },
-        network: ethereum.networkFromChainId(chainId),
+        network: networkFromChainId(chainId),
       };
       stateStore.set({ status: Status.Connected, connected });
     } catch (error) {
@@ -235,166 +230,6 @@ function build(
   };
 }
 
-declare global {
-  interface Window {
-    ethereumDebug: EthereumDebug;
-  }
-}
-
-class WalletConnectSigner extends ethers.Signer {
-  public walletConnect: WalletConnect;
-  private _provider: ethers.providers.Provider;
-  private _environment: ethereum.Environment;
-
-  constructor(
-    walletConnect: WalletConnect,
-    provider: Provider,
-    environment: ethereum.Environment,
-    onDisconnect: () => void
-  ) {
-    super();
-    defineReadOnly(this, "provider", provider);
-    this._provider = provider;
-    this._environment = environment;
-    this.walletConnect = walletConnect;
-    this.walletConnect.on("disconnect", onDisconnect);
-  }
-
-  async getAddress(): Promise<string> {
-    const accountAddress = this.walletConnect.accounts[0];
-    if (!accountAddress) {
-      throw new Error(
-        "The connected wallet has no accounts or there is a connection problem"
-      );
-    }
-    return accountAddress;
-  }
-
-  async signMessage(message: ethers.Bytes | string): Promise<string> {
-    const prefix = ethers.utils.toUtf8Bytes(
-      `\x19Ethereum Signed Message:\n${message.length}`
-    );
-    const msg = ethers.utils.concat([prefix, message]);
-    const address = await this.getAddress();
-    const keccakMessage = ethers.utils.keccak256(msg);
-    const signature = await this.walletConnect.signMessage([
-      address.toLowerCase(),
-      keccakMessage,
-    ]);
-    return signature;
-  }
-
-  async sendTransaction(
-    transaction: Deferrable<TransactionRequest>
-  ): Promise<TransactionResponse> {
-    // When using a local Ethereum environment, we want our app to send
-    // the transaction to the local Ethereum node and have the external
-    // wallet just sign the transaction. In all other environments, we
-    // want the external wallet to submit the transaction to the network.
-    if (this._environment === ethereum.Environment.Local) {
-      return super.sendTransaction(transaction);
-    }
-
-    const tx = await resolveProperties(transaction);
-    const from = tx.from || (await this.getAddress());
-
-    const txHash = await this.walletConnect.sendTransaction({
-      from,
-      to: tx.to,
-      value: BigNumberToPrimitive(tx.value),
-      data: bytesLikeToString(tx.data),
-    });
-
-    return {
-      from,
-      value: ethers.BigNumber.from(tx.value || 0),
-      get chainId(): number {
-        throw new Error("this should never be called");
-      },
-      get nonce(): number {
-        throw new Error("this should never be called");
-      },
-      get gasLimit(): ethers.BigNumber {
-        throw new Error("this should never be called");
-      },
-      get gasPrice(): ethers.BigNumber {
-        throw new Error("this should never be called");
-      },
-      data: bytesLikeToString(tx.data) || "",
-      hash: txHash,
-      confirmations: 1,
-      wait: () => {
-        throw new Error("this should never be called");
-      },
-    };
-  }
-
-  async signTransaction(
-    transaction: Deferrable<TransactionRequest>
-  ): Promise<string> {
-    const tx = await resolveProperties(transaction);
-    const from = tx.from || (await this.getAddress());
-    const nonce = await this._provider.getTransactionCount(from);
-
-    const signedTx = await this.walletConnect.signTransaction({
-      from,
-      to: tx.to,
-      value: BigNumberToPrimitive(tx.value || 0),
-      gasLimit: BigNumberToPrimitive(tx.gasLimit || 200 * 1000),
-      gasPrice: BigNumberToPrimitive(tx.gasPrice || 0),
-      nonce,
-      data: bytesLikeToString(tx.data),
-    });
-    return signedTx;
-  }
-
-  connect(_provider: Provider): ethers.Signer {
-    throw new Error("WalletConnectSigner.connect should never be called");
-  }
-}
-
-function BigNumberToPrimitive(
-  bn: ethers.BigNumberish | undefined
-): string | undefined {
-  if (bn === undefined) {
-    return undefined;
-  } else {
-    return ethers.BigNumber.from(bn).toString();
-  }
-}
-
-function bytesLikeToString(
-  bytes: ethersBytes.BytesLike | undefined
-): string | undefined {
-  if (bytes === undefined) {
-    return undefined;
-  } else {
-    return ethersBytes.hexlify(bytes);
-  }
-}
-
-class EthereumDebug {
-  private provider: ethers.providers.JsonRpcProvider;
-
-  constructor(provider: ethers.providers.JsonRpcProvider) {
-    this.provider = provider;
-  }
-  async mineBlocks(blocks = 1) {
-    while (blocks) {
-      blocks -= 1;
-      await this.provider.send("evm_mine", []);
-    }
-  }
-
-  async setBlockTime(seconds = 5) {
-    await this.provider.send("evm_setTime", [seconds]);
-  }
-
-  async increaseTime(seconds = 5) {
-    await this.provider.send("evm_increaseTime", [seconds]);
-  }
-}
-
 // URI store for the URI used to build the connecting QRCode.
 export const uriStore = svelteStore.writable<string | undefined>(undefined);
 
@@ -406,9 +241,7 @@ export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
   ethereum.selectedEnvironment,
   (environment, set) => {
     const provider = getProvider(environment);
-    if (provider instanceof ethers.providers.JsonRpcProvider) {
-      window.ethereumDebug = new EthereumDebug(provider);
-    }
+    ethereumDebug.install(provider);
 
     const wallet = build(environment, provider);
     set(wallet);
