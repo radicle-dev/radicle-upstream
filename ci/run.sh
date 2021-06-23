@@ -26,6 +26,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
 log-group-start "Installing yarn dependencies"
 yarn install --immutable
+yarn dedupe --check
 log-group-end
 
 log-group-start "Linking cache"
