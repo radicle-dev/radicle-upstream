@@ -48,7 +48,7 @@
     margin: 0.25rem;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);
-    transition: all 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
+    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
   .segmented-control button:focus {
     outline: none;

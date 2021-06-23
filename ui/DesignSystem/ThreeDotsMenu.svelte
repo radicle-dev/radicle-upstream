@@ -64,7 +64,7 @@
     cursor: pointer;
     outline-style: none;
     border: 1px solid var(--color-foreground-level-3);
-    transition: all 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
+    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
 
   .additional-actions-dropdown-button :global(svg) {

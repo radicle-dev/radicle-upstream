@@ -43,7 +43,7 @@
   }
 
   .icon {
-    transition: all 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
+    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
     display: flex;
   }
 
