@@ -6,10 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import { activeRouteStore, push } from "ui/src/router";
   import { status, StatusType } from "ui/src/localPeer";
 
   import Icon from "ui/DesignSystem/Icon";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
+  import SidebarItem from "ui/DesignSystem/Sidebar/SidebarItem.svelte";
 
   import Syncing from "./ConnectionStatusIndicator/Syncing.svelte";
   import Offline from "./ConnectionStatusIndicator/Offline.svelte";
@@ -30,49 +32,52 @@
   };
 </script>
 
-<style>
-  .item {
-    width: var(--sidebar-width);
-    height: 32px;
-    margin-bottom: 16px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: help;
-  }
-</style>
-
 <div>
   {#if $status.type === StatusType.Online}
     <Tooltip
       value={`Network • You’re connected to ${connectedPeerCount(
         $status.connectedPeers
       )}`}>
-      <div class="item indicator" data-cy="connection-status-online">
+      <SidebarItem
+        dataCy="connection-status-online"
+        indicator
+        active={$activeRouteStore.type === "network"}
+        onClick={() => push({ type: "network" })}>
         <Icon.Network />
-      </div>
+      </SidebarItem>
     </Tooltip>
   {:else if $status.type === StatusType.Syncing}
     <Tooltip
       value={`Network • Syncing with ${peerCount(
         $status.syncs
       )} to get new content from your network`}>
-      <div class="item indicator" data-cy="connection-status-syncing">
+      <SidebarItem
+        dataCy="connection-status-syncing"
+        indicator
+        active={$activeRouteStore.type === "network"}
+        onClick={() => push({ type: "network" })}>
         <Syncing />
-      </div>
+      </SidebarItem>
     </Tooltip>
   {:else if $status.type === StatusType.Offline || $status.type === StatusType.Started}
     <Tooltip value="Network • You’re not connected to any peers">
-      <div class="item indicator" data-cy="connection-status-offline">
+      <SidebarItem
+        dataCy="connection-status-offline"
+        indicator
+        active={$activeRouteStore.type === "network"}
+        onClick={() => push({ type: "network" })}>
         <Offline />
-      </div>
+      </SidebarItem>
     </Tooltip>
   {:else if $status.type === StatusType.Stopped}
     <Tooltip value="Network • The app couldn't start your peer">
-      <div class="item indicator" data-cy="connection-status-stopped">
+      <SidebarItem
+        dataCy="connection-status-stopped"
+        indicator
+        active={$activeRouteStore.type === "network"}
+        onClick={() => push({ type: "network" })}>
         <Offline style="fill: var(--color-negative);" />
-      </div>
+      </SidebarItem>
     </Tooltip>
   {/if}
 </div>
