@@ -86,17 +86,28 @@
     display: flex;
     justify-content: space-between;
     overflow: hidden; /* hack to make inner option corners rounded */
+    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
 
   .button:hover {
     background-color: var(--color-foreground-level-1);
     color: var(--color-foreground);
+    transform: scale(1.05);
+  }
+
+  .button:active {
+    transition: transform 0.1s cubic-bezier(0.18, 1.85, 0.64, 1);
+    transform: scale(1);
   }
 
   .button.disabled {
     cursor: not-allowed;
     box-shadow: 0px 0px 0px 0px;
     background-color: var(--color-background);
+  }
+
+  .button.disabled:hover {
+    transform: scale(1);
   }
 
   .menu {
