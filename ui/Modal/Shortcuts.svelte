@@ -21,6 +21,10 @@
 </script>
 
 <style>
+  .shortcuts {
+    margin: 0 auto;
+    width: fit-content;
+  }
   .shortcut {
     margin-bottom: 1rem;
     display: flex;

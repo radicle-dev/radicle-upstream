@@ -98,7 +98,7 @@ function build(
 
   function newWalletConnect(): WalletConnect {
     return new WalletConnect({
-      bridge: "https://bridge.walletconnect.org",
+      bridge: "https://radicle.bridge.walletconnect.org",
       qrcodeModal: qrCodeModal,
     });
   }
