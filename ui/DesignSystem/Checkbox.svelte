@@ -26,17 +26,11 @@
     cursor: pointer;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 0.5rem;
-    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
 
   input:hover,
   input:checked:hover {
-    transform: scale(1.1);
     background-color: var(--color-foreground-level-2);
-  }
-
-  input:active {
-    transform: scale(0.95);
   }
 
   input:checked {
@@ -50,7 +44,7 @@
 </style>
 
 <label class="wrapper">
-  <input type="checkbox" bind:checked />
+  <input type="checkbox" class="transition" bind:checked />
   <span>
     <slot />
   </span>

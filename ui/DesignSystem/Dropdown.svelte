@@ -86,18 +86,11 @@
     display: flex;
     justify-content: space-between;
     overflow: hidden; /* hack to make inner option corners rounded */
-    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
 
   .button:hover {
     background-color: var(--color-foreground-level-1);
     color: var(--color-foreground);
-    transform: scale(1.05);
-  }
-
-  .button:active {
-    transition: transform 0.1s cubic-bezier(0.18, 1.85, 0.64, 1);
-    transform: scale(1);
   }
 
   .button.disabled {
@@ -107,7 +100,7 @@
   }
 
   .button.disabled:hover {
-    transform: scale(1);
+    transform: none;
   }
 
   .menu {
@@ -140,7 +133,7 @@
 <Overlay {expanded} on:hide={hideMenu}>
   <div data-cy={dataCy} class="dropdown" {style}>
     <div
-      class="button"
+      class="button transition"
       class:invalid={!valid}
       class:disabled
       on:click={toggleMenu}>
@@ -152,7 +145,7 @@
         </p>
       {/if}
       <Icon.ChevronUpDown
-        style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
+        style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()};`} />
     </div>
 
     <div style={menuStyle} class="menu" hidden={!expanded}>

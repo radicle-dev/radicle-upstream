@@ -62,27 +62,8 @@
   }
 </script>
 
-<style>
-  .icon {
-    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
-    display: flex;
-  }
-
-  .icon-holder:hover .icon {
-    transform: scale(1.15);
-  }
-
-  .icon-holder:active .icon {
-    transform: scale(0.95);
-  }
-</style>
-
 <Tooltip value={`Wallet • ${tooltipMessage}`}>
-  <div class="icon-holder">
-    <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
-      <div class="icon">
-        <Icon.Wallet connected={iconConnected} statusColor={iconStatusColor} />
-      </div>
-    </SidebarItem>
-  </div>
+  <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
+    <Icon.Wallet connected={iconConnected} statusColor={iconStatusColor} />
+  </SidebarItem>
 </Tooltip>

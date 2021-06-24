@@ -46,3 +46,15 @@ a {
 .lock-screen {
   cursor: wait;
 }
+
+.transition {
+  transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
+}
+.transition:hover,
+.transition:checked:hover {
+  transform: scale(1.1);
+}
+
+.transition:active {
+  transform: scale(0.95);
+}

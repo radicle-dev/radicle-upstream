@@ -64,7 +64,6 @@
     cursor: pointer;
     outline-style: none;
     border: 1px solid var(--color-foreground-level-3);
-    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
 
   .additional-actions-dropdown-button :global(svg) {
@@ -77,11 +76,6 @@
 
   .additional-actions-dropdown-button:hover {
     background-color: var(--color-foreground-level-2);
-    transform: scale(1.1);
-  }
-
-  .additional-actions-dropdown-button:active {
-    transform: scale(0.95);
   }
 
   .modal {
@@ -139,7 +133,7 @@
 <Overlay {expanded} on:hide={hideModal}>
   <div data-cy={dataCy} class="container" {style}>
     <button
-      class="additional-actions-dropdown-button"
+      class="additional-actions-dropdown-button transition"
       bind:this={triggerEl}
       on:click|stopPropagation={toggleModal}>
       <svelte:component this={Icon.Ellipsis} />

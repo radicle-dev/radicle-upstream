@@ -37,16 +37,6 @@
     user-select: none;
     line-height: 22px;
     gap: 0.5rem;
-    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
-  }
-
-  .button:hover {
-    transform: scale(1.05);
-  }
-
-  .button:active {
-    transition: transform 0.1s cubic-bezier(0.18, 1.85, 0.64, 1);
-    transform: scale(1);
   }
 
   .button :global(svg) {
@@ -279,7 +269,7 @@
 
 <button
   data-cy={dataCy}
-  class="button typo-text-bold {buttonClass}"
+  class="button typo-text-bold {buttonClass} transition"
   {title}
   {disabled}
   on:click

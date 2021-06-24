@@ -48,7 +48,6 @@
     margin: 0.25rem;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);
-    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
   }
   .segmented-control button:focus {
     outline: none;
@@ -59,18 +58,16 @@
   }
   .segmented-control button:hover {
     background-color: var(--color-foreground-level-2);
-    transform: scale(1.05);
   }
   .segmented-control button:active {
     background-color: var(--color-foreground-level-2);
-    transform: scale(0.95);
   }
 </style>
 
 <div class="segmented-control">
   {#each options as option}
     <button
-      class="typo-semi-bold"
+      class="typo-semi-bold transition"
       class:active={option.value === currentlyActive}
       data-cy="segmented-control-option"
       value={option.value}
