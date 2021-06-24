@@ -1,5 +1,6 @@
 <script lang="typescript">
-  import { status, StatusType } from "ui/src/localPeer";
+  import { status } from "ui/src/localPeer";
+  import { indicatorState } from "ui/src/network";
   import {
     settings,
     seedValidation,
@@ -15,24 +16,7 @@
     TextInput,
   } from "ui/DesignSystem";
 
-  const connectedPeerCount = (peers: {
-    [peerId: string]: string[];
-  }): string => {
-    const count = Object.keys(peers).length;
-    return peerCount(count);
-  };
-
-  const peerCount = (count: number) => {
-    if (count === 1) {
-      return "1 peer";
-    } else {
-      return `${count} peers`;
-    }
-  };
-
   let seedInputValue: string = "";
-  let statusText: string = "";
-  let statusFill: string = "";
 
   const submitSeed = async () => {
     if (await addSeed(seedInputValue)) {
@@ -44,26 +28,13 @@
     seedValidation.reset();
   }
 
+  let statusText: string = "";
+  let statusFill: string = "";
   $: {
-    if ($status.type === StatusType.Online) {
-      statusText = `You’re connected to ${connectedPeerCount(
-        $status.connectedPeers
-      )}`;
-      statusFill = "var(--color-positive)";
-    } else if ($status.type === StatusType.Syncing) {
-      statusText = `Syncing with ${peerCount(
-        $status.syncs
-      )} to get new content from your network`;
-      statusFill = "var(--color-caution)";
-    } else if (
-      $status.type === StatusType.Offline ||
-      $status.type === StatusType.Started
-    ) {
-      statusText = "You’re not connected to any peers";
-      statusFill = "var(--color-negative)";
-    } else if ($status.type === StatusType.Stopped) {
-      statusText = "The app couldn't start your peer";
-      statusFill = "var(--color-negative)";
+    const state = indicatorState($status);
+    if (state) {
+      statusText = state.text;
+      statusFill = state.fill;
     }
   }
 </script>
@@ -154,7 +125,8 @@
         <p class="typo-text-bold">
           Seeds help you find projects and users on the network.
         </p>
-        <p style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
+        <p
+          style="color: var(--color-foreground-level-6); margin-bottom: 2v4px;">
           Enter seed addresses that you’d like to connect to here.
           <a
             style="color: var(--color-foreground-level-5);"
