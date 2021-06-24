@@ -62,11 +62,7 @@ cat "$HOME/.gitconfig"
 log-group-end
 
 log-group-start "License compliance"
-time yarn run license-compliance
 time ./scripts/license-header.ts check
-log-group-end
-
-log-group-start "License compliance"
 time cargo deny check
 log-group-end
 
