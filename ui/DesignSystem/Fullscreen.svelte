@@ -53,7 +53,7 @@
 <svelte:window on:keydown={onKeydown} />
 
 {#if escapable}
-  <div class="close">
+  <div class="close transition transition-big">
     <Icon.Cross on:click={onClose} />
   </div>
 {/if}

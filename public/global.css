@@ -57,6 +57,10 @@ a {
 }
 
 .transition:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
   transition-duration: 0.1s;
+}
+
+.transition-big:active {
+  transform: scale(0.9);
 }
