@@ -35,7 +35,7 @@
     padding: 0 var(--content-padding);
   }
 
-  .section-item-single {
+  section {
     align-items: center;
     margin-bottom: 24px;
     padding: 0 12px;
@@ -91,55 +91,52 @@
       <h1>Network</h1>
     </div>
     <section>
-      <div class="section-item-single">
-        <div class="info">
-          <p class="typo-text-bold">
-            Seeds help you find projects and users on the network.
-          </p>
-          <p
-            style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
-            Enter seed addresses that you’d like to connect to here.
-            <a
-              style="color: var(--color-foreground-level-5);"
-              class="typo-link"
-              href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
-              >Learn more</a>
-          </p>
-        </div>
-        <form
-          class="seed-entry-form"
-          on:submit|preventDefault
-          data-cy="seed-entry-form">
-          <div class="seed-entry-field">
-            <TextInput
-              dataCy="seed-input"
-              bind:value={seedInputValue}
-              placeholder="Enter a seed address here"
-              style="margin-right: 8px; min-width: 224px; width: 100%;"
-              validation={$seedValidation} />
-            <Button
-              dataCy="add-seed"
-              style="display: flex;"
-              on:click={submitSeed}
-              disabled={!seedInputValue}
-              variant="outline">
-              Add
-            </Button>
-          </div>
-
-          <div class="seeds">
-            {#each $settings.coco.seeds as seed (seed)}
-              <div class="seed">
-                <StyledCopyable value={seed} />
-                <Icon.Cross
-                  dataCy="remove-seed"
-                  on:click={() => removeSeed(seed)}
-                  style="margin-left: 1.5rem; cursor:pointer;" />
-              </div>
-            {/each}
-          </div>
-        </form>
+      <div class="info">
+        <p class="typo-text-bold">
+          Seeds help you find projects and users on the network.
+        </p>
+        <p style="color: var(--color-foreground-level-6); margin-bottom: 24px;">
+          Enter seed addresses that you’d like to connect to here.
+          <a
+            style="color: var(--color-foreground-level-5);"
+            class="typo-link"
+            href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
+            >Learn more</a>
+        </p>
       </div>
+      <form
+        class="seed-entry-form"
+        on:submit|preventDefault
+        data-cy="seed-entry-form">
+        <div class="seed-entry-field">
+          <TextInput
+            dataCy="seed-input"
+            bind:value={seedInputValue}
+            placeholder="Enter a seed address here"
+            style="margin-right: 8px; min-width: 224px; width: 100%;"
+            validation={$seedValidation} />
+          <Button
+            dataCy="add-seed"
+            style="display: flex;"
+            on:click={submitSeed}
+            disabled={!seedInputValue}
+            variant="outline">
+            Add
+          </Button>
+        </div>
+
+        <div class="seeds">
+          {#each $settings.coco.seeds as seed (seed)}
+            <div class="seed">
+              <StyledCopyable value={seed} />
+              <Icon.Cross
+                dataCy="remove-seed"
+                on:click={() => removeSeed(seed)}
+                style="margin-left: 1.5rem; cursor:pointer;" />
+            </div>
+          {/each}
+        </div>
+      </form>
     </section>
   </div>
 </SidebarLayout>
