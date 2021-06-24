@@ -160,12 +160,17 @@ export async function createOrg(owner: string): Promise<void> {
     showIcon: true,
     persist: true,
   });
-  const response = await Contract.submitCreateOrgTx(
-    walletStore.environment,
-    owner,
-    walletStore.signer
-  );
-  confirmNotification.remove();
+
+  let response;
+  try {
+    response = await Contract.submitCreateOrgTx(
+      walletStore.environment,
+      owner,
+      walletStore.signer
+    );
+  } finally {
+    confirmNotification.remove();
+  }
   pendingOrgs.update(x => x + 1);
 
   transaction.add(transaction.createOrg(response));
