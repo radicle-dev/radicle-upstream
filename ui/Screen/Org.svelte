@@ -126,6 +126,7 @@
     <ProjectsTab
       {address}
       {gnosisSafeAddress}
+      disableAnchorCreation={activeTab.projectCount === 0}
       anchoredProjects={activeTab.anchoredProjects}
       unresolvedAnchors={activeTab.unresolvedAnchors} />
   {:else if activeTab.type === "members"}

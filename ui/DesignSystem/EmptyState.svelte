@@ -9,10 +9,12 @@
   import { createEventDispatcher } from "svelte";
 
   import { Variant as IllustrationVariant } from "ui/src/illustration";
+  import * as Style from "ui/src/style";
 
   import Button from "./Button.svelte";
   import Emoji from "./Emoji.svelte";
   import Illustration from "./Illustration.svelte";
+  import Tooltip from "./Tooltip.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -23,6 +25,10 @@
   export let headerText: string = "";
   export let primaryActionText: string = "";
   export let secondaryActionText: string = "";
+  export let primaryActionDisabled = false;
+  export let primaryActionTooltipMessage: string | undefined = undefined;
+
+  $: tooltipMessage = primaryActionDisabled ? primaryActionTooltipMessage : "";
 
   const onPrimaryAction = () => {
     dispatch("primaryAction");
@@ -82,12 +88,14 @@
     <p class="text">{text}</p>
   {/if}
   {#if primaryActionText.length}
-    <Button
-      dataCy="primary-action"
-      on:click={() => onPrimaryAction()}
-      style="margin-bottom: 0.75rem;">
-      {primaryActionText}
-    </Button>
+    <Tooltip value={tooltipMessage} position={Style.CSSPosition.Bottom}>
+      <Button
+        disabled={primaryActionDisabled}
+        dataCy="primary-action"
+        on:click={() => onPrimaryAction()}>
+        {primaryActionText}
+      </Button>
+    </Tooltip>
   {/if}
   {#if secondaryActionText.length}
     <button data-cy="secondary-action" on:click={() => onSecondaryAction()}>

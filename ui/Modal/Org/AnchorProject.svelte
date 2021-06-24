@@ -7,7 +7,6 @@
 -->
 <script lang="typescript">
   import type { User, Project } from "ui/src/project";
-  import type * as urn from "ui/src/urn";
   import * as source from "ui/src/source";
   import * as project from "ui/src/project";
   import * as proxy from "ui/src/proxy";
@@ -30,7 +29,7 @@
 
   // Project selector
 
-  let selectedProjectUrn: urn.Urn | undefined;
+  let selectedProjectUrn: string | undefined;
 
   interface ProjectData {
     project: Project;

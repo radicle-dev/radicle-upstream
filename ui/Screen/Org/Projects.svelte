@@ -25,6 +25,7 @@
   export let anchoredProjects: project.Project[];
   export let unresolvedAnchors: project.Anchor[];
   export let gnosisSafeAddress: string;
+  export let disableAnchorCreation = false;
 
   const select = ({ detail: project }: { detail: Project }) => {
     router.push({
@@ -56,6 +57,8 @@
       illustration={IllustrationVariant.Plant}
       text="Get started by anchoring your organization’s first project with the radicle gnosis safe app."
       primaryActionText="Anchor with Gnosis Safe"
+      primaryActionDisabled={disableAnchorCreation}
+      primaryActionTooltipMessage="Create or follow a project first"
       on:primaryAction={() => {
         org.openAnchorProjectModal(address, gnosisSafeAddress);
       }} />
