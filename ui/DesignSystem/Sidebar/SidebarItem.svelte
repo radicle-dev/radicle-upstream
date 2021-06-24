@@ -56,6 +56,10 @@
   .indicator.active :global(svg) {
     fill: var(--color-primary);
   }
+
+  .transition-big:active {
+    transform: scale(0.9);
+  }
 </style>
 
 <div
@@ -65,7 +69,7 @@
   class:clickable
   data-cy={dataCy}
   on:click|stopPropagation={() => onClick && onClick()}>
-  <div class="transition" style="display: flex;">
+  <div class="transition transition-big" style="display: flex;">
     <slot />
   </div>
 </div>

@@ -67,19 +67,6 @@
       rgba(0, 0, 0, 0) 100%
     );
   }
-
-  /* .icon {
-    transition: transform 0.2s cubic-bezier(0.18, 1.85, 0.64, 1);
-    display: flex;
-  }
-
-  .icon-holder:hover .icon {
-    transform: scale(1.15);
-  }
-
-  .icon-holder:active .icon {
-    transform: scale(0.95);
-  } */
 </style>
 
 <div class="wrapper" data-cy="sidebar">
