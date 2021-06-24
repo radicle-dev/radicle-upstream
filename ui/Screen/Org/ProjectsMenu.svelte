@@ -12,7 +12,7 @@
 
   export let orgAddress: string;
   export let gnosisSafeAddress: string;
-  export let disabled: boolean = false;
+  export let disabled = false;
 
   $: tooltipMessage = disabled ? "Create or follow a project first" : "";
 </script>

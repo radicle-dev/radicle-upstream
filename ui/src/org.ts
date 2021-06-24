@@ -5,67 +5,37 @@
 // LICENSE file.
 
 import * as lodash from "lodash";
-import * as ethers from "ethers";
-import * as multihash from "multihashes";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
-import type {
-  TransactionReceipt,
-  TransactionResponse,
-} from "@ethersproject/providers";
-import type * as project from "ui/src/project";
-import type { Org, MemberResponse } from "ui/src/org/theGraphApi";
-import * as Safe from "./org/safe";
-
-import * as svelteStore from "ui/src/svelteStore";
 import type * as identity from "ui/src/proxy/identity";
-import * as ethereum from "ui/src/ethereum";
+import type * as project from "ui/src/project";
+
+import * as Safe from "./org/safe";
+import * as Contract from "./org/contract";
+
 import * as error from "ui/src/error";
 import * as ipc from "ui/src/ipc";
 import * as modal from "ui/src/modal";
 import * as notification from "ui/src/notification";
 import * as proxy from "ui/src/proxy";
 import * as router from "ui/src/router";
+import * as svelteStore from "ui/src/svelteStore";
 import * as transaction from "./transaction";
-import * as urn from "ui/src/urn";
 import * as wallet from "ui/src/wallet";
-import { sleep } from "ui/src/sleep";
 import { claimsAddress, ClaimsContract } from "./attestation/contract";
-import { identitySha1Urn } from "ui/src/urn";
-
 import {
+  Org,
+  MemberResponse,
   getOrgs,
   getGnosisSafeMembers,
   getOrgProjectAnchors,
-} from "ui/src/org/theGraphApi";
-
-export type { MemberResponse, Org };
+} from "./org/theGraphApi";
+import { identitySha1Urn } from "ui/src/urn";
+import { sleep } from "ui/src/sleep";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
-const orgFactoryAbi = [
-  "function createOrg(address[], uint256) returns (address)",
-  "event OrgCreated(address, address)",
-];
-
-const orgAbi = [
-  "function owner() view returns (address)",
-  "function anchor(bytes32, uint32, bytes)",
-];
-
-const orgFactoryAddress = (network: ethereum.Environment): string => {
-  switch (network) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Orgs not available on the Local testnet",
-      });
-    case ethereum.Environment.Rinkeby:
-      return "0xF3D04e874D07d680e8b26332eEae5b9B1c263121";
-    case ethereum.Environment.Mainnet:
-      return "0xa15bEb4876F20018b6b4A4116B7560c5fcC9336e";
-  }
-};
+export type { MemberResponse, Org };
 
 const ORG_POLL_INTERVAL_MS = 2000;
 
@@ -110,14 +80,14 @@ const updateOrgsForever = async (): Promise<never> => {
 
 // Start a background task that continously updates the org data for
 // the sidebar.
-export const initialize = (): void => {
+export function initialize(): void {
   updateOrgsForever();
-};
+}
 
-export const openOnGnosisSafe = (
+export function openOnGnosisSafe(
   gnosisSafeAddress: string,
   view: "transactions" | "settings"
-): void => {
+): void {
   ipc.openUrl(
     Safe.appUrl(
       svelteStore.get(wallet.store).environment,
@@ -125,42 +95,19 @@ export const openOnGnosisSafe = (
       view
     )
   );
-};
+}
 
-export const anchorProject = async (
+export async function anchorProject(
   orgAddress: string,
   gnosisSafeAddress: string,
   projectUrn: string,
   commitHash: string
-): Promise<void> => {
+): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
-  const checksummedGnosisSafeAddress =
-    ethers.utils.getAddress(gnosisSafeAddress);
-  const checksummedOrgAddress = ethers.utils.getAddress(orgAddress);
-  const encodedProjectUrn = ethers.utils.zeroPad(
-    urn.parseIdentitySha1(projectUrn),
-    32
+  const txData = await Contract.generateAnchorProjectTxData(
+    projectUrn,
+    commitHash
   );
-  const encodedCommitHash = multihash.encode(
-    ethers.utils.arrayify(`0x${commitHash}`),
-    "sha1"
-  );
-
-  const orgContract = new ethers.Contract(checksummedGnosisSafeAddress, orgAbi);
-
-  const orgContractInstance = await orgContract.populateTransaction.anchor(
-    encodedProjectUrn,
-    ethers.constants.Zero,
-    encodedCommitHash
-  );
-
-  const txData = orgContractInstance.data;
-  if (!txData) {
-    throw new error.Error({
-      code: error.Code.OrgCreateCouldNotGenerateTx,
-      message: "Could not generate transaction",
-    });
-  }
 
   const confirmNotification = notification.info({
     message:
@@ -170,7 +117,7 @@ export const anchorProject = async (
   });
 
   await Safe.signAndProposeTransaction(walletStore, gnosisSafeAddress, {
-    to: checksummedOrgAddress,
+    to: orgAddress,
     value: "0",
     data: txData,
     operation: OperationType.Call,
@@ -192,51 +139,12 @@ export const anchorProject = async (
   });
 
   router.push({ type: "org", address: orgAddress, activeTab: "projects" });
-};
-
-const parseOrgCreatedReceipt = (receipt: TransactionReceipt): string => {
-  const iface = new ethers.utils.Interface(orgFactoryAbi);
-
-  let orgAddress: string | undefined;
-
-  receipt.logs.forEach(log => {
-    try {
-      const parsed = iface.parseLog(log);
-
-      if (parsed.name === "OrgCreated") {
-        orgAddress = parsed.args[0].toLowerCase();
-      }
-    } catch {
-      // Ignore parsing errors.
-    }
-  });
-
-  if (!orgAddress) {
-    throw new error.Error({
-      code: error.Code.OrgCreateNotFoundInInterfaceLogs,
-      message: "Org not found in interface logs",
-    });
-  }
-
-  return orgAddress;
-};
-
-const submitCreateOrgTx = (
-  wallet: wallet.Wallet,
-  owner: string
-): Promise<TransactionResponse> => {
-  const orgFactory = new ethers.Contract(
-    orgFactoryAddress(wallet.environment),
-    orgFactoryAbi,
-    wallet.signer
-  );
-  return orgFactory.createOrg([owner], 1);
-};
+}
 
 // Holds the number of pending org creation transactions
 export const pendingOrgs = svelteStore.writable<number>(0);
 
-export const createOrg = async (owner: string): Promise<void> => {
+export async function createOrg(owner: string): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
   const confirmNotification = notification.info({
     message:
@@ -244,7 +152,11 @@ export const createOrg = async (owner: string): Promise<void> => {
     showIcon: true,
     persist: true,
   });
-  const response = await submitCreateOrgTx(walletStore, owner);
+  const response = await Contract.submitCreateOrgTx(
+    walletStore.environment,
+    owner,
+    walletStore.signer
+  );
   confirmNotification.remove();
   pendingOrgs.update(x => x + 1);
 
@@ -254,10 +166,8 @@ export const createOrg = async (owner: string): Promise<void> => {
     showIcon: true,
   });
 
-  const receipt: TransactionReceipt =
-    await walletStore.provider.waitForTransaction(response.hash);
-
-  const orgAddress = parseOrgCreatedReceipt(receipt);
+  const receipt = await walletStore.provider.waitForTransaction(response.hash);
+  const orgAddress = Contract.parseOrgCreatedReceipt(receipt);
 
   await svelteStore.waitUntil(orgSidebarStore, orgs => {
     return orgs.some(org => org.id === orgAddress);
@@ -281,21 +191,11 @@ export const createOrg = async (owner: string): Promise<void> => {
     ],
   });
   await fetchOrgs();
-};
-
-const fetchGnosisSafeAddr = async (
-  orgAddress: string,
-  provider: ethers.providers.Provider
-): Promise<string> => {
-  const org = new ethers.Contract(orgAddress, orgAbi, provider);
-  const safeAddr: string = await org.owner();
-
-  return safeAddr.toLowerCase();
-};
+}
 
 export const orgSidebarStore = svelteStore.writable<Org[]>([]);
 
-const fetchOrgs = async (): Promise<void> => {
+async function fetchOrgs(): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
   const w = svelteStore.get(walletStore);
 
@@ -309,7 +209,7 @@ const fetchOrgs = async (): Promise<void> => {
   const orgs = await getOrgs(w.connected.account.address);
   const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
   orgSidebarStore.set(sortedOrgs);
-};
+}
 
 // Information about an org and the safe that controls it.
 interface OrgWithSafe {
@@ -319,9 +219,9 @@ interface OrgWithSafe {
   threshold: number;
 }
 
-export const fetchOrg = async (orgAddress: string): Promise<OrgWithSafe> => {
+export async function fetchOrg(orgAddress: string): Promise<OrgWithSafe> {
   const walletStore = svelteStore.get(wallet.store);
-  const gnosisSafeAddress = await fetchGnosisSafeAddr(
+  const gnosisSafeAddress = await Contract.getOwner(
     orgAddress,
     walletStore.provider
   );
@@ -330,7 +230,7 @@ export const fetchOrg = async (orgAddress: string): Promise<OrgWithSafe> => {
     gnosisSafeAddress
   );
   return { orgAddress, gnosisSafeAddress, members, threshold };
-};
+}
 
 interface OrgMembers {
   threshold: number;
@@ -342,10 +242,10 @@ export interface Member {
   identity: identity.RemoteIdentity | undefined;
 }
 
-export const fetchMembers = async (
+export async function fetchMembers(
   wallet: wallet.Wallet,
   gnosisSafeAddress: string
-): Promise<OrgMembers> => {
+): Promise<OrgMembers> {
   const response: MemberResponse = await getGnosisSafeMembers(
     gnosisSafeAddress
   );
@@ -366,13 +266,13 @@ export const fetchMembers = async (
     threshold: response.threshold,
     members,
   };
-};
+}
 
 // Return all anchors for the org where the anchoring transactions are
 // still pending
-const fetchPendingAnchors = async (
+async function fetchPendingAnchors(
   org: OrgWithSafe
-): Promise<project.PendingAnchor[]> => {
+): Promise<project.PendingAnchor[]> {
   const walletStore = svelteStore.get(wallet.store);
   const txs = await Safe.getPendingTransactions(
     walletStore.environment,
@@ -387,25 +287,14 @@ const fetchPendingAnchors = async (
       if (!tx.data) {
         return;
       }
-      const iface = new ethers.utils.Interface(orgAbi);
-      const parsedTx = iface.parseTransaction({ data: tx.data });
 
-      if (parsedTx.name === "anchor") {
-        const encodedProjectUrn = parsedTx.args[0];
-        const encodedCommitHash = parsedTx.args[2];
+      const anchorData = Contract.parseAnchorTx(tx.data);
 
-        const projectId = urn.identitySha1Urn(
-          ethers.utils.arrayify(`0x${encodedProjectUrn.slice(26)}`)
-        );
-        const byteArray = ethers.utils.arrayify(encodedCommitHash);
-        const decodedMultihash = multihash.decode(byteArray);
-        const decodedCommitHash = ethers.utils
-          .hexlify(decodedMultihash.digest)
-          .replace(/^0x/, "");
+      if (anchorData) {
         const anchor: project.Anchor = {
           type: "pending",
-          projectId,
-          commitHash: decodedCommitHash,
+          projectId: anchorData.projectId,
+          commitHash: anchorData.commitHash,
           threshold: org.threshold,
           orgAddress: org.orgAddress,
           confirmations: tx.confirmations ? tx.confirmations.length : 0,
@@ -416,19 +305,17 @@ const fetchPendingAnchors = async (
     .filter<project.PendingAnchor>(isAnchor);
 
   return pendingAnchors;
-};
+}
 
 // Return project information for all anchors of an org. If the project
 // of an anchor is not replicated by radicle link we include it in
 // `unresolvedAnchors`.
 //
 // Includes anchors from transactions that have not been confirmed yet.
-export const resolveProjectAnchors = async (
-  org: OrgWithSafe
-): Promise<{
+export async function resolveProjectAnchors(org: OrgWithSafe): Promise<{
   anchoredProjects: project.Project[];
   unresolvedAnchors: project.Anchor[];
-}> => {
+}> {
   const pendingAnchors = await fetchPendingAnchors(org);
   const confirmedAnchors = await getOrgProjectAnchors(org.orgAddress);
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
@@ -464,17 +351,17 @@ export const resolveProjectAnchors = async (
   });
 
   return { anchoredProjects, unresolvedAnchors };
-};
+}
 
 export interface ProjectOption {
   title: string;
-  value: urn.Urn;
+  value: string;
 }
 
-export const openAnchorProjectModal = async (
+export async function openAnchorProjectModal(
   orgAddress: string,
   gnosisSafeAddress: string
-): Promise<void> => {
+): Promise<void> {
   const [tracked, contributed] = await Promise.all([
     proxy.client.project.listTracked(),
     proxy.client.project.listContributed(),
@@ -490,16 +377,16 @@ export const openAnchorProjectModal = async (
     orgAddress,
     gnosisSafeAddress,
   });
-};
+}
 
-export const getProjectCount = async (): Promise<number> => {
+export async function getProjectCount(): Promise<number> {
   const [tracked, contributed] = await Promise.all([
     proxy.client.project.listTracked(),
     proxy.client.project.listContributed(),
   ]);
 
   return tracked.length + contributed.length;
-};
+}
 
 async function getClaimedIdentity(
   contract: ClaimsContract,

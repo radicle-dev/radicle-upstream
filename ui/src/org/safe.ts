@@ -40,7 +40,10 @@ export async function signAndProposeTransaction(
   safeAddress: string,
   tx: TransactionData
 ): Promise<void> {
+  // Gnosis APIs only accept checksummed addresses.
   safeAddress = ethers.utils.getAddress(safeAddress);
+  tx = { ...tx, to: ethers.utils.getAddress(tx.to) };
+
   const safeServiceClient = createSafeServiceClient(wallet.environment);
   const estimation = await safeServiceClient.estimateSafeTransaction(
     ethers.utils.getAddress(safeAddress),

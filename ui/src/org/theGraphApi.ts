@@ -16,7 +16,7 @@ import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
 import * as wallet from "ui/src/wallet";
 
-const createApolloClient = (uri: string): apolloCore.ApolloClient<unknown> => {
+function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
   return new apolloCore.ApolloClient({
     uri,
     cache: new apolloCore.InMemoryCache(),
@@ -26,9 +26,9 @@ const createApolloClient = (uri: string): apolloCore.ApolloClient<unknown> => {
       },
     },
   });
-};
+}
 
-const gnosisSubgraphClient = (): apolloCore.ApolloClient<unknown> => {
+function gnosisSubgraphClient(): apolloCore.ApolloClient<unknown> {
   const walletStore = svelteStore.get(wallet.store);
   let uri;
   switch (walletStore.environment) {
@@ -47,9 +47,9 @@ const gnosisSubgraphClient = (): apolloCore.ApolloClient<unknown> => {
   }
 
   return createApolloClient(uri);
-};
+}
 
-const orgsSubgraphClient = () => {
+function orgsSubgraphClient() {
   const walletStore = svelteStore.get(wallet.store);
   let uri;
   switch (walletStore.environment) {
@@ -67,7 +67,7 @@ const orgsSubgraphClient = () => {
       break;
   }
   return createApolloClient(uri);
-};
+}
 
 interface GnosisSafeWallet {
   id: string;
@@ -81,7 +81,7 @@ export interface Org {
   timestamp: number;
 }
 
-const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
+async function getGnosisSafeWallets(walletOwnerAddress: string) {
   return await gnosisSubgraphClient().query({
     query: apolloCore.gql`
       query GetGnosisSafeWallets($owners: [String!]!) {
@@ -93,9 +93,9 @@ const getGnosisSafeWallets = async (walletOwnerAddress: string) => {
     `,
     variables: { owners: [walletOwnerAddress] },
   });
-};
+}
 
-export const getOrgs = async (walletOwnerAddress: string): Promise<Org[]> => {
+export async function getOrgs(walletOwnerAddress: string): Promise<Org[]> {
   const gnosisSafeWallets: [GnosisSafeWallet] = (
     await getGnosisSafeWallets(walletOwnerAddress)
   ).data.wallets;
@@ -126,16 +126,16 @@ export const getOrgs = async (walletOwnerAddress: string): Promise<Org[]> => {
     ...org,
     timestamp: Number.parseInt(org.timestamp),
   }));
-};
+}
 
 export interface MemberResponse {
   threshold: number;
   members: string[];
 }
 
-export const getGnosisSafeMembers = async (
+export async function getGnosisSafeMembers(
   walletAddress: string
-): Promise<MemberResponse> => {
+): Promise<MemberResponse> {
   const response = (
     await gnosisSubgraphClient().query({
       query: apolloCore.gql`
@@ -146,16 +146,18 @@ export const getGnosisSafeMembers = async (
           }
         }
       `,
-      variables: { id: walletAddress },
+      // The Gnosis index is case-sensitive and normalised to lower-case safe
+      // IDs.
+      variables: { id: walletAddress.toLowerCase() },
     })
   ).data.wallets[0];
 
   return { members: response.owners, threshold: parseInt(response.threshold) };
-};
+}
 
-export const getOrgProjectAnchors = async (
+export async function getOrgProjectAnchors(
   orgAddress: string
-): Promise<project.Anchor[]> => {
+): Promise<project.Anchor[]> {
   const response = (
     await orgsSubgraphClient().query({
       query: apolloCore.gql`
@@ -203,4 +205,4 @@ export const getOrgProjectAnchors = async (
       return anchor;
     }
   );
-};
+}
