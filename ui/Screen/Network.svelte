@@ -1,4 +1,5 @@
 <script lang="typescript">
+  import { status, StatusType } from "ui/src/localPeer";
   import {
     settings,
     seedValidation,
@@ -14,7 +15,24 @@
     TextInput,
   } from "ui/DesignSystem";
 
-  let seedInputValue = "";
+  const connectedPeerCount = (peers: {
+    [peerId: string]: string[];
+  }): string => {
+    const count = Object.keys(peers).length;
+    return peerCount(count);
+  };
+
+  const peerCount = (count: number) => {
+    if (count === 1) {
+      return "1 peer";
+    } else {
+      return `${count} peers`;
+    }
+  };
+
+  let seedInputValue: string = "";
+  let statusText: string = "";
+  let statusFill: string = "";
 
   const submitSeed = async () => {
     if (await addSeed(seedInputValue)) {
@@ -24,6 +42,29 @@
 
   $: if (seedInputValue === "") {
     seedValidation.reset();
+  }
+
+  $: {
+    if ($status.type === StatusType.Online) {
+      statusText = `You’re connected to ${connectedPeerCount(
+        $status.connectedPeers
+      )}`;
+      statusFill = "var(--color-positive)";
+    } else if ($status.type === StatusType.Syncing) {
+      statusText = `Syncing with ${peerCount(
+        $status.syncs
+      )} to get new content from your network`;
+      statusFill = "var(--color-caution)";
+    } else if (
+      $status.type === StatusType.Offline ||
+      $status.type === StatusType.Started
+    ) {
+      statusText = "You’re not connected to any peers";
+      statusFill = "var(--color-negative)";
+    } else if ($status.type === StatusType.Stopped) {
+      statusText = "The app couldn't start your peer";
+      statusFill = "var(--color-negative)";
+    }
   }
 </script>
 
@@ -79,9 +120,16 @@
   .title {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 32px;
+    margin-bottom: 2rem;
     align-items: flex-end;
     padding: 0 0.75rem;
+  }
+
+  .status {
+    display: flex;
+    background-color: var(--color-foreground-level-1);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
   }
 </style>
 
@@ -89,6 +137,17 @@
   <div class="container">
     <div class="title">
       <h1>Network</h1>
+      <div class="status">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="4" fill={statusFill} />
+        </svg>
+        <p>{statusText}</p>
+      </div>
     </div>
     <section>
       <div class="info">
