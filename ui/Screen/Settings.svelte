@@ -261,10 +261,13 @@
               {#each $settings.coco.seeds as seed (seed)}
                 <div class="seed">
                   <StyledCopyable value={seed} />
-                  <Icon.Cross
+                  <Button
                     dataCy="remove-seed"
+                    style="padding:0.5rem;"
                     on:click={() => removeSeed(seed)}
-                    style="margin-left: 1.5rem; cursor:pointer;" />
+                    variant="transparent">
+                    <Icon.Cross />
+                  </Button>
                 </div>
               {/each}
             </div>

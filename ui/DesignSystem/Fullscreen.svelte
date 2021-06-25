@@ -10,6 +10,8 @@
 
   import Icon from "./Icon";
 
+  import { Button } from "ui/DesignSystem";
+
   export let style = "";
   export let contentStyle = "";
   export let escapable: boolean = true;
@@ -53,8 +55,10 @@
 <svelte:window on:keydown={onKeydown} />
 
 {#if escapable}
-  <div class="close transition transition-big">
-    <Icon.Cross on:click={onClose} />
+  <div class="close transition">
+    <Button style="padding:0.5rem;" on:click={onClose} variant="transparent">
+      <Icon.Cross />
+    </Button>
   </div>
 {/if}
 
