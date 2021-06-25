@@ -84,40 +84,12 @@ function build(
     status: Status.NotConnected,
   });
 
-  function onModalHide(): void {
-    const store = svelteStore.get(stateStore);
-    if (store.status === Status.NotConnected) {
-      reinitWalletConnect();
-    }
-  }
-
-  function newWalletConnect(): WalletConnect {
-    return new WalletConnect({
-      bridge: "https://radicle.bridge.walletconnect.org",
-      qrcodeModal: qrCodeModal,
-    });
-  }
-
   // We need to reinitialize `WalletConnect` until this issue is fixed:
   // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
   function reinitWalletConnect() {
     walletConnect = newWalletConnect();
     signer.walletConnect = walletConnect;
   }
-
-  const qrCodeModal = {
-    open: (uri: string, _cb: unknown, _opts?: unknown) => {
-      modal.toggle(ModalWalletQRCode, onModalHide, {
-        uri,
-      });
-    },
-    close: () => {
-      // N.B: this is actually called when the connection is established,
-      // not when the modal is closed per se.
-      stateStore.set({ status: Status.Connecting });
-      modal.hide();
-    },
-  };
 
   let walletConnect = newWalletConnect();
   const signer = new WalletConnectSigner(
@@ -140,6 +112,10 @@ function build(
     try {
       await walletConnect.connect();
     } catch (e) {
+      if (e.message.includes("User close")) {
+        reinitWalletConnect();
+        return;
+      }
       stateStore.set({ status: Status.NotConnected, error: e });
       error.show(
         new error.Error({
@@ -150,6 +126,7 @@ function build(
           source: error.fromJsError(e),
         })
       );
+      return;
     }
     await initialize();
   }
@@ -229,6 +206,36 @@ function build(
       clearInterval(refreshInterval);
     },
   };
+}
+
+function newWalletConnect(): WalletConnect {
+  // This is set to true if the WalletConnect code closes the modal
+  // instead of the user. This prevents calling back into WalletConnect
+  // with `onClose` and aborting the connection.
+  let modalClosedByWalletConnect = false;
+
+  return new WalletConnect({
+    bridge: "https://radicle.bridge.walletconnect.org",
+    qrcodeModal: {
+      open: (uri: string, onClose, _opts?: unknown) => {
+        modal.toggle(
+          ModalWalletQRCode,
+          () => {
+            if (!modalClosedByWalletConnect) {
+              onClose();
+            }
+          },
+          {
+            uri,
+          }
+        );
+      },
+      close: () => {
+        modalClosedByWalletConnect = true;
+        modal.hide();
+      },
+    },
+  });
 }
 
 export function formattedBalance(balance: number): string {
