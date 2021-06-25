@@ -67,7 +67,7 @@
 <div class="segmented-control">
   {#each options as option}
     <button
-      class="typo-semi-bold transition"
+      class="typo-semi-bold button-transition"
       class:active={option.value === currentlyActive}
       data-cy="segmented-control-option"
       value={option.value}

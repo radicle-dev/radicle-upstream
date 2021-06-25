@@ -47,20 +47,19 @@ a {
   cursor: wait;
 }
 
-.transition {
+.button-transition {
   transition: transform 0.2s ease-in-out;
 }
 
-.transition:hover,
-.transition:checked:hover {
+.button-transition:hover {
   opacity: 0.75;
 }
 
-.transition:active {
+.button-transition:active {
   transform: scale(0.95);
   transition-duration: 0.1s;
 }
 
-.transition-big:active {
+.button-transition-big:active {
   transform: scale(0.9);
 }

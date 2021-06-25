@@ -44,7 +44,7 @@
 </style>
 
 <label class="wrapper">
-  <input type="checkbox" class="transition" bind:checked />
+  <input type="checkbox" class="button-transition" bind:checked />
   <span>
     <slot />
   </span>

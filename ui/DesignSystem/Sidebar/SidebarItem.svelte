@@ -65,7 +65,7 @@
   class:clickable
   data-cy={dataCy}
   on:click|stopPropagation={() => onClick && onClick()}>
-  <div class="transition transition-big" style="display: flex;">
+  <div class="button-transition button-transition-big" style="display: flex;">
     <slot />
   </div>
 </div>

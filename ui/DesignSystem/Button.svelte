@@ -64,15 +64,7 @@
   }
 
   .vanilla.disabled:hover {
-    background-color: var(--color-foreground-level-1);
     box-shadow: 0 0 0 0;
-    border-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-3);
-    transform: scale(1);
-  }
-
-  .vanilla.disabled:active {
-    background-color: var(--color-foreground-level-1);
     border-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-3);
   }
@@ -87,28 +79,13 @@
     color: var(--color-background);
   }
 
-  .primary:hover {
-    border-color: var(--color-primary);
-    color: var(--color-background);
-  }
-
   .primary.disabled {
     opacity: 0.25;
     cursor: not-allowed;
   }
 
-  .primary.disabled:hover {
-    transform: scale(1);
-  }
-
   .primary.disabled :global(svg) {
     fill: var(--color-background);
-  }
-
-  .primary.disabled:active {
-    background-color: var(--color-primary-level-1);
-    border-color: var(--color-primary-level-1);
-    color: var(--color-background);
   }
 
   .transparent {
@@ -140,12 +117,6 @@
     border-color: transparent;
     color: var(--color-foreground-level-3);
     transform: scale(1);
-  }
-
-  .transparent.disabled:active {
-    background-color: rgba(var(--color-background), 0);
-    border-color: transparent;
-    color: var(--color-foreground-level-3);
   }
 
   .transparent.disabled :global(svg) {
@@ -183,12 +154,6 @@
     transform: scale(1);
   }
 
-  .outline.disabled:active {
-    background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-3);
-  }
-
   .outline.disabled :global(svg) {
     fill: var(--color-foreground-level-3);
   }
@@ -220,12 +185,6 @@
 
   .destructive.disabled :global(svg) {
     fill: var(--color-background);
-  }
-
-  .destructive.disabled:active {
-    background-color: var(--color-negative-level-1);
-    border-color: var(--color-negative-level-1);
-    color: var(--color-background);
   }
 
   .embedded {
@@ -269,7 +228,7 @@
 
 <button
   data-cy={dataCy}
-  class="button typo-text-bold {buttonClass} transition"
+  class="button typo-text-bold {buttonClass} button-transition"
   {title}
   {disabled}
   on:click

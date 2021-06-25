@@ -133,7 +133,7 @@
 <Overlay {expanded} on:hide={hideMenu}>
   <div data-cy={dataCy} class="dropdown" {style}>
     <div
-      class="button transition"
+      class="button button-transition"
       class:invalid={!valid}
       class:disabled
       on:click={toggleMenu}>
