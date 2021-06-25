@@ -133,7 +133,7 @@
 <Overlay {expanded} on:hide={hideModal}>
   <div data-cy={dataCy} class="container" {style}>
     <button
-      class="additional-actions-dropdown-button transition"
+      class="additional-actions-dropdown-button button-transition"
       bind:this={triggerEl}
       on:click|stopPropagation={toggleModal}>
       <svelte:component this={Icon.Ellipsis} />
