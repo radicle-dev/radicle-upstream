@@ -28,15 +28,13 @@ export class WalletConnectSigner extends ethers.Signer {
   constructor(
     walletConnect: WalletConnect,
     provider: Provider,
-    environment: Environment,
-    onDisconnect: () => void
+    environment: Environment
   ) {
     super();
     defineReadOnly(this, "provider", provider);
     this._provider = provider;
     this._environment = environment;
     this.walletConnect = walletConnect;
-    this.walletConnect.on("disconnect", onDisconnect);
   }
 
   async getAddress(): Promise<string> {

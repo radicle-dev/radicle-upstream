@@ -101,8 +101,13 @@ function build(
   // We need to reinitialize `WalletConnect` until this issue is fixed:
   // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
   function reinitWalletConnect() {
+    // We should remove the `disconnect` listener from the previous
+    // instance but WalletConnect does not yet support this.
+    //
+    // https://github.com/WalletConnect/walletconnect-monorepo/issues/340
     walletConnect = newWalletConnect();
     signer.walletConnect = walletConnect;
+    walletConnect.on("disconnect", disconnected);
   }
 
   const qrCodeModal = {
@@ -120,12 +125,14 @@ function build(
   };
 
   let walletConnect = newWalletConnect();
-  const signer = new WalletConnectSigner(
-    walletConnect,
-    provider,
-    environment,
-    disconnect
-  );
+  walletConnect.on("disconnect", disconnected);
+
+  function disconnected() {
+    stateStore.set({ status: Status.NotConnected });
+    reinitWalletConnect();
+  }
+
+  const signer = new WalletConnectSigner(walletConnect, provider, environment);
   const daiTokenContract = daiToken.connect(
     signer,
     daiToken.daiTokenAddress(environment)
@@ -155,14 +162,13 @@ function build(
   }
 
   async function disconnect() {
+    // This will emit the `disconnect` event on the WalletConnect
+    // instance and call `disconnected()`.
     await walletConnect.killSession().catch(() => {
       // When the user disconnects wallet-side, calling `killSession`
       // app-side trows an error because the wallet has already closed
       // its socket. Therefore, we simply ignore it.
     });
-
-    stateStore.set({ status: Status.NotConnected });
-    reinitWalletConnect();
   }
 
   async function initialize() {
