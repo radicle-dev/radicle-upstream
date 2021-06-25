@@ -116,24 +116,32 @@ export async function anchorProject(
     persist: true,
   });
 
-  await Safe.signAndProposeTransaction(walletStore, gnosisSafeAddress, {
-    to: orgAddress,
-    value: "0",
-    data: txData,
-    operation: OperationType.Call,
-  });
-  confirmNotification.remove();
+  try {
+    await Safe.signAndProposeTransaction(walletStore, gnosisSafeAddress, {
+      to: orgAddress,
+      value: "0",
+      data: txData,
+      operation: OperationType.Call,
+    });
+  } finally {
+    confirmNotification.remove();
+  }
 
   notification.info({
     message:
       "Your anchored project will appear once the quorum of members have confirmed the transaction",
     showIcon: true,
+    persist: true,
     actions: [
       {
         label: "View on Gnosis Safe",
         handler: () => {
           openOnGnosisSafe(gnosisSafeAddress, "transactions");
         },
+      },
+      {
+        label: "Dismiss",
+        handler: () => {},
       },
     ],
   });
@@ -152,12 +160,17 @@ export async function createOrg(owner: string): Promise<void> {
     showIcon: true,
     persist: true,
   });
-  const response = await Contract.submitCreateOrgTx(
-    walletStore.environment,
-    owner,
-    walletStore.signer
-  );
-  confirmNotification.remove();
+
+  let response;
+  try {
+    response = await Contract.submitCreateOrgTx(
+      walletStore.environment,
+      owner,
+      walletStore.signer
+    );
+  } finally {
+    confirmNotification.remove();
+  }
   pendingOrgs.update(x => x + 1);
 
   transaction.add(transaction.createOrg(response));
