@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import * as svelteStore from "svelte/store";
+
   import { status } from "ui/src/localPeer";
   import { indicatorState } from "ui/src/network";
   import {
@@ -23,6 +25,8 @@
     TextInput,
   } from "ui/DesignSystem";
 
+  const indicatorStatus = svelteStore.derived(status, indicatorState);
+
   let seedInputValue: string = "";
 
   const submitSeed = async () => {
@@ -33,16 +37,6 @@
 
   $: if (seedInputValue === "") {
     seedValidation.reset();
-  }
-
-  let statusText: string = "";
-  let statusFill: string = "";
-  $: {
-    const state = indicatorState($status);
-    if (state) {
-      statusText = state.text;
-      statusFill = state.fill;
-    }
   }
 </script>
 
@@ -55,28 +49,26 @@
   }
 
   section {
-    align-items: center;
     margin-bottom: 24px;
     padding: 0 12px;
   }
 
   .seed-entry-form {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    margin-top: 1rem;
   }
 
   .seed-entry-field {
     width: 100%;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .seeds {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
+    flex-direction: column;
     margin-top: 1.5rem;
     width: 100%;
   }
@@ -122,9 +114,9 @@
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="4" fill={statusFill} />
+          <circle cx="12" cy="12" r="4" fill={$indicatorStatus.fill} />
         </svg>
-        <p>{statusText}</p>
+        <p>{$indicatorStatus.text}</p>
       </div>
     </div>
     <section>
@@ -132,8 +124,7 @@
         <p class="typo-text-bold">
           Seeds help you find projects and users on the network.
         </p>
-        <p
-          style="color: var(--color-foreground-level-6); margin-bottom: 2v4px;">
+        <p style="color: var(--color-foreground-level-6);">
           Enter seed addresses that you’d like to connect to here.
           <a
             style="color: var(--color-foreground-level-5);"
@@ -151,11 +142,10 @@
             dataCy="seed-input"
             bind:value={seedInputValue}
             placeholder="Enter a seed address here"
-            style="margin-right: 8px; min-width: 224px; width: 100%;"
+            style="min-width: 14rem; width: 100%;"
             validation={$seedValidation} />
           <Button
             dataCy="add-seed"
-            style="display: flex;"
             on:click={submitSeed}
             disabled={!seedInputValue}
             variant="outline">
