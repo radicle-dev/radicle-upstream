@@ -6,6 +6,8 @@
 
 import { Readable, derived, get } from "svelte/store";
 
+import { retryFetch } from "ui/src/retryOnError";
+
 import * as proxy from "./proxy";
 import * as error from "./error";
 import type * as identity from "./identity";
@@ -93,7 +95,7 @@ export const settings: Readable<Settings> = derived(sessionStore, sess => {
 
 const fetchSession = async (): Promise<void> => {
   try {
-    const ses = await proxy.withRetry(() => proxy.client.sessionGet(), 100, 50);
+    const ses = await retryFetch(() => proxy.client.sessionGet(), 100, 50);
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
   } catch (err) {
     if (err instanceof proxy.ResponseError) {
