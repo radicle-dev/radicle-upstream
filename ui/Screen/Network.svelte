@@ -122,7 +122,7 @@
     <section>
       <div class="info">
         <p class="typo-text-bold">
-          Seeds help you find projects and users on the network.
+          Seeds help you find more projects and people on the network.
         </p>
         <p style="color: var(--color-foreground-level-6);">
           Enter seed addresses that you’d like to connect to here.
