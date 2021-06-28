@@ -9,9 +9,8 @@
   import { isDev } from "../src/config";
 
   import * as hotkeys from "../src/hotkeys";
-  import { Variant as IllustrationVariant } from "../src/illustration";
 
-  import { Illustration, KeyHint, Modal } from "ui/DesignSystem";
+  import { Emoji, KeyHint, Modal } from "ui/DesignSystem";
 
   const shortcuts = [
     ...hotkeys.shortcuts,
@@ -42,9 +41,7 @@
 </style>
 
 <Modal dataCy="hotkey-modal">
-  <Illustration
-    style="margin-bottom: 1.5rem;"
-    variant={IllustrationVariant.Keyboard} />
+  <Emoji emoji="⌨️" size="huge" style="margin-bottom: 1rem" />
   <h1>Keyboard shortcuts</h1>
   <div class="shortcuts">
     {#each shortcuts as shortcut}
