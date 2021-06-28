@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import { fly } from "svelte/transition";
+
   import { Emoji } from "ui/DesignSystem";
   export let dataCy: string = "";
   export let style: string = "";
@@ -39,7 +41,10 @@
   }
 </style>
 
-<div class="container" data-cy={dataCy}>
+<div
+  class="container"
+  data-cy={dataCy}
+  transition:fly={{ y: 1000, duration: 300 }}>
   {#if emoji}
     <Emoji {emoji} size="huge" style="margin-bottom: 1rem;" />
   {/if}
