@@ -247,8 +247,8 @@
         {#if poolData.receivers.size === 0}
           <p>
             Add receivers to your outgoing support by clicking the “Support”
-            button on user profiles. You can also add any Ethereum address to
-            your Stream.
+            button on someone’s profile. You can also add any Ethereum address
+            to your Stream.
             <!-- svelte-ignore a11y-missing-attribute -->
             <a
               hidden={editing}
@@ -290,7 +290,7 @@
         {#if paused}
           <Icon.ExclamationCircle />Your support is paused. To resume, make sure
           you have enough balance and a montly budget set to be split amongst
-          the users you support.
+          the people you support.
         {:else}
           <Icon.InfoCircle />
           To stop or pause your support, set the weekly budget to 0 or withdraw all
