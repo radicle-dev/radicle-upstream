@@ -247,7 +247,7 @@
         {#if poolData.receivers.size === 0}
           <p>
             Add receivers to your outgoing support by clicking the “Support”
-            button on people's profiles. You can also add any Ethereum address
+            button on someone’s profile. You can also add any Ethereum address
             to your Stream.
             <!-- svelte-ignore a11y-missing-attribute -->
             <a
