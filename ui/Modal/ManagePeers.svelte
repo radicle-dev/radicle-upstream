@@ -18,14 +18,7 @@
   } from "../src/screen/project";
   import type { Urn } from "../src/urn";
 
-  import {
-    Button,
-    Emoji,
-    List,
-    Modal,
-    Remote,
-    TextInput,
-  } from "ui/DesignSystem";
+  import { Button, List, Modal, Remote, TextInput } from "ui/DesignSystem";
 
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
@@ -78,13 +71,11 @@
 </style>
 
 <Remote {store} let:data={{ peerSelection, project }}>
-  <Modal dataCy="remotes-modal">
-    <Emoji emoji={"💻"} size="huge" style="margin-bottom: 1.5rem;" />
-    <h1>Edit remotes</h1>
-    <p style="margin-top: 0.5rem; color: var(--color-foreground-level-6);">
-      Add a user’s Device ID to collaborate with them on this project.
-    </p>
-
+  <Modal
+    dataCy="remotes-modal"
+    emoji="💻"
+    title="Edit remotes"
+    desc="Add a user’s Device ID to collaborate with them on this project.">
     <form class="peer-entry-form" on:submit|preventDefault>
       <div class="peer-entry-field">
         <TextInput

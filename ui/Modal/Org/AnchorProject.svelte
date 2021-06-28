@@ -16,7 +16,6 @@
   import {
     Button,
     Dropdown,
-    Emoji,
     Modal,
     PeerSelector,
     RevisionSelector,
@@ -142,10 +141,7 @@
   }
 </style>
 
-<Modal>
-  <Emoji emoji={"🏖️"} size="huge" style="margin-bottom: 1.5rem;" />
-  <h1 style="margin-bottom: 1.5rem;">Anchor a project</h1>
-
+<Modal emoji="🏖️" title="Anchor a project">
   <div style="width: 100%; margin-bottom: 1.5rem;">
     <Dropdown
       bind:value={selectedProjectUrn}

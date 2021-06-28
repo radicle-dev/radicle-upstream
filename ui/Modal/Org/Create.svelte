@@ -8,7 +8,7 @@
 <script lang="typescript">
   import type { Identity } from "ui/src/identity";
 
-  import { Avatar, Button, Copyable, Emoji, Modal } from "ui/DesignSystem";
+  import { Avatar, Button, Copyable, Modal } from "ui/DesignSystem";
 
   import * as org from "ui/src/org";
   import { ellipsed } from "ui/src/style";
@@ -42,14 +42,11 @@
   }
 </style>
 
-<Modal>
-  <Emoji emoji={"🎪"} size="huge" style="margin-bottom: 1.5rem;" />
-  <h1>Create a new org</h1>
-  <p
-    style="margin: 0.5rem 0 1.5rem; color: var(--color-foreground-level-6); text-align: center;">
-    This will create a gnosis safe that manages the org contract where wallet
-    you’ve connected to upstream will be the first member.
-  </p>
+<Modal
+  emoji="🎪"
+  title="Create a new org"
+  desc="This will create a gnosis safe that manages the org contract where wallet
+you’ve connected to upstream will be the first member.">
   <p class="typo-text-bold" style="padding: 0 0 0.5rem 1rem; width: 100%;">
     First member
   </p>
