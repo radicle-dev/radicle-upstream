@@ -13,6 +13,7 @@
   export let variant: Variant = "primary";
 
   export let disabled: boolean = false;
+  export let transition: boolean = true;
   export let icon: typeof SvelteComponent | undefined = undefined;
   export let style = "";
   export let dataCy = "";
@@ -21,7 +22,8 @@
   $: buttonClass = [
     variant,
     icon && "icon",
-    disabled ? "disabled" : "button-transition",
+    disabled && "disabled",
+    transition && !disabled ? "button-transition" : "",
   ].join(" ");
 </script>
 

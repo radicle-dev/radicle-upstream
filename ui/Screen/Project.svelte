@@ -127,20 +127,23 @@
           })} />
 
       <div slot="right" style="display: flex;">
-        <PeerSelector
-          peers={peerSelection}
-          on:modal={onPeerModal}
-          on:open={onOpenPeer}
-          on:select={onSelectPeer}
-          selected={selectedPeer} />
-        <Button
-          dataCy="manage-remotes"
-          icon={Icon.Pen}
-          variant="outline"
-          on:click={onPeerModal}
-          on:mouseenter={mouseenter}
-          on:mouseleave={mouseleave}
-          style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
+        <div style="display: flex;" class="button-transition">
+          <PeerSelector
+            peers={peerSelection}
+            on:modal={onPeerModal}
+            on:open={onOpenPeer}
+            on:select={onSelectPeer}
+            selected={selectedPeer} />
+          <Button
+            dataCy="manage-remotes"
+            icon={Icon.Pen}
+            variant="outline"
+            transition={false}
+            on:click={onPeerModal}
+            on:mouseenter={mouseenter}
+            on:mouseleave={mouseleave}
+            style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
+        </div>
         <ThreeDotsMenu menuItems={menuItems(project)} />
       </div>
     </Header>
