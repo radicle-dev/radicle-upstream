@@ -110,8 +110,8 @@
   }
 </style>
 
-{#if tx}
-  <Modal emoji={emoji(tx)} title={tx.kind}>
+<Modal emoji={emoji(tx)} title={tx.kind}>
+  {#if tx}
     <header>
       <Summary {tx} />
       {#if !(tx.kind === TxKind.ClaimRadicleIdentity || tx.kind === TxKind.CreateOrg)}
@@ -180,5 +180,5 @@
         </div>
       </div>
     </div>
-  </Modal>
-{/if}
+  {/if}
+</Modal>
