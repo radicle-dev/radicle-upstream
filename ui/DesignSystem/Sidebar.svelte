@@ -89,7 +89,10 @@
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
-      <SidebarItem dataCy="search" onClick={() => modal.toggle(ModalSearch)}>
+      <SidebarItem
+        dataCy="search"
+        indicator
+        onClick={() => modal.toggle(ModalSearch)}>
         <Icon.MagnifyingGlass />
       </SidebarItem>
     </Tooltip>

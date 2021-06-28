@@ -111,7 +111,7 @@
 <div class="container" {style}>
   <Overlay {expanded} on:hide={hide}>
     <div
-      class="revision-selector"
+      class="revision-selector button-transition"
       data-cy="revision-selector"
       data-revision={selected.name}
       hidden={expanded}

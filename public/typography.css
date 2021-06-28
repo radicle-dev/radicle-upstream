@@ -104,11 +104,11 @@ p,
 
 .typo-link:hover,
 .typo-link:focus {
-  color: var(--color-primary-level-2);
+  opacity: 0.75;
 }
 
 .typo-link:active {
-  color: var(--color-primary-level-6);
+  opacity: 0.5;
 }
 
 /* Modifiers */
