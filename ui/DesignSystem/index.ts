@@ -25,7 +25,6 @@ import Header from "./Header.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Icon from "./Icon";
 import Identity from "./Identity.svelte";
-import Illustration from "./Illustration.svelte";
 import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
 import List from "./List.svelte";
@@ -86,7 +85,6 @@ export {
   Hoverable,
   Icon,
   Identity,
-  Illustration,
   KeyHint,
   Label,
   List,

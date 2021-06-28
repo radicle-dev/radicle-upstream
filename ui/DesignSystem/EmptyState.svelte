@@ -8,18 +8,15 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { Variant as IllustrationVariant } from "ui/src/illustration";
   import * as Style from "ui/src/style";
 
   import Button from "./Button.svelte";
   import Emoji from "./Emoji.svelte";
-  import Illustration from "./Illustration.svelte";
   import Tooltip from "./Tooltip.svelte";
 
   const dispatch = createEventDispatcher();
 
   export let style: string = "";
-  export let illustration: IllustrationVariant = IllustrationVariant.Plant;
   export let emoji: string = "";
   export let text: string = "Nothing to see here";
   export let headerText: string = "";
@@ -78,8 +75,6 @@
 <div class="empty-state" data-cy="empty-state" {style}>
   {#if emoji.length}
     <Emoji {emoji} size="huge" />
-  {:else}
-    <Illustration variant={illustration} />
   {/if}
   {#if headerText.length}
     <h3>{headerText}</h3>
