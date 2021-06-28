@@ -99,6 +99,10 @@
     background-color: var(--color-background);
   }
 
+  .button.disabled:hover {
+    transform: none;
+  }
+
   .menu {
     position: absolute;
     top: 0px;
@@ -129,7 +133,7 @@
 <Overlay {expanded} on:hide={hideMenu}>
   <div data-cy={dataCy} class="dropdown" {style}>
     <div
-      class="button"
+      class="button button-transition"
       class:invalid={!valid}
       class:disabled
       on:click={toggleMenu}>
@@ -141,7 +145,7 @@
         </p>
       {/if}
       <Icon.ChevronUpDown
-        style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()}`} />
+        style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()};`} />
     </div>
 
     <div style={menuStyle} class="menu" hidden={!expanded}>

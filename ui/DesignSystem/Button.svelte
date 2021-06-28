@@ -13,12 +13,18 @@
   export let variant: Variant = "primary";
 
   export let disabled: boolean = false;
+  export let transition: boolean = true;
   export let icon: typeof SvelteComponent | undefined = undefined;
   export let style = "";
   export let dataCy = "";
   export let title = "";
 
-  $: buttonClass = [variant, icon && "icon", disabled && "disabled"].join(" ");
+  $: buttonClass = [
+    variant,
+    icon && "icon",
+    disabled && "disabled",
+    transition && !disabled ? "button-transition" : "",
+  ].join(" ");
 </script>
 
 <style>
@@ -53,16 +59,7 @@
   }
 
   .vanilla:hover {
-    background-color: var(--color-foreground-level-2);
-    border-color: var(--color-foreground-level-2);
-  }
-
-  .vanilla:active {
-    color: var(--color-foreground-level-5);
-  }
-
-  .vanilla:active :global(svg) {
-    fill: var(--color-foreground-level-5);
+    border-color: var(--color-foreground-level-3);
   }
 
   .vanilla.disabled {
@@ -73,14 +70,7 @@
   }
 
   .vanilla.disabled:hover {
-    background-color: var(--color-foreground-level-1);
     box-shadow: 0 0 0 0;
-    border-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-3);
-  }
-
-  .vanilla.disabled:active {
-    background-color: var(--color-foreground-level-1);
     border-color: var(--color-foreground-level-1);
     color: var(--color-foreground-level-3);
   }
@@ -95,44 +85,13 @@
     color: var(--color-background);
   }
 
-  .primary:hover {
-    background-color: var(--color-primary-level-2);
-    border-color: var(--color-primary-level-2);
-    color: var(--color-background);
-  }
-
-  .primary:active {
-    background-color: var(--color-primary-level-2);
-    border-color: var(--color-primary-level-2);
-    color: var(--color-primary-level-1);
-  }
-
-  .primary:active :global(svg) {
-    fill: var(--color-primary-level-1);
-  }
-
   .primary.disabled {
-    background-color: var(--color-primary-level-1);
-    border-color: var(--color-primary-level-1);
-    color: var(--color-background);
+    opacity: 0.25;
     cursor: not-allowed;
-  }
-
-  .primary.disabled:hover {
-    background-color: var(--color-primary-level-1);
-    box-shadow: 0 0 0 0;
-    border-color: var(--color-primary-level-1);
-    color: var(--color-background);
   }
 
   .primary.disabled :global(svg) {
     fill: var(--color-background);
-  }
-
-  .primary.disabled:active {
-    background-color: var(--color-primary-level-1);
-    border-color: var(--color-primary-level-1);
-    color: var(--color-background);
   }
 
   .transparent {
@@ -151,16 +110,6 @@
     color: var(--color-foreground-level-6);
   }
 
-  .transparent:active {
-    background-color: var(--color-foreground-level-2);
-    border-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-5);
-  }
-
-  .transparent:active :global(svg) {
-    fill: var(--color-foreground-level-5);
-  }
-
   .transparent.disabled {
     background-color: rgba(var(--color-background), 0);
     border-color: transparent;
@@ -173,12 +122,7 @@
     box-shadow: 0 0 0 0;
     border-color: transparent;
     color: var(--color-foreground-level-3);
-  }
-
-  .transparent.disabled:active {
-    background-color: rgba(var(--color-background), 0);
-    border-color: transparent;
-    color: var(--color-foreground-level-3);
+    transform: scale(1);
   }
 
   .transparent.disabled :global(svg) {
@@ -201,16 +145,6 @@
     color: var(--color-foreground-level-6);
   }
 
-  .outline:active {
-    background-color: var(--color-foreground-level-1);
-    border-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-5);
-  }
-
-  .outline:active :global(svg) {
-    fill: var(--color-foreground-level-4);
-  }
-
   .outline.disabled {
     background-color: rgba(var(--color-background), 0);
     border-color: var(--color-foreground-level-2);
@@ -223,12 +157,7 @@
     box-shadow: 0 0 0 0;
     border-color: var(--color-foreground-level-2);
     color: var(--color-foreground-level-3);
-  }
-
-  .outline.disabled:active {
-    background-color: rgba(var(--color-background), 0);
-    border-color: var(--color-foreground-level-2);
-    color: var(--color-foreground-level-3);
+    transform: scale(1);
   }
 
   .outline.disabled :global(svg) {
@@ -242,19 +171,7 @@
   }
 
   .destructive:hover {
-    background-color: var(--color-negative-level-2);
-    border-color: var(--color-negative-level-2);
     color: var(--color-background);
-  }
-
-  .destructive:active {
-    background-color: var(--color-negative-level-2);
-    border-color: var(--color-negative-level-2);
-    color: var(--color-negative-level-1);
-  }
-
-  .destructive:active :global(svg) {
-    fill: var(--color-negative-level-1);
   }
 
   .destructive.disabled {
@@ -269,16 +186,11 @@
     box-shadow: 0 0 0 0;
     border-color: var(--color-negative-level-1);
     color: var(--color-background);
+    transform: scale(1);
   }
 
   .destructive.disabled :global(svg) {
     fill: var(--color-background);
-  }
-
-  .destructive.disabled:active {
-    background-color: var(--color-negative-level-1);
-    border-color: var(--color-negative-level-1);
-    color: var(--color-background);
   }
 
   .embedded {

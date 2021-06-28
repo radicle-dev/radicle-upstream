@@ -49,7 +49,7 @@
       value={`Network • You’re connected to ${connectedPeerCount(
         $status.connectedPeers
       )}`}>
-      <div class="item indicator" data-cy="connection-status-online">
+      <div class="item" data-cy="connection-status-online">
         <Icon.Network />
       </div>
     </Tooltip>
@@ -58,19 +58,19 @@
       value={`Network • Syncing with ${peerCount(
         $status.syncs
       )} to get new content from your network`}>
-      <div class="item indicator" data-cy="connection-status-syncing">
+      <div class="item" data-cy="connection-status-syncing">
         <Syncing />
       </div>
     </Tooltip>
   {:else if $status.type === StatusType.Offline || $status.type === StatusType.Started}
     <Tooltip value="Network • You’re not connected to any peers">
-      <div class="item indicator" data-cy="connection-status-offline">
+      <div class="item" data-cy="connection-status-offline">
         <Offline />
       </div>
     </Tooltip>
   {:else if $status.type === StatusType.Stopped}
     <Tooltip value="Network • The app couldn't start your peer">
-      <div class="item indicator" data-cy="connection-status-stopped">
+      <div class="item" data-cy="connection-status-stopped">
         <Offline style="fill: var(--color-negative);" />
       </div>
     </Tooltip>

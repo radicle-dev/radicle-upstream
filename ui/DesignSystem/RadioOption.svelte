@@ -45,7 +45,7 @@
   }
 </style>
 
-<div class="option" class:active data-cy={dataCy}>
+<div class="option button-transition" class:active data-cy={dataCy}>
   <div class="header" on:click>
     <p class="typo-text-bold" style="color: var(--color-foreground-level-6)">
       {title}

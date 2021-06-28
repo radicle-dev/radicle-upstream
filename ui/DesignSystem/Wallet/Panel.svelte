@@ -12,6 +12,7 @@
 
   import * as wallet from "ui/src/wallet";
   import { ellipsed } from "ui/src/style";
+  import { Button } from "ui/DesignSystem";
 
   export let account: wallet.Account;
   export let onDisconnect: () => void;
@@ -82,9 +83,12 @@
       {ellipsed(account.address)}
     </Copyable>
     <Tooltip value="Disconnect">
-      <Icon.Cross
+      <Button
+        style="padding:0.5rem;"
         on:click={onDisconnect}
-        style="cursor: pointer; margin-top: 4px;" />
+        variant="transparent">
+        <Icon.Cross />
+      </Button>
     </Tooltip>
   </div>
 </div>

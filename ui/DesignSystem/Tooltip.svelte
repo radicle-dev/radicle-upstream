@@ -75,7 +75,6 @@
       style={`top: ${tooltip.y}px; left: ${tooltip.x}px;`}>
       <p>{value}</p>
     </div>
-    <span class="triangle" />
   </div>
 {:else}
   <slot />
