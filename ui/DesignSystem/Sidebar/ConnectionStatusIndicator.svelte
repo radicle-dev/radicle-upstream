@@ -18,7 +18,7 @@
   const indicatorStatus = svelteStore.derived(status, indicatorState);
 </script>
 
-<div>
+<div data-cy="network">
   <Tooltip value={$indicatorStatus.text}>
     <SidebarItem
       dataCy={$indicatorStatus.cy}
