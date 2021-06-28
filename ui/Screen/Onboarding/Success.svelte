@@ -52,7 +52,7 @@
     display: flex;
     width: 100%;
     gap: 1rem;
-    justify-content: flex-end;
+    justify-content: center;
   }
 </style>
 
