@@ -225,7 +225,7 @@
         </header>
         <div class="section-item-single">
           <p class="typo-text-bold">
-            Seeds help you find projects and users on the network.
+            Seeds help you find more projects and people on the network.
           </p>
           <p
             style="color: var(--color-foreground-level-6); margin-bottom: 1.5rem;">
