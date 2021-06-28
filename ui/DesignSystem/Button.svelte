@@ -18,7 +18,11 @@
   export let dataCy = "";
   export let title = "";
 
-  $: buttonClass = [variant, icon && "icon", disabled && "disabled"].join(" ");
+  $: buttonClass = [
+    variant,
+    icon && "icon",
+    disabled ? "disabled" : "button-transition",
+  ].join(" ");
 </script>
 
 <style>
@@ -228,7 +232,7 @@
 
 <button
   data-cy={dataCy}
-  class="button typo-text-bold {buttonClass} button-transition"
+  class="button typo-text-bold {buttonClass}"
   {title}
   {disabled}
   on:click
