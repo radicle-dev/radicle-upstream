@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script>
-  import { Variant as IllustrationVariant } from "../src/illustration.ts";
   import * as notification from "../src/notification.ts";
   import { CSSPosition } from "../src/style";
   import { ValidationStatus } from "../src/validation.ts";
@@ -23,7 +22,6 @@
     FollowToggle,
     Fullscreen,
     Icon,
-    Illustration,
     Notification,
     PasswordInput,
     ProjectCard,
@@ -255,26 +253,6 @@
           </Tooltip>
         {/each}
       </IconSwatch>
-    </Section>
-
-    <Section title="Illustrations" subTitle="Scaleable illustrations">
-      <Swatch>
-        {#each Object.keys(IllustrationVariant) as key}
-          <Tooltip
-            value={`<Illustration variant={IllustrationVariant.${key}} />`}
-            position="top">
-            <Copyable
-              notificationText="Illustration markup copied to your clipboard"
-              iconBeforeCopy={null}
-              styleContent={false}
-              copyContent={`<Illustration variant={IllustrationVariant.${key}} />`}>
-              <Illustration
-                style="margin-right: 2em;"
-                variant={IllustrationVariant[key]} />
-            </Copyable>
-          </Tooltip>
-        {/each}
-      </Swatch>
     </Section>
 
     <Section
@@ -845,9 +823,7 @@
       </Swatch>
 
       <Swatch>
-        <EmptyState
-          illustration={IllustrationVariant.Plant}
-          primaryActionText="Take some action!" />
+        <EmptyState emoji="🪴" primaryActionText="Take some action!" />
         <EmptyState emoji="👀" secondaryActionText="Take some other action!" />
         <EmptyState
           emoji="🔭"

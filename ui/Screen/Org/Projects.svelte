@@ -17,7 +17,6 @@
   import * as org from "ui/src/org";
 
   import { EmptyState, ProjectList } from "ui/DesignSystem";
-  import { Variant as IllustrationVariant } from "ui/src/illustration";
 
   const session = sess.getUnsealedFromContext();
 
@@ -54,7 +53,7 @@
     <UnresolvedAnchorList anchors={unresolvedAnchors} />
   {:else}
     <EmptyState
-      illustration={IllustrationVariant.Plant}
+      emoji="🪴"
       text="Get started by anchoring your organization’s first project with the radicle gnosis safe app."
       primaryActionText="Anchor with Gnosis Safe"
       primaryActionDisabled={disableAnchorCreation}
