@@ -10,27 +10,24 @@ import * as api from "./api";
 import * as error from "./error";
 import type { PeerId } from "./identity";
 import type { Urn } from "./urn";
-
+import * as proxy from "./proxy";
+import type {
+  Blob,
+  RevisionSelector,
+  Branch,
+  Tag,
+  SourceObject,
+  Person,
+  CommitHeader,
+} from "./proxy/source";
+import { RevisionType } from "./proxy/source";
 import type * as diff from "./source/diff";
+
+export type { Blob, RevisionSelector, Branch, Tag, Person, CommitHeader };
+export { RevisionType };
 
 // TYPES
 export type Sha1 = string;
-
-export interface Person {
-  avatar: string;
-  email: string;
-  name: string;
-}
-
-export interface CommitHeader {
-  author: Person;
-  committer: Person;
-  committerTime: number;
-  description: string;
-  sha1: Sha1;
-  summary: string;
-}
-
 export interface CommitStats {
   additions: number;
   deletions: number;
@@ -70,32 +67,13 @@ export enum ObjectType {
   Tree = "TREE",
 }
 
-interface Info {
-  name: string;
-  objectType: ObjectType;
-  lastCommit: CommitHeader;
-}
-
 export interface LocalState {
   branches: string[];
   managed: boolean;
 }
 
-export interface SourceObject {
-  path: string;
-  info: Info;
-}
-
-export interface Blob extends SourceObject {
-  binary?: boolean;
-  html?: boolean;
-  content: string;
-}
-
 export interface Tree extends SourceObject {
   entries: SourceObject[];
-  info: Info;
-  path: string;
 }
 
 export interface Readme {
@@ -107,29 +85,6 @@ export interface Revisions {
   branches: Branch[];
   tags: Tag[];
 }
-
-export enum RevisionType {
-  Branch = "branch",
-  Tag = "tag",
-  Sha = "sha",
-}
-
-export interface Branch {
-  type: RevisionType.Branch;
-  name: string;
-}
-
-export interface Tag {
-  type: RevisionType.Tag;
-  name: string;
-}
-
-export interface Sha {
-  type: RevisionType.Sha;
-  sha: string;
-}
-
-export type Revision = Branch | Tag | Sha;
 
 export interface SelectedPath {
   request: AbortController | null;
@@ -145,19 +100,20 @@ export const fetchBlob = async (
   projectUrn: Urn,
   peerId: string,
   path: string,
-  revision: Revision,
+  revision: RevisionSelector,
   highlight?: boolean,
   signal?: AbortSignal
 ): Promise<Blob> => {
-  return api.get<Blob>(`source/blob/${projectUrn}`, {
-    query: {
+  return proxy.client.source.blobGet(
+    {
+      projectUrn,
       path: encodeURIComponent(path),
       peerId,
-      revision: { peerId, ...revision },
-      highlight: highlight && highlight && !isMarkdown(path),
+      revision,
+      highlight: highlight && !isMarkdown(path),
     },
-    signal,
-  });
+    { abort: signal }
+  );
 };
 
 export const fetchBranches = (
@@ -184,7 +140,7 @@ export const fetchCommit = (projectUrn: Urn, sha1: Sha1): Promise<Commit> => {
 export const fetchCommits = (
   projectUrn: Urn,
   peerId: PeerId,
-  revision: Revision
+  revision: RevisionSelector
 ): Promise<CommitsHistory> => {
   return api
     .get<Commits>(`source/commits/${projectUrn}/`, {
@@ -203,7 +159,7 @@ export const fetchCommits = (
 export const fetchReadme = async (
   projectUrn: Urn,
   peerId: PeerId,
-  revision: Revision,
+  revision: RevisionSelector,
   tree: Tree,
   signal?: AbortSignal
 ): Promise<Readme | null> => {
@@ -221,13 +177,16 @@ export const fetchReadme = async (
       false,
       signal
     );
-    if (blob && !blob.binary) {
-      return blob;
+    if (blob && !blob.binary && blob.content) {
+      return {
+        path: blob.path,
+        content: blob.content,
+      };
     } else {
       return null;
     }
   } catch (err) {
-    error.log(err);
+    error.log(error.fromUnknown(err));
     return null;
   }
 };
@@ -261,7 +220,7 @@ export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
 export const fetchTree = (
   projectUrn: Urn,
   peerId: PeerId,
-  revision: Revision,
+  revision: RevisionSelector,
   prefix: string,
   signal?: AbortSignal
 ): Promise<Tree> => {

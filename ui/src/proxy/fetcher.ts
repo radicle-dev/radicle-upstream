@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import type * as zod from "zod";
+import qs from "qs";
 
 // This module provides low-level capabilities to interact with a typed
 // JSON HTTP API.
@@ -59,10 +60,12 @@ export interface RequestOptions {
 
 export interface FetchParams {
   method: Method;
-  // Path to append to the `Fetcher`s base URL to get the final uRL
+  // Path to append to the `Fetcher`s base URL to get the final URL
   path: string;
   // Object that is serialized into JSON and sent as the data
   body?: unknown;
+  // Query parameters to be serialized with `qs`.
+  query?: Record<string, unknown>;
   options?: RequestOptions;
 }
 
@@ -123,12 +126,18 @@ export class Fetcher {
     path,
     body,
     options = {},
+    query,
   }: FetchParams): Promise<Response> {
     const headers: Record<string, string> = {};
     if (body !== undefined) {
       headers["content-type"] = "application/json";
     }
-    return fetch(`${this.baseUrl}/v1/${path}`, {
+
+    let url = `${this.baseUrl}/v1/${path}`;
+    if (query) {
+      url = `${url}?${qs.stringify(query)}`;
+    }
+    return fetch(url, {
       method,
       headers,
       body: body === undefined ? null : JSON.stringify(body),

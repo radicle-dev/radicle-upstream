@@ -23,13 +23,8 @@ import * as svelteStore from "ui/src/svelteStore";
 import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
 import { claimsAddress, ClaimsContract } from "./attestation/contract";
-import {
-  Org,
-  MemberResponse,
-  getOrgs,
-  getGnosisSafeMembers,
-  getOrgProjectAnchors,
-} from "./org/theGraphApi";
+import type { Org, MemberResponse } from "./org/theGraphApi";
+import * as graph from "./org/theGraphApi";
 import { identitySha1Urn } from "ui/src/urn";
 import { sleep } from "ui/src/sleep";
 
@@ -43,6 +38,7 @@ const ORG_POLL_INTERVAL_MS = 2000;
 // `ORG_POLL_INTERVAL_MS` milliseconds.
 const updateOrgsForever = async (): Promise<never> => {
   let showError = true;
+  let remainingRetries502 = 0;
 
   for (;;) {
     const walletStore = svelteStore.get(wallet.store);
@@ -54,9 +50,15 @@ const updateOrgsForever = async (): Promise<never> => {
 
     await fetchOrgs().then(
       () => {
+        remainingRetries502 = 20;
         showError = true;
       },
       err => {
+        if (graph.is502Error(err) && remainingRetries502 > 0) {
+          remainingRetries502 -= 1;
+          console.warn(err);
+          return;
+        }
         // We only show the first error that is thrown by
         // `fetchOrgs()`. If the function keeps throwing errors we
         // don’t show them. We reset this behavior after the fetch is
@@ -219,7 +221,7 @@ async function fetchOrgs(): Promise<void> {
     });
   }
 
-  const orgs = await getOrgs(w.connected.account.address);
+  const orgs = await graph.getOrgs(w.connected.account.address);
   const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
   orgSidebarStore.set(sortedOrgs);
 }
@@ -259,7 +261,7 @@ export async function fetchMembers(
   wallet: wallet.Wallet,
   gnosisSafeAddress: string
 ): Promise<OrgMembers> {
-  const response: MemberResponse = await getGnosisSafeMembers(
+  const response: MemberResponse = await graph.getGnosisSafeMembers(
     gnosisSafeAddress
   );
 
@@ -330,7 +332,7 @@ export async function resolveProjectAnchors(org: OrgWithSafe): Promise<{
   unresolvedAnchors: project.Anchor[];
 }> {
   const pendingAnchors = await fetchPendingAnchors(org);
-  const confirmedAnchors = await getOrgProjectAnchors(org.orgAddress);
+  const confirmedAnchors = await graph.getOrgProjectAnchors(org.orgAddress);
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
 
   const anchoredProjects: project.Project[] = [];
