@@ -6,8 +6,9 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import dayjs from "dayjs";
   import type { Tx } from "ui/src/transaction";
-  import { getShortMonth, txIcon } from "ui/src/transaction";
+  import { txIcon } from "ui/src/transaction";
 
   export let tx: Tx;
 </script>
@@ -37,6 +38,7 @@
     align-items: center;
     width: 2rem;
     margin-right: 1rem;
+    text-transform: uppercase;
   }
 
   .date h5 {
@@ -52,8 +54,8 @@
 <div class="container" on:click>
   <div class="left">
     <div class="date">
-      <h5>{getShortMonth(new Date(tx.date))}</h5>
-      <p class="typo-text-bold">{new Date(tx.date).getDate()}</p>
+      <h5>{dayjs(tx.date).format("MMM")}</h5>
+      <p class="typo-text-bold">{dayjs(tx.date).format("D")}</p>
     </div>
     <svelte:component this={txIcon(tx)} />
     <p class="typo-text-bold" style="margin-left: 0.5rem">{tx.kind}</p>
