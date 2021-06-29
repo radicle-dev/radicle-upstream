@@ -34,6 +34,7 @@ export type Route =
       activeView: ProjectView;
     }
   | { type: "wallet"; activeTab: WalletTab }
+  | { type: "network" }
   | { type: "settings" };
 
 interface OrgRoute {
@@ -59,6 +60,7 @@ export type LoadedRoute =
       activeView: ProjectView;
     }
   | { type: "wallet"; activeTab: WalletTab }
+  | { type: "network" }
   | { type: "settings" };
 
 export type LoadedOrgTab =
