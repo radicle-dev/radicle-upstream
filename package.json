@@ -99,7 +99,7 @@
     "ganache-cli": "^6.12.2",
     "globby": "^11.0.4",
     "html-webpack-plugin": "^5.3.1",
-    "husky": "^4.3.8",
+    "husky": "^6.0.0",
     "jest": "^27.0.4",
     "license-webpack-plugin": "^2.3.19",
     "lint-staged": "^11.0.0",
@@ -153,7 +153,7 @@
     "_private:proxy:start:test": "cargo build --features unsafe-fast-keystore --bins && cargo run --features unsafe-fast-keystore -- --test --unsafe-fast-keystore",
     "_private:proxy:start:test:watch": "cargo build --features unsafe-fast-keystore --bins && cargo watch -x 'run --features unsafe-fast-keystore -- --test --unsafe-fast-keystore'",
     "_private:webpack:ui:watch": "webpack build --watch --config-name ui",
-    "postinstall": "patch-package && scripts/install-twemoji-assets.sh"
+    "postinstall": "patch-package && scripts/install-twemoji-assets.sh && husky install"
   },
   "dependencies": {
     "@apollo/client": "^3.3.15",
@@ -187,26 +187,5 @@
     "uuid": "^8.3.2",
     "validate.js": "^0.13.1",
     "zod": "^3.1.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{js,css,json,html}": [
-      "prettier --write"
-    ],
-    "*.js": [
-      "eslint --fix --max-warnings=0"
-    ],
-    "*.svelte": [
-      "prettier --plugin-search-dir=. --write",
-      "eslint --fix --max-warnings=0"
-    ],
-    "*.ts": [
-      "prettier --write",
-      "eslint --fix --max-warnings=0"
-    ]
   }
 }

@@ -419,46 +419,6 @@ export function transferAmount(tx: Tx): Big | undefined {
   }
 }
 
-export function formatDate(date: Date): string {
-  return `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} on ${date.getUTCDate()} ${
-    monthNames[date.getMonth()]
-  } ${date.getFullYear()}`;
-}
-
-const monthNames = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-export function getShortMonth(date: Date): string {
-  return `${shortMonthNames[date.getMonth()]}`;
-}
-
-const shortMonthNames = [
-  "JAN",
-  "FEB",
-  "MAR",
-  "APR",
-  "MAY",
-  "JUN",
-  "JUL",
-  "AUG",
-  "SEP",
-  "OCT",
-  "NOV",
-  "DEC",
-];
-
 // Convert a transaction-related `globalThis.Error` to `error.Error`.
 export function convertError(e: globalThis.Error, label: string): error.Error {
   let code: error.Code;

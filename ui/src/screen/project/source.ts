@@ -76,7 +76,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
   }
 
   const fetchTreeRoot = async (
-    selectedRevision: source.Revision
+    selectedRevision: source.RevisionSelector
   ): Promise<[source.Tree, Code]> => {
     const tree = await source.fetchTree(
       project.urn,
@@ -314,7 +314,7 @@ export const selectCommit = (commit: source.CommitHeader): void => {
 const fetchBlob = async (
   project: Project,
   peer: User,
-  revision: source.Revision,
+  revision: source.RevisionSelector,
   path: string,
   signal: AbortSignal
 ): Promise<Code> => {
@@ -339,7 +339,7 @@ const fetchBlob = async (
 const fetchCode = async (
   project: Project,
   peer: User,
-  revision: source.Revision,
+  revision: source.RevisionSelector,
   tree: source.Tree,
   path: string
 ): Promise<Code> => {
@@ -390,7 +390,7 @@ const fetchCode = async (
 const fetchRoot = async (
   project: Project,
   peer: User,
-  revision: source.Revision,
+  revision: source.RevisionSelector,
   tree: source.Tree,
   signal: AbortSignal
 ): Promise<Code> => {
