@@ -110,7 +110,7 @@
   }
 </style>
 
-<Modal emoji={emoji(tx)} title={tx.kind}>
+<Modal emoji={tx && emoji(tx)} title={tx && tx.kind}>
   {#if tx}
     <header>
       <Summary {tx} />
