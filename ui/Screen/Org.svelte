@@ -120,7 +120,7 @@
         <ProjectsMenu
           orgAddress={address}
           {gnosisSafeAddress}
-          disabled={activeTab.projectCount === 0 || pendingAnchor}
+          count={activeTab.projectCount}
           {pendingAnchor} />
       {:else if activeTab.type === "members"}
         <MembersMenu {gnosisSafeAddress} />

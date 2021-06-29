@@ -12,17 +12,21 @@
 
   export let orgAddress: string;
   export let gnosisSafeAddress: string;
-  export let disabled = false;
+  export let count: number = 0;
   export let pendingAnchor = false;
 
   let tooltipMessage: string = "";
+  let disabled: boolean = false;
 
-  $: if (disabled && !pendingAnchor) {
-    tooltipMessage = "Create or follow a project first";
-  } else if (disabled && pendingAnchor) {
-    tooltipMessage = "You already have pending anchors";
-  } else if (!disabled && !pendingAnchor) {
-    tooltipMessage = "";
+  $: {
+    disabled = count === 0 || pendingAnchor;
+    if (disabled && !pendingAnchor) {
+      tooltipMessage = "Create or follow a project first";
+    } else if (disabled && pendingAnchor) {
+      tooltipMessage = "You already have pending anchors";
+    } else if (!disabled && !pendingAnchor) {
+      tooltipMessage = "";
+    }
   }
 </script>
 
