@@ -113,7 +113,10 @@
         <ProjectsMenu
           orgAddress={address}
           {gnosisSafeAddress}
-          disabled={activeTab.projectCount === 0} />
+          availableProjectCount={activeTab.projectCount}
+          hasPendingAnchors={activeTab.anchoredProjects.some(
+            p => p.anchor && p.anchor.type === "pending"
+          ) || activeTab.unresolvedAnchors.some(a => a.type === "pending")} />
       {:else if activeTab.type === "members"}
         <MembersMenu {gnosisSafeAddress} />
       {:else}

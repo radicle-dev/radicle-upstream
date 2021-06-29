@@ -12,9 +12,23 @@
 
   export let orgAddress: string;
   export let gnosisSafeAddress: string;
-  export let disabled = false;
+  export let availableProjectCount: number = 0;
+  export let hasPendingAnchors = false;
 
-  $: tooltipMessage = disabled ? "Create or follow a project first" : "";
+  let tooltipMessage: string = "";
+  let disabled: boolean = false;
+
+  $: {
+    disabled = availableProjectCount === 0 || hasPendingAnchors;
+
+    if (availableProjectCount === 0) {
+      tooltipMessage = "Create or follow a project first";
+    } else if (hasPendingAnchors) {
+      tooltipMessage = "You already have pending anchors";
+    } else {
+      tooltipMessage = "";
+    }
+  }
 </script>
 
 <Tooltip value={tooltipMessage} position={style.CSSPosition.Left}>
