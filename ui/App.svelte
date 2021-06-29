@@ -38,6 +38,7 @@
   import Profile from "ui/Screen/Profile.svelte";
   import UserProfile from "ui/Screen/UserProfile.svelte";
   import Project from "ui/Screen/Project.svelte";
+  import Network from "ui/Screen/Network.svelte";
   import Settings from "ui/Screen/Settings.svelte";
   import Wallet from "ui/Screen/Wallet.svelte";
 
@@ -140,6 +141,8 @@
     <Project
       activeView={$activeRouteStore.activeView}
       urn={$activeRouteStore.urn} />
+  {:else if $activeRouteStore.type === "network"}
+    <Network />
   {:else if $activeRouteStore.type === "settings"}
     <Settings />
   {:else if $activeRouteStore.type === "wallet"}
