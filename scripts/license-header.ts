@@ -1,4 +1,4 @@
-#!/usr/bin/env -S yarn node -r ts-node/register/transpile-only
+#!/usr/bin/env -S node -r ts-node/register/transpile-only
 
 // Copyright © 2021 The Radicle Upstream Contributors
 //
@@ -20,12 +20,27 @@ class UserError extends Error {
 
 async function main() {
   yargs
-    .command({
-      command: "check",
+    .command<{ files: string[] | undefined }>({
+      command: "check [files...]",
       describe: "Check presence of license headers in files",
-      handler: async () => {
+      builder: yargs => {
+        return yargs.positional("files", {
+          describe:
+            "Files to check. If not provided, all files are checked for a license header",
+          array: true,
+          type: "string",
+        });
+      },
+      handler: async ({ files }) => {
+        let paths: string[];
+        if (files) {
+          paths = files;
+        } else {
+          paths = await getPaths();
+        }
+
         let failure = false;
-        for (const path of await paths()) {
+        for (const path of paths) {
           const content = await fs.readFile(path, "utf8");
           if (!hasLicenseHeader(content)) {
             failure = true;
@@ -44,7 +59,7 @@ async function main() {
       command: "add",
       describe: "Add missing license headers to files",
       handler: async () => {
-        for (const path of await paths()) {
+        for (const path of await getPaths()) {
           const content = await fs.readFile(path, "utf8");
           if (!hasLicenseHeader(content)) {
             console.log(`Writing license to ${path}`);
@@ -116,7 +131,7 @@ const gitIgnore = (async () => {
 })();
 
 // Returns the list of file paths that should include license headers.
-async function paths(): Promise<string[]> {
+async function getPaths(): Promise<string[]> {
   const gitIgnore_ = await gitIgnore;
   const ignore = [...gitIgnore_, "fixtures"];
 
