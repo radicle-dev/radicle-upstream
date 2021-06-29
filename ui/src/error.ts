@@ -181,12 +181,17 @@ export const show = (error: Error): void => {
   notification.error({
     message: error.message,
     showIcon: true,
+    persist: true,
     actions: [
       {
         label: "Copy error",
         handler: () => {
           ipc.copyToClipboard(JSON.stringify(error, null, 2));
         },
+      },
+      {
+        label: "Dismiss",
+        handler: () => {},
       },
     ],
   });
