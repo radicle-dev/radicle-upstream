@@ -10,10 +10,9 @@
 
   import { Copyable, Modal } from "ui/DesignSystem";
 
-  import { uriStore } from "ui/src/wallet";
   import { ellipsed } from "ui/src/style";
 
-  $: uri = $uriStore || "";
+  export let uri: string;
 
   $: svgString = qrcode({
     content: uri,

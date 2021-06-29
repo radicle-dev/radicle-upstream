@@ -107,8 +107,9 @@ function build(
 
   const qrCodeModal = {
     open: (uri: string, _cb: unknown, _opts?: unknown) => {
-      uriStore.set(uri);
-      modal.toggle(ModalWalletQRCode, onModalHide);
+      modal.toggle(ModalWalletQRCode, onModalHide, {
+        uri,
+      });
     },
     close: () => {
       // N.B: this is actually called when the connection is established,
@@ -229,9 +230,6 @@ function build(
     },
   };
 }
-
-// URI store for the URI used to build the connecting QRCode.
-export const uriStore = svelteStore.writable<string | undefined>(undefined);
 
 export function formattedBalance(balance: number): string {
   return balance.toLocaleString("us-US");

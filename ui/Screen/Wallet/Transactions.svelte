@@ -6,11 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import {
-    store as transactions,
-    getShortMonth,
-    TxStatus,
-  } from "ui/src/transaction";
+  import dayjs from "dayjs";
+  import { store as transactions, TxStatus } from "ui/src/transaction";
   import type { Tx } from "ui/src/transaction";
 
   import TxList from "ui/DesignSystem/Wallet/Transactions/TxList.svelte";
@@ -26,15 +23,15 @@
     // Sort from newest to oldest
     txs.sort((a, b) => b.date - a.date);
     for (const tx of txs) {
-      const txDate = new Date(tx.date);
-      const txMonth = txDate.getMonth();
-      const txYear = txDate.getFullYear();
+      const txDate = dayjs(tx.date);
+      const txMonth = txDate.month();
+      const txYear = txDate.year();
       const key = `${txYear}-${txMonth}`;
       const currentSection = sections[sections.length - 1];
       if (currentSection && currentSection.key === key) {
         currentSection.items.push(tx);
       } else {
-        const title = `${getShortMonth(txDate)} ${txYear}`;
+        const title = txDate.format("MMM YYYY").toUpperCase();
         sections.push({
           key,
           title,

@@ -7,6 +7,7 @@
 -->
 <script lang="typescript">
   import { Copyable, Icon, Identity, Modal } from "ui/DesignSystem";
+  import dayjs from "dayjs";
   import TxSpinner from "ui/DesignSystem/Transaction/Spinner.svelte";
   import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
 
@@ -17,7 +18,6 @@
     store as txs,
     colorForStatus,
     isIncoming,
-    formatDate,
     transferAmount,
     TxStatus,
     TxKind,
@@ -176,7 +176,9 @@
         </div>
         <div class="row">
           <p>Timestamp</p>
-          <p>{formatDate(new Date(tx.date))}</p>
+          <p>
+            {dayjs(tx.date).format("HH:mm:ss [on] D MMMM YYYY")}
+          </p>
         </div>
       </div>
     </div>

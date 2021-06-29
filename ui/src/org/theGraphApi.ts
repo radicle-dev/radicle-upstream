@@ -206,3 +206,14 @@ export async function getOrgProjectAnchors(
     }
   );
 }
+
+// Returns `true` if `err` is a 502 HTTP response error thrown by
+// requests to the Graph.
+export function is502Error(err: unknown): boolean {
+  return (
+    err instanceof apolloCore.ApolloError &&
+    err.networkError !== null &&
+    "statusCode" in err.networkError &&
+    err.networkError.statusCode === 502
+  );
+}
