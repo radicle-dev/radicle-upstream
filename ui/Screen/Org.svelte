@@ -89,7 +89,6 @@
       },
     ];
   };
-  console.log(activeTab);
 
   let pendingAnchor: boolean = false;
   $: {
