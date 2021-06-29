@@ -258,7 +258,7 @@ context("p2p networking", () => {
   );
 
   context("network", () => {
-    before(() => {
+    beforeEach(() => {
       commands.resetProxyState();
       commands.onboardUser();
       cy.visit("public/index.html");
@@ -297,7 +297,7 @@ context("p2p networking", () => {
 
       cy.log("persists adding a seed across app start");
       commands.restartAndUnlock();
-      commands.pick("sidebar", "settings").click();
+      commands.pick("sidebar", "network").click();
       cy.get(".seeds").find(".seed").should("have.length", 1);
 
       cy.log("adds a seed via button click");
@@ -337,7 +337,7 @@ context("p2p networking", () => {
 
       cy.log("persists the removal across app start");
       commands.restartAndUnlock();
-      commands.pick("sidebar", "settings").click();
+      commands.pick("sidebar", "network").click();
       cy.get(".seeds").find(".seed").should("have.length", 2);
     });
   });
