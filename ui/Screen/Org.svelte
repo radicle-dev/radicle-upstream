@@ -89,13 +89,6 @@
       },
     ];
   };
-
-  let pendingAnchor: boolean = false;
-  $: {
-    pendingAnchor = activeTab.anchoredProjects.some(
-      proj => proj.anchor.type === "pending"
-    );
-  }
 </script>
 
 <SidebarLayout>
@@ -120,8 +113,10 @@
         <ProjectsMenu
           orgAddress={address}
           {gnosisSafeAddress}
-          count={activeTab.projectCount}
-          {pendingAnchor} />
+          availableProjectCount={activeTab.projectCount}
+          hasPendingAnchors={activeTab.anchoredProjects.some(
+            p => p.anchor && p.anchor.type === "pending"
+          ) || activeTab.unresolvedAnchors.some(a => a.type === "pending")} />
       {:else if activeTab.type === "members"}
         <MembersMenu {gnosisSafeAddress} />
       {:else}
