@@ -64,7 +64,7 @@
 
   .header {
     display: flex;
-    padding: 1.5rem 3rem 0.5rem;
+    padding: 0.5rem 3rem 0.5rem;
     width: 100%;
   }
 </style>
@@ -89,6 +89,14 @@
     </div>
   {/if}
   {#if confirmedResolved.length !== 0 || confirmedUnresolved.length !== 0}
+    {#if pendingResolved.length !== 0 || pendingUnresolved.length !== 0}
+      <div class="header">
+        <p class="typo-text-bold">Confirmed</p>
+        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+          These projects have been anchored and signed by the org.
+        </p>
+      </div>
+    {/if}
     {#if confirmedResolved.length !== 0}
       <ProjectList
         projects={confirmedResolved}
