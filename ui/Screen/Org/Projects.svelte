@@ -33,6 +33,22 @@
       urn: project.urn,
     });
   };
+
+  let pendingResolved: project.Project[];
+  let confirmedResolved: project.Project[];
+  let pendingUnresolved: project.Anchor[];
+  let confirmedUnresolved: project.Anchor[];
+
+  $: {
+    pendingResolved = anchoredProjects.filter(
+      p => p.anchor && p.anchor.type === "pending"
+    );
+    confirmedResolved = anchoredProjects.filter(
+      p => p.anchor && p.anchor.type === "confirmed"
+    );
+    pendingUnresolved = unresolvedAnchors.filter(a => a.type === "pending");
+    confirmedUnresolved = unresolvedAnchors.filter(a => a.type === "confirmed");
+  }
 </script>
 
 <style>
@@ -41,20 +57,57 @@
     max-width: var(--content-max-width);
     min-width: var(--content-min-width);
   }
+
+  .pending {
+    margin-bottom: 2rem;
+  }
+
+  .header {
+    display: flex;
+    padding: 1.5rem 3rem 0.5rem;
+    width: 100%;
+  }
 </style>
 
 <div class="container">
-  {#if anchoredProjects.length !== 0 || unresolvedAnchors.length !== 0}
-    <ProjectList
-      projects={anchoredProjects}
-      userUrn={session.identity.urn}
-      on:select={select} />
-
-    <UnresolvedAnchorList anchors={unresolvedAnchors} />
+  {#if pendingResolved.length !== 0 || pendingUnresolved.length !== 0}
+    <div class="pending">
+      <div class="header">
+        <p class="typo-text-bold">Pending</p>
+        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+          Not enough of the members have signed this anchor.
+        </p>
+      </div>
+      {#if pendingResolved.length !== 0}
+        <ProjectList
+          projects={pendingResolved}
+          userUrn={session.identity.urn}
+          on:select={select} />
+      {:else if pendingUnresolved.length !== 0}
+        <UnresolvedAnchorList anchors={pendingUnresolved} />
+      {/if}
+    </div>
+  {/if}
+  {#if confirmedResolved.length !== 0 || confirmedUnresolved.length !== 0}
+    {#if confirmedResolved.length !== 0}
+      <ProjectList
+        projects={confirmedResolved}
+        userUrn={session.identity.urn}
+        on:select={select} />
+    {/if}
+    {#if confirmedUnresolved.length !== 0}
+      <div class="header">
+        <p style="color: var(--color-foreground-level-6);">
+          These anchored projects haven't been found in your network yet, try
+          following them.
+        </p>
+      </div>
+      <UnresolvedAnchorList anchors={confirmedUnresolved} />
+    {/if}
   {:else}
     <EmptyState
       emoji="🪴"
-      text="Get started by anchoring your organization’s first project with the radicle gnosis safe app."
+      text="Get started by anchoring your organization’s first project."
       primaryActionText="Anchor with Gnosis Safe"
       primaryActionDisabled={disableAnchorCreation}
       primaryActionTooltipMessage="Create or follow a project first"

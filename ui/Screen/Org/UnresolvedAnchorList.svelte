@@ -41,7 +41,7 @@
     padding: 1.375rem 1.5rem;
     align-items: center;
     min-width: 0;
-    height: 84px;
+    height: 4.375rem;
   }
   .anchor-row {
     display: flex;
@@ -49,21 +49,7 @@
     width: -webkit-fill-available;
     color: var(--color-foreground-level-6);
   }
-  .header {
-    display: flex;
-    padding: 1.5rem 3rem 0.5rem;
-    width: 100%;
-  }
 </style>
-
-{#if anchors.length !== 0}
-  <div class="header">
-    <p style="color: var(--color-foreground-level-6);">
-      These anchored projects haven't been found in your network yet, try
-      following them.
-    </p>
-  </div>
-{/if}
 
 <List
   dataCy="project-list"

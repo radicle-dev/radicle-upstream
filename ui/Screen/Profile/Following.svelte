@@ -61,7 +61,7 @@
   .undiscovered-project {
     padding: 1.5rem;
     flex: 1;
-    min-height: 6rem;
+    height: 4.375rem;
 
     display: flex;
     align-items: center;
