@@ -10,8 +10,6 @@
 
   import UnresolvedAnchorList from "ui/Screen/Org/UnresolvedAnchorList.svelte";
 
-  import type * as project from "ui/src/project";
-
   import * as router from "ui/src/router";
   import * as sess from "ui/src/session";
   import * as org from "ui/src/org";
@@ -21,8 +19,7 @@
   const session = sess.getUnsealedFromContext();
 
   export let address: string;
-  export let anchoredProjects: project.Project[];
-  export let unresolvedAnchors: project.Anchor[];
+  export let anchors: org.OrgAnchors;
   export let gnosisSafeAddress: string;
   export let disableAnchorCreation = false;
 
@@ -41,20 +38,64 @@
     max-width: var(--content-max-width);
     min-width: var(--content-min-width);
   }
+
+  .pending {
+    margin-bottom: 2rem;
+  }
+
+  .header {
+    display: flex;
+    padding: 0.5rem 3rem 0.5rem;
+    width: 100%;
+  }
 </style>
 
 <div class="container">
-  {#if anchoredProjects.length !== 0 || unresolvedAnchors.length !== 0}
+  {#if anchors.pendingResolved.length !== 0 || anchors.pendingUnresolved.length !== 0}
+    <div class="pending">
+      <div class="header">
+        <p class="typo-text-bold">Pending</p>
+        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+          Not enough of the members have signed this anchor.
+        </p>
+      </div>
+      <ProjectList
+        projects={anchors.pendingResolved}
+        userUrn={session.identity.urn}
+        on:select={select} />
+      <UnresolvedAnchorList anchors={anchors.pendingUnresolved} />
+    </div>
+  {/if}
+
+  {#if anchors.confirmedResolved.length !== 0}
+    {#if anchors.pendingResolved.length !== 0 || anchors.pendingUnresolved.length !== 0}
+      <div class="header">
+        <p class="typo-text-bold">Confirmed</p>
+        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+          These projects have been anchored and signed by the org.
+        </p>
+      </div>
+    {/if}
     <ProjectList
-      projects={anchoredProjects}
+      projects={anchors.confirmedResolved}
       userUrn={session.identity.urn}
       on:select={select} />
+  {/if}
 
-    <UnresolvedAnchorList anchors={unresolvedAnchors} />
-  {:else}
+  {#if anchors.confirmedUnresolved.length !== 0}
+    <div class="header">
+      <p style="color: var(--color-foreground-level-6);">
+        These anchored projects haven't been found in your network yet, try
+        following them.
+      </p>
+    </div>
+    <UnresolvedAnchorList anchors={anchors.confirmedUnresolved} />
+  {/if}
+
+  {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0}
     <EmptyState
       emoji="🪴"
-      text="Get started by anchoring your organization’s first project with the radicle gnosis safe app."
+      text="Get started by anchoring your organization’s first project."
       primaryActionText="Anchor with Gnosis Safe"
       primaryActionDisabled={disableAnchorCreation}
       primaryActionTooltipMessage="Create or follow a project first"
