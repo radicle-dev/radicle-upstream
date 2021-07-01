@@ -114,9 +114,8 @@
           orgAddress={address}
           {gnosisSafeAddress}
           availableProjectCount={activeTab.projectCount}
-          hasPendingAnchors={activeTab.anchoredProjects.some(
-            p => p.anchor && p.anchor.type === "pending"
-          ) || activeTab.unresolvedAnchors.some(a => a.type === "pending")} />
+          hasPendingAnchors={activeTab.anchors.pendingResolved.length !== 0 ||
+            activeTab.anchors.pendingUnresolved.length !== 0} />
       {:else if activeTab.type === "members"}
         <MembersMenu {gnosisSafeAddress} />
       {:else}
@@ -130,8 +129,7 @@
       {address}
       {gnosisSafeAddress}
       disableAnchorCreation={activeTab.projectCount === 0}
-      anchoredProjects={activeTab.anchoredProjects}
-      unresolvedAnchors={activeTab.unresolvedAnchors} />
+      anchors={activeTab.anchors} />
   {:else if activeTab.type === "members"}
     <MembersTab members={activeTab.members} />
   {:else}

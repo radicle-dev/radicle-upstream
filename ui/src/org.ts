@@ -322,15 +322,21 @@ async function fetchPendingAnchors(
   return pendingAnchors;
 }
 
+export interface OrgAnchors {
+  pendingResolved: project.Project[];
+  confirmedResolved: project.Project[];
+  pendingUnresolved: project.Anchor[];
+  confirmedUnresolved: project.Anchor[];
+}
+
 // Return project information for all anchors of an org. If the project
 // of an anchor is not replicated by radicle link we include it in
 // `unresolvedAnchors`.
 //
 // Includes anchors from transactions that have not been confirmed yet.
-export async function resolveProjectAnchors(org: OrgWithSafe): Promise<{
-  anchoredProjects: project.Project[];
-  unresolvedAnchors: project.Anchor[];
-}> {
+export async function resolveProjectAnchors(
+  org: OrgWithSafe
+): Promise<OrgAnchors> {
   const pendingAnchors = await fetchPendingAnchors(org);
   const confirmedAnchors = await graph.getOrgProjectAnchors(org.orgAddress);
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
@@ -350,22 +356,16 @@ export async function resolveProjectAnchors(org: OrgWithSafe): Promise<{
     })
   );
 
-  // Show pending projects first.
-  anchoredProjects.sort((a, b) => {
-    if (!a.anchor || !b.anchor) {
-      return 0;
-    }
-
-    if (a.anchor.type === "pending" && b.anchor.type === "pending") {
-      return 0;
-    } else if (a.anchor.type === "pending" && b.anchor.type === "confirmed") {
-      return -1;
-    } else {
-      return 1;
-    }
-  });
-
-  return { anchoredProjects, unresolvedAnchors };
+  return {
+    pendingResolved: anchoredProjects.filter(
+      p => p.anchor && p.anchor.type === "pending"
+    ),
+    confirmedResolved: anchoredProjects.filter(
+      p => p.anchor && p.anchor.type === "confirmed"
+    ),
+    pendingUnresolved: unresolvedAnchors.filter(a => a.type === "pending"),
+    confirmedUnresolved: unresolvedAnchors.filter(a => a.type === "confirmed"),
+  };
 }
 
 export interface ProjectOption {
