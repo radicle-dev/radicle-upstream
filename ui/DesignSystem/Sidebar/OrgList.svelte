@@ -71,6 +71,7 @@
   {/each}
   <Tooltip value="Create an org">
     <SidebarItem
+      indicator
       onClick={() =>
         modal.toggle(ModalCreateOrg, () => {}, {
           identity,
