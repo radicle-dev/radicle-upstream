@@ -68,12 +68,14 @@
   {/if}
 
   {#if anchors.confirmedResolved.length !== 0}
-    <div class="header">
-      <p class="typo-text-bold">Confirmed</p>
-      <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
-        These projects have been anchored and signed by the org.
-      </p>
-    </div>
+    {#if anchors.pendingResolved.length !== 0 || anchors.pendingUnresolved.length !== 0}
+      <div class="header">
+        <p class="typo-text-bold">Confirmed</p>
+        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+          These projects have been anchored and signed by the org.
+        </p>
+      </div>
+    {/if}
     <ProjectList
       projects={anchors.confirmedResolved}
       userUrn={session.identity.urn}
