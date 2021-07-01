@@ -59,6 +59,7 @@
     box-shadow: var(--color-shadows);
     top: -1rem;
     left: 2rem;
+    z-index: 1;
   }
   .header {
     border-bottom: 1px solid var(--color-foreground-level-2);
