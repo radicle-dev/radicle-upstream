@@ -6,11 +6,10 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { isDev } from "../src/config";
+  import { isDev } from "ui/src/config";
+  import * as hotkeys from "ui/src/hotkeys";
 
-  import * as hotkeys from "../src/hotkeys";
-
-  import { Emoji, KeyHint, Modal } from "ui/DesignSystem";
+  import { KeyHint, Modal } from "ui/DesignSystem";
 
   const shortcuts = [
     ...hotkeys.shortcuts,
@@ -40,9 +39,7 @@
   }
 </style>
 
-<Modal dataCy="hotkey-modal">
-  <Emoji emoji="⌨️" size="huge" style="margin-bottom: 1rem" />
-  <h1>Keyboard shortcuts</h1>
+<Modal dataCy="hotkey-modal" emoji="⌨️" title="Keyboard shortcuts">
   <div class="shortcuts">
     {#each shortcuts as shortcut}
       <div class="shortcut">

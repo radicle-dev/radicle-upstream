@@ -6,8 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  export let dataCy: string = "";
-  export let style: string = "";
+  import { Emoji } from "ui/DesignSystem";
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
+  export let emoji: string | undefined = undefined;
+  export let title: string | undefined = undefined;
+  export let desc: string | undefined = undefined;
 </script>
 
 <style>
@@ -25,12 +29,26 @@
     outline: none;
   }
   .content {
-    text-align: center;
     width: 100%;
+  }
+
+  .desc {
+    margin-bottom: 1.5rem;
+    color: var(--color-foreground-level-6);
+    text-align: center;
   }
 </style>
 
 <div class="container" data-cy={dataCy}>
+  {#if emoji}
+    <Emoji {emoji} size="huge" style="margin-bottom: 1rem;" />
+  {/if}
+  {#if title}
+    <h1 style="margin-bottom: 1rem">{title}</h1>
+  {/if}
+  <p class="desc">
+    {desc}
+  </p>
   <div class="content" {style}>
     <slot />
   </div>

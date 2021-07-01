@@ -35,7 +35,6 @@
     Button,
     Dropdown,
     DirectoryInput,
-    Emoji,
     Modal,
     RadioOption,
     RemoteHelperHint,
@@ -196,14 +195,8 @@
   }
 </style>
 
-<Modal dataCy="page">
+<Modal dataCy="page" emoji="🌠" title="Start a new project">
   <div class="create-project" data-cy="create-project">
-    <Emoji
-      emoji={"🌠"}
-      size="huge"
-      style="align-self: center; margin-bottom: 1rem;" />
-    <h1 style="margin-bottom: 3rem;">Start a new project</h1>
-
     <div class="radio-selector">
       <RadioOption
         title="Create a new repository"

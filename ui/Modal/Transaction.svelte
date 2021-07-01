@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import { Copyable, Icon, Identity, Modal } from "ui/DesignSystem";
   import dayjs from "dayjs";
-  import { Copyable, Emoji, Icon, Identity, Modal } from "ui/DesignSystem";
   import TxSpinner from "ui/DesignSystem/Transaction/Spinner.svelte";
   import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
 
@@ -48,10 +48,7 @@
     text-align: center;
 
     color: var(--color-foreground-level-6);
-  }
-
-  h1 {
-    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
   }
 
   .from-to {
@@ -75,50 +72,52 @@
   }
 
   .from-to .arrow {
-    padding: 0.7rem 0;
+    padding: 0.5rem 0;
   }
 
   .from-to .address {
     color: var(--color-foreground-level-6);
   }
 
-  .content .section {
+  .section {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 
-    margin-top: 1.7rem;
+    margin-bottom: 1.5rem;
     padding: 1rem;
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
     border-radius: 0.5rem;
   }
 
+  .section:last-child {
+    margin-bottom: 0;
+  }
+
   p {
     color: var(--color-foreground-level-6);
   }
 
-  .content .section .row {
+  .row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-bottom: 0.375rem;
   }
-
-  .content .section .row + .row {
-    margin-top: 1.5rem;
+  .row:last-child {
+    padding-bottom: 0;
   }
 </style>
 
-<Modal>
+<Modal emoji={tx && emoji(tx)} title={tx && tx.kind}>
   {#if tx}
     <header>
-      <Emoji emoji={emoji(tx)} size="huge" />
-      <h1>{tx.kind}</h1>
-      <Summary {tx} style="margin-top: 1.5rem" />
+      <Summary {tx} />
       {#if !(tx.kind === TxKind.ClaimRadicleIdentity || tx.kind === TxKind.CreateOrg)}
         <div class="from-to" class:incoming>
           <div>
-            <p class="typo-text-bold" style="margin-bottom: 7px">
+            <p class="typo-text-bold" style="margin-bottom: 0.5rem">
               Radicle Pool
             </p>
             <Copyable
@@ -172,7 +171,7 @@
           <p>Status</p>
           <div class="row">
             <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
-            <p style="margin-left: 7px; color: {statusColor}">{tx.status}</p>
+            <p style="margin-left: 0.5rem; color: {statusColor}">{tx.status}</p>
           </div>
         </div>
         <div class="row">

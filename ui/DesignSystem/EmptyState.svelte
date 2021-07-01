@@ -17,7 +17,7 @@
   const dispatch = createEventDispatcher();
 
   export let style: string = "";
-  export let emoji: string = "";
+  export let emoji: string = "🪴";
   export let text: string = "Nothing to see here";
   export let headerText: string = "";
   export let primaryActionText: string = "";
