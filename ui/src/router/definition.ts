@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type * as project from "ui/src/project";
 import { unreachable } from "ui/src/unreachable";
 
 import * as org from "ui/src/org";
@@ -66,8 +65,7 @@ export type LoadedRoute =
 export type LoadedOrgTab =
   | {
       type: "projects";
-      anchoredProjects: project.Project[];
-      unresolvedAnchors: project.Anchor[];
+      anchors: org.OrgAnchors;
       gnosisSafeAddress: string;
       projectCount: number;
     }
@@ -113,7 +111,7 @@ async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
       org.getProjectCount(),
       org.fetchOrg(route.address),
     ]);
-    const projectAnchors = await org.resolveProjectAnchors(orgWithSafe);
+    const anchors = await org.resolveProjectAnchors(orgWithSafe);
 
     return {
       type: "org",
@@ -123,8 +121,7 @@ async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
       threshold: orgWithSafe.threshold,
       activeTab: {
         type: "projects",
-        anchoredProjects: projectAnchors.anchoredProjects,
-        unresolvedAnchors: projectAnchors.unresolvedAnchors,
+        anchors,
         gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
         projectCount,
       },
