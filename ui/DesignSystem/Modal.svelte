@@ -7,11 +7,11 @@
 -->
 <script lang="typescript">
   import { Emoji } from "ui/DesignSystem";
-  export let dataCy: string = "";
-  export let style: string = "";
-  export let emoji: string | undefined = undefined
-  export let title: string = "";
-  export let desc: string = "";
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
+  export let emoji: string | undefined = undefined;
+  export let title: string | undefined = undefined;
+  export let desc: string | undefined = undefined;
 </script>
 
 <style>
