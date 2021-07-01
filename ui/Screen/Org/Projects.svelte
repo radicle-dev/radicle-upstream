@@ -78,41 +78,38 @@
           Not enough of the members have signed this anchor.
         </p>
       </div>
-      {#if pendingResolved.length !== 0}
-        <ProjectList
-          projects={pendingResolved}
-          userUrn={session.identity.urn}
-          on:select={select} />
-      {:else if pendingUnresolved.length !== 0}
-        <UnresolvedAnchorList anchors={pendingUnresolved} />
-      {/if}
-    </div>
-  {/if}
-  {#if confirmedResolved.length !== 0 || confirmedUnresolved.length !== 0}
-    {#if pendingResolved.length !== 0 || pendingUnresolved.length !== 0}
-      <div class="header">
-        <p class="typo-text-bold">Confirmed</p>
-        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
-          These projects have been anchored and signed by the org.
-        </p>
-      </div>
-    {/if}
-    {#if confirmedResolved.length !== 0}
       <ProjectList
-        projects={confirmedResolved}
+        projects={pendingResolved}
         userUrn={session.identity.urn}
         on:select={select} />
-    {/if}
-    {#if confirmedUnresolved.length !== 0}
-      <div class="header">
-        <p style="color: var(--color-foreground-level-6);">
-          These anchored projects haven't been found in your network yet, try
-          following them.
-        </p>
-      </div>
-      <UnresolvedAnchorList anchors={confirmedUnresolved} />
-    {/if}
-  {:else}
+      <UnresolvedAnchorList anchors={pendingUnresolved} />
+    </div>
+  {/if}
+
+  {#if confirmedResolved.length !== 0}
+    <div class="header">
+      <p class="typo-text-bold">Confirmed</p>
+      <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+        These projects have been anchored and signed by the org.
+      </p>
+    </div>
+    <ProjectList
+      projects={confirmedResolved}
+      userUrn={session.identity.urn}
+      on:select={select} />
+  {/if}
+
+  {#if confirmedUnresolved.length !== 0}
+    <div class="header">
+      <p style="color: var(--color-foreground-level-6);">
+        These anchored projects haven't been found in your network yet, try
+        following them.
+      </p>
+    </div>
+    <UnresolvedAnchorList anchors={confirmedUnresolved} />
+  {/if}
+
+  {#if anchoredProjects.length === 0 && unresolvedAnchors.length === 0}
     <EmptyState
       emoji="🪴"
       text="Get started by anchoring your organization’s first project."
