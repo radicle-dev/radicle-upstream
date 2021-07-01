@@ -9,7 +9,7 @@
   import { Emoji } from "ui/DesignSystem";
   export let dataCy: string = "";
   export let style: string = "";
-  export let emoji: string = "";
+  export let emoji: string | undefined = undefined
   export let title: string = "";
   export let desc: string = "";
 </script>
