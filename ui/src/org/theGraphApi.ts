@@ -163,7 +163,6 @@ export async function getOrgProjectAnchors(
       query: apolloCore.gql`
         query GetOrgAnchoredProjects($orgAddress: String!) {
           projects(where: {org: $orgAddress}) {
-            id
             anchor {
               id
               objectId
@@ -178,7 +177,6 @@ export async function getOrgProjectAnchors(
 
   return response.map(
     (project: {
-      id: string;
       anchor: {
         id: string;
         objectId: string;
@@ -186,7 +184,7 @@ export async function getOrgProjectAnchors(
       };
     }) => {
       const decodedProjectId = urn.identitySha1Urn(
-        ethers.utils.arrayify(`0x${project.id.slice(26)}`)
+        ethers.utils.arrayify(`0x${project.anchor.objectId.slice(26)}`)
       );
 
       const byteArray = ethers.utils.arrayify(project.anchor.multihash);
