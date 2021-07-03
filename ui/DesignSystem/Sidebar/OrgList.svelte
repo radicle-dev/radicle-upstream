@@ -24,8 +24,9 @@
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
   import ModalCreateOrg from "ui/Modal/Org/Create.svelte";
-  import AddOrgButton from "./AddOrgButton.svelte";
   import SidebarItem from "./SidebarItem.svelte";
+
+  import Icon from "ui/DesignSystem/Icon";
 
   export let identity: Identity;
 
@@ -80,7 +81,7 @@
               ? $wallet.connected.account.address
               : null,
         })}>
-      <AddOrgButton />
+      <Icon.Plus />
     </SidebarItem>
   </Tooltip>
 {/if}
