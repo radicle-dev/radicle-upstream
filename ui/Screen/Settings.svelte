@@ -153,7 +153,7 @@
               >Learn more about managing devices</a>
           </p>
           <div class="action">
-            <PeerId peerId={session.identity.peerId} />
+            <PeerId truncate peerId={session.identity.peerId} />
           </div>
         </div>
       </section>
