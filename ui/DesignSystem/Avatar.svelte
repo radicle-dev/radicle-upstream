@@ -74,13 +74,13 @@
   }
 
   .square {
-    border-radius: 0.25rem;
+    border-radius: 0.5rem;
   }
 
   .square.small {
     width: 24px;
     height: 24px;
-    border-radius: 2px;
+    border-radius: 0.25rem;
   }
 
   .square.regular {
@@ -96,13 +96,13 @@
   .square.big {
     width: 72px;
     height: 72px;
-    border-radius: 0.5rem;
+    border-radius: 1rem;
   }
 
   .square.huge {
     width: 120px;
     height: 120px;
-    border-radius: 0.5rem;
+    border-radius: 1.5rem;
   }
 
   .container {
