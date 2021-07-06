@@ -30,10 +30,10 @@
   }
   .content {
     width: 100%;
+    margin-top: 1.5rem;
   }
 
   .desc {
-    margin-bottom: 1.5rem;
     color: var(--color-foreground-level-6);
     text-align: center;
   }
@@ -46,9 +46,9 @@
   {#if title}
     <h1 style="margin-bottom: 1rem">{title}</h1>
   {/if}
-  <p class="desc">
-    {desc}
-  </p>
+  {#if desc}
+    <p class="desc">{desc}</p>
+  {/if}
   <div class="content" {style}>
     <slot />
   </div>
