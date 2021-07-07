@@ -13,6 +13,7 @@ import type * as project from "ui/src/project";
 import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
+import { memoizeLru } from "ui/src/memoizeLru";
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as ipc from "ui/src/ipc";
@@ -536,3 +537,16 @@ async function getClaimedIdentity(
   }
   return identity;
 }
+
+// Returns true if a given org at the given address is owned by a Gnosis safe.
+export const isMultiSig = memoizeLru(
+  async (address: string): Promise<boolean> => {
+    const walletStore = svelteStore.get(wallet.store);
+    const code = await walletStore.provider.getCode(address);
+    // We’re not really checking that the address is the Gnosis Safe
+    // contract. We’re just checking if it is _a_ contract.
+    return code !== "0x";
+  },
+  address => address,
+  { max: 1000 }
+);

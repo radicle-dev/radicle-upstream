@@ -1710,6 +1710,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/lru-cache@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "@types/lru-cache@npm:5.1.1"
+  checksum: 8f4792a6881e9950ae5a2f354fc00bbc7a5301afbc802ddaf2befa4c0a9ccc48ab2435f5f043dc1ae3db9f4b4120513290c03eed097cb6a25fcb0f781312ec20
+  languageName: node
+  linkType: hard
+
 "@types/marked@npm:^2.0.3":
   version: 2.0.3
   resolution: "@types/marked@npm:2.0.3"
@@ -9798,6 +9805,7 @@ __metadata:
     "@types/big.js": ^6.1.1
     "@types/jest": ^26.0.23
     "@types/lodash": ^4.14.170
+    "@types/lru-cache": ^5.1.1
     "@types/marked": ^2.0.3
     "@types/node": ^14.17.3
     "@types/node-fetch": ^2.5.10
@@ -9840,6 +9848,7 @@ __metadata:
     license-webpack-plugin: ^2.3.19
     lint-staged: ^11.0.0
     lodash: ^4.17.21
+    lru-cache: ^6.0.0
     marked: ^2.0.7
     mnemonist: ^0.38.3
     multibase: ^4.0.4
