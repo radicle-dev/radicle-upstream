@@ -6,17 +6,29 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { BigNumber } from "ethers";
+
   import Copyable from "ui/DesignSystem/Copyable.svelte";
   import Icon from "ui/DesignSystem/Icon";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
-  import * as wallet from "ui/src/wallet";
+  import * as ethereum from "ui/src/ethereum";
   import { ellipsed } from "ui/src/style";
   import { Button } from "ui/DesignSystem";
 
-  export let account: wallet.Account;
+  export let dai: BigNumber | null;
+  export let eth: BigNumber | null;
+  export let address: string;
   export let onDisconnect: () => void;
   export let style = "";
+
+  function formatBalance(balance: BigNumber | null): string {
+    if (balance === null) {
+      return "–";
+    } else {
+      return ethereum.toBaseUnit(balance).toNumber().toLocaleString("en-US");
+    }
+  }
 </script>
 
 <style>
@@ -63,12 +75,12 @@
   <div class="balances">
     <h3>Balance</h3>
     <h2>
-      {wallet.formattedBalance(account.ethBalance.toNumber())} ETH
+      {formatBalance(eth)} ETH
     </h2>
     <div class="supported">
       <h5>Supported tokens</h5>
       <h3>
-        {wallet.formattedBalance(account.daiBalance.toNumber())} DAI
+        {formatBalance(dai)} DAI
       </h3>
     </div>
   </div>
@@ -78,9 +90,9 @@
       showIcon={false}
       styleContent={false}
       style="padding-left: 0;"
-      copyContent={account.address}
+      copyContent={address}
       notificationText="Address copied to the clipboard">
-      {ellipsed(account.address)}
+      {ellipsed(address)}
     </Copyable>
     <Tooltip value="Disconnect">
       <Button

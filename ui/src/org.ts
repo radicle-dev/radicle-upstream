@@ -284,7 +284,7 @@ async function fetchOrgs(): Promise<void> {
     });
   }
 
-  const orgs = await graph.getOrgs(w.connected.account.address);
+  const orgs = await graph.getOrgs(w.connected.address);
   const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
   orgSidebarStore.set(sortedOrgs);
 }

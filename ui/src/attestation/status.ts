@@ -61,14 +61,10 @@ async function updateAttesttationStatus(
 ): Promise<void> {
   const wallet = svelteStore.get(walletStore);
   const sess: UnsealedSession | undefined = session.unsealed();
-  const ethAccount = wallet.account();
-  if (sess && ethAccount) {
+  const address = wallet.getAddress();
+  if (sess && address) {
     attestationStatus.set(
-      await getAttestationStatus(
-        sess.identity,
-        ethAccount.address,
-        claimWatcher
-      )
+      await getAttestationStatus(sess.identity, address, claimWatcher)
     );
   } else {
     attestationStatus.set(AttestationStatus.Fetching);

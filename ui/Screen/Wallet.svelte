@@ -19,7 +19,7 @@
     attestationStatus,
     AttestationStatus,
   } from "ui/src/attestation/status";
-  import { store, Status } from "ui/src/wallet";
+  import { store, Status, accountBalancesStore } from "ui/src/wallet";
 
   import ConnectWallet from "ui/DesignSystem/Wallet/Connect.svelte";
   import WalletPanel from "ui/DesignSystem/Wallet/Panel.svelte";
@@ -94,7 +94,9 @@
           <h1 class="title">Wallet</h1>
           <WalletPanel
             onDisconnect={wallet.disconnect}
-            account={w.connected.account} />
+            dai={$accountBalancesStore.dai}
+            eth={$accountBalancesStore.eth}
+            address={w.connected.address} />
         </div>
         {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
           {#if $attestationStatus === AttestationStatus.Fetching}

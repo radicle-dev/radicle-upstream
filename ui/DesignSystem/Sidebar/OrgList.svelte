@@ -79,7 +79,7 @@
           identity,
           walletAddress:
             $wallet.status === Wallet.Status.Connected
-              ? $wallet.connected.account.address
+              ? $wallet.connected.address
               : null,
         })}>
       <Icon.Plus />

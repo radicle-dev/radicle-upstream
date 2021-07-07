@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import type { BigNumber, Signer } from "ethers";
+import type * as ethers from "ethers";
 
 import Big from "big.js";
 
@@ -35,8 +36,11 @@ export function daiTokenAddress(environment: ethereum.Environment): string {
   }
 }
 
-export function connect(signer: Signer, address: string): ERC20 {
-  return Erc20Factory.connect(address, signer);
+export function connect(
+  signerOrProvider: Signer | ethers.providers.Provider,
+  address: string
+): ERC20 {
+  return Erc20Factory.connect(address, signerOrProvider);
 }
 
 // Start watching an allowance on a given token.

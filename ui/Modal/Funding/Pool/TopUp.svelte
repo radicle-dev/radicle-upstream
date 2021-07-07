@@ -13,6 +13,8 @@
 
   import * as modal from "ui/src/modal";
   import { store } from "ui/src/funding/pool";
+  import { accountBalancesStore } from "ui/src/wallet";
+  import * as ethereum from "ui/src/ethereum";
 
   import Big from "big.js";
 
@@ -27,8 +29,7 @@
   }
 
   let disabled = true;
-  let balance = Big(0);
-  $: balance = $store?.getAccount()?.daiBalance || balance;
+  $: balance = ethereum.toBaseUnit($accountBalancesStore.dai || Big(0));
 </script>
 
 <style>

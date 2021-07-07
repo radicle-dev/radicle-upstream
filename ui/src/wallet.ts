@@ -6,13 +6,12 @@
 
 import WalletConnect from "@walletconnect/client";
 import * as svelteStore from "svelte/store";
-
-import type { Big } from "big.js";
 import * as ethers from "ethers";
 
 import * as daiToken from "ui/src/funding/daiToken";
 import * as error from "ui/src/error";
 import * as modal from "ui/src/modal";
+import * as mutexExecutor from "ui/src/mutexExecutor";
 
 import ModalWalletQRCode from "ui/Modal/Wallet/QRCode.svelte";
 
@@ -37,14 +36,8 @@ export type State =
   | { status: Status.Connected; connected: Connected };
 
 export interface Connected {
-  account: Account;
-  network: Network;
-}
-
-export interface Account {
   address: string;
-  daiBalance: Big;
-  ethBalance: Big;
+  network: Network;
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
@@ -53,8 +46,40 @@ export interface Wallet extends svelteStore.Readable<State> {
   disconnect(): Promise<void>;
   provider: ethers.providers.Provider;
   signer: ethers.Signer;
-  account(): Account | undefined;
+  // Returns the address of the wallet account if the wallet is
+  // connected.
+  getAddress(): string | undefined;
   destroy(): void;
+}
+
+export const accountBalancesStore = svelteStore.writable<{
+  dai: ethers.BigNumber | null;
+  eth: ethers.BigNumber | null;
+}>({ dai: null, eth: null });
+
+const accountBalanceFetch = mutexExecutor.create();
+
+async function updateAccountBalances(
+  environment: Environment,
+  address: string,
+  provider: ethers.providers.Provider
+) {
+  try {
+    const daiTokenContract = daiToken.connect(
+      provider,
+      daiToken.daiTokenAddress(environment)
+    );
+    const result = await accountBalanceFetch.run(async () => {
+      const dai = await daiTokenContract.balanceOf(address);
+      const eth = await provider.getBalance(address);
+      return { eth, dai };
+    });
+    if (result) {
+      accountBalancesStore.set(result);
+    }
+  } catch (err) {
+    error.show(err);
+  }
 }
 
 function getProvider(environment: Environment): ethers.providers.Provider {
@@ -98,10 +123,12 @@ function build(
     environment,
     disconnect
   );
-  const daiTokenContract = daiToken.connect(
-    signer,
-    daiToken.daiTokenAddress(environment)
-  );
+
+  const unsubscribeStateStore = stateStore.subscribe(state => {
+    if (state.status === Status.Connected) {
+      updateAccountBalances(environment, state.connected.address, provider);
+    }
+  });
 
   // Connect to a wallet using walletconnect
   async function connect() {
@@ -144,27 +171,16 @@ function build(
 
   async function initialize() {
     stateStore.set({ status: Status.Connecting });
-    loadAccountData();
+    setAccountData();
   }
 
-  // Load the data of the connected account.
-  async function loadAccountData() {
+  async function setAccountData() {
     try {
       const accountAddress = await signer.getAddress();
-      const daiBalance = await daiTokenContract
-        .balanceOf(accountAddress)
-        .then(ethereum.toBaseUnit);
-      const ethBalance = await provider
-        .getBalance(accountAddress)
-        .then(ethereum.toBaseUnit);
       const chainId = walletConnect.chainId;
 
       const connected = {
-        account: {
-          address: accountAddress,
-          daiBalance,
-          ethBalance,
-        },
+        address: accountAddress,
         network: networkFromChainId(chainId),
       };
       stateStore.set({ status: Status.Connected, connected });
@@ -180,15 +196,17 @@ function build(
   // Periodically refresh the wallet data
   const REFRESH_INTERVAL_MILLIS = 3000;
   const refreshInterval = setInterval(() => {
-    if (svelteStore.get(stateStore).status === Status.Connected) {
-      loadAccountData();
+    const state = svelteStore.get(stateStore);
+    if (state.status === Status.Connected) {
+      setAccountData();
+      updateAccountBalances(environment, state.connected.address, provider);
     }
   }, REFRESH_INTERVAL_MILLIS);
 
-  function account(): Account | undefined {
+  function getAddress(): string | undefined {
     const state = svelteStore.get(stateStore);
     if (state.status === Status.Connected) {
-      return state.connected.account;
+      return state.connected.address;
     }
 
     return undefined;
@@ -201,8 +219,9 @@ function build(
     disconnect,
     provider,
     signer,
-    account,
+    getAddress,
     destroy() {
+      unsubscribeStateStore();
       clearInterval(refreshInterval);
     },
   };
@@ -236,10 +255,6 @@ function newWalletConnect(): WalletConnect {
       },
     },
   });
-}
-
-export function formattedBalance(balance: number): string {
-  return balance.toLocaleString("us-US");
 }
 
 export const store: svelteStore.Readable<Wallet> = svelteStore.derived(

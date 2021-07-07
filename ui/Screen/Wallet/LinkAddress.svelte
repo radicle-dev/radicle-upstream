@@ -13,7 +13,7 @@
   import { lastClaimed } from "../../src/attestation/lastClaimed";
   import { store as walletStore } from "../../src/wallet";
 
-  $: address = $walletStore.account()?.address.toLowerCase();
+  $: address = $walletStore.getAddress()?.toLowerCase();
 
   function onLink() {
     modal.toggle(ModalLinkAddress);

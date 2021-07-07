@@ -6,23 +6,20 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as svelteStore from "svelte/store";
+  import Big from "big.js";
+  import * as ethereum from "ui/src/ethereum";
 
   import { Button } from "ui/DesignSystem";
   import TopUp from "ui/DesignSystem/Funding/Pool/TopUp.svelte";
 
-  import { store as walletStore } from "../../../src/wallet";
-
-  import Big from "big.js";
+  import { accountBalancesStore } from "ui/src/wallet";
 
   export let amount = "";
   export let onBack: () => void;
   export let onContinue: () => void;
 
   let disabled = true;
-  let accountBalance = Big(0);
-  $: accountBalance =
-    svelteStore.get(walletStore).account()?.daiBalance || accountBalance;
+  $: balance = ethereum.toBaseUnit($accountBalancesStore.dai || Big(0));
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter" && !disabled) {
@@ -33,10 +30,6 @@
 
 <svelte:window on:keydown={onKeydown} />
 
-<TopUp
-  bind:amount
-  balance={accountBalance}
-  onBack={["Back", onBack]}
-  bind:disabled>
+<TopUp bind:amount {balance} onBack={["Back", onBack]} bind:disabled>
   <Button on:click={onContinue} {disabled}>Continue</Button>
 </TopUp>

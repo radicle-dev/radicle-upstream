@@ -11,7 +11,7 @@ import * as daiToken from "./daiToken";
 import * as transaction from "../transaction";
 import * as validation from "../validation";
 
-import { Wallet, Account, Status as WalletStatus } from "../wallet";
+import { Wallet, Status as WalletStatus } from "../wallet";
 import * as remote from "../remote";
 import { toBaseUnit } from "../ethereum";
 
@@ -23,9 +23,6 @@ export const store = svelteStore.writable<Pool | null>(null);
 
 export interface Pool {
   data: remote.Store<PoolData>;
-
-  // Get the account that owns this pool.
-  getAccount: () => Account | undefined;
 
   // Onboard the user's pool with the intial values
   onboard(topUp: Big, weeklyBudget: Big, receivers: Receivers): Promise<void>;
@@ -106,19 +103,12 @@ export function make(wallet: Wallet): Pool {
     if (storedWallet.status !== WalletStatus.Connected) {
       return;
     }
-    const ethAddr = storedWallet.connected.account.address;
+    const ethAddr = storedWallet.connected.address;
     try {
       data.success(await watcher.poolData(ethAddr));
     } catch (error) {
       data.error(error);
     }
-  }
-
-  function getAccount(): Account | undefined {
-    const w = svelteStore.get(wallet);
-    return w.status === WalletStatus.Connected
-      ? w.connected.account
-      : undefined;
   }
 
   async function onboard(
@@ -202,7 +192,6 @@ export function make(wallet: Wallet): Pool {
 
   return {
     data,
-    getAccount,
     onboard,
     updateSettings,
     topUp,

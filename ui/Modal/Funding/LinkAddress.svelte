@@ -31,7 +31,7 @@
     modal.hide();
   }
 
-  $: address = $walletStore.account()?.address || "";
+  $: address = $walletStore.getAddress() || "";
 
   async function claim(ident: identity.Identity) {
     $lastClaimed = address.toLowerCase();
