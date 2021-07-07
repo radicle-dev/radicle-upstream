@@ -12,10 +12,8 @@ import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
-import * as ethereum from "ui/src/ethereum";
 import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
-import * as ipc from "ui/src/ipc";
 
 import type { SvelteComponent } from "svelte";
 import { Icon } from "ui/DesignSystem";
@@ -53,14 +51,19 @@ export interface TxData {
 
 // The meta transactions that we provide to the user.
 type MetaTx =
+  | AnchorProject
   | ClaimRadicleIdentity
+  | CollectFunds
   | CreateOrg
   | Erc20Allowance
   | SupportOnboarding
   | TopUp
-  | CollectFunds
   | UpdateSupport
   | Withdraw;
+
+interface AnchorProject {
+  kind: TxKind.AnchorProject;
+}
 
 interface CreateOrg {
   kind: TxKind.CreateOrg;
@@ -110,14 +113,15 @@ interface UpdateSupport {
 }
 
 export enum TxKind {
+  AnchorProject = "Anchor Project",
   ClaimRadicleIdentity = "Claim Radicle Identity",
+  CollectFunds = "Collect Funds",
   CreateOrg = "Create Org",
   Erc20Allowance = "ERC-20 Allowance",
   SupportOnboarding = "Support Onboarding",
-  Withdraw = "Withdraw",
   TopUp = "Top Up",
-  CollectFunds = "Collect Funds",
   UpdateSupport = "Update Support",
+  Withdraw = "Withdraw",
 }
 
 export enum TxStatus {
@@ -130,6 +134,10 @@ export enum TxStatus {
 }
 
 /* Smart constructors for `Tx` values */
+
+export function anchorProject(txc: ContractTransaction): Tx {
+  return { ...txData(txc), kind: TxKind.AnchorProject };
+}
 
 export function createOrg(txc: ContractTransaction): Tx {
   return { ...txData(txc), kind: TxKind.CreateOrg };
@@ -354,6 +362,7 @@ function direction(tx: Tx): Direction {
     case TxKind.Withdraw:
       return Direction.Incoming;
 
+    case TxKind.AnchorProject:
     case TxKind.CreateOrg:
     case TxKind.ClaimRadicleIdentity:
     case TxKind.Erc20Allowance:
@@ -366,6 +375,8 @@ function direction(tx: Tx): Direction {
 
 export function emoji(tx: Tx): string {
   switch (tx.kind) {
+    case TxKind.AnchorProject:
+      return "🏖️";
     case TxKind.CreateOrg:
       return "🎪";
     case TxKind.ClaimRadicleIdentity:
@@ -398,6 +409,8 @@ export function txIcon(tx: Tx): typeof SvelteComponent {
       return Icon.TokenStreams;
     case TxKind.CreateOrg:
       return Icon.Orgs;
+    case TxKind.AnchorProject:
+      return Icon.Anchor;
   }
 }
 
@@ -442,21 +455,3 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
     source: error.fromJsError(e),
   });
 }
-
-export const openTxOnEtherscan = (transactionId: string): void => {
-  const environment = svelteStore.get(walletStore).environment;
-
-  switch (environment) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Etherscan links are not supported on the Local testnet",
-      });
-    case ethereum.Environment.Rinkeby:
-      ipc.openUrl(`https://rinkeby.etherscan.io/tx/${transactionId}`);
-      break;
-    case ethereum.Environment.Mainnet:
-      ipc.openUrl(`https://etherscan.io/tx/${transactionId}`);
-      break;
-  }
-};

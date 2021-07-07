@@ -114,7 +114,7 @@
   {#if tx}
     <header>
       <Summary {tx} />
-      {#if !(tx.kind === TxKind.ClaimRadicleIdentity || tx.kind === TxKind.CreateOrg)}
+      {#if !(tx.kind === TxKind.ClaimRadicleIdentity || tx.kind === TxKind.CreateOrg || tx.kind === TxKind.AnchorProject)}
         <div class="from-to" class:incoming>
           <div>
             <p class="typo-text-bold" style="margin-bottom: 0.5rem">

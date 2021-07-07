@@ -12,8 +12,8 @@
   import * as style from "ui/src/style";
 
   export let orgAddress: string;
-  export let gnosisSafeAddress: string;
-  export let threshold: number;
+  export let ownerAddress: string;
+  export let threshold: number | undefined = undefined;
 </script>
 
 <style>
@@ -50,12 +50,19 @@
       {style.ellipsed(orgAddress)}
     </h1>
     <div class="row">
-      <Icon.Gnosis />{style.ellipsed(gnosisSafeAddress)}
+      {#if threshold}
+        <Icon.Gnosis />
+      {:else}
+        <Icon.Ethereum />
+      {/if}
+      {style.ellipsed(ownerAddress)}
     </div>
-    <div class="row">
-      <Icon.Orgs />
-      {threshold}
-      {threshold === 1 ? "signature" : "signatures"} required for quorum
-    </div>
+    {#if threshold}
+      <div class="row">
+        <Icon.Orgs />
+        {threshold}
+        {threshold === 1 ? "signature" : "signatures"} required for quorum
+      </div>
+    {/if}
   </div>
 </div>

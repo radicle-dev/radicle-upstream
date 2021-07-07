@@ -35,6 +35,7 @@
   import NetworkDiagnostics from "ui/Screen/NetworkDiagnostics.svelte";
   import Onboarding from "ui/Screen/Onboarding.svelte";
   import Org from "ui/Screen/Org.svelte";
+  import SingleSigOrg from "ui/Screen/SingleSigOrg.svelte";
   import Profile from "ui/Screen/Profile.svelte";
   import UserProfile from "ui/Screen/UserProfile.svelte";
   import Project from "ui/Screen/Project.svelte";
@@ -94,7 +95,8 @@
   $: if (
     walletState.status === walletModule.Status.Connected &&
     connectedNetwork !== walletState.connected.network &&
-    $activeRouteStore.type === "org"
+    ($activeRouteStore.type === "singleSigOrg" ||
+      $activeRouteStore.type === "multiSigOrg")
   ) {
     router.push({ type: "wallet", activeTab: "transactions" });
   }
@@ -130,7 +132,13 @@
     <UserProfile urn={$activeRouteStore.urn} />
   {:else if $activeRouteStore.type === "networkDiagnostics"}
     <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
-  {:else if $activeRouteStore.type === "org"}
+  {:else if $activeRouteStore.type === "singleSigOrg"}
+    <SingleSigOrg
+      address={$activeRouteStore.address}
+      owner={$activeRouteStore.owner}
+      projectCount={$activeRouteStore.projectCount}
+      anchors={$activeRouteStore.anchors} />
+  {:else if $activeRouteStore.type === "multiSigOrg"}
     <Org
       activeTab={$activeRouteStore.activeTab}
       address={$activeRouteStore.address}

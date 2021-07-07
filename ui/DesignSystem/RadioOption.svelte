@@ -8,9 +8,9 @@
 <script lang="typescript">
   import { slide } from "svelte/transition";
 
-  export let title = "";
   export let active: boolean = false;
-  export let dataCy = "";
+  export let title: string | undefined = undefined;
+  export let dataCy: string | undefined = undefined;
 </script>
 
 <style>
@@ -33,7 +33,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    height: 4.5rem;
+    min-height: 4.5rem;
     cursor: pointer;
     user-select: none;
   }
@@ -47,9 +47,12 @@
 
 <div class="option button-transition" class:active data-cy={dataCy}>
   <div class="header" on:click>
-    <p class="typo-text-bold" style="color: var(--color-foreground-level-6)">
-      {title}
-    </p>
+    {#if title}
+      <p class="typo-text-bold" style="color: var(--color-foreground-level-6)">
+        {title}
+      </p>
+    {/if}
+    <slot name="option-header" />
   </div>
   {#if active}
     <div class="body" in:slide>

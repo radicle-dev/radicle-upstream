@@ -100,6 +100,8 @@ export async function getOrgs(walletOwnerAddress: string): Promise<Org[]> {
     await getGnosisSafeWallets(walletOwnerAddress)
   ).data.wallets;
 
+  const multiSigOwners = gnosisSafeWallets.map(owner => owner.id);
+
   const orgsResponse = await orgsSubgraphClient().query<{
     orgs: Array<{
       id: string;
@@ -119,7 +121,7 @@ export async function getOrgs(walletOwnerAddress: string): Promise<Org[]> {
           }
         }
       `,
-    variables: { owners: gnosisSafeWallets.map(owner => owner.id) },
+    variables: { owners: [walletOwnerAddress, ...multiSigOwners] },
   });
 
   return orgsResponse.data.orgs.map(org => ({
@@ -167,6 +169,7 @@ export async function getOrgProjectAnchors(
               id
               objectId
               multihash
+              timestamp
             }
           }
         }
@@ -181,6 +184,8 @@ export async function getOrgProjectAnchors(
         id: string;
         objectId: string;
         multihash: string;
+        // This is a UNIX seconds timestamp formatted as a string
+        timestamp: number;
       };
     }) => {
       const decodedProjectId = urn.identitySha1Urn(
@@ -198,6 +203,7 @@ export async function getOrgProjectAnchors(
         transactionId: project.anchor.id,
         projectId: decodedProjectId,
         commitHash: decodedCommitHash,
+        timestamp: project.anchor.timestamp,
       };
 
       return anchor;

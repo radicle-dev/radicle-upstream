@@ -97,8 +97,7 @@ function createSafeServiceClient(
     case Ethereum.Environment.Local:
       throw new error.Error({
         code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message:
-          "Pending Gnosis Safe transactions are not available on the Local testnet.",
+        message: "Orgs are not available in the Local environment.",
       });
     case Ethereum.Environment.Rinkeby:
       uri = "https://safe-transaction.rinkeby.gnosis.io";

@@ -14,6 +14,7 @@
   export let gnosisSafeAddress: string;
   export let availableProjectCount: number = 0;
   export let hasPendingAnchors = false;
+  export let isMultiSig: boolean;
 
   let tooltipMessage: string = "";
   let disabled: boolean = false;
@@ -36,7 +37,8 @@
     {disabled}
     variant="transparent"
     icon={Icon.Anchor}
-    on:click={() => org.openAnchorProjectModal(orgAddress, gnosisSafeAddress)}>
+    on:click={() =>
+      org.openAnchorProjectModal(orgAddress, gnosisSafeAddress, isMultiSig)}>
     Anchor a project
   </Button>
 </Tooltip>

@@ -10,7 +10,7 @@
 
   import type * as project from "ui/src/project";
 
-  import * as transaction from "ui/src/transaction";
+  import * as org from "ui/src/org";
   import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
   import * as style from "ui/src/style";
@@ -33,7 +33,7 @@
   };
 
   const bindOpenEtherscan = (txId: string) => () => {
-    transaction.openTxOnEtherscan(txId);
+    org.openOnEtherscan(txId);
   };
 
   $: anchorColor =

@@ -8,19 +8,53 @@
 <script lang="typescript">
   import type { Identity } from "ui/src/identity";
 
-  import { Avatar, Button, Copyable, Modal } from "ui/DesignSystem";
+  import {
+    Avatar,
+    Button,
+    Copyable,
+    Modal,
+    RadioOption,
+    TextInput,
+  } from "ui/DesignSystem";
 
-  import * as org from "ui/src/org";
-  import { ellipsed } from "ui/src/style";
+  import * as ethereum from "ui/src/ethereum";
   import * as modal from "ui/src/modal";
+  import * as org from "ui/src/org";
+  import * as style from "ui/src/style";
+  import * as validation from "ui/src/validation";
 
   export let identity: Identity;
   export let walletAddress: string;
 
-  const createOrg = async (owner: string): Promise<void> => {
+  let ownerAddress: string = walletAddress;
+
+  let isMultiSig: boolean | undefined = undefined;
+  let ownerValidationState: validation.ValidationState;
+  let validOwnerAddress = false;
+
+  $: {
+    if (ownerAddress.match(ethereum.VALID_ADDRESS_MATCH)) {
+      ownerValidationState = {
+        status: validation.ValidationStatus.Success,
+      };
+      validOwnerAddress = true;
+    } else {
+      ownerValidationState = {
+        status: validation.ValidationStatus.Error,
+        message: "This does not look like a valid Ethereum address",
+      };
+      validOwnerAddress = false;
+    }
+  }
+
+  async function createOrg(): Promise<void> {
     modal.hide();
-    await org.createOrg(owner);
-  };
+    if (isMultiSig) {
+      await org.createOrg(walletAddress, true);
+    } else {
+      await org.createOrg(ownerAddress, false);
+    }
+  }
 </script>
 
 <style>
@@ -47,28 +81,85 @@
   title="Create a new org"
   desc="This will create a gnosis safe that manages the org contract where wallet
 you’ve connected to upstream will be the first member.">
-  <p class="typo-text-bold" style="padding: 0 0 0.5rem 1rem; width: 100%;">
-    First member
-  </p>
-  <div class="member-box">
-    <Avatar
-      style="margin-right: 16px"
-      size="small"
-      variant="circle"
-      title={identity.metadata.handle}
-      avatarFallback={identity.avatarFallback} />
-    <Copyable
-      showIcon={false}
-      styleContent={false}
-      copyContent={walletAddress}
-      notificationText="Address copied to the clipboard">
-      {ellipsed(walletAddress)}
-    </Copyable>
-  </div>
+  <RadioOption
+    active={isMultiSig !== undefined && !isMultiSig}
+    on:click={ev => {
+      ev.stopPropagation();
+      isMultiSig = false;
+    }}>
+    <div slot="option-header" style="margin: 1rem;">
+      <p
+        class="typo-text-bold"
+        style="margin-bottom: 1rem; color: var(--color-foreground-level-6); text-align: center;">
+        Single-signer
+      </p>
+      <p style="color: var(--color-foreground-level-6); text-align: center">
+        Creates an org with the specified address as the only owner. Org
+        transactions such as anchoring can be signed and executed directly from
+        your wallet.
+      </p>
+    </div>
+    <div slot="option-body">
+      <p
+        class="typo-text-bold"
+        style="text-align: left; padding: 0 0 0.5rem 1rem; width: 100%;">
+        Owner
+      </p>
+      <TextInput
+        bind:value={ownerAddress}
+        placeholder="Enter owner address"
+        showSuccessCheck
+        validation={ownerValidationState} />
+    </div>
+  </RadioOption>
+
+  <RadioOption
+    active={isMultiSig !== undefined && isMultiSig}
+    on:click={ev => {
+      ev.stopPropagation();
+      isMultiSig = true;
+    }}>
+    <div slot="option-header" style="margin: 1rem;">
+      <p
+        class="typo-text-bold"
+        style="margin-bottom: 1rem; color: var(--color-foreground-level-6); text-align: center;">
+        Multi-signer
+      </p>
+      <p style="color: var(--color-foreground-level-6); text-align: center">
+        Creates an org with a Gnosis Safe as its owner, and the specified
+        address as its first member. Transactions such as anchoring have to be
+        approved by a quorum of signers.
+      </p>
+    </div>
+    <div slot="option-body">
+      <p
+        class="typo-text-bold"
+        style="text-align: left; padding: 0 0 0.5rem 1rem; width: 100%;">
+        First member
+      </p>
+      <div class="member-box">
+        <Avatar
+          style="margin-right: 1rem;"
+          size="small"
+          variant="circle"
+          title={identity.metadata.handle}
+          avatarFallback={identity.avatarFallback} />
+        <Copyable
+          showIcon={false}
+          styleContent={false}
+          copyContent={walletAddress}
+          notificationText="Address copied to the clipboard">
+          {style.ellipsed(walletAddress)}
+        </Copyable>
+      </div>
+    </div>
+  </RadioOption>
 
   <div class="actions">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
-    <Button on:click={() => createOrg(walletAddress)}>
+    <Button
+      disabled={isMultiSig === undefined || (!isMultiSig && !validOwnerAddress)}
+      on:click={() => createOrg()}>
       Confirm in your wallet
     </Button>
   </div>

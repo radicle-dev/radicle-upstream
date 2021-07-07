@@ -75,14 +75,24 @@ export type LoadedOrgTab =
       members: org.Member[];
     };
 
-interface OrgLoadedRoute {
-  type: "org";
+interface MultiSigOrgLoadedRoute {
+  type: "multiSigOrg";
   address: string;
   gnosisSafeAddress: string;
   activeTab: LoadedOrgTab;
   threshold: number;
   members: org.Member[];
 }
+
+interface SingleSigOrgLoadedRoute {
+  type: "singleSigOrg";
+  address: string;
+  owner: string;
+  projectCount: number;
+  anchors: org.OrgAnchors;
+}
+
+type OrgLoadedRoute = SingleSigOrgLoadedRoute | MultiSigOrgLoadedRoute;
 
 export function routeToPath(route: Route): string {
   let subRoute = "";
@@ -106,41 +116,68 @@ export async function loadRoute(route: Route): Promise<LoadedRoute> {
 }
 
 async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
-  if (route.activeTab === "projects") {
-    const [projectCount, orgWithSafe] = await Promise.all([
-      org.getProjectCount(),
-      org.fetchOrg(route.address),
-    ]);
-    const anchors = await org.resolveProjectAnchors(orgWithSafe);
+  const owner = await org.getOwner(route.address);
+  const isMultiSig = await org.isMultiSig(owner);
 
-    return {
-      type: "org",
-      address: route.address,
-      gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
-      members: orgWithSafe.members,
-      threshold: orgWithSafe.threshold,
-      activeTab: {
-        type: "projects",
-        anchors,
-        gnosisSafeAddress: orgWithSafe.gnosisSafeAddress,
-        projectCount,
-      },
-    };
-  } else if (route.activeTab === "members") {
-    const orgScreen = await org.fetchOrg(route.address);
-    return {
-      type: "org",
-      address: route.address,
-      gnosisSafeAddress: orgScreen.gnosisSafeAddress,
-      members: orgScreen.members,
-      threshold: orgScreen.threshold,
-      activeTab: {
-        type: "members",
-        members: orgScreen.members,
-        threshold: orgScreen.threshold,
-      },
-    };
+  if (isMultiSig) {
+    if (route.activeTab === "projects") {
+      const [projectCount, { members, threshold }] = await Promise.all([
+        org.getProjectCount(),
+        org.fetchSafeMembers(owner),
+      ]);
+      const anchors = await org.resolveProjectAnchors({
+        orgAddress: route.address,
+        gnosisSafeAddress: owner,
+        members,
+        threshold,
+      });
+
+      return {
+        type: "multiSigOrg",
+        address: route.address,
+        gnosisSafeAddress: owner,
+        members,
+        threshold,
+        activeTab: {
+          type: "projects",
+          anchors,
+          gnosisSafeAddress: owner,
+          projectCount,
+        },
+      };
+    } else if (route.activeTab === "members") {
+      const { members, threshold } = await org.fetchSafeMembers(owner);
+      return {
+        type: "multiSigOrg",
+        address: route.address,
+        gnosisSafeAddress: owner,
+        members,
+        threshold,
+        activeTab: {
+          type: "members",
+          members,
+          threshold,
+        },
+      };
+    } else {
+      return unreachable(route.activeTab);
+    }
   } else {
-    return unreachable(route.activeTab);
+    const projectCount = await org.getProjectCount();
+    const anchors = await org.resolveProjectAnchors({
+      orgAddress: route.address,
+      // TODO The data we pass in here only serves as dummy data that
+      // enriches the project anchor data
+      gnosisSafeAddress: owner,
+      members: [],
+      threshold: 0,
+    });
+    return {
+      type: "singleSigOrg",
+      address: route.address,
+      owner,
+      projectCount,
+      anchors,
+    };
   }
 }

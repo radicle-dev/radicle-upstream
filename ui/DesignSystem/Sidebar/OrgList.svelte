@@ -40,7 +40,8 @@
         indicator={true}
         onClick={() =>
           push({ type: "org", address: org.id, activeTab: "projects" })}
-        active={$activeRouteStore.type === "org" &&
+        active={($activeRouteStore.type === "singleSigOrg" ||
+          $activeRouteStore.type === "multiSigOrg") &&
           $activeRouteStore.address === org.id}>
         <Avatar
           size="regular"

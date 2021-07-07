@@ -96,7 +96,7 @@
     <OrgHeader
       slot="left"
       orgAddress={address}
-      {gnosisSafeAddress}
+      ownerAddress={gnosisSafeAddress}
       {threshold} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
@@ -111,6 +111,7 @@
     <div slot="right">
       {#if activeTab.type === "projects"}
         <ProjectsMenu
+          isMultiSig={true}
           orgAddress={address}
           {gnosisSafeAddress}
           availableProjectCount={activeTab.projectCount}
@@ -126,8 +127,9 @@
 
   {#if activeTab.type === "projects"}
     <ProjectsTab
+      isMultiSig={true}
       {address}
-      {gnosisSafeAddress}
+      ownerAddress={gnosisSafeAddress}
       disableAnchorCreation={activeTab.projectCount === 0}
       anchors={activeTab.anchors} />
   {:else if activeTab.type === "members"}

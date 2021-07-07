@@ -37,6 +37,7 @@ interface ConfirmedAnchor {
   orgAddress: string;
   projectId: string;
   commitHash: string;
+  timestamp: number;
 }
 
 export interface PendingAnchor {
@@ -46,6 +47,7 @@ export interface PendingAnchor {
   orgAddress: string;
   projectId: string;
   commitHash: string;
+  timestamp: number;
 }
 
 export type Anchor = ConfirmedAnchor | PendingAnchor;

@@ -8,6 +8,7 @@ import Big from "big.js";
 import * as ethers from "ethers";
 import persistentStore from "svelte-persistent-store/dist";
 import * as config from "ui/src/config";
+import * as error from "ui/src/error";
 
 import { Environment, Network, supportedNetwork } from "./environment";
 
@@ -37,4 +38,20 @@ export function toBaseUnit(n: ethers.BigNumber | Big): Big {
 
 export function fromBaseUnit(n: Big): ethers.BigNumber {
   return ethers.BigNumber.from(n.mul(TOKEN_DECIMALS).round().toString());
+}
+
+export const VALID_ADDRESS_MATCH = /^0x[a-fA-F0-9]{40}$/;
+
+export function etherscanUrl(ethEnv: Environment, query: string): string {
+  switch (ethEnv) {
+    case Environment.Local:
+      throw new error.Error({
+        code: error.Code.FeatureNotAvailableForGivenNetwork,
+        message: "Etherscan links are not supported on the Local environment",
+      });
+    case Environment.Rinkeby:
+      return `https://rinkeby.etherscan.io/search?f=0&q=${query}`;
+    case Environment.Mainnet:
+      return `https://etherscan.io/search?f=0&q=${query}`;
+  }
 }

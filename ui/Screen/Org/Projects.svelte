@@ -20,8 +20,9 @@
 
   export let address: string;
   export let anchors: org.OrgAnchors;
-  export let gnosisSafeAddress: string;
+  export let ownerAddress: string;
   export let disableAnchorCreation = false;
+  export let isMultiSig: boolean;
 
   const select = ({ detail: project }: { detail: Project }) => {
     router.push({
@@ -96,11 +97,13 @@
     <EmptyState
       emoji="🪴"
       text="Get started by anchoring your organization’s first project."
-      primaryActionText="Anchor with Gnosis Safe"
+      primaryActionText={isMultiSig
+        ? "Anchor with Gnosis Safe"
+        : "Anchor Project"}
       primaryActionDisabled={disableAnchorCreation}
       primaryActionTooltipMessage="Create or follow a project first"
       on:primaryAction={() => {
-        org.openAnchorProjectModal(address, gnosisSafeAddress);
+        org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
       }} />
   {/if}
 </div>

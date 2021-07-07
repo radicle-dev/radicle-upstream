@@ -24,7 +24,8 @@
 
   export let projects: org.ProjectOption[];
   export let orgAddress: string;
-  export let gnosisSafeAddress: string;
+  export let ownerAddress: string;
+  export let isMultiSig: boolean;
 
   // Project selector
 
@@ -105,18 +106,27 @@
     commit = commits.history[0];
   }
 
-  const createAnchor = async () => {
+  async function createAnchor(): Promise<void> {
     if (!selectedProjectUrn || !commit) {
       return;
     }
     modal.hide();
-    await org.anchorProject(
-      orgAddress,
-      gnosisSafeAddress,
-      selectedProjectUrn,
-      commit.sha1
-    );
-  };
+
+    if (isMultiSig) {
+      await org.anchorProjectWithGnosis(
+        orgAddress,
+        ownerAddress,
+        selectedProjectUrn,
+        commit.sha1
+      );
+    } else {
+      await org.anchorProjectWithWallet(
+        orgAddress,
+        selectedProjectUrn,
+        commit.sha1
+      );
+    }
+  }
 
   let commit: source.CommitHeader | undefined;
 </script>

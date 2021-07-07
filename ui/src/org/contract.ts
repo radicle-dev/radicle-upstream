@@ -14,7 +14,10 @@ import * as ethers from "ethers";
 import * as multihash from "multihashes";
 import * as urn from "ui/src/urn";
 
+export type { TransactionResponse };
+
 const orgFactoryAbi = [
+  "function createOrg(address) returns (address)",
   "function createOrg(address[], uint256) returns (address)",
   "event OrgCreated(address, address)",
 ];
@@ -41,14 +44,19 @@ function orgFactoryAddress(network: ethereum.Environment): string {
 export function submitCreateOrgTx(
   environment: ethereum.Environment,
   owner: string,
-  signer: ethers.Signer
+  signer: ethers.Signer,
+  isMultiSig: boolean
 ): Promise<TransactionResponse> {
   const orgFactory = new ethers.Contract(
     orgFactoryAddress(environment),
     orgFactoryAbi,
     signer
   );
-  return orgFactory.createOrg([owner], 1);
+  if (isMultiSig) {
+    return orgFactory["createOrg(address[],uint256)"]([owner], 1);
+  } else {
+    return orgFactory["createOrg(address)"](owner);
+  }
 }
 
 export function parseOrgCreatedReceipt(receipt: TransactionReceipt): string {
@@ -94,16 +102,12 @@ export async function generateAnchorProjectTxData(
   projectUrn: string,
   commitHash: string
 ): Promise<string> {
-  const encodedProjectUrn = ethers.utils.zeroPad(
-    urn.parseIdentitySha1(projectUrn),
-    32
-  );
-  const encodedCommitHash = multihash.encode(
-    ethers.utils.arrayify(`0x${commitHash}`),
-    "sha1"
-  );
-
   const orgContract = new ethers.Contract(ethers.constants.AddressZero, orgAbi);
+
+  const { encodedProjectUrn, encodedCommitHash } = encodeAnchorData(
+    projectUrn,
+    commitHash
+  );
 
   const orgContractInstance = await orgContract.populateTransaction.anchor(
     encodedProjectUrn,
@@ -119,6 +123,42 @@ export async function generateAnchorProjectTxData(
     });
   }
   return txData;
+}
+
+// Submits a anchoring transaction for orgs controlled directly by `signer`.
+export function submitSingleSigAnchor(
+  projectUrn: string,
+  commitHash: string,
+  orgAddress: string,
+  signer: ethers.Signer
+): Promise<TransactionResponse> {
+  const org = new ethers.Contract(orgAddress, orgAbi, signer);
+  const { encodedProjectUrn, encodedCommitHash } = encodeAnchorData(
+    projectUrn,
+    commitHash
+  );
+
+  return org.anchor(
+    encodedProjectUrn,
+    ethers.constants.Zero,
+    encodedCommitHash
+  );
+}
+
+function encodeAnchorData(
+  projectUrn: string,
+  commitHash: string
+): { encodedProjectUrn: Uint8Array; encodedCommitHash: Uint8Array } {
+  const encodedProjectUrn = ethers.utils.zeroPad(
+    urn.parseIdentitySha1(projectUrn),
+    32
+  );
+  const encodedCommitHash = multihash.encode(
+    ethers.utils.arrayify(`0x${commitHash}`),
+    "sha1"
+  );
+
+  return { encodedProjectUrn, encodedCommitHash };
 }
 
 interface AnchorData {
