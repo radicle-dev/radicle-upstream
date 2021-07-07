@@ -2824,6 +2824,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"async-mutex@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "async-mutex@npm:0.3.1"
+  dependencies:
+    tslib: ^2.1.0
+  checksum: 39468028c2d4f09157ca28a8037d0deae21999fa0fce6dfe893e7344789891211fc9363efe0889283f69a35730ed0ec604d552d041adeb8fab1262131d3e4431
+  languageName: node
+  linkType: hard
+
 "async@npm:0.9.x":
   version: 0.9.2
   resolution: "async@npm:0.9.2"
@@ -9805,6 +9814,7 @@ __metadata:
     "@typescript-eslint/parser": ^4.26.1
     "@walletconnect/client": ^1.4.1
     assert: ^2.0.0
+    async-mutex: ^0.3.1
     baconjs: ^3.0.17
     big.js: ^6.1.1
     buffer: ^6.0.3

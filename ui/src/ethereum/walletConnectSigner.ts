@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type WalletConnect from "@walletconnect/client";
 import * as ethers from "ethers";
 import * as ethersBytes from "@ethersproject/bytes";
 import type {
@@ -19,28 +18,27 @@ import {
 } from "@ethersproject/properties";
 
 import { Environment } from "./environment";
+import type { WalletConnect } from "./walletConnect";
 
 export class WalletConnectSigner extends ethers.Signer {
-  public walletConnect: WalletConnect;
+  private walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
   private _environment: Environment;
 
   constructor(
     walletConnect: WalletConnect,
     provider: Provider,
-    environment: Environment,
-    onDisconnect: () => void
+    environment: Environment
   ) {
     super();
     defineReadOnly(this, "provider", provider);
     this._provider = provider;
     this._environment = environment;
     this.walletConnect = walletConnect;
-    this.walletConnect.on("disconnect", onDisconnect);
   }
 
   async getAddress(): Promise<string> {
-    const accountAddress = this.walletConnect.accounts[0];
+    const accountAddress = this.walletConnect.getConnection()?.accountAddress;
     if (!accountAddress) {
       throw new Error(
         "The connected wallet has no accounts or there is a connection problem"
@@ -56,10 +54,10 @@ export class WalletConnectSigner extends ethers.Signer {
     const msg = ethers.utils.concat([prefix, message]);
     const address = await this.getAddress();
     const keccakMessage = ethers.utils.keccak256(msg);
-    const signature = await this.walletConnect.signMessage([
+    const signature = await this.walletConnect.signMessage(
       address.toLowerCase(),
-      keccakMessage,
-    ]);
+      keccakMessage
+    );
     return signature;
   }
 
