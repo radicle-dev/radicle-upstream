@@ -161,7 +161,7 @@ function encodeAnchorData(
   return { encodedProjectUrn, encodedCommitHash };
 }
 
-interface AnchorData {
+export interface AnchorData {
   projectId: string;
   commitHash: string;
 }

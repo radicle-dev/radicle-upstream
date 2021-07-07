@@ -27,21 +27,22 @@
   import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
   import MembersMenu from "ui/Screen/Org/MembersMenu.svelte";
+  import type * as orgRoute from "./Org/route";
 
-  export let activeTab: router.LoadedOrgTab;
+  export let activeTab: orgRoute.MultiSigView;
   export let gnosisSafeAddress: string;
   export let address: string;
   export let members: org.Member[];
   export let threshold: number;
 
-  const tabs = (address: string, active: router.LoadedOrgTab) => {
+  const tabs = (address: string, active: orgRoute.MultiSigView) => {
     return [
       {
         title: "Anchored Projects",
         icon: Icon.ChevronLeftRight,
         active: active.type === "projects",
         onClick: () => {
-          router.push({ type: "org", activeTab: "projects", address });
+          router.push({ type: "org", params: { view: "projects", address } });
         },
       },
       {
@@ -50,7 +51,7 @@
         active: active.type === "members",
         counter: members.length,
         onClick: () => {
-          router.push({ type: "org", activeTab: "members", address });
+          router.push({ type: "org", params: { view: "members", address } });
         },
       },
     ];

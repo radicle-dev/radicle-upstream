@@ -140,7 +140,7 @@
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "multiSigOrg"}
     <Org
-      activeTab={$activeRouteStore.activeTab}
+      activeTab={$activeRouteStore.view}
       address={$activeRouteStore.address}
       gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}
       threshold={$activeRouteStore.threshold}
