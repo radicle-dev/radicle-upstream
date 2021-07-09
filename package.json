@@ -178,7 +178,7 @@
     "pure-svg-code": "^1.0.6",
     "qs": "^6.10.1",
     "radicle-avatar": "https://github.com/radicle-dev/radicle-avatar.git#commit=28033ef5a562aeb52c2e77c008021d27c3b24f4e",
-    "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26",
+    "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=157a5b59df94704702623765198deb4ba70ace84",
     "semver": "^7.3.5",
     "stream-browserify": "^3.0.0",
     "svelte-persistent-store": "^0.1.6",

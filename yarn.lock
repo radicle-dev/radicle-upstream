@@ -9762,15 +9762,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radicle-contracts@github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26":
+"radicle-contracts@github:radicle-dev/radicle-contracts#commit=157a5b59df94704702623765198deb4ba70ace84":
   version: 0.1.0
-  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=752cf0767c6ba7428c626abf91ae1874de613f26"
+  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=157a5b59df94704702623765198deb4ba70ace84"
   dependencies:
     "@ethersproject/abi": ^5.1.2
     "@ethersproject/bytes": ^5.1.0
     "@ethersproject/providers": ^5.1.2
     ethers: ^5.1.4
-  checksum: 4ac258434d0042bcbfec457301128b7a8f91006f0a42fb353463ceb395e42db808bb8e9da0e8c771f88646f96855d07b5b9bdc3062583645281e88ea6dc133d9
+  checksum: 852c25f9c61706eca29739af84d8ecf7833c6ae06b74a1d5e5948de0c56c9c826d6d1b695262eb4a22547610aa5e56a559400717ee3819ce4711d0a401923e00
   languageName: node
   linkType: hard
 
@@ -9844,7 +9844,7 @@ __metadata:
     pure-svg-code: ^1.0.6
     qs: ^6.10.1
     radicle-avatar: "https://github.com/radicle-dev/radicle-avatar.git#commit=28033ef5a562aeb52c2e77c008021d27c3b24f4e"
-    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=752cf0767c6ba7428c626abf91ae1874de613f26"
+    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=157a5b59df94704702623765198deb4ba70ace84"
     semver: ^7.3.5
     sinon: ^11.1.1
     spdx-expression-parse: ^3.0.1

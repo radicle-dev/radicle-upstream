@@ -97,7 +97,7 @@ export class ClaimsContract {
     const listener = async (_: unknown, event: ethers.Event) => {
       getClaim.submit(event.transactionHash);
     };
-    await this.contract.on(filter, listener);
+    this.contract.on(filter, listener);
 
     const lastEvent = (await this.contract.queryFilter(filter)).pop();
     let claimed;
@@ -128,17 +128,16 @@ export class ClaimsContract {
     if (tx.from.toLowerCase() !== address.toLowerCase()) {
       throw new Error("Claim transaction sent by an invalid address");
     }
-    if (tx.to.toLowerCase() !== this.contract.address.toLowerCase()) {
+    if (tx.to?.toLowerCase() !== this.contract.address.toLowerCase()) {
       throw new Error("Claim transaction sent to an invalid contract");
     }
-    const [format, payloadRaw]: [ethers.BigNumberish, ethers.BytesLike] =
-      this.contract.interface.decodeFunctionData("claim", tx.data);
-    if (FORMAT_SHA1.eq(format) === false) {
+    const args = this.contract.interface.decodeFunctionData("claim", tx.data);
+    if (FORMAT_SHA1.eq(args[0]) === false) {
       throw new Error(
-        `Bad claim transaction payload format version ${format.toString()}`
+        `Bad claim transaction payload format version ${args[0].toString()}`
       );
     }
-    const payload = ethers.utils.arrayify(payloadRaw);
+    const payload = ethers.utils.arrayify(args[1]);
     if (payload.length !== FORMAT_SHA1_LENGTH) {
       throw new Error(`Bad claim transaction payload size ${payload.length}`);
     }

@@ -52,10 +52,15 @@ async function watchDaiTokenAllowance(
   spender: string,
   onUpdated: (allowance: Big) => void
 ): Promise<() => void> {
-  // console.log("ERC20FILTERS " + JSON.stringify(token.eventstoken.events));
   const filter = token.filters.Approval(owner, spender);
-  const listener = (_owner: unknown, _spender: unknown, allowance: BigNumber) =>
+  const listener = (
+    _owner: string,
+    _spender: string,
+    allowance: BigNumber,
+    _event: unknown
+  ) => {
     onUpdated(Big(allowance.toString()));
+  };
   token.on(filter, listener);
   const allowance = await token.allowance(owner, spender);
   onUpdated(Big(allowance.toString()));
