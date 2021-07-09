@@ -92,8 +92,11 @@ async function getAttestationStatus(
     return AttestationStatus.UnmatchingEth;
   }
   const claimed = await claimWatcher.claimed(ethAddress);
+  if (claimed === undefined) {
+    return AttestationStatus.Incomplete;
+  }
   const expected = parseIdentitySha1(identity.urn);
-  if (ethers.utils.hexlify(claimed || 0) !== ethers.utils.hexlify(expected)) {
+  if (ethers.utils.hexlify(claimed) !== ethers.utils.hexlify(expected)) {
     return AttestationStatus.UnmatchingRoot;
   }
   return AttestationStatus.Valid;
@@ -117,10 +120,14 @@ class ClaimWatcher {
       if (this.unwatch) {
         this.unwatch();
       }
-      this.unwatch = await this.contract.watchClaimed(
+      const [lastClaimed, unwatch] = await this.contract.watchClaimed(
         ethAddr,
-        claimed => (this.lastClaimed = claimed)
+        claimed => {
+          this.lastClaimed = claimed;
+        }
       );
+      this.lastClaimed = lastClaimed;
+      this.unwatch = unwatch;
     }
     return this.lastClaimed;
   }

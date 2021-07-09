@@ -15,6 +15,7 @@ import {
 import * as ethereum from "../ethereum";
 import * as transaction from "../transaction";
 import { parseIdentitySha1 } from "../urn";
+import * as mutexExecutor from "ui/src/mutexExecutor";
 
 const addresses = {
   claims: {
@@ -79,34 +80,38 @@ export class ClaimsContract {
   }
 
   // Start watching claims of a given Ethereum address.
-  // `onClaimed` is called immediately with the latest claim or `undefined` if there was none.
-  // Returns a function, which unwatches claims when called.
+  // `onClaimed` is called whenever the claim for `address` is updated.
+  // Returns the current claim (or `undefined` if the address hasn’t
+  // claimed anything) and a function that stops watching the claims.
   // Throws if the current claim is invalid.
   async watchClaimed(
     address: string,
     onClaimed: (claimed?: Uint8Array) => void
-  ): Promise<() => void> {
+  ): Promise<[claimed: Uint8Array | undefined, unwatch: () => void]> {
     const filter = this.contract.filters.Claimed(address);
 
+    const getClaim = mutexExecutor.createWorker((txHash: string) => {
+      return this.getClaimedByTx(txHash, address);
+    });
+
     const listener = async (_: unknown, event: ethers.Event) => {
-      const claimed = await this.getClaimedByTx(event.transactionHash, address);
-      onClaimed(claimed);
+      getClaim.submit(event.transactionHash);
     };
     await this.contract.on(filter, listener);
 
     const lastEvent = (await this.contract.queryFilter(filter)).pop();
+    let claimed;
     if (lastEvent) {
-      const lastClaimed = await this.getClaimedByTx(
-        lastEvent.transactionHash,
-        address
-      );
-      onClaimed(lastClaimed);
-    } else {
-      onClaimed(undefined);
+      getClaim.submit(lastEvent.transactionHash);
+      claimed = await getClaim.output.firstToPromise();
     }
-    return () => {
+    const unsubOnClaimed = getClaim.output.onValue(onClaimed);
+
+    const unwatch = () => {
+      unsubOnClaimed();
       this.contract.off(filter, listener);
     };
+    return [claimed, unwatch];
   }
 
   // Extracts the claimed identity root from the transaction sent by the address
