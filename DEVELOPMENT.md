@@ -68,7 +68,8 @@ To start Upstream run `yarn start`.
 
 Running upstream with `yarn start` will use `<repo_root>/sandbox/rad_home` as
 the default `RAD_HOME` value to isolate you development state. To reset the
-application state remove `<repo_root>/sandbox/rad_home`
+application state remove `<repo_root>/sandbox/rad_home` and restart the
+application.
 
 ### Using the Git remote
 
