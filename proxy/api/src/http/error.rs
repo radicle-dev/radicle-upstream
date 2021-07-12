@@ -72,9 +72,9 @@ fn recover_source(err: &radicle_source::error::Error) -> (StatusCode, &'static s
             (StatusCode::NOT_FOUND, "NOT_FOUND", path.to_string())
         },
         _ => (
-            StatusCode::BAD_REQUEST,
-            "BAD_REQUEST",
-            "Incorrect input".to_string(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_SERVER_ERROR",
+            err.to_string(),
         ),
     }
 }
@@ -215,15 +215,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                     state::Error::IdentityExists(_) => {
                         (StatusCode::CONFLICT, "IDENTITY_EXISTS", err.to_string())
                     },
-                    _ => {
-                        // TODO(xla): Match all variants and properly transform similar to
-                        // gaphql::error.
-                        (
-                            StatusCode::BAD_REQUEST,
-                            "BAD_REQUEST",
-                            "Incorrect input".to_string(),
-                        )
-                    },
+                    _ => (
+                        StatusCode::INTERNAL_SERVER_ERROR,
+                        "INTERNAL_SERVER_ERROR",
+                        err.to_string(),
+                    ),
                 },
                 error::Error::Source(err) => recover_source(err),
                 error::Error::Keystore(keystore_err) => {
@@ -253,15 +249,11 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
                 error::Error::SessionInUse(_) => {
                     (StatusCode::BAD_REQUEST, "SESSION_IN_USE", err.to_string())
                 },
-                _ => {
-                    // TODO(xla): Match all variants and properly transform similar to
-                    // gaphql::error.
-                    (
-                        StatusCode::BAD_REQUEST,
-                        "BAD_REQUEST",
-                        "Incorrect input".to_string(),
-                    )
-                },
+                _ => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "INTERNAL_SERVER_ERROR",
+                    err.to_string(),
+                ),
             }
         } else {
             (
