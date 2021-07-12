@@ -9861,6 +9861,7 @@ __metadata:
     spdx-whitelisted: ^1.0.0
     standard-version: ^9.3.0
     stream-browserify: ^3.0.0
+    strip-ansi: ^6.0.0
     svelte: ^3.38.2
     svelte-check: ^2.1.0
     svelte-loader: ^3.1.1

@@ -182,6 +182,7 @@
     "radicle-contracts": "github:radicle-dev/radicle-contracts#commit=157a5b59df94704702623765198deb4ba70ace84",
     "semver": "^7.3.5",
     "stream-browserify": "^3.0.0",
+    "strip-ansi": "^6.0.0",
     "svelte-persistent-store": "^0.1.6",
     "timeago.js": "^4.0.2",
     "twemoji": "13.1.0",

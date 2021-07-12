@@ -222,7 +222,7 @@ impl Unsealed {
             let peer_control = coco_peer.control();
             let run_handle = async move {
                 if let Err(err) = coco_peer.run().await {
-                    log::error!("peer run error: {:?}", err);
+                    tracing::error!(?err, "peer run error");
                 }
             };
             (peer_control, peer, run_handle)

@@ -6,6 +6,7 @@
 
 import { spawn, ChildProcess } from "child_process";
 import { CircularBuffer } from "mnemonist";
+import stripAnsi from "strip-ansi";
 
 export interface ProcessResult {
   status: number | null;
@@ -68,7 +69,7 @@ export class ProxyProcessManager {
       split[0] = stdoutBuf + split[0];
       stdoutBuf = split.pop() || "";
       for (const line of split) {
-        outputBuffer.push(line);
+        outputBuffer.push(stripAnsi(line));
       }
     });
 
@@ -84,7 +85,7 @@ export class ProxyProcessManager {
       split[0] = stderrBuf + split[0];
       stderrBuf = split.pop() || "";
       for (const line of split) {
-        outputBuffer.push(line);
+        outputBuffer.push(stripAnsi(line));
       }
     });
 

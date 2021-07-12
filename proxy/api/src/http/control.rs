@@ -101,7 +101,7 @@ mod handler {
     /// Abort the server task, which causes `main` to restart it.
     #[allow(clippy::unused_async)]
     pub async fn reset(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
-        log::warn!("reload requested");
+        tracing::info!("reload requested");
         ctx.service_handle().reset();
         Ok(reply::json(&()))
     }
@@ -109,7 +109,7 @@ mod handler {
     /// Seals the keystore.
     #[allow(clippy::unused_async)]
     pub async fn seal(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
-        log::warn!("keystore seal requested");
+        tracing::info!("keystore seal requested");
         ctx.service_handle().seal();
         Ok(reply::with_status("keystore sealed", StatusCode::OK))
     }

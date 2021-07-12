@@ -79,7 +79,7 @@ impl From<DaemonPerson> for Person {
         let ethereum = match person.payload().get_ext::<EthereumClaimExtV1>() {
             Ok(ext_opt) => ext_opt.map(Ethereum::from),
             Err(err) => {
-                log::warn!("Ethereum claim of user {} is malformed: {}", urn, err);
+                tracing::warn!(%urn, ?err, "Ethereum claim of user is malformed");
                 // Ignore the malformed extension payload, the identity itself is still valid
                 None
             },
