@@ -234,18 +234,15 @@ impl Projects {
                 Ok(branch) => branch,
             };
 
-            let stats = match browser::using(peer, default_branch, |browser| {
-                Ok(browser.get_stats()?)
-            })
-            .await
-            {
-                Err(err) => {
-                    log::warn!("Failure for '{}': {}", project.urn, err);
-                    projects.failures.push(Failure::Stats(project));
-                    continue;
-                },
-                Ok(stats) => stats,
-            };
+            let stats =
+                match browser::using(peer, default_branch, |browser| Ok(browser.get_stats()?)) {
+                    Err(err) => {
+                        log::warn!("Failure for '{}': {}", project.urn, err);
+                        projects.failures.push(Failure::Stats(project));
+                        continue;
+                    },
+                    Ok(stats) => stats,
+                };
 
             let project = project.fulfill(stats);
 
@@ -262,9 +259,9 @@ impl Projects {
                 None => projects.tracked.push(Tracked(project)),
                 Some(refs) => {
                     if refs.heads.is_empty() {
-                        projects.tracked.push(Tracked(project))
+                        projects.tracked.push(Tracked(project));
                     } else {
-                        projects.contributed.push(project)
+                        projects.contributed.push(project);
                     }
                 },
             }
@@ -345,7 +342,7 @@ pub async fn get(
         .ok_or(crate::error::Error::ProjectNotFound)?;
 
     let branch = state::find_default_branch(peer, project_urn.clone()).await?;
-    let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?)).await?;
+    let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
 
     Full::try_from((project, project_stats))
 }
@@ -382,7 +379,7 @@ pub async fn list_for_user(
             let branch =
                 state::get_branch(peer, project.urn(), peer_id, subject.default_branch.clone())
                     .await?;
-            let stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?)).await?;
+            let stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
             let full = Full::try_from((project, stats))?;
 
             projects.push(full);

@@ -27,7 +27,7 @@ use crate::error::Error;
 ///   * If we could not open the backing storage.
 ///   * If we could not initialise the `Browser`.
 ///   * If the callback provided returned an error.
-pub async fn using<T, F>(
+pub fn using<T, F>(
     peer: &net::peer::Peer<BoxedSigner>,
     reference: Reference<Single>,
     callback: F,

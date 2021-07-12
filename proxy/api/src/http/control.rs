@@ -89,7 +89,6 @@ mod handler {
             .await
             .map_err(error::Error::from)?;
         let stats = browser::using(&ctx.peer, branch, |browser| Ok(browser.get_stats()?))
-            .await
             .map_err(error::Error::from)?;
         let project = project::Full::try_from((meta, stats))?;
 
@@ -100,6 +99,7 @@ mod handler {
     }
 
     /// Abort the server task, which causes `main` to restart it.
+    #[allow(clippy::unused_async)]
     pub async fn reset(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         log::warn!("reload requested");
         ctx.service_handle().reset();
@@ -107,6 +107,7 @@ mod handler {
     }
 
     /// Seals the keystore.
+    #[allow(clippy::unused_async)]
     pub async fn seal(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         log::warn!("keystore seal requested");
         ctx.service_handle().seal();

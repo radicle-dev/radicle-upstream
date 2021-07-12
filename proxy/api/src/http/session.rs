@@ -46,6 +46,7 @@ mod handler {
     use crate::{context, error, http, session};
 
     /// Fetch the [`session::Session`].
+    #[allow(clippy::unused_async)]
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
         let sess =
             crate::session::get_current(ctx.store())?.ok_or(http::error::Routing::NoSession)?;
@@ -56,6 +57,7 @@ mod handler {
     }
 
     /// Set the [`session::settings::Settings`] to the passed value.
+    #[allow(clippy::unused_async)]
     pub async fn update_settings(
         ctx: context::Unsealed,
         settings: session::settings::Settings,

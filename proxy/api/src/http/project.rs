@@ -213,7 +213,6 @@ mod handler {
         let stats = browser::using(&ctx.peer, branch, |browser| {
             browser.get_stats().map_err(radicle_source::Error::from)
         })
-        .await
         .map_err(Error::from)?;
         let project = project::Full::try_from((project, stats))?;
 

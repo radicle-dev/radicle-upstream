@@ -81,7 +81,7 @@ pub async fn replicate_platinum(
         );
         let storage = state::settings(peer);
         // Push all tags to rad remote.
-        push_tags(&mut rad, storage, &repo)?
+        push_tags(&mut rad, storage, &repo)?;
     }
 
     // Init as rad project.

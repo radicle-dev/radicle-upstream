@@ -70,8 +70,7 @@ pub async fn list(
         .await?;
         crate::browser::using(peer, default_branch, move |browser| {
             Ok(browser.get().first().clone())
-        })
-        .await?
+        })?
         .id
     };
 
@@ -133,8 +132,7 @@ pub async fn list(
 
                 Ok(())
             }
-        })
-        .await?;
+        })?;
     }
 
     Ok(patches)

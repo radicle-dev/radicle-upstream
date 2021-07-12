@@ -108,7 +108,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         match result {
             // We've been shut down, ignore
             Err(RunError::Peer(radicle_daemon::peer::Error::Join(_))) | Ok(()) => {
-                log::debug!("aborted")
+                log::debug!("aborted");
             },
             // Actual error, abort the process
             Err(e) => return Err(e.into()),
@@ -210,7 +210,7 @@ async fn run_rigging(
                             if let Some(notification) =
                                 notification::Notification::maybe_from(event)
                             {
-                                peer_subscriptions.broadcast(notification).await
+                                peer_subscriptions.broadcast(notification).await;
                             }
                         },
                         Err(err) => {
@@ -308,7 +308,7 @@ async fn session_seeds(
     store: &kv::Store,
     default_seeds: &[String],
 ) -> Result<Vec<radicle_daemon::seed::Seed>, Box<dyn std::error::Error>> {
-    let seeds = session::seeds(store, default_seeds).await?;
+    let seeds = session::seeds(store, default_seeds)?;
     Ok(seed::resolve(&seeds).await.unwrap_or_else(|err| {
         log::error!("Error parsing seed list {:?}: {}", seeds, err);
         vec![]

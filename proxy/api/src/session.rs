@@ -38,10 +38,7 @@ pub struct Session {
 /// # Errors
 ///
 /// Errors if we cannot read data from the store.
-pub async fn seeds(
-    store: &kv::Store,
-    default_seeds: &[String],
-) -> Result<Vec<String>, error::Error> {
+pub fn seeds(store: &kv::Store, default_seeds: &[String]) -> Result<Vec<String>, error::Error> {
     let settings = get_current(store)?.map(|session| session.settings);
 
     match settings {
@@ -95,7 +92,7 @@ pub fn update_identity(
 ) -> Result<(), error::Error> {
     if let Some(mut session) = get_current(store)? {
         session.identity = identity;
-        set_current(store, session)?
+        set_current(store, session)?;
     }
     Ok(())
 }
@@ -109,7 +106,7 @@ pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(
     if let Some(mut session) = get_current(store)? {
         session.settings = settings;
 
-        set_current(store, session)?
+        set_current(store, session)?;
     }
     Ok(())
 }

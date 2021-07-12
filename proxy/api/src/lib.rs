@@ -19,6 +19,9 @@
 // TODO(xla): Handle all Results properly and never panic outside of main.
 // TODO(xla): Remove exception for or_fun_call lint.
 #![allow(
+    // This lint yields false positives
+    // https://github.com/rust-lang/rust-clippy/issues/7438
+    clippy::semicolon_if_nothing_returned,
     clippy::clone_on_ref_ptr,
     clippy::expect_used,
     clippy::implicit_return,
