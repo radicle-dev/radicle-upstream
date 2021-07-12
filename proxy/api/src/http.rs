@@ -87,14 +87,13 @@ pub fn api(
             warp::http::Method::OPTIONS,
         ]);
     let log = warp::log::custom(|info| {
-        log::info!(
+        tracing::info!(
             target: "proxy::http",
-            "\"{} {} {:?}\" {} {:?}",
+            elapsed = ?info.elapsed(),
+            "{} {} {}",
             info.method(),
             info.path(),
-            info.version(),
             info.status().as_u16(),
-            info.elapsed(),
         );
     });
 

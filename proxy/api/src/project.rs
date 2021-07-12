@@ -227,28 +227,29 @@ impl Projects {
             let project = Project::try_from(project)?;
             let default_branch = match state::find_default_branch(peer, project.urn.clone()).await {
                 Err(err) => {
-                    log::warn!("Failure for '{}': {}", project.urn, err);
+                    tracing::warn!(project_urn = %project.urn, ?err, "cannot find default branch");
                     projects.failures.push(Failure::DefaultBranch(project));
                     continue;
                 },
                 Ok(branch) => branch,
             };
 
-            let stats =
-                match browser::using(peer, default_branch, |browser| Ok(browser.get_stats()?)) {
-                    Err(err) => {
-                        log::warn!("Failure for '{}': {}", project.urn, err);
-                        projects.failures.push(Failure::Stats(project));
-                        continue;
-                    },
-                    Ok(stats) => stats,
-                };
+            let stats = match browser::using(peer, default_branch, |browser| {
+                Ok(browser.get_stats()?)
+            }) {
+                Err(err) => {
+                    tracing::warn!(project_urn = %project.urn, ?err, "cannot get project stats");
+                    projects.failures.push(Failure::Stats(project));
+                    continue;
+                },
+                Ok(stats) => stats,
+            };
 
             let project = project.fulfill(stats);
 
             let refs = match state::load_refs(peer, project.urn.clone()).await {
                 Err(err) => {
-                    log::warn!("Failure for '{}': {}", project.urn, err);
+                    tracing::warn!(project_urn = %project.urn, ?err, "cannot load refs");
                     projects.failures.push(Failure::SignedRefs(project));
                     continue;
                 },

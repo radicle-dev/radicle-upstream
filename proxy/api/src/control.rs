@@ -107,7 +107,7 @@ pub fn push_tags(
 
     match tags {
         None => {
-            log::debug!("No tags to push to remote");
+            tracing::debug!("No tags to push to remote");
             Ok(())
         },
         Some(tags) => {

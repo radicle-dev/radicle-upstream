@@ -82,7 +82,7 @@ fn recover_source(err: &radicle_source::error::Error) -> (StatusCode, &'static s
 /// Handler to convert [`error::Error`] to [`Error`] response.
 #[allow(clippy::too_many_lines, clippy::unused_async)]
 pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
-    log::error!("{:?}", err);
+    tracing::error!(?err, "request error");
 
     let (code, variant, message) = {
         if err.is_not_found() {
