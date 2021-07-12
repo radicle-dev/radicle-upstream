@@ -41,7 +41,7 @@ export const getGitGlobalDefaultBranch = mainProcess.getGitGlobalDefaultBranch;
 export function listenProxyError(
   f: (proxyError: ipcTypes.ProxyError) => void
 ): void {
-  if (config.isNodeTestEnv || config.isCypressTestEnv) {
+  if (config.isNodeTestEnv || config.isCypressTestRunner) {
     return;
   }
 
@@ -59,7 +59,7 @@ export function listenProxyError(
 export function listenCustomProtocolInvocation(
   f: (customProtocolInvocation: ipcTypes.CustomProtocolInvocation) => void
 ): void {
-  if (config.isNodeTestEnv || config.isCypressTestEnv) {
+  if (config.isNodeTestEnv || config.isCypressTestRunner) {
     return;
   }
 
