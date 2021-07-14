@@ -17,8 +17,8 @@
 
   const dispatch = createEventDispatcher();
 
-  let passphraseInput: HTMLInputElement;
-  let repeatedPassphraseInput: HTMLInputElement;
+  let passphraseInput: PasswordInput;
+  let repeatedPassphraseInput: PasswordInput;
   let passphrase = "";
   let repeatedPassphrase = "";
 
@@ -171,7 +171,7 @@
     </p>
 
     <PasswordInput
-      bind:inputElement={passphraseInput}
+      bind:this={passphraseInput}
       on:enter={() => {
         repeatedPassphraseInput.focus();
       }}
@@ -187,7 +187,7 @@
     <div class="repeat" hidden={!passphrase}>
       <p style="margin-bottom: 0.5rem;">And enter it again, just to be safe.</p>
       <PasswordInput
-        bind:inputElement={repeatedPassphraseInput}
+        bind:this={repeatedPassphraseInput}
         on:enter={next}
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"

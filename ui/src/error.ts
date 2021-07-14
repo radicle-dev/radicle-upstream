@@ -175,10 +175,10 @@ export const log = (error: Error): void => {
 };
 
 // Show an error notification and log the error to the console
-export const show = (error: Error): void => {
+export const show = (error: Error): notification.Handle => {
   log(error);
 
-  notification.error({
+  return notification.error({
     message: error.message,
     showIcon: true,
     persist: true,

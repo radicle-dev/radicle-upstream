@@ -6,20 +6,48 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as screen from "../src/screen";
-  import * as session from "../src/session";
+  import { tick as svelteTick } from "svelte";
+  import * as screen from "ui/src/screen";
+  import * as session from "ui/src/session";
+  import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
 
   import { Button, Emoji, PasswordInput } from "ui/DesignSystem";
 
   let passphrase = "";
   let unlockInProgress = false;
+  let input: PasswordInput;
+
+  let errorNotificationHandle: notification.Handle | undefined;
 
   const unlock = async () => {
+    if (errorNotificationHandle) {
+      errorNotificationHandle.remove();
+    }
     await screen.withLock(async () => {
       unlockInProgress = true;
-      await session.unseal(passphrase).finally(() => {
+      try {
+        const unlocked = await session.unseal(passphrase);
+        if (!unlocked) {
+          passphrase = "";
+          // We wait until the component has re-rendered with
+          // `unlockInProgress = false` and the input has been enabled
+          // again.
+          svelteTick().then(() => {
+            input && input.focus();
+          });
+          errorNotificationHandle = notification.error({
+            message: "That’s the wrong passphrase.",
+            showIcon: true,
+            actions: [{ label: "Dismiss", handler: () => {} }],
+            persist: true,
+          });
+        }
+      } catch (err) {
+        errorNotificationHandle = error.show(err);
+      } finally {
         unlockInProgress = false;
-      });
+      }
     });
   };
 
@@ -57,6 +85,7 @@
 
   <div class="form">
     <PasswordInput
+      bind:this={input}
       autofocus
       placeholder="Enter your passphrase"
       bind:value={passphrase}

@@ -14,6 +14,11 @@ import qs from "qs";
 export class ResponseError extends Error {
   public response: Response;
   public body: unknown;
+
+  // The "variant" field of the response body, if present. This field
+  // is present in all proxy API errors.
+  public variant: string | undefined;
+
   constructor(response: Response, body_: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body: any = body_;
@@ -25,6 +30,14 @@ export class ResponseError extends Error {
       super(body.message);
     } else {
       super("Response error");
+    }
+
+    if (
+      typeof body === "object" &&
+      body !== null &&
+      typeof body.variant === "string"
+    ) {
+      this.variant = body.variant;
     }
 
     this.body = body_;

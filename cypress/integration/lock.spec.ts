@@ -19,12 +19,12 @@ context("lock screen", () => {
   });
 
   it("shows an error notification if the passphrase is wrong", () => {
-    commands.pick("unlock-button").should("exist");
+    commands.pick("passphrase-input").should("have.focus");
     commands.pick("passphrase-input").type("wrong-pw");
     commands.pick("unlock-button").click();
     cy.contains(/That’s the wrong passphrase./).should("exist");
-    commands.pick("passphrase-input").should("have.value", "wrong-pw");
-    commands.pick("unlock-button").should("not.be.disabled");
+    commands.pick("passphrase-input").should("have.value", "");
+    commands.pick("passphrase-input").should("have.focus");
   });
 
   it("routes to the profile page on successful unseal", () => {

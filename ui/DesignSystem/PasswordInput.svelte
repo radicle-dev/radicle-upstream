@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
 
   import Icon from "./Icon";
   import KeyHint from "./KeyHint.svelte";
@@ -14,27 +14,35 @@
   import type { ValidationState } from "ui/src/validation";
   import { ValidationStatus } from "ui/src/validation";
 
-  export let style = "";
-  export let inputStyle = "";
-  export let placeholder = "";
   export let value = "";
-  export let dataCy = "";
+  export let style: string | undefined = undefined;
+  export let inputStyle: string | undefined = undefined;
+  export let placeholder: string | undefined = undefined;
+  export let dataCy: string | undefined = undefined;
   export let disabled: boolean = false;
-  export let inputElement: HTMLInputElement | undefined = undefined;
 
   export let validation: ValidationState | undefined = undefined;
   export let hint = "";
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
 
+  export const focus = (): void => {
+    inputElement && inputElement.focus();
+  };
+
+  let inputElement: HTMLInputElement | undefined = undefined;
+
   const dispatch = createEventDispatcher();
 
   // Can't use normal `autofocus` attribute on the `input`:
   // "Autofocus processing was blocked because a document's URL has a fragment"
-  // preventScroll is necessary for onboarding animations to work.
-  $: if (autofocus) {
-    inputElement && inputElement.focus({ preventScroll: true });
-  }
+  onMount(() => {
+    console.log({ autofocus, inputElement });
+    if (autofocus && inputElement) {
+      // preventScroll is necessary for onboarding animations to work.
+      inputElement.focus({ preventScroll: true });
+    }
+  });
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {

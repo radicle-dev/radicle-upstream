@@ -132,22 +132,20 @@ const fetchSession = async (): Promise<void> => {
 
 /**
  * Unseal the key store with the given passphrase and reload the
- * session. Returns `true` if unsealing was successful and `false`
- * otherwise.
+ * session. Returns `false` if the provided passphrase was incorrect.
  */
 export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await proxy.client.keyStoreUnseal({ passphrase });
   } catch (err) {
-    error.show(
-      new error.Error({
-        code: error.Code.KeyStoreUnsealFailure,
-        message: `${err.message}`,
-        source: err,
-      })
-    );
-
-    return false;
+    if (
+      err instanceof proxy.ResponseError &&
+      err.variant === "INCORRECT_PASSPHRASE"
+    ) {
+      return false;
+    } else {
+      throw err;
+    }
   }
   sessionStore.loading();
   await fetchSession();
