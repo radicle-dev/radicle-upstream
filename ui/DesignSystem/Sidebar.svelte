@@ -10,7 +10,6 @@
 
   import type { Identity } from "ui/src/identity";
   import * as modal from "ui/src/modal";
-  import * as config from "ui/src/config";
 
   import Avatar from "./Avatar.svelte";
   import Icon from "./Icon";
@@ -83,9 +82,7 @@
           variant="circle" />
       </SidebarItem>
     </Tooltip>
-    {#if config.isDev}
-      <OrgList {identity} />
-    {/if}
+    <OrgList {identity} />
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
@@ -96,11 +93,9 @@
         <Icon.MagnifyingGlass />
       </SidebarItem>
     </Tooltip>
-    {#if config.isDev}
-      <WalletStatusIndicator
-        active={$activeRouteStore.type === "wallet"}
-        onClick={() => push({ type: "wallet", activeTab: "transactions" })} />
-    {/if}
+    <WalletStatusIndicator
+      active={$activeRouteStore.type === "wallet"}
+      onClick={() => push({ type: "wallet", activeTab: "transactions" })} />
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
       <SidebarItem

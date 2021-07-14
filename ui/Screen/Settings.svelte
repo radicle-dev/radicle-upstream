@@ -11,14 +11,12 @@
   import { selectedEnvironment as ethereumEnvironment } from "../src/ethereum";
   import * as ethereum from "../src/ethereum";
   import * as ipc from "../src/ipc";
-  import * as config from "../src/config";
   import { settings, updateAppearance } from "../src/session";
   import * as sess from "../src/session";
   import {
     themeOptions,
     uiFontOptions,
     codeFontOptions,
-    fundingEnvironmentOptions,
   } from "../src/settings";
   import { updateChecker } from "../src/updateChecker";
   import * as modal from "../src/modal";
@@ -76,6 +74,17 @@
   const appUpdateNotificationEnabledOptions = [
     { value: "on", title: "Notify Me" },
     { value: "off", title: "Turn off" },
+  ];
+
+  const ethereumNetworkOptions = [
+    {
+      title: ethereum.Environment.Rinkeby.toString(),
+      value: ethereum.Environment.Rinkeby,
+    },
+    {
+      title: ethereum.Environment.Mainnet.toString(),
+      value: ethereum.Environment.Mainnet,
+    },
   ];
 
   const session = sess.getUnsealedFromContext();
@@ -212,22 +221,20 @@
         </div>
       </section>
 
-      {#if config.isDev}
-        <section>
-          <header>
-            <h3>Funding</h3>
-          </header>
-          <div class="section-item">
-            <p class="typo-text-bold">Funding environment</p>
-            <div class="action">
-              <SegmentedControl
-                active={$ethereumEnvironment}
-                options={fundingEnvironmentOptions}
-                on:select={updateEthereumEnvironment} />
-            </div>
+      <section>
+        <header>
+          <h3>Ethereum</h3>
+        </header>
+        <div class="section-item">
+          <p class="typo-text-bold">Ethereum network</p>
+          <div class="action">
+            <SegmentedControl
+              active={$ethereumEnvironment}
+              options={ethereumNetworkOptions}
+              on:select={updateEthereumEnvironment} />
           </div>
-        </section>
-      {/if}
+        </div>
+      </section>
 
       <section>
         <header>

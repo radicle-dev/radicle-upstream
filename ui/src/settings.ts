@@ -4,8 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as ethereum from "./ethereum";
-
 import {
   Appearance,
   CoCo,
@@ -75,21 +73,6 @@ export const codeFontOptions: Option<string>[] = [
   {
     title: "System",
     value: CodeFont.System,
-  },
-];
-
-export const fundingEnvironmentOptions: Option<ethereum.Environment>[] = [
-  {
-    title: ethereum.Environment.Local.toString(),
-    value: ethereum.Environment.Local,
-  },
-  {
-    title: ethereum.Environment.Rinkeby.toString(),
-    value: ethereum.Environment.Rinkeby,
-  },
-  {
-    title: ethereum.Environment.Mainnet.toString(),
-    value: ethereum.Environment.Mainnet,
   },
 ];
 

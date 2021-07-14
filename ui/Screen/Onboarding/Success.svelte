@@ -7,7 +7,6 @@
 -->
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
-  import { isDev } from "ui/src/config";
 
   import { Button, PeerId } from "ui/DesignSystem";
 
@@ -17,11 +16,7 @@
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      if (isDev) {
-        wallet();
-      } else {
-        profile();
-      }
+      wallet();
     }
   };
 
@@ -79,11 +74,9 @@
         on:click={profile}>
         Go to profile
       </Button>
-      {#if isDev}
-        <Button dataCy="go-to-wallet-button" on:click={wallet}>
-          Set up your wallet
-        </Button>
-      {/if}
+      <Button dataCy="go-to-wallet-button" on:click={wallet}>
+        Set up your wallet
+      </Button>
     </div>
   </div>
 </div>
