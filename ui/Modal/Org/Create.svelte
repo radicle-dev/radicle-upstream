@@ -79,7 +79,7 @@
 <Modal
   emoji="🎪"
   title="Create a new org"
-  desc="This will create a gnosis safe that manages the org contract where wallet
+  desc="This will create a Gnosis Safe that manages the org contract where the wallet
 you’ve connected to upstream will be the first member.">
   <RadioOption
     active={isMultiSig !== undefined && !isMultiSig}
