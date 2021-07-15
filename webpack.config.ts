@@ -101,6 +101,7 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
       fallback: {
         crypto: require.resolve("crypto-browserify"),
         stream: require.resolve("stream-browserify"),
+        assert: require.resolve("assert"),
       },
       extensions: [".svelte", ".ts", ".js"],
       plugins: [

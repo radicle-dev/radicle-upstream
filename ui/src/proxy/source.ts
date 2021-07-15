@@ -41,7 +41,7 @@ export interface SourceObject {
   info: Info;
 }
 
-const sourceObjectSchema = zod.object({
+const sourceObjectSchema: zod.Schema<SourceObject> = zod.object({
   path: zod.string(),
   info: zod.object({
     name: zod.string(),

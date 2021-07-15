@@ -74,5 +74,11 @@ RUN set -eux; \
     rm -rf /usr/local/cargo/registry; \
     rm /usr/local/cargo/.package-cache;
 
+# On the buildkite agent the build is run as user 998:998. We ensure
+# that this user exists.
+RUN set -eux; \
+    groupadd buildkite-builder --gid 998; \
+    useradd buildkite-builder --uid 998 --gid 998
+
 VOLUME /cache
 ENV CARGO_HOME=/cache/cargo

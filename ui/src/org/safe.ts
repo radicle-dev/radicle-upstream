@@ -50,7 +50,11 @@ export async function signAndProposeTransaction(
     tx
   );
 
-  const safeSdk = await EthersSafe.create(ethers, safeAddress, wallet.signer);
+  const safeSdk = await EthersSafe.create({
+    ethers,
+    safeAddress,
+    providerOrSigner: wallet.signer,
+  });
   const transaction = await safeSdk.createTransaction({
     ...tx,
     safeTxGas: Number(estimation.safeTxGas),
