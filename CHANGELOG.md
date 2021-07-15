@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.7](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.6...v0.2.7) (2021-07-15)
+
+
+### Features
+
+* remove orgs feature flagging ([9f66d66](https://github.com/radicle-dev/radicle-upstream/commit/9f66d667aa6e498f9fe7df39067bf04cb842a06c))
+* **dev:** add cargo-deny ([3d591e2](https://github.com/radicle-dev/radicle-upstream/commit/3d591e2a20c242c44b77d1975dd7154aa90cccbc))
+* **dev:** add contributing.md ([6b7fff6](https://github.com/radicle-dev/radicle-upstream/commit/6b7fff6b6342d56d6d6e167ce38aee9bc8f4807a))
+* **dev:** check license compliance for NPM packages ([8b51ebd](https://github.com/radicle-dev/radicle-upstream/commit/8b51ebd3d0b88137ac15ed1d0e7dcc3a79436b73)), closes [#2024](https://github.com/radicle-dev/radicle-upstream/issues/2024)
+* **dev:** fast key store for development ([4c3813b](https://github.com/radicle-dev/radicle-upstream/commit/4c3813bd4be99eff3ee1f8353a03e918c80950bf)), closes [#1614](https://github.com/radicle-dev/radicle-upstream/issues/1614)
+* **dev:** improve contribution guide ([ec5215a](https://github.com/radicle-dev/radicle-upstream/commit/ec5215a0bc6524b5ddbf857e9f14ac44fd2cb8c6))
+* **ui:** add Rinkeby testnet and Mainnet ([7d770da](https://github.com/radicle-dev/radicle-upstream/commit/7d770daf5fd8c946ca464fcb439c794deb2130c5))
+* **ui:** network page ([#2066](https://github.com/radicle-dev/radicle-upstream/issues/2066)) ([8b1836c](https://github.com/radicle-dev/radicle-upstream/commit/8b1836c7610a2ef51af0abb1e731380bf2b4fa68))
+* notifications can be removed now ([0b8c02f](https://github.com/radicle-dev/radicle-upstream/commit/0b8c02f179d1e559f2c93a1729ceebf73eb8ccce))
+* radicle Orgs on Ethereum via Gnosis Safe ([d567444](https://github.com/radicle-dev/radicle-upstream/commit/d567444183e347e8fd68067b671323166c61cc05))
+* **ui:** add selectedNetwork to wallet tooltip ([500d63b](https://github.com/radicle-dev/radicle-upstream/commit/500d63b013eb4de4b6d675ac1bd86e27aa750345))
+
+
+### Bug Fixes
+
+* add padding to copyable when icon is not shown ([08c2ed7](https://github.com/radicle-dev/radicle-upstream/commit/08c2ed76b1b362b1865d8fc42fe21dc2476165d6))
+* adjust code to the updated Org Graph index ([9c84637](https://github.com/radicle-dev/radicle-upstream/commit/9c8463777a224268623649d794a1d1d51b388c92))
+* commit teaser message overflow ([a5019dd](https://github.com/radicle-dev/radicle-upstream/commit/a5019dd42212c22f97a4c849c79d8c3f2cbb71a6))
+* correct radicle-contracts types ([5518e4d](https://github.com/radicle-dev/radicle-upstream/commit/5518e4d33e7fd471b54e1370b8a926627d54eaca))
+* disable placeholder anchor button when there are no projects ([d4ca5fb](https://github.com/radicle-dev/radicle-upstream/commit/d4ca5fb58d43e969a6c15a82e765529f5ddb5748))
+* don’t show intermittent 502 errors from Graph requests ([38faba1](https://github.com/radicle-dev/radicle-upstream/commit/38faba1ea9b32aadb1bafa49b6b3a5517d473169)), closes [#2042](https://github.com/radicle-dev/radicle-upstream/issues/2042)
+* enable option transition only when not active ([2487af1](https://github.com/radicle-dev/radicle-upstream/commit/2487af1f98c7af3e585cce94d9e91087b8fcbe53))
+* explain that app needs to be restarted after reset ([a9ff111](https://github.com/radicle-dev/radicle-upstream/commit/a9ff111f914cca77e616b82ad6b4430bd1c90ea7)), closes [#2119](https://github.com/radicle-dev/radicle-upstream/issues/2119)
+* fix wallet icon ([741a977](https://github.com/radicle-dev/radicle-upstream/commit/741a977a369394231af065964685dae2c7cbb5b3))
+* improve org creation notification ([210bf22](https://github.com/radicle-dev/radicle-upstream/commit/210bf22a316bc2121906939b66a413b903527dc5))
+* improved error message from server ([27c9737](https://github.com/radicle-dev/radicle-upstream/commit/27c9737983b61ab0d3f1f13c4715409038b66f3d))
+* on invalid passphrase clear and refocus input ([dcade0d](https://github.com/radicle-dev/radicle-upstream/commit/dcade0d50a2f07da3842754aa7944ca1531dbce6)), closes [#1179](https://github.com/radicle-dev/radicle-upstream/issues/1179)
+* project error ([64881cd](https://github.com/radicle-dev/radicle-upstream/commit/64881cdb332be49e8e6122368a532632337a060f)), closes [#1959](https://github.com/radicle-dev/radicle-upstream/issues/1959)
+* race condition when watching claim updates ([c162fa3](https://github.com/radicle-dev/radicle-upstream/commit/c162fa395f56374fd11db029f1038c5148a0a429))
+* reapply commit to truncate device ID in settings screen ([05a655d](https://github.com/radicle-dev/radicle-upstream/commit/05a655dee340313660e132457db255263774c981)), closes [#2087](https://github.com/radicle-dev/radicle-upstream/issues/2087)
+* truncate device ID in settings screen ([c2cc531](https://github.com/radicle-dev/radicle-upstream/commit/c2cc5319fe5557475f0eaa48ac129942bc41276f))
+* **ci:** check that packages are deduped ([ae00144](https://github.com/radicle-dev/radicle-upstream/commit/ae001448521fe08bab1b4e1362f4cc564e9e62f1))
+* **ci:** force link override for cargo deny on CI ([ffd295e](https://github.com/radicle-dev/radicle-upstream/commit/ffd295e9ac79a4398e5841655e9e5d20c0d6ed13))
+* **dev:** align parameter name with options name ([6be234b](https://github.com/radicle-dev/radicle-upstream/commit/6be234bcbca9db2c9e014d5a4602150e0566eb1b))
+* **dev:** allow empty function lint ([99a5724](https://github.com/radicle-dev/radicle-upstream/commit/99a5724b9648e8bcefc560e6811e52d0b0e162cd))
+* **dev:** avoid yarn run to properly kill process ([5697266](https://github.com/radicle-dev/radicle-upstream/commit/569726667a28c3b9f925083229e31246bc9351ba))
+* **dev:** jest module name mapping for TS paths ([22f8afc](https://github.com/radicle-dev/radicle-upstream/commit/22f8afcc3fc6ddca41c7e1a8bbc0214190d72978))
+* **test:** fix flaky networking test ([23814d1](https://github.com/radicle-dev/radicle-upstream/commit/23814d194078d72f13d9127e684b20947b2d9a13))
+* remove tx notifications after confirmation ([3c916ef](https://github.com/radicle-dev/radicle-upstream/commit/3c916efe836351d580a053f3c6bf2798c94fc27e))
+* use dedicated walletconnect bridge ([06701c5](https://github.com/radicle-dev/radicle-upstream/commit/06701c59b5ce61559d20037af8fa376edb23be3e))
+* **dev:** allow more modules to be required in jest tests ([ddc0e51](https://github.com/radicle-dev/radicle-upstream/commit/ddc0e512d1b4c99182c90c5552da154a9940fc62))
+* **ui:** use revision icon for patches ([aa60ed3](https://github.com/radicle-dev/radicle-upstream/commit/aa60ed3e90afebeb1e84e27daece46bdf200f5cc))
+* prevent lock race condition ([edd0816](https://github.com/radicle-dev/radicle-upstream/commit/edd0816a39eb17af8509d76f03087f345ad13ad4))
+* **tests:** properly select peer in networking tests ([f880856](https://github.com/radicle-dev/radicle-upstream/commit/f880856a4e15e185c103e4c9a9107fc65c1a582e))
+
 ### [0.2.6](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.5...v0.2.6) (2021-06-07)
 
 
