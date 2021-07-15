@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.8](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.7...v0.2.8) (2021-07-15)
+
+
+### Bug Fixes
+
+* ensure that a valid ethereum environment is selected ([3ef925a](https://github.com/radicle-dev/radicle-upstream/commit/3ef925afe2add1f3265b645746ff090307bbf8cc))
+
 ### [0.2.7](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.6...v0.2.7) (2021-07-15)
 
 
