@@ -4,6 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import * as svelteStore from "svelte/store";
 import Big from "big.js";
 import * as ethers from "ethers";
 import persistentStore from "svelte-persistent-store/dist";
@@ -19,6 +20,16 @@ export const selectedEnvironment = persistentStore.local.writable<Environment>(
   "ethereum-environment-v0",
   config.isDev ? Environment.Rinkeby : Environment.Mainnet
 );
+
+if (
+  ![Environment.Mainnet, Environment.Rinkeby, Environment.Local].includes(
+    svelteStore.get(selectedEnvironment)
+  )
+) {
+  selectedEnvironment.set(
+    config.isDev ? Environment.Rinkeby : Environment.Mainnet
+  );
+}
 
 // EIP-20 token decimals for the tokens we operate with across
 // the diferent environments. We hardcode this value since it
