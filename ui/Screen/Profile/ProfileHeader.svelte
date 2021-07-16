@@ -37,6 +37,6 @@
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
       {name}
     </h1>
-    <PeerId truncate {peerId} style="margin-top: 0.5rem;" />
+    <PeerId truncate expandable={false} {peerId} style="margin-top: 0.5rem;" />
   </div>
 </div>
