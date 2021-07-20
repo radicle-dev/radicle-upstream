@@ -26,11 +26,12 @@
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
 
-  let visible: boolean = false;
-  let highlightStyle: string = "";
-
   export const focus = (): void => {
     inputElement && inputElement.focus();
+  };
+
+  export const setType = (type: string): void => {
+    if (inputElement) {inputElement.type = type;}
   };
 
   let inputElement: HTMLInputElement | undefined = undefined;
@@ -51,15 +52,6 @@
       dispatch("enter");
     }
   };
-
-  const togglePasswordDisplay = () => {
-    visible = !visible;
-    if (inputElement) {inputElement.type = visible ? "text" : "password";}
-  };
-
-  const eyeIconHighlight = () =>
-    (highlightStyle = "fill: var(--color-foreground);");
-  const removeEyeIconHighlight = () => (highlightStyle = "");
 
   $: showHint = hint.length > 0 && value.length === 0;
 </script>
@@ -143,14 +135,6 @@
     top: 50%;
     transform: translateY(-50%);
   }
-
-  .the-eye-button {
-    cursor: pointer;
-    justify-content: flex-start;
-    position: absolute;
-    right: -2rem;
-    top: 20%;
-  }
 </style>
 
 <div {style} class="wrapper">
@@ -187,22 +171,5 @@
     <div class="hint">
       <KeyHint {hint} />
     </div>
-  {/if}
-
-  {#if value}
-    <button
-      class="the-eye-button"
-      on:mousedown={togglePasswordDisplay}
-      on:mouseover={eyeIconHighlight}
-      on:mouseout={removeEyeIconHighlight}
-      style={validation && validation.status === ValidationStatus.Error
-        ? "top: 10%;"
-        : ""}>
-      {#if visible}
-        <Icon.EyeClosed style={highlightStyle} />
-      {:else}
-        <Icon.EyeOpen style={highlightStyle} />
-      {/if}
-    </button>
   {/if}
 </div>

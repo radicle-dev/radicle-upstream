@@ -11,7 +11,7 @@
   import { ValidationStatus, getValidationState } from "../../src/validation";
   import type { ValidationState } from "../../src/validation";
 
-  import { Button, PasswordInput } from "ui/DesignSystem";
+  import { Button, Icon, PasswordInput } from "ui/DesignSystem";
 
   export let disabled = false;
 
@@ -21,6 +21,7 @@
   let repeatedPassphraseInput: PasswordInput;
   let passphrase = "";
   let repeatedPassphrase = "";
+  let visible: boolean = false;
 
   let validations: { [key: string]: string[] } | false = false;
   let beginValidation = false;
@@ -109,6 +110,12 @@
     }
   };
 
+  const togglePasswordDisplay = () => {
+    visible = !visible;
+    passphraseInput.setType(visible ? "text" : "password");
+    repeatedPassphraseInput.setType(visible ? "text" : "password");
+  };
+
   const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
       case "Enter":
@@ -146,8 +153,13 @@
 
   .buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-top: 1.5rem;
+  }
+
+  .back-and-set-buttons {
+    display: flex;
+    justify-content: flex-end;
   }
 
   .repeat {
@@ -199,20 +211,30 @@
 
     <div class="buttons">
       <Button
-        dataCy="back-button"
+        dataCy={`${visible ? "hide" : "show"}-password`}
         variant="transparent"
         style="margin-right: 1rem;"
-        on:click={() => dispatch("previous")}
-        {disabled}>
-        Back
+        icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
+        on:click={togglePasswordDisplay}>
+        {visible ? "Hide" : "Show"} Password
       </Button>
+      <div class="back-and-set-buttons">
+        <Button
+          dataCy="back-button"
+          variant="transparent"
+          style="margin-right: 1rem;"
+          on:click={() => dispatch("previous")}
+          {disabled}>
+          Back
+        </Button>
 
-      <Button
-        dataCy="set-passphrase-button"
-        disabled={!allowNext}
-        on:click={next}>
-        Set passphrase
-      </Button>
+        <Button
+          dataCy="set-passphrase-button"
+          disabled={!allowNext}
+          on:click={next}>
+          Set passphrase
+        </Button>
+      </div>
     </div>
   </div>
 </div>
