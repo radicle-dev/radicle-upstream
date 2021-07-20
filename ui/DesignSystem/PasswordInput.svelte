@@ -37,7 +37,6 @@
   // Can't use normal `autofocus` attribute on the `input`:
   // "Autofocus processing was blocked because a document's URL has a fragment"
   onMount(() => {
-    console.log({ autofocus, inputElement });
     if (autofocus && inputElement) {
       // preventScroll is necessary for onboarding animations to work.
       inputElement.focus({ preventScroll: true });
