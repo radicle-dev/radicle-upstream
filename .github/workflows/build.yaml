@@ -19,9 +19,9 @@ jobs:
           path: |
             ~/cache/yarn
             ~/cache/cypress
-          key: build-${{ runner.os }}-yarn-v1-${{ hashFiles('yarn.lock') }}
+          key: build-${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            build-${{ runner.os }}-yarn-v1-
+            build-${{ runner.os }}-yarn-v2-
       - name: Cache Rust
         uses: actions/cache@v2
         with:
