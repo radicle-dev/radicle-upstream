@@ -31,7 +31,9 @@
   };
 
   export const setType = (type: string): void => {
-    if (inputElement) {inputElement.type = type;}
+    if (inputElement) {
+      inputElement.type = type;
+    }
   };
 
   let inputElement: HTMLInputElement | undefined = undefined;
@@ -150,6 +152,7 @@
     on:change
     on:input
     on:keydown={onKeydown}
+    on:keypress
     bind:this={inputElement}
     {spellcheck}
     style={inputStyle} />

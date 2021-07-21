@@ -131,6 +131,14 @@
         }
     }
   };
+
+  const resetCheck = () => {
+    if (passphrase.length === 0) {
+      visible = false;
+      passphraseInput.setType("password");
+      repeatedPassphraseInput.setType("password");
+    }
+  };
 </script>
 
 <style>
@@ -201,6 +209,8 @@
       <PasswordInput
         bind:this={repeatedPassphraseInput}
         on:enter={next}
+        on:change={resetCheck}
+        on:keypress={resetCheck}
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
         hint="↵"

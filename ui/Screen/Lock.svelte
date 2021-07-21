@@ -58,6 +58,13 @@
     }
   };
 
+  const resetCheck = () => {
+    if (passphrase.length === 0) {
+      visible = false;
+      input.setType("password");
+    }
+  };
+
   const togglePassphraseDisplay = () => {
     visible = !visible;
     input.setType(visible ? "text" : "password");
@@ -105,6 +112,8 @@
       disabled={unlockInProgress}
       dataCy="passphrase-input"
       on:enter={onEnter}
+      on:change={resetCheck}
+      on:keypress={resetCheck}
       style="width: 20rem;" />
 
     <div class="buttons">
