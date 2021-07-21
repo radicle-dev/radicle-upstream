@@ -110,7 +110,7 @@
     }
   };
 
-  const togglePasswordDisplay = () => {
+  const togglePassphraseDisplay = () => {
     visible = !visible;
     passphraseInput.setType(visible ? "text" : "password");
     repeatedPassphraseInput.setType(visible ? "text" : "password");
@@ -211,12 +211,14 @@
 
     <div class="buttons">
       <Button
-        dataCy={`${visible ? "hide" : "show"}-password`}
+        dataCy={`${visible ? "hide" : "show"}-passphrase`}
         variant="transparent"
-        style="margin-right: 1rem;"
+        style={`margin-right: 1rem; ${
+          passphrase.length === 0 ? "visibility:hidden;" : ""
+        }`}
         icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
-        on:click={togglePasswordDisplay}>
-        {visible ? "Hide" : "Show"} Password
+        on:click={togglePassphraseDisplay}>
+        {visible ? "Hide" : "Show"} Passphrase
       </Button>
       <div class="back-and-set-buttons">
         <Button

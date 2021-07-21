@@ -12,11 +12,12 @@
   import * as error from "ui/src/error";
   import * as notification from "ui/src/notification";
 
-  import { Button, Emoji, PasswordInput } from "ui/DesignSystem";
+  import { Button, Emoji, Icon, PasswordInput } from "ui/DesignSystem";
 
   let passphrase = "";
   let unlockInProgress = false;
   let input: PasswordInput;
+  let visible: boolean = false;
 
   let errorNotificationHandle: notification.Handle | undefined;
 
@@ -56,6 +57,11 @@
       unlock();
     }
   };
+
+  const togglePassphraseDisplay = () => {
+    visible = !visible;
+    input.setType(visible ? "text" : "password");
+  };
 </script>
 
 <style>
@@ -72,7 +78,14 @@
   }
   .form {
     display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     margin-top: 1.5rem;
+  }
+  .buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
   }
 </style>
 
@@ -92,12 +105,23 @@
       disabled={unlockInProgress}
       dataCy="passphrase-input"
       on:enter={onEnter}
-      style="width: 16rem; margin-right: 1rem;" />
-    <Button
-      dataCy="unlock-button"
-      disabled={passphrase.length === 0 || unlockInProgress}
-      on:click={unlock}>
-      Unlock
-    </Button>
+      style="width: 20rem;" />
+
+    <div class="buttons">
+      <Button
+        dataCy={`${visible ? "hide" : "show"}-passphrase`}
+        variant="transparent"
+        style={passphrase.length === 0 ? "visibility:hidden;" : ""}
+        icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
+        on:click={togglePassphraseDisplay}>
+        {visible ? "Hide" : "Show"} Passphrase
+      </Button>
+      <Button
+        dataCy="unlock-button"
+        disabled={passphrase.length === 0 || unlockInProgress}
+        on:click={unlock}>
+        Unlock
+      </Button>
+    </div>
   </div>
 </div>
