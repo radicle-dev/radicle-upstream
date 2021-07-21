@@ -8,17 +8,9 @@
 
 use radicle_daemon::request::{RequestState, SomeRequest, Status as PeerRequestStatus};
 use radicle_git_ext::Oid;
-use std::{
-    collections::HashMap,
-    sync::{
-        atomic::{AtomicUsize, Ordering},
-        Arc,
-    },
-    time::SystemTime,
-};
+use std::{collections::HashMap, time::SystemTime};
 
 use serde::Serialize;
-use tokio::sync::{mpsc, RwLock};
 
 use radicle_daemon::{convert::MaybeFrom, PeerEvent, PeerId, PeerStatus, Urn};
 
@@ -119,41 +111,6 @@ impl MaybeFrom<PeerEvent> for Notification {
             },
             _ => None,
         }
-    }
-}
-
-/// Manage active subscriptions and broadcast [`Notification`]s.
-#[derive(Clone, Debug, Default)]
-pub struct Subscriptions {
-    /// Generator of unqiue keys for subscriptions.
-    next_id: Arc<AtomicUsize>,
-    /// Active subscribers.
-    subs: Arc<RwLock<HashMap<usize, mpsc::UnboundedSender<Notification>>>>,
-}
-
-impl Subscriptions {
-    /// Broadcast [`Notification`] to all active subscriptions.
-    pub async fn broadcast(&self, notification: Notification) {
-        // We use retain to discard all closed subscriptions.
-        self.subs
-            .write()
-            .await
-            .retain(|_id, sender| sender.send(notification.clone()).is_ok());
-    }
-
-    /// Drop all stored senders, which terminates associated receivers and their streams.
-    pub async fn clear(&self) {
-        self.subs.write().await.clear();
-    }
-
-    /// Set up a new subscription, ready to receive [`Notification`].
-    pub async fn subscribe(&self) -> mpsc::UnboundedReceiver<Notification> {
-        let id = self.next_id.fetch_add(1, Ordering::Relaxed);
-        let (sender, receiver) = mpsc::unbounded_channel();
-
-        self.subs.write().await.insert(id, sender);
-
-        receiver
     }
 }
 

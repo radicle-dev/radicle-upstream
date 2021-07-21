@@ -147,24 +147,17 @@ async fn run_rigging(
         seeds_sender,
     } = rigging;
 
-    let subscriptions = notification::Subscriptions::default();
-    let peer_subscriptions = subscriptions.clone();
+    let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
     let server_ctx = ctx.clone();
 
-    let server = async move {
-        tracing::info!("starting API");
-        let api = http::api(server_ctx.clone(), subscriptions.clone());
-        let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
-            server_ctx.http_listen(),
-            async move {
-                restart_signal.await;
-                subscriptions.clear().await;
-            },
-        )?;
+    tracing::info!("starting API");
+    let api = http::api(server_ctx.clone(), peer_events_sender.clone());
+    let (_, server) =
+        warp::serve(api).try_bind_with_graceful_shutdown(server_ctx.http_listen(), async move {
+            restart_signal.await;
+        })?;
 
-        server.await;
-        Ok(())
-    };
+    let server = server.map(Ok);
 
     if let Some(peer) = peer {
         let mut tasks = vec![server.boxed()];
@@ -210,7 +203,7 @@ async fn run_rigging(
                             if let Some(notification) =
                                 notification::Notification::maybe_from(event)
                             {
-                                peer_subscriptions.broadcast(notification).await;
+                                let _result = peer_events_sender.send(notification).err();
                             }
                         },
                         Err(err) => {
