@@ -11,6 +11,7 @@
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
+  import * as modal from "ui/src/modal";
 
   import {
     ActionBar,
@@ -25,11 +26,14 @@
   import ProjectsTab from "ui/Screen/Org/Projects.svelte";
   import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
+  import Stepper from "ui/Modal/EnsSetupFlow/EnsSetupFlow.svelte";
+  import type { Registration } from "ui/src/org/ensResolver";
 
   export let owner: string;
   export let address: string;
   export let projectCount: number;
   export let anchors: org.OrgAnchors;
+  export let registration: Registration | undefined = undefined;
 
   const tabs = (address: string) => {
     return [
@@ -64,9 +68,12 @@
       {
         title: "Register ENS name",
         icon: Icon.Ethereum,
-        disabled: true,
-        event: () => {},
-        tooltip: "Coming soon",
+        event: () => {
+          modal.toggle(Stepper, () => {}, {
+            orgAddress: address,
+            registration,
+          });
+        },
       },
     ];
   };
@@ -74,7 +81,11 @@
 
 <SidebarLayout>
   <Header>
-    <OrgHeader slot="left" orgAddress={address} ownerAddress={owner} />
+    <OrgHeader
+      {registration}
+      slot="left"
+      orgAddress={address}
+      ownerAddress={owner} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
       <ThreeDotsMenu menuItems={menuItems(address)} />

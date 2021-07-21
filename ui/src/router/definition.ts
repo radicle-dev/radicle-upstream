@@ -7,6 +7,7 @@
 import { unreachable } from "ui/src/unreachable";
 
 import * as org from "ui/src/org";
+import type { Registration } from "../org/ensResolver";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type ProfileTab = "projects" | "following";
@@ -77,6 +78,7 @@ export type LoadedOrgTab =
 
 interface MultiSigOrgLoadedRoute {
   type: "multiSigOrg";
+  registration?: Registration;
   address: string;
   gnosisSafeAddress: string;
   activeTab: LoadedOrgTab;
@@ -86,6 +88,7 @@ interface MultiSigOrgLoadedRoute {
 
 interface SingleSigOrgLoadedRoute {
   type: "singleSigOrg";
+  registration?: Registration;
   address: string;
   owner: string;
   projectCount: number;
@@ -121,9 +124,10 @@ async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
 
   if (isMultiSig) {
     if (route.activeTab === "projects") {
-      const [projectCount, { members, threshold }] = await Promise.all([
+      const [projectCount, { members, threshold }, ensRecord] = await Promise.all([
         org.getProjectCount(),
         org.fetchSafeMembers(owner),
+        org.fetchOrgEnsRecord(route.address),
       ]);
       const anchors = await org.resolveProjectAnchors({
         orgAddress: route.address,
@@ -134,6 +138,7 @@ async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
 
       return {
         type: "multiSigOrg",
+        registration: ensRecord,
         address: route.address,
         gnosisSafeAddress: owner,
         members,
@@ -172,8 +177,10 @@ async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
       members: [],
       threshold: 0,
     });
+    const ensRecord = await org.fetchOrgEnsRecord(route.address);
     return {
       type: "singleSigOrg",
+      registration: ensRecord,
       address: route.address,
       owner,
       projectCount,

@@ -23,6 +23,7 @@ import * as router from "ui/src/router";
 import * as svelteStore from "ui/src/svelteStore";
 import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
+import { getRegistration, Registration } from "./org/ensResolver";
 import { claimsAddress, ClaimsContract } from "./attestation/contract";
 import type { Org, MemberResponse } from "./org/theGraphApi";
 import * as graph from "./org/theGraphApi";
@@ -284,9 +285,30 @@ async function fetchOrgs(): Promise<void> {
     });
   }
 
-  const orgs = await graph.getOrgs(w.connected.address);
+  let orgs = await graph.getOrgs(w.connected.address);
+
+  orgs = await Promise.all(
+    orgs.map(async org => {
+      org.registration = await fetchOrgEnsRecord(org.id);
+      return org;
+    })
+  );
+
   const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
   orgSidebarStore.set(sortedOrgs);
+}
+
+export async function fetchOrgEnsRecord(
+  orgAddress: string
+): Promise<Registration | undefined> {
+  const walletStore = svelteStore.get(wallet.store);
+  const name = await walletStore.provider.lookupAddress(orgAddress);
+
+  if (!name) {
+    return undefined;
+  }
+
+  return await getRegistration(name) || undefined;
 }
 
 // Information about an org and the safe that controls it.
@@ -521,4 +543,10 @@ export async function isMultiSig(address: string): Promise<boolean> {
   // We’re not really checking that the address is the Gnosis Safe
   // contract. We’re just checking if it is _a_ contract.
   return code !== "0x";
+}
+
+export async function setName(name: string, orgAddress: string): Promise<Contract.TransactionResponse> {
+  const walletStore = svelteStore.get(wallet.store);
+
+  return Contract.updateName(name, orgAddress, walletStore.provider, walletStore.signer)
 }

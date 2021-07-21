@@ -44,8 +44,8 @@ export interface Wallet extends svelteStore.Readable<State> {
   environment: Environment;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  provider: ethers.providers.Provider;
-  signer: ethers.Signer;
+  provider: ethers.providers.InfuraProvider | ethers.providers.JsonRpcProvider;
+  signer: WalletConnectSigner;
   // Returns the address of the wallet account if the wallet is
   // connected.
   getAddress(): string | undefined;
@@ -82,7 +82,7 @@ async function updateAccountBalances(
   }
 }
 
-function getProvider(environment: Environment): ethers.providers.Provider {
+function getProvider(environment: Environment): ethers.providers.InfuraProvider | ethers.providers.JsonRpcProvider {
   switch (environment) {
     case Environment.Local:
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");
@@ -103,7 +103,7 @@ function getProvider(environment: Environment): ethers.providers.Provider {
 
 function build(
   environment: Environment,
-  provider: ethers.providers.Provider
+  provider: ethers.providers.InfuraProvider | ethers.providers.JsonRpcProvider
 ): Wallet {
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
@@ -264,6 +264,7 @@ export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
     ethereumDebug.install(provider);
 
     const wallet = build(environment, provider);
+
     set(wallet);
     return () => wallet.destroy();
   }

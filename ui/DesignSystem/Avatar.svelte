@@ -144,7 +144,7 @@
 
 <div data-cy={dataCy} class={`container ${size}`} {style}>
   {#if imageUrl}
-    <img class={`image ${avatarClass}`} src={imageUrl} alt="user-avatar" />
+    <img class={`avatar ${avatarClass}`} src={imageUrl} alt="user-avatar" />
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}

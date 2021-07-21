@@ -1,0 +1,98 @@
+<!--
+ Copyright © 2021 The Radicle Upstream Contributors
+
+ This file is part of radicle-upstream, distributed under the GPLv3
+ with Radicle Linking Exception. For full terms see the included
+ LICENSE file.
+-->
+<script lang="typescript">
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as wallet from "ui/src/wallet";
+  import TextInput from "ui/DesignSystem/TextInput.svelte";
+  import { ValidationState, ValidationStatus } from "ui/src/validation";
+  import ButtonRow from "./shared/ButtonRow.svelte";
+  import { checkAvailability } from "ui/src/org/ensRegistrar";
+  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import type { SubmitPayload } from "../ens-flow.types";
+  import { getRegistration } from "ui/src/org/ensResolver";
+
+  export let onSubmit: (payload: SubmitPayload) => void = () => {};
+
+  let name: string;
+
+  let validationStatus: ValidationState = {
+    status: ValidationStatus.NotStarted,
+  };
+
+  const walletStore = svelteStore.get(wallet.store);
+
+  async function handleSubmit() {
+    if (!name) {
+      validationStatus = {
+        status: ValidationStatus.Error,
+        message: "This field is required.",
+      };
+      return;
+    }
+
+    validationStatus = {
+      status: ValidationStatus.Loading,
+    };
+
+    const { available, fee } = await checkAvailability(
+      walletStore.environment,
+      walletStore.signer,
+      name
+    );
+
+    if (available) {
+      onSubmit({
+        ensNameConfiguration: {
+          name,
+          fee,
+        },
+      });
+    } else {
+      const registration = await getRegistration(`${name}.radicle.eth`);
+
+      if (registration && registration.owner === walletStore.getAddress()) {
+        onSubmit({
+          ensNameConfiguration: {
+            name,
+            address: walletStore.getAddress(),
+            registered: true,
+          },
+          ensMetadata: {
+            ...registration,
+          },
+        });
+      }
+
+      validationStatus = {
+        status: ValidationStatus.Error,
+        message: "Sorry, but that name is already taken.",
+      };
+    }
+  }
+
+  // Reset validation when user changes input
+  $: {
+    name;
+    validationStatus = {
+      status: ValidationStatus.NotStarted,
+    };
+  }
+</script>
+
+<div>
+  <HeadlineAndDescription
+    headline="Let’s name your organization"
+    description="What should your organization be called?" />
+  <TextInput
+    bind:value={name}
+    validation={validationStatus}
+    suffix=".radicle.eth"
+    placeholder="Your organization name"
+    style="margin: 16px auto; width: 352px;" />
+  <ButtonRow onSubmit={handleSubmit} confirmCopy="Continue" />
+</div>

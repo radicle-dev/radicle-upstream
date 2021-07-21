@@ -15,6 +15,7 @@ import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
 import * as wallet from "ui/src/wallet";
+import type { Registration } from "./ensResolver";
 
 function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
   return new apolloCore.ApolloClient({
@@ -77,6 +78,7 @@ interface GnosisSafeWallet {
 export interface Org {
   id: string;
   owner: string;
+  registration?: Registration;
   creator: string;
   timestamp: number;
 }

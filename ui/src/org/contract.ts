@@ -25,6 +25,7 @@ const orgFactoryAbi = [
 const orgAbi = [
   "function owner() view returns (address)",
   "function anchor(bytes32, uint32, bytes)",
+  "function setName(string, address) returns (bytes32)",
 ];
 
 function orgFactoryAddress(network: ethereum.Environment): string {
@@ -185,4 +186,18 @@ export function parseAnchorTx(data: string): AnchorData | undefined {
 
     return { projectId: projectId, commitHash: decodedCommitHash };
   }
+}
+
+export async function updateName(
+  name: string,
+  orgAddress: string,
+  provider: ethers.providers.Provider,
+  signer: ethers.Signer,
+): Promise<TransactionResponse> {
+  const org = new ethers.Contract(orgAddress, orgAbi, signer);
+
+  return org.setName(
+    name,
+    (await provider.getNetwork()).ensAddress,
+  );
 }

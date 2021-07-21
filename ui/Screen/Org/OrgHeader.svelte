@@ -8,12 +8,14 @@
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
   import { Avatar, Icon } from "ui/DesignSystem";
+  import type { Registration } from "ui/src/org/ensResolver";
 
   import * as style from "ui/src/style";
 
   export let orgAddress: string;
   export let ownerAddress: string;
   export let threshold: number | undefined = undefined;
+  export let registration: Registration | undefined = undefined;
 </script>
 
 <style>
@@ -33,6 +35,10 @@
     gap: 0.5rem;
     margin-bottom: 0.5rem;
   }
+
+  .name-subdomain {
+    color: var(--color-foreground-level-4);
+  }
 </style>
 
 <div style="display: flex">
@@ -40,6 +46,7 @@
     style="margin-right: 2rem;"
     size="huge"
     variant="square"
+    imageUrl={registration?.avatar || undefined}
     avatarFallback={radicleAvatar.generate(
       orgAddress,
       radicleAvatar.Usage.Any
@@ -47,7 +54,12 @@
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
-      {style.ellipsed(orgAddress)}
+      {#if registration?.name}
+        {registration?.name.replace(".radicle.eth", "").trim()}
+        <span class="name-subdomain">.radicle.eth</span>
+      {:else}
+        {style.ellipsed(orgAddress)}
+      {/if}
     </h1>
     <div class="row">
       {#if threshold}
@@ -62,6 +74,12 @@
         <Icon.Orgs />
         {threshold}
         {threshold === 1 ? "signature" : "signatures"} required for quorum
+      </div>
+    {/if}
+    {#if registration?.url}
+      <div class="row">
+        <Icon.Globe />
+        <a href={registration.url}>{registration.url}</a>
       </div>
     {/if}
   </div>

@@ -134,6 +134,7 @@
     <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "singleSigOrg"}
     <SingleSigOrg
+      registration={$activeRouteStore.registration}
       address={$activeRouteStore.address}
       owner={$activeRouteStore.owner}
       projectCount={$activeRouteStore.projectCount}
