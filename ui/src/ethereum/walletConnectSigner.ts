@@ -16,6 +16,7 @@ import {
   defineReadOnly,
   resolveProperties,
 } from "@ethersproject/properties";
+import * as svelteStore from "svelte/store";
 
 import { Environment } from "./environment";
 import type { WalletConnect } from "./walletConnect";
@@ -38,7 +39,9 @@ export class WalletConnectSigner extends ethers.Signer {
   }
 
   async getAddress(): Promise<string> {
-    const accountAddress = this.walletConnect.getConnection()?.accountAddress;
+    const accountAddress = svelteStore.get(
+      this.walletConnect.connection
+    )?.accountAddress;
     if (!accountAddress) {
       throw new Error(
         "The connected wallet has no accounts or there is a connection problem"

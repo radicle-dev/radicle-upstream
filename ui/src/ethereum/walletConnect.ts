@@ -8,12 +8,13 @@
 
 import { Mutex } from "async-mutex";
 import Connector from "@walletconnect/client";
-import type { ITxData } from "@walletconnect/types";
+import type { ITxData, ISessionStatus } from "@walletconnect/types";
+import * as svelteStore from "svelte/store";
+import { isEqual } from "lodash";
 
 import * as Error from "ui/src/error";
 import * as modal from "ui/src/modal";
 import ModalWalletQRCode from "ui/Modal/Wallet/QRCode.svelte";
-import * as Bacon from "ui/src/bacon";
 
 // Data provided by a connected wallet
 export interface Connection {
@@ -22,12 +23,9 @@ export interface Connection {
 }
 
 export interface WalletConnect {
-  // Emits an event when the wallet is disconnected. The disconnection
-  // may be triggered by the app or by the wallet.
-  disconnected: Bacon.EventStream<void>;
-
-  // If we are connected to a wallet, return the connection information.
-  getConnection(): Connection | undefined;
+  // Holds the connection state. This is updated whenever a wallet
+  // connects or disconnects or updates its parameters.
+  connection: svelteStore.Readable<Connection | undefined>;
 
   // Start the connection flow by showing the modal with the connection
   // data. Returns `true` if the connection has been succesfully
@@ -55,33 +53,31 @@ export function createWalletConnect(): WalletConnect {
 
 export class WalletConnectClient implements WalletConnect {
   private connector: Connector;
-  private disconnectedBus = new Bacon.Bus<void>();
   // Mutex to synchronize connection and disconnection.
   private connectionMutex = new Mutex();
+  private _connection = svelteStore.writable<Connection | undefined>(undefined);
 
-  public disconnected: Bacon.EventStream<void>;
+  public connection: svelteStore.Readable<Connection | undefined>;
 
   constructor() {
-    this.connector = createConnector();
-    this.disconnected = this.disconnectedBus.toEventStream();
+    // `this.connector` is set by `reinit()`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this.connector = undefined as any;
     this.reinit();
-  }
-
-  getConnection(): Connection | undefined {
+    this.connection = this._connection;
     if (this.connector.connected) {
-      return {
+      this._connection.set({
         chainId: this.connector.chainId,
         accountAddress: this.connector.accounts[0],
-      };
-    } else {
-      return undefined;
+      });
     }
   }
 
   async connect(): Promise<boolean> {
     return tryRunExclusive(this.connectionMutex, async () => {
       try {
-        await this.connector.connect();
+        const sessionStatus = await this.connector.connect();
+        this.setConnection(sessionStatus);
         return true;
       } catch (e) {
         this.reinit();
@@ -126,7 +122,7 @@ export class WalletConnectClient implements WalletConnect {
   // https://github.com/WalletConnect/walletconnect-monorepo/pull/370#issuecomment-776038638
   private reinit() {
     this.connector = createConnector();
-    // We should remove the `disconnect` listener from the previous
+    // We should remove the event listeners from the previous
     // instance but WalletConnect does not yet support this.
     //
     // https://github.com/WalletConnect/walletconnect-monorepo/issues/340
@@ -137,9 +133,27 @@ export class WalletConnectClient implements WalletConnect {
       // storage which is still connected.
       setTimeout(() => {
         this.reinit();
-        this.disconnectedBus.push();
+        this.setConnection(undefined);
       });
     });
+
+    this.connector.on("session_update", (_error, { params }) => {
+      this.setConnection(params[0]);
+    });
+  }
+
+  private setConnection(sessionStatus: ISessionStatus | undefined) {
+    let connection;
+    if (sessionStatus) {
+      connection = {
+        chainId: sessionStatus.chainId,
+        accountAddress: sessionStatus.accounts[0],
+      };
+    }
+    const previousConnection = svelteStore.get(this._connection);
+    if (!isEqual(previousConnection, connection)) {
+      this._connection.set(connection);
+    }
   }
 }
 

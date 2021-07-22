@@ -108,10 +108,6 @@ function build(
     status: Status.NotConnected,
   });
 
-  const unsubDisconnected = walletConnect.disconnected.onValue(() => {
-    stateStore.set({ status: Status.NotConnected });
-  });
-
   const signer = new WalletConnectSigner(walletConnect, provider, environment);
 
   const unsubscribeStateStore = stateStore.subscribe(state => {
@@ -127,7 +123,13 @@ function build(
     }
 
     try {
-      await walletConnect.connect();
+      stateStore.set({ status: Status.Connecting });
+      const connected = await walletConnect.connect();
+      // If we connect succesfully, `stateStore` is updated by the
+      // `connection` subscription.
+      if (!connected) {
+        stateStore.set({ status: Status.NotConnected });
+      }
     } catch (e) {
       stateStore.set({ status: Status.NotConnected, error: e });
       error.show(
@@ -141,43 +143,27 @@ function build(
       );
       return;
     }
-    await initialize();
   }
 
-  async function initialize() {
-    stateStore.set({ status: Status.Connecting });
-    setAccountData();
-  }
-
-  async function setAccountData() {
-    try {
-      const walletConnection = walletConnect.getConnection();
-      if (walletConnection === undefined) {
-        throw new error.Error({
-          message: "Cannot set connection status: wallet not connected",
-        });
-      }
-
-      const connected = {
-        address: walletConnection.accountAddress,
-        network: networkFromChainId(walletConnection.chainId),
-      };
-      stateStore.set({ status: Status.Connected, connected });
-    } catch (error) {
-      stateStore.set({ status: Status.NotConnected, error });
+  const unsubConnection = walletConnect.connection.subscribe(connection => {
+    if (connection) {
+      stateStore.set({
+        status: Status.Connected,
+        connected: {
+          address: connection.accountAddress,
+          network: networkFromChainId(connection.chainId),
+        },
+      });
+    } else {
+      stateStore.set({ status: Status.NotConnected });
     }
-  }
-
-  if (walletConnect.getConnection()) {
-    initialize();
-  }
+  });
 
   // Periodically refresh the wallet data
   const REFRESH_INTERVAL_MILLIS = 60000;
   const refreshInterval = setInterval(() => {
     const state = svelteStore.get(stateStore);
     if (state.status === Status.Connected) {
-      setAccountData();
       updateAccountBalances(environment, state.connected.address, provider);
     }
   }, REFRESH_INTERVAL_MILLIS);
@@ -202,7 +188,7 @@ function build(
     signer,
     getAddress,
     destroy() {
-      unsubDisconnected();
+      unsubConnection();
       unsubscribeStateStore();
       clearInterval(refreshInterval);
     },
