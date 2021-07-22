@@ -173,7 +173,7 @@ function build(
   }
 
   // Periodically refresh the wallet data
-  const REFRESH_INTERVAL_MILLIS = 3000;
+  const REFRESH_INTERVAL_MILLIS = 60000;
   const refreshInterval = setInterval(() => {
     const state = svelteStore.get(stateStore);
     if (state.status === Status.Connected) {

@@ -21,12 +21,6 @@ import { Icon } from "ui/DesignSystem";
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
 
-// Periodically refresh the status of all ongoing transactions.
-const POLL_INTERVAL_MILLIS = 3000;
-setInterval(() => {
-  updateStatuses();
-}, POLL_INTERVAL_MILLIS);
-
 export type Tx = TxData & MetaTx;
 
 // The data shared across all types of transactions
@@ -210,11 +204,37 @@ function txData(txc: ContractTransaction, date: number = Date.now()): TxData {
   };
 }
 
+function registerTxUpdateCallback(tx: Tx): void {
+  if (tx.status === TxStatus.AwaitingInclusion) {
+    const provider = svelteStore.get(walletStore).provider;
+    provider
+      .waitForTransaction(tx.hash)
+      .then(txReceipt => {
+        store.update((txs: Tx[]) => {
+          const tx_ = txs.find(tx_ => tx_.hash === tx.hash);
+          if (tx_) {
+            tx_.status = status(txReceipt);
+          }
+          return txs;
+        });
+      })
+      .catch(err => {
+        error.show(
+          new error.Error({
+            message: "Failed to update transaction status",
+            source: err,
+          })
+        );
+      });
+  }
+}
+
 export function add(tx: Tx): void {
   store.update((txs: Tx[]) => {
     txs.unshift(tx);
     return txs;
   });
+  registerTxUpdateCallback(tx);
   cap();
 }
 
@@ -227,21 +247,9 @@ function cap(length = 7) {
 }
 
 async function updateStatuses() {
-  store.update((txs: Tx[]) => {
-    txs
-      .filter((tx: Tx) => tx.status === TxStatus.AwaitingInclusion)
-      .forEach(async (tx: Tx) => {
-        try {
-          const receipt = await svelteStore
-            .get(walletStore)
-            .provider.getTransactionReceipt(tx.hash);
-          tx.status = status(receipt);
-        } catch (_error) {
-          // We ignore network failures, therefore keeping the
-          // tx status unchanged.
-        }
-      });
-    return txs;
+  const txs = svelteStore.get(store);
+  txs.forEach(tx => {
+    registerTxUpdateCallback(tx);
   });
 }
 
@@ -454,4 +462,8 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
     message: `${label}: ${message}`,
     source: error.fromJsError(e),
   });
+}
+
+export function initialize(): void {
+  updateStatuses();
 }
