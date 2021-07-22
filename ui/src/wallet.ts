@@ -85,13 +85,13 @@ function getProvider(environment: Environment): ethers.providers.Provider {
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");
     case Environment.Rinkeby:
       // This account is registered on igor.zuk@protonmail.com.
-      return new ethers.providers.InfuraProvider(
+      return ethers.providers.InfuraProvider.getWebSocketProvider(
         "rinkeby",
         "de5e2a8780c04964950e73b696d1bfb1"
       );
     case Environment.Mainnet:
-      // This account is registered on rudolfs@monadic.xyz.
-      return new ethers.providers.InfuraProvider(
+      // This account is registered on rudolfs@osins.org.
+      return ethers.providers.InfuraProvider.getWebSocketProvider(
         "mainnet",
         "7a19a4bf0af84fcc86ffb693a257fad4"
       );
