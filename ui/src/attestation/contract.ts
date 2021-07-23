@@ -12,10 +12,11 @@ import {
   Claims__factory as ClaimsFactory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
-import * as ethereum from "../ethereum";
-import * as transaction from "../transaction";
-import { parseIdentitySha1 } from "../urn";
+import * as ethereum from "ui/src/ethereum";
+import * as transaction from "ui/src/transaction";
+import { parseIdentitySha1 } from "ui/src/urn";
 import * as mutexExecutor from "ui/src/mutexExecutor";
+import * as error from "ui/src/error";
 
 const addresses = {
   claims: {
@@ -122,24 +123,37 @@ export class ClaimsContract {
   ): Promise<Uint8Array> {
     const tx = await this.contract.provider.getTransaction(txHash);
     if (tx === null) {
-      throw new Error("Claim transaction not found");
+      throw new error.Error({ message: "Claim transaction not found" });
     }
     // TODO(igor) add more checks for malicious client (e.g. TX signature, network, etc.)
     if (tx.from.toLowerCase() !== address.toLowerCase()) {
-      throw new Error("Claim transaction sent by an invalid address");
+      throw new error.Error({
+        message: "Claim transaction sent by an invalid address",
+        details: {
+          tx: txHash,
+          address,
+        },
+      });
     }
     if (tx.to?.toLowerCase() !== this.contract.address.toLowerCase()) {
-      throw new Error("Claim transaction sent to an invalid contract");
+      throw new error.Error({
+        message: "Claim transaction sent to an invalid contract",
+        details: { tx: txHash },
+      });
     }
     const args = this.contract.interface.decodeFunctionData("claim", tx.data);
     if (FORMAT_SHA1.eq(args[0]) === false) {
-      throw new Error(
-        `Bad claim transaction payload format version ${args[0].toString()}`
-      );
+      throw new error.Error({
+        message: "Bad claim transaction payload format version",
+        details: { data: args[0].toString() },
+      });
     }
     const payload = ethers.utils.arrayify(args[1]);
     if (payload.length !== FORMAT_SHA1_LENGTH) {
-      throw new Error(`Bad claim transaction payload size ${payload.length}`);
+      throw new error.Error({
+        message: "Bad claim transaction payload size",
+        details: { payload },
+      });
     }
     return payload;
   }
