@@ -216,9 +216,12 @@
     </div>
 
     <div class="buttons">
+      <!-- We’re using backticks for the `variant` property because of
+        a bug in Svelte.
+        https://github.com/sveltejs/language-tools/issues/1113 -->
       <Button
         dataCy={`${visible ? "hide" : "show"}-passphrase`}
-        variant="transparent"
+        variant={`transparent`}
         style={`margin-right: 1rem; ${
           passphrase.length === 0 ? "visibility:hidden;" : ""
         }`}
