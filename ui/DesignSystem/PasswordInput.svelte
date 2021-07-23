@@ -25,6 +25,7 @@
   export let hint = "";
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
+  export let visible: boolean = false;
 
   export const focus = (): void => {
     inputElement && inputElement.focus();
@@ -50,6 +51,10 @@
   };
 
   $: showHint = hint.length > 0 && value.length === 0;
+
+  $: if (inputElement) {
+    inputElement.type = visible ? "text" : "password";
+  }
 </script>
 
 <style>
@@ -146,6 +151,7 @@
     on:change
     on:input
     on:keydown={onKeydown}
+    on:keypress
     bind:this={inputElement}
     {spellcheck}
     style={inputStyle} />
