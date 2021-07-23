@@ -110,12 +110,6 @@
     }
   };
 
-  const togglePassphraseDisplay = () => {
-    visible = !visible;
-    passphraseInput.setType(visible ? "text" : "password");
-    repeatedPassphraseInput.setType(visible ? "text" : "password");
-  };
-
   const onKeydown = (event: KeyboardEvent) => {
     switch (event.code) {
       case "Enter":
@@ -135,8 +129,6 @@
   const resetCheck = () => {
     if (passphrase.length === 0) {
       visible = false;
-      passphraseInput.setType("password");
-      repeatedPassphraseInput.setType("password");
     }
   };
 </script>
@@ -195,6 +187,8 @@
       on:enter={() => {
         repeatedPassphraseInput.focus();
       }}
+      on:change={resetCheck}
+      on:keypress={resetCheck}
       autofocus={true}
       dataCy="passphrase-input"
       placeholder="Enter a secure passphrase"
@@ -202,6 +196,7 @@
       style="margin-top: 1.5rem;"
       validation={passphraseValidation}
       bind:value={passphrase}
+      {visible}
       {disabled} />
 
     <div class="repeat" hidden={!passphrase}>
@@ -216,6 +211,7 @@
         hint="↵"
         validation={repeatedPassphraseValidation}
         bind:value={repeatedPassphrase}
+        {visible}
         {disabled} />
     </div>
 
@@ -227,7 +223,7 @@
           passphrase.length === 0 ? "visibility:hidden;" : ""
         }`}
         icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
-        on:click={togglePassphraseDisplay}>
+        on:click={() => (visible = !visible)}>
         {visible ? "Hide" : "Show"} Passphrase
       </Button>
       <div class="back-and-set-buttons">

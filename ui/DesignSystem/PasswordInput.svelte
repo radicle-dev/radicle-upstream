@@ -25,15 +25,10 @@
   export let hint = "";
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
+  export let visible: boolean = false;
 
   export const focus = (): void => {
     inputElement && inputElement.focus();
-  };
-
-  export const setType = (type: string): void => {
-    if (inputElement) {
-      inputElement.type = type;
-    }
   };
 
   let inputElement: HTMLInputElement | undefined = undefined;
@@ -56,6 +51,10 @@
   };
 
   $: showHint = hint.length > 0 && value.length === 0;
+
+  $: if (inputElement) {
+    inputElement.type = visible ? "text" : "password";
+  }
 </script>
 
 <style>

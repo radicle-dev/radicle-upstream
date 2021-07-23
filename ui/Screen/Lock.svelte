@@ -61,13 +61,7 @@
   const resetCheck = () => {
     if (passphrase.length === 0) {
       visible = false;
-      input.setType("password");
     }
-  };
-
-  const togglePassphraseDisplay = () => {
-    visible = !visible;
-    input.setType(visible ? "text" : "password");
   };
 </script>
 
@@ -105,6 +99,7 @@
 
   <div class="form">
     <PasswordInput
+      {visible}
       bind:this={input}
       autofocus
       placeholder="Enter your passphrase"
@@ -122,7 +117,7 @@
         variant="transparent"
         style={passphrase.length === 0 ? "visibility:hidden;" : ""}
         icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
-        on:click={togglePassphraseDisplay}>
+        on:click={() => (visible = !visible)}>
         {visible ? "Hide" : "Show"} Passphrase
       </Button>
       <Button
