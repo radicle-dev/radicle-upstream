@@ -7,6 +7,8 @@
 -->
 <script lang="typescript">
   import dayjs from "dayjs";
+  import Big from "big.js";
+
   import { Copyable, Icon, Identity, Modal } from "ui/DesignSystem";
   import TxSpinner from "ui/DesignSystem/Transaction/Spinner.svelte";
   import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
@@ -17,11 +19,8 @@
     TxKind,
     TxStatus,
     colorForStatus,
-    emoji,
-    isIncoming,
     selectedStore,
     store as txs,
-    transferAmount,
   } from "ui/src/transaction";
 
   // In reality, the transaction should never be undefined,
@@ -35,6 +34,27 @@
   $: transferedAmount = tx ? transferAmount(tx) : undefined;
   $: incoming = tx ? isIncoming(tx) : false;
 
+  export function isIncoming(tx: Tx): boolean {
+    switch (tx.kind) {
+      case TxKind.CollectFunds:
+      case TxKind.Withdraw:
+        return true;
+
+      case TxKind.AnchorProject:
+      case TxKind.ClaimRadicleIdentity:
+      case TxKind.CommitEnsName:
+      case TxKind.CreateOrg:
+      case TxKind.Erc20Allowance:
+      case TxKind.LinkEnsNameToOrg:
+      case TxKind.RegisterEnsName:
+      case TxKind.SupportOnboarding:
+      case TxKind.TopUp:
+      case TxKind.UpdateEnsMetadata:
+      case TxKind.UpdateSupport:
+        return false;
+    }
+  }
+
   function showPoolCard(kind: TxKind): boolean {
     return !(
       kind === TxKind.AnchorProject ||
@@ -45,6 +65,45 @@
       kind === TxKind.RegisterEnsName ||
       kind === TxKind.UpdateEnsMetadata
     );
+  }
+
+  function emoji(tx: Tx): string {
+    switch (tx.kind) {
+      case TxKind.AnchorProject:
+        return "🏖️";
+      case TxKind.CreateOrg:
+        return "🎪";
+      case TxKind.ClaimRadicleIdentity:
+        return "🧦";
+      case TxKind.CommitEnsName:
+      case TxKind.RegisterEnsName:
+        return "📇";
+      case TxKind.UpdateEnsMetadata:
+        return "📋";
+      case TxKind.LinkEnsNameToOrg:
+        return "🔗";
+      case TxKind.CollectFunds:
+      case TxKind.Withdraw:
+      case TxKind.Erc20Allowance:
+      case TxKind.SupportOnboarding:
+      case TxKind.TopUp:
+      case TxKind.UpdateSupport:
+        return "👛";
+    }
+  }
+
+  // The amount the `tx` transfers. `undefined` when not applicable.
+  export function transferAmount(tx: Tx): Big | undefined {
+    switch (tx.kind) {
+      case TxKind.CollectFunds:
+      case TxKind.Withdraw:
+      case TxKind.TopUp:
+        return Big(tx.amount);
+      case TxKind.SupportOnboarding:
+        return Big(tx.topUp);
+      default:
+        return undefined;
+    }
   }
 </script>
 

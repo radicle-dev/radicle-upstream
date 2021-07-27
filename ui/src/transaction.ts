@@ -7,16 +7,13 @@
 import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
-import Big from "big.js";
+import type Big from "big.js";
 import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
 import { store as walletStore } from "./wallet";
 import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
-
-import type { SvelteComponent } from "svelte";
-import { Icon } from "ui/DesignSystem";
 
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
@@ -323,176 +320,9 @@ export const colorForStatus = (status: TxStatus): string => {
   }
 };
 
-export interface SummaryCounts {
-  rejected: number;
-  awaiting: number;
-  included: number;
-
-  sum: number;
-}
-
-export function summaryCounts(txs: Tx[]): SummaryCounts {
-  return txs.reduce(
-    (acc, tx): SummaryCounts => {
-      acc.sum += 1;
-      switch (tx.status) {
-        case TxStatus.AwaitingInclusion:
-          acc.awaiting += 1;
-          break;
-        case TxStatus.Rejected:
-          acc.rejected += 1;
-          break;
-        case TxStatus.Included:
-          acc.included += 1;
-          break;
-      }
-
-      return acc;
-    },
-    {
-      rejected: 0,
-      awaiting: 0,
-      included: 0,
-      sum: 0,
-    }
-  );
-}
-
-export const summaryStatus = (counts: SummaryCounts): TxStatus => {
-  if (counts.rejected > 0) {
-    return TxStatus.Rejected;
-  } else if (counts.awaiting > 0) {
-    return TxStatus.AwaitingInclusion;
-  }
-
-  return TxStatus.Included;
-};
-
-export const summaryText = (counts: SummaryCounts): string => {
-  let sum = 0;
-  let state = "included";
-
-  if (counts.included > 0) {
-    sum = counts.included;
-  }
-  if (counts.rejected > 0) {
-    sum = counts.rejected;
-    state = "rejected";
-  }
-  if (counts.awaiting > 0) {
-    sum = counts.awaiting;
-    state = "awaiting";
-  }
-
-  if (sum > 1) {
-    return `${sum} transactions ${state}`;
-  }
-
-  return `Transaction ${state}`;
-};
-
 // A store containing the hash of a transaction selected by the
 // user in the TransactionCenter.
 export const selectedStore = svelteStore.writable<string>("");
-
-// The direction of a transaction in respect to the local user,
-// assuming that they are involved either as the sender or as the
-// recipient.
-export enum Direction {
-  // The local user's linked account is the recipient of the transaction.
-  Incoming = "Incoming",
-  // The local user's linked account is the sender of the transaction.
-  Outgoing = "Outgoing",
-}
-
-function direction(tx: Tx): Direction {
-  switch (tx.kind) {
-    case TxKind.CollectFunds:
-    case TxKind.Withdraw:
-      return Direction.Incoming;
-
-    case TxKind.AnchorProject:
-    case TxKind.ClaimRadicleIdentity:
-    case TxKind.CommitEnsName:
-    case TxKind.CreateOrg:
-    case TxKind.Erc20Allowance:
-    case TxKind.LinkEnsNameToOrg:
-    case TxKind.RegisterEnsName:
-    case TxKind.SupportOnboarding:
-    case TxKind.TopUp:
-    case TxKind.UpdateEnsMetadata:
-    case TxKind.UpdateSupport:
-      return Direction.Outgoing;
-  }
-}
-
-export function emoji(tx: Tx): string {
-  switch (tx.kind) {
-    case TxKind.AnchorProject:
-      return "🏖️";
-    case TxKind.CreateOrg:
-      return "🎪";
-    case TxKind.ClaimRadicleIdentity:
-      return "🧦";
-    case TxKind.CommitEnsName:
-    case TxKind.RegisterEnsName:
-      return "📇";
-    case TxKind.UpdateEnsMetadata:
-      return "📋";
-    case TxKind.LinkEnsNameToOrg:
-      return "🔗";
-    case TxKind.CollectFunds:
-    case TxKind.Withdraw:
-    case TxKind.Erc20Allowance:
-    case TxKind.SupportOnboarding:
-    case TxKind.TopUp:
-    case TxKind.UpdateSupport:
-      return "👛";
-  }
-}
-
-export function txIcon(tx: Tx): typeof SvelteComponent {
-  switch (tx.kind) {
-    case TxKind.ClaimRadicleIdentity:
-      return Icon.Registered;
-    case TxKind.CollectFunds:
-    case TxKind.Withdraw:
-      return Icon.Withdraw;
-    case TxKind.CommitEnsName:
-    case TxKind.Erc20Allowance:
-    case TxKind.LinkEnsNameToOrg:
-    case TxKind.RegisterEnsName:
-    case TxKind.UpdateEnsMetadata:
-      return Icon.Ethereum;
-    case TxKind.SupportOnboarding:
-    case TxKind.UpdateSupport:
-      return Icon.TokenStreams;
-    case TxKind.TopUp:
-      return Icon.Topup;
-    case TxKind.CreateOrg:
-      return Icon.Orgs;
-    case TxKind.AnchorProject:
-      return Icon.Anchor;
-  }
-}
-
-export function isIncoming(tx: Tx): boolean {
-  return direction(tx) === Direction.Incoming;
-}
-
-// The amount the `tx` transfers. `undefined` when not applicable.
-export function transferAmount(tx: Tx): Big | undefined {
-  switch (tx.kind) {
-    case TxKind.CollectFunds:
-    case TxKind.Withdraw:
-    case TxKind.TopUp:
-      return Big(tx.amount);
-    case TxKind.SupportOnboarding:
-      return Big(tx.topUp);
-    default:
-      return undefined;
-  }
-}
 
 // Convert a transaction-related `globalThis.Error` to `error.Error`.
 export function convertError(e: globalThis.Error, label: string): error.Error {
