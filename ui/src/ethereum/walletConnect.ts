@@ -38,6 +38,7 @@ export interface WalletConnect {
   // Sign a message with the key for `address`. `message` must be
   // hex-encoded.
   signMessage(address: string, message: string): Promise<string>;
+  signTypedData(params: unknown[]): Promise<string>;
   // Submit a transaction to the network via the wallet and return the
   // transaction hash. Requires user confirmation. Throws when no
   // wallet is connected.
@@ -103,6 +104,10 @@ export class WalletConnectClient implements WalletConnect {
 
   signMessage(address: string, message: string): Promise<string> {
     return this.connector.signMessage([address, message]);
+  }
+
+  signTypedData(params: unknown[]): Promise<string> {
+    return this.connector.signTypedData(params);
   }
 
   sendTransaction(tx: ITxData): Promise<string> {
