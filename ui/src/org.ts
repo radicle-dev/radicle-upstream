@@ -39,9 +39,12 @@ const ORG_POLL_INTERVAL_MS = 2000;
 
 // Update the org data for the sidebar store every
 // `ORG_POLL_INTERVAL_MS` milliseconds.
+//
+// When encountering a 502 or 503 response we don’t show an error
+// immediately but retry again.
 const updateOrgsForever = async (): Promise<never> => {
   let showError = true;
-  let remainingRetries502 = 0;
+  let remainingRetriesUnavailable = 0;
 
   for (;;) {
     const walletStore = svelteStore.get(wallet.store);
@@ -53,12 +56,12 @@ const updateOrgsForever = async (): Promise<never> => {
 
     await fetchOrgs().then(
       () => {
-        remainingRetries502 = 20;
+        remainingRetriesUnavailable = 20;
         showError = true;
       },
       err => {
-        if (graph.is502Error(err) && remainingRetries502 > 0) {
-          remainingRetries502 -= 1;
+        if (graph.isUnavailableError(err) && remainingRetriesUnavailable > 0) {
+          remainingRetriesUnavailable -= 1;
           console.warn(err);
           return;
         }
