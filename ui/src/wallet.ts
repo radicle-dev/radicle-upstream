@@ -79,7 +79,9 @@ async function updateAccountBalances(
   }
 }
 
-function getProvider(environment: Environment): ethers.providers.InfuraProvider | ethers.providers.JsonRpcProvider {
+function getProvider(
+  environment: Environment
+): ethers.providers.InfuraProvider | ethers.providers.JsonRpcProvider {
   switch (environment) {
     case Environment.Local:
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");

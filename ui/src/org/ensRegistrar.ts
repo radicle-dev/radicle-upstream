@@ -32,10 +32,11 @@ function registrarAddress(network: ethereum.Environment): string {
   }
 }
 
-function registrar(
-  environment: ethereum.Environment,
-) {
-  return Registrar__factory.connect(registrarAddress(environment), walletStore.signer)
+function registrar(environment: ethereum.Environment) {
+  return Registrar__factory.connect(
+    registrarAddress(environment),
+    walletStore.signer
+  );
 }
 
 // TODO: Move RAD-related logic to its own file
@@ -53,19 +54,20 @@ function radTokenAddress(network: ethereum.Environment): string {
   }
 }
 
-function radToken(
-  environment: ethereum.Environment,
-) {
-  return RadicleToken__factory.connect(radTokenAddress(environment), walletStore.signer);
+function radToken(environment: ethereum.Environment) {
+  return RadicleToken__factory.connect(
+    radTokenAddress(environment),
+    walletStore.signer
+  );
 }
 
 async function checkAvailability(
   environment: ethereum.Environment,
   signer: ethers.Signer,
-  name: string,
+  name: string
 ): Promise<{
-  available: boolean,
-  fee: BigNumber,
+  available: boolean;
+  fee: BigNumber;
 }> {
   const r = registrar(environment);
 
@@ -76,28 +78,38 @@ async function checkAvailability(
 
   return {
     available,
-    fee
-  }
+    fee,
+  };
 }
 
 async function commit(
   environment: ethereum.Environment,
   name: string,
   salt: Uint8Array,
-  fee: BigNumber,
+  fee: BigNumber
 ): Promise<{
-  receipt: ethers.providers.TransactionReceipt,
-  minAge: number,
+  receipt: ethers.providers.TransactionReceipt;
+  minAge: number;
 }> {
   const signer = walletStore.signer;
   const minAge = (await registrar(environment).minCommitmentAge()).toNumber();
   const ownerAddr = walletStore.getAddress();
   const spender = registrarAddress(environment);
-  const deadline = ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(3600); // Expire one hour from now.
+  const deadline = ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(
+    3600
+  ); // Expire one hour from now.
   const token = radToken(environment);
-  const signature = await permitSignature(walletStore.signer, token, spender, fee, deadline);
+  const signature = await permitSignature(
+    walletStore.signer,
+    token,
+    spender,
+    fee,
+    deadline
+  );
 
-  if (!ownerAddr) { throw new Error('Wallet not initialized'); }
+  if (!ownerAddr) {
+    throw new Error("Wallet not initialized");
+  }
 
   const commitment = createCommitment(name, ownerAddr, salt);
 
@@ -120,29 +132,25 @@ async function commit(
   return {
     receipt: await walletStore.provider.getTransactionReceipt(tx.hash),
     minAge,
-  }
+  };
 }
 
 async function register(
   environment: ethereum.Environment,
   name: string,
-  salt: Uint8Array,
+  salt: Uint8Array
 ): Promise<ethers.providers.TransactionReceipt> {
   const signer = walletStore.signer;
 
-  const address = walletStore.getAddress()
+  const address = walletStore.getAddress();
 
   if (!address) {
-    throw new Error('Wallet not initialized');
+    throw new Error("Wallet not initialized");
   }
 
   const tx = await registrar(environment)
     .connect(signer)
-    .register(
-      name,
-      address,
-      ethers.BigNumber.from(salt),
-    );
+    .register(name, address, ethers.BigNumber.from(salt));
 
   await tx.wait();
 
@@ -154,7 +162,7 @@ async function permitSignature(
   token: ethers.Contract,
   spenderAddr: string,
   value: ethers.BigNumberish,
-  deadline: ethers.BigNumberish,
+  deadline: ethers.BigNumberish
 ): Promise<ethers.Signature> {
   const ownerAddr = (await owner.getAddress()).toLowerCase();
   const nonce = await token.nonces(ownerAddr);
@@ -174,20 +182,20 @@ async function permitSignature(
         { name: "verifyingContract", type: "address" },
       ],
       Permit: [
-        { "name": "owner", "type": "address" },
-        { "name": "spender", "type": "address" },
-        { "name": "value", "type": "uint256" },
-        { "name": "nonce", "type": "uint256" },
-        { "name": "deadline", "type": "uint256" }
-      ]
+        { name: "owner", type: "address" },
+        { name: "spender", type: "address" },
+        { name: "value", type: "uint256" },
+        { name: "nonce", type: "uint256" },
+        { name: "deadline", type: "uint256" },
+      ],
     },
     message: {
-      "owner": ownerAddr.toLowerCase(),
-      "spender": spenderAddr.toLowerCase(),
-      "value": BigNumber.from(value).toString(),
-      "nonce": BigNumber.from(nonce).toString(),
-      "deadline": BigNumber.from(deadline).toString(),
-    }
+      owner: ownerAddr.toLowerCase(),
+      spender: spenderAddr.toLowerCase(),
+      value: BigNumber.from(value).toString(),
+      nonce: BigNumber.from(nonce).toString(),
+      deadline: BigNumber.from(deadline).toString(),
+    },
   };
 
   const sig = await owner.signTypedData([ownerAddr, JSON.stringify(data)]);
@@ -209,8 +217,4 @@ function createCommitment(
   return ethers.utils.keccak256(bytes);
 }
 
-export {
-  checkAvailability,
-  commit,
-  register,
-}
+export { checkAvailability, commit, register };

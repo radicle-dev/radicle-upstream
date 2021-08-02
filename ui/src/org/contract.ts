@@ -200,12 +200,9 @@ export async function updateName(
   name: string,
   orgAddress: string,
   provider: ethers.providers.Provider,
-  signer: ethers.Signer,
+  signer: ethers.Signer
 ): Promise<TransactionResponse> {
   const org = new ethers.Contract(orgAddress, orgAbi, signer);
 
-  return org.setName(
-    name,
-    (await provider.getNetwork()).ensAddress,
-  );
+  return org.setName(name, (await provider.getNetwork()).ensAddress);
 }

@@ -4,4 +4,4 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-export { default } from './WaitingToRegister.svelte';
+export { default } from "./WaitingToRegister.svelte";
