@@ -120,12 +120,6 @@
     flex-shrink: 0;
   }
 
-  .image {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
-  }
-
   .pulsate {
     opacity: 1;
     animation: pulsate 3.5s ease-out infinite;
