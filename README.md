@@ -1,4 +1,5 @@
 # Upstream
+
 [![Build status][ba]][st]
 
 Upstream is a cross-platform desktop client for the radicle code collaboration
@@ -20,6 +21,22 @@ about the different ways that we accept contributions.
 If you have questions or would like to get in touch, check out
 [radicle.community][rc].
 
+## Building and running Upstream
+
+Prerequisites
+
+* [NodeJS](https://nodejs.org/en/)
+* [Yarn](https://yarnpkg.com/getting-started/install)
+* [Rustup](https://github.com/rust-lang/rustup)
+
+To build upstream run
+
+```bash
+yarn run dist
+```
+
+This command will create an application package in the `./dist` folder which you
+can then run.
 
 ### Attribution
 

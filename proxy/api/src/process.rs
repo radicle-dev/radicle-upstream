@@ -84,7 +84,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
     tokio::spawn(async move {
         loop {
             if sighup.recv().await.is_some() {
-                log::info!("SIGHUP received, reloading...");
+                tracing::info!("SIGHUP received, reloading...");
                 handle.reset();
             } else {
                 break;
@@ -108,7 +108,7 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         match result {
             // We've been shut down, ignore
             Err(RunError::Peer(radicle_daemon::peer::Error::Join(_))) | Ok(()) => {
-                log::debug!("aborted");
+                tracing::debug!("aborted");
             },
             // Actual error, abort the process
             Err(e) => return Err(e.into()),
@@ -147,24 +147,17 @@ async fn run_rigging(
         seeds_sender,
     } = rigging;
 
-    let subscriptions = notification::Subscriptions::default();
-    let peer_subscriptions = subscriptions.clone();
+    let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
     let server_ctx = ctx.clone();
 
-    let server = async move {
-        log::info!("starting API");
-        let api = http::api(server_ctx.clone(), subscriptions.clone());
-        let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(
-            server_ctx.http_listen(),
-            async move {
-                restart_signal.await;
-                subscriptions.clear().await;
-            },
-        )?;
+    tracing::info!("starting API");
+    let api = http::api(server_ctx.clone(), peer_events_sender.clone());
+    let (_, server) =
+        warp::serve(api).try_bind_with_graceful_shutdown(server_ctx.http_listen(), async move {
+            restart_signal.await;
+        })?;
 
-        server.await;
-        Ok(())
-    };
+    let server = server.map(Ok);
 
     if let Some(peer) = peer {
         let mut tasks = vec![server.boxed()];
@@ -210,11 +203,11 @@ async fn run_rigging(
                             if let Some(notification) =
                                 notification::Notification::maybe_from(event)
                             {
-                                peer_subscriptions.broadcast(notification).await;
+                                let _result = peer_events_sender.send(notification).err();
                             }
                         },
                         Err(err) => {
-                            log::error!("Failed to receive peer event: {}", err);
+                            tracing::error!(?err, "Failed to receive peer event");
                             return;
                         },
                     }
@@ -224,7 +217,7 @@ async fn run_rigging(
         tasks.push(peer_event_task.map(Ok).boxed());
 
         let peer = async move {
-            log::info!("starting peer");
+            tracing::info!("starting peer");
             peer.run().await
         };
 
@@ -310,7 +303,7 @@ async fn session_seeds(
 ) -> Result<Vec<radicle_daemon::seed::Seed>, Box<dyn std::error::Error>> {
     let seeds = session::seeds(store, default_seeds)?;
     Ok(seed::resolve(&seeds).await.unwrap_or_else(|err| {
-        log::error!("Error parsing seed list {:?}: {}", seeds, err);
+        tracing::error!(?seeds, ?err, "Error parsing seed list");
         vec![]
     }))
 }

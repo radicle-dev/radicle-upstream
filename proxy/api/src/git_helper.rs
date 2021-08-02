@@ -38,7 +38,7 @@ pub fn setup(src_dir: &path::Path, dst_dir: &path::Path) -> Result<(), Error> {
     permissions.set_mode(0o755);
     fs::set_permissions(&helper_bin_dst, permissions)?;
 
-    log::info!("Copied git remote helper to: {:?}", helper_bin_dst);
+    tracing::info!(destination = ?helper_bin_dst, "copied git remote helper binary");
 
     Ok(())
 }

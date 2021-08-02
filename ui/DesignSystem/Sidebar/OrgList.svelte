@@ -39,7 +39,7 @@
       <SidebarItem
         indicator={true}
         onClick={() =>
-          push({ type: "org", address: org.id, activeTab: "projects" })}
+          push({ type: "org", params: { address: org.id, view: "projects" } })}
         active={($activeRouteStore.type === "singleSigOrg" ||
           $activeRouteStore.type === "multiSigOrg") &&
           $activeRouteStore.address === org.id}>

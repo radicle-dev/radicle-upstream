@@ -9,21 +9,24 @@
 
 use warp::{filters::BoxedFilter, path, Filter, Reply};
 
-use crate::{context, http, notification::Subscriptions};
+use crate::{context, http, notification::Notification};
 
 /// SSE based notifications endpoint.
-pub fn filters(ctx: context::Context, subscriptions: Subscriptions) -> BoxedFilter<(impl Reply,)> {
-    local_peer_status_stream(ctx, subscriptions)
+pub fn filters(
+    ctx: context::Context,
+    notifications: tokio::sync::broadcast::Sender<Notification>,
+) -> BoxedFilter<(impl Reply,)> {
+    local_peer_status_stream(ctx, notifications)
 }
 
 /// `GET /local_peer_events`
 pub fn local_peer_status_stream(
     ctx: context::Context,
-    subscriptions: Subscriptions,
+    notifications: tokio::sync::broadcast::Sender<Notification>,
 ) -> BoxedFilter<(impl Reply,)> {
     path!("local_peer_events")
         .and(http::with_context_unsealed(ctx))
-        .and(warp::any().map(move || subscriptions.clone()))
+        .and(warp::any().map(move || notifications.subscribe()))
         .and_then(handler::local_peer_events)
         .boxed()
 }
@@ -35,17 +38,16 @@ mod handler {
 
     use crate::{
         context,
-        notification::{self, Notification, Subscriptions},
+        notification::{self, Notification},
     };
 
     /// Sets up local peer events notification stream.
     pub async fn local_peer_events(
         ctx: context::Unsealed,
-        subscriptions: Subscriptions,
+        mut notifications: tokio::sync::broadcast::Receiver<Notification>,
     ) -> Result<impl Reply, Rejection> {
         let mut peer_control = ctx.peer_control;
         let current_status = peer_control.current_status().await;
-        let mut subscriber = subscriptions.subscribe().await;
 
         let initial = futures::stream::iter(vec![Notification::LocalPeer(
             notification::LocalPeer::StatusChanged {
@@ -58,7 +60,17 @@ mod handler {
                 Notification::LocalPeer(event) => Some(sse::Event::default().json_data(event)),
             }
         };
-        let stream = async_stream::stream! { while let Some(notification) = subscriber.recv().await { yield notification } };
+        let stream = async_stream::stream! {
+            use tokio::sync::broadcast::error::RecvError;
+            loop {
+                match notifications.recv().await {
+                    Ok(notification) => yield notification,
+                    Err(RecvError::Lagged(_)) => {},
+                    Err(RecvError::Closed) => break,
+
+                }
+            }
+        };
 
         Ok(sse::reply(
             sse::keep_alive().stream(initial.chain(stream).filter_map(filter)),

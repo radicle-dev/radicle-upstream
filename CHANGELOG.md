@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.9](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.8...v0.2.9) (2021-07-23)
+
+
+### Features
+
+* **ui:** show (eye) icon next to passphrase fields ([e9f49e8](https://github.com/radicle-dev/radicle-upstream/commit/e9f49e86a8241908a677e05b2d22e7959d0170be)), closes [#2142](https://github.com/radicle-dev/radicle-upstream/issues/2142)
+
+
+### Bug Fixes
+
+* cache org data ([bdbb2f4](https://github.com/radicle-dev/radicle-upstream/commit/bdbb2f4ad3139fd08a09089ba856dc7b91377894))
+* event based wallet connection for immediate response ([f50babc](https://github.com/radicle-dev/radicle-upstream/commit/f50babc192a7bceb96c99620b3490cf8e7f9d76d))
+* reduce infura polled request amount ([6692732](https://github.com/radicle-dev/radicle-upstream/commit/669273290057ba28f035e3b4a89b256235b2d842))
+* use tracing for logs ([dad7694](https://github.com/radicle-dev/radicle-upstream/commit/dad7694fa33e20d9a054e8994ca9c99ca88757fe))
+* **tests:** forward `stdout` of test node to console ([044ebfa](https://github.com/radicle-dev/radicle-upstream/commit/044ebfaf1b58d98a35dbddf8ceb0cf6bf2c2008e))
+* remove console.log debug statement ([99b49e0](https://github.com/radicle-dev/radicle-upstream/commit/99b49e0ed330234797a37bcc33cc9ec7e69ef99b))
+
 ### [0.2.8](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.7...v0.2.8) (2021-07-15)
 
 

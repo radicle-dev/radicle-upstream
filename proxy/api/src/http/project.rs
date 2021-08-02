@@ -443,7 +443,7 @@ mod test {
 
     #[tokio::test]
     async fn create_new() -> Result<(), Box<dyn std::error::Error>> {
-        pretty_env_logger::init();
+        tracing_subscriber::fmt().with_test_writer();
         let tmp_dir = tempfile::tempdir()?;
         let repos_dir = tempfile::tempdir_in(tmp_dir.path())?;
         let dir = tempfile::tempdir_in(repos_dir.path())?;

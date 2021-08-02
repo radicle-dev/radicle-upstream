@@ -10,7 +10,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != 'radicle-dev/radicle-upstream'
     runs-on: ubuntu-latest
     container:
-      image: "gcr.io/opensourcecoin/radicle-upstream:0.12.0"
+      image: "gcr.io/opensourcecoin/radicle-upstream:0.13.0"
     steps:
       - uses: actions/checkout@master
       - name: Cache Yarn
@@ -19,9 +19,9 @@ jobs:
           path: |
             ~/cache/yarn
             ~/cache/cypress
-          key: build-${{ runner.os }}-yarn-v1-${{ hashFiles('yarn.lock') }}
+          key: build-${{ runner.os }}-yarn-v2-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            build-${{ runner.os }}-yarn-v1-
+            build-${{ runner.os }}-yarn-v2-
       - name: Cache Rust
         uses: actions/cache@v2
         with:

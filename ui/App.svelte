@@ -13,6 +13,7 @@
   import * as org from "./src/org";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
+  import * as transaction from "ui/src/transaction";
   import * as walletModule from "ui/src/wallet";
 
   import { unreachable } from "ui/src/unreachable";
@@ -46,6 +47,7 @@
   router.initialize();
   customProtocolHandler.register();
   org.initialize();
+  transaction.initialize();
 
   const walletStore = walletModule.store;
   const activeRouteStore = router.activeRouteStore;
@@ -141,7 +143,7 @@
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "multiSigOrg"}
     <Org
-      activeTab={$activeRouteStore.activeTab}
+      activeTab={$activeRouteStore.view}
       address={$activeRouteStore.address}
       gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}
       threshold={$activeRouteStore.threshold}

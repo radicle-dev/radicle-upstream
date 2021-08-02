@@ -4,10 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { unreachable } from "ui/src/unreachable";
-
-import * as org from "ui/src/org";
-import type { Registration } from "../org/ensResolver";
+import * as org from "ui/Screen/Org/route";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type ProfileTab = "projects" | "following";
@@ -24,7 +21,7 @@ export type Route =
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
-  | OrgRoute
+  | { type: "org"; params: org.Params }
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; urn: string }
@@ -36,12 +33,6 @@ export type Route =
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "network" }
   | { type: "settings" };
-
-interface OrgRoute {
-  type: "org";
-  address: string;
-  activeTab: OrgTab;
-}
 
 export type OrgTab = "projects" | "members";
 
@@ -50,7 +41,7 @@ export type LoadedRoute =
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
-  | OrgLoadedRoute
+  | org.LoadedRoute
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; urn: string }
@@ -62,40 +53,6 @@ export type LoadedRoute =
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "network" }
   | { type: "settings" };
-
-export type LoadedOrgTab =
-  | {
-      type: "projects";
-      anchors: org.OrgAnchors;
-      gnosisSafeAddress: string;
-      projectCount: number;
-    }
-  | {
-      type: "members";
-      threshold: number;
-      members: org.Member[];
-    };
-
-interface MultiSigOrgLoadedRoute {
-  type: "multiSigOrg";
-  registration?: Registration;
-  address: string;
-  gnosisSafeAddress: string;
-  activeTab: LoadedOrgTab;
-  threshold: number;
-  members: org.Member[];
-}
-
-interface SingleSigOrgLoadedRoute {
-  type: "singleSigOrg";
-  registration?: Registration;
-  address: string;
-  owner: string;
-  projectCount: number;
-  anchors: org.OrgAnchors;
-}
-
-type OrgLoadedRoute = SingleSigOrgLoadedRoute | MultiSigOrgLoadedRoute;
 
 export function routeToPath(route: Route): string {
   let subRoute = "";
@@ -112,79 +69,8 @@ export function routeToPath(route: Route): string {
 export async function loadRoute(route: Route): Promise<LoadedRoute> {
   switch (route.type) {
     case "org":
-      return loadOrgRoute(route);
+      return org.load(route.params);
     default:
       return route;
-  }
-}
-
-async function loadOrgRoute(route: OrgRoute): Promise<OrgLoadedRoute> {
-  const owner = await org.getOwner(route.address);
-  const isMultiSig = await org.isMultiSig(owner);
-
-  if (isMultiSig) {
-    if (route.activeTab === "projects") {
-      const [projectCount, { members, threshold }, ensRecord] = await Promise.all([
-        org.getProjectCount(),
-        org.fetchSafeMembers(owner),
-        org.fetchOrgEnsRecord(route.address),
-      ]);
-      const anchors = await org.resolveProjectAnchors({
-        orgAddress: route.address,
-        gnosisSafeAddress: owner,
-        members,
-        threshold,
-      });
-
-      return {
-        type: "multiSigOrg",
-        registration: ensRecord,
-        address: route.address,
-        gnosisSafeAddress: owner,
-        members,
-        threshold,
-        activeTab: {
-          type: "projects",
-          anchors,
-          gnosisSafeAddress: owner,
-          projectCount,
-        },
-      };
-    } else if (route.activeTab === "members") {
-      const { members, threshold } = await org.fetchSafeMembers(owner);
-      return {
-        type: "multiSigOrg",
-        address: route.address,
-        gnosisSafeAddress: owner,
-        members,
-        threshold,
-        activeTab: {
-          type: "members",
-          members,
-          threshold,
-        },
-      };
-    } else {
-      return unreachable(route.activeTab);
-    }
-  } else {
-    const projectCount = await org.getProjectCount();
-    const anchors = await org.resolveProjectAnchors({
-      orgAddress: route.address,
-      // TODO The data we pass in here only serves as dummy data that
-      // enriches the project anchor data
-      gnosisSafeAddress: owner,
-      members: [],
-      threshold: 0,
-    });
-    const ensRecord = await org.fetchOrgEnsRecord(route.address);
-    return {
-      type: "singleSigOrg",
-      registration: ensRecord,
-      address: route.address,
-      owner,
-      projectCount,
-      anchors,
-    };
   }
 }

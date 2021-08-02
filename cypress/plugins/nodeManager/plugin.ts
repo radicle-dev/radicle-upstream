@@ -146,7 +146,10 @@ class Node {
         "--skip-remote-helper-install",
         "--unsafe-fast-keystore",
       ],
-      { env: { ...global.process.env, RAD_HOME: this.radHome } }
+      {
+        env: { ...global.process.env, RAD_HOME: this.radHome },
+        stdio: ["ignore", "inherit", "pipe"],
+      }
     );
 
     process.on("exit", async () => {

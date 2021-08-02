@@ -18,9 +18,13 @@ export const isNodeTestEnv = Boolean(
   globalThis.process && globalThis.process.env["NODE_ENV"] === "test"
 );
 
+// `true` if Upstream is tested with cypress.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isCypressTestEnv = (globalThis as any).isCypressTestEnv === true;
+
 // `true` if this code is run by the Cypress test driver.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isCypressTestEnv = Boolean((globalThis as any).cy);
+export const isCypressTestRunner = Boolean((globalThis as any).cy);
 
 // `true` if the app is running in development mode or in test mode
 export const isDev =

@@ -13,6 +13,7 @@ import * as ipc from "./ipc";
 import * as modal from "./modal";
 import * as notification from "./notification";
 import * as session from "./session";
+import * as config from "ui/src/config";
 
 interface LatestVersionInfo {
   version: string;
@@ -25,16 +26,13 @@ const fetchLatestVersion = async (): Promise<LatestVersionInfo> => {
   return body;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const isCypressTestEnv: boolean = (globalThis as any).isCypressTestEnv;
-
 // Check for new version every 30 minutes. In testing mode, check every
 // second.
-const VERSION_CHECK_INTERVAL = isCypressTestEnv ? 1000 : 30 * 60 * 1000;
+const VERSION_CHECK_INTERVAL = config.isCypressTestEnv ? 1000 : 30 * 60 * 1000;
 
 // Only notify about new version 14 days after the last notification.
 // In testing mode, check 5 seconds.
-const VERSION_NOTIFY_SILENCE_INTERVAL = isCypressTestEnv
+const VERSION_NOTIFY_SILENCE_INTERVAL = config.isCypressTestEnv
   ? 5000
   : 14 * 24 * 60 * 60 * 1000;
 

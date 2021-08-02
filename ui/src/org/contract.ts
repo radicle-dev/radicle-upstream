@@ -8,11 +8,13 @@ import type {
   TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/providers";
-import * as error from "ui/src/error";
-import * as ethereum from "ui/src/ethereum";
 import * as ethers from "ethers";
 import * as multihash from "multihashes";
+
+import * as error from "ui/src/error";
+import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
+import { memoizeLru } from "ui/src/memoizeLru";
 
 export type { TransactionResponse };
 
@@ -87,15 +89,21 @@ export function parseOrgCreatedReceipt(receipt: TransactionReceipt): string {
   return orgAddress;
 }
 
-export async function getOwner(
-  orgAddress: string,
-  provider: ethers.providers.Provider
-): Promise<string> {
-  const org = new ethers.Contract(orgAddress, orgAbi, provider);
-  const safeAddr: string = await org.owner();
+export const getOwner = memoizeLru(
+  async (
+    orgAddress: string,
+    provider: ethers.providers.Provider
+  ): Promise<string> => {
+    const org = new ethers.Contract(orgAddress, orgAbi, provider);
+    const safeAddr: string = await org.owner();
 
-  return safeAddr;
-}
+    return safeAddr;
+  },
+  (orgAddress, _provider) => orgAddress,
+  {
+    max: 1000,
+  }
+);
 
 // Returns the hex encoded data for a transaction that will anchor the project
 // at the commit hash.
@@ -162,7 +170,7 @@ function encodeAnchorData(
   return { encodedProjectUrn, encodedCommitHash };
 }
 
-interface AnchorData {
+export interface AnchorData {
   projectId: string;
   commitHash: string;
 }

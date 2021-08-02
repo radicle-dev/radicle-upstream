@@ -11,7 +11,7 @@ use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use radicle_daemon::{net, signer::BoxedSigner, state, LocalIdentity, PeerId};
 
-use crate::{context, notification::Subscriptions};
+use crate::{context, notification::Notification};
 
 mod control;
 mod error;
@@ -42,7 +42,7 @@ macro_rules! combine {
 /// Main entry point for HTTP API.
 pub fn api(
     ctx: context::Context,
-    subscriptions: Subscriptions,
+    notifications: tokio::sync::broadcast::Sender<Notification>,
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let test = ctx.test();
 
@@ -59,7 +59,7 @@ pub fn api(
         .and(control::filters(ctx.clone()));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter =
-        path("notifications").and(notification::filters(ctx.clone(), subscriptions));
+        path("notifications").and(notification::filters(ctx.clone(), notifications));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
     let keystore_filter = path("keystore").and(keystore::filters(ctx.clone()));
@@ -87,14 +87,13 @@ pub fn api(
             warp::http::Method::OPTIONS,
         ]);
     let log = warp::log::custom(|info| {
-        log::info!(
+        tracing::info!(
             target: "proxy::http",
-            "\"{} {} {:?}\" {} {:?}",
+            elapsed = ?info.elapsed(),
+            "{} {} {}",
             info.method(),
             info.path(),
-            info.version(),
             info.status().as_u16(),
-            info.elapsed(),
         );
     });
 

@@ -13,6 +13,7 @@ import type * as project from "ui/src/project";
 import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
+import { memoizeLru } from "ui/src/memoizeLru";
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as ipc from "ui/src/ipc";
@@ -21,6 +22,7 @@ import * as notification from "ui/src/notification";
 import * as proxy from "ui/src/proxy";
 import * as router from "ui/src/router";
 import * as svelteStore from "ui/src/svelteStore";
+import { unreachable } from "ui/src/unreachable";
 import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
 import { getRegistration, Registration } from "./org/ensResolver";
@@ -38,9 +40,12 @@ const ORG_POLL_INTERVAL_MS = 2000;
 
 // Update the org data for the sidebar store every
 // `ORG_POLL_INTERVAL_MS` milliseconds.
+//
+// When encountering a 502 or 503 response we don’t show an error
+// immediately but retry again.
 const updateOrgsForever = async (): Promise<never> => {
   let showError = true;
-  let remainingRetries502 = 0;
+  let remainingRetriesUnavailable = 0;
 
   for (;;) {
     const walletStore = svelteStore.get(wallet.store);
@@ -52,12 +57,12 @@ const updateOrgsForever = async (): Promise<never> => {
 
     await fetchOrgs().then(
       () => {
-        remainingRetries502 = 20;
+        remainingRetriesUnavailable = 20;
         showError = true;
       },
       err => {
-        if (graph.is502Error(err) && remainingRetries502 > 0) {
-          remainingRetries502 -= 1;
+        if (graph.isUnavailableError(err) && remainingRetriesUnavailable > 0) {
+          remainingRetriesUnavailable -= 1;
           console.warn(err);
           return;
         }
@@ -156,7 +161,10 @@ export async function anchorProjectWithGnosis(
     ],
   });
 
-  router.push({ type: "org", address: orgAddress, activeTab: "projects" });
+  router.push({
+    type: "org",
+    params: { address: orgAddress, view: "projects" },
+  });
 }
 
 export async function anchorProjectWithWallet(
@@ -262,8 +270,10 @@ export async function createOrg(
         handler: () => {
           router.push({
             type: "org",
-            address: orgAddress,
-            activeTab: "projects",
+            params: {
+              address: orgAddress,
+              view: "projects",
+            },
           });
         },
       },
@@ -308,27 +318,35 @@ export async function fetchOrgEnsRecord(
     return undefined;
   }
 
-  return await getRegistration(name) || undefined;
+  return (await getRegistration(name)) || undefined;
 }
 
-// Information about an org and the safe that controls it.
-interface OrgWithSafe {
-  orgAddress: string;
-  gnosisSafeAddress: string;
+// Owner of an org that controlls the interaction with the org
+// contract. Maybe a simple wallet address that is controlled by one
+// private key or a Gnosis Safe.
+type Owner = { type: "wallet"; address: string } | GnosisSafeOwner;
+
+interface GnosisSafeOwner {
+  type: "gnosis-safe";
+  address: string;
   members: Member[];
   threshold: number;
 }
 
-export async function getOwner(orgAddress: string): Promise<string> {
+// Determines the owner of an org at the given address.
+export async function getOwner(orgAddress: string): Promise<Owner> {
   const walletStore = svelteStore.get(wallet.store);
-  return await Contract.getOwner(orgAddress, walletStore.provider);
-}
-
-export async function fetchSafeMembers(
-  safeAddress: string
-): Promise<{ members: Member[]; threshold: number }> {
-  const walletStore = svelteStore.get(wallet.store);
-  return await fetchMembers(walletStore, safeAddress);
+  const address = await Contract.getOwner(orgAddress, walletStore.provider);
+  const ownerCode = await walletStore.provider.getCode(address);
+  // We’re not really checking that the address is the Gnosis Safe
+  // contract. We’re just checking if it is _a_ contract.
+  const isSafe = ownerCode !== "0x";
+  if (isSafe) {
+    const { members, threshold } = await fetchMembers(walletStore, address);
+    return { type: "gnosis-safe", address, members, threshold };
+  } else {
+    return { type: "wallet", address };
+  }
 }
 
 interface OrgMembers {
@@ -367,15 +385,16 @@ export async function fetchMembers(
   };
 }
 
-// Return all anchors for the org where the anchoring transactions are
-// still pending
+// Return all anchoring transactions that are pending for the given
+// Gnosis safe.
 async function fetchPendingAnchors(
-  org: OrgWithSafe
+  orgAddress: string,
+  gnosis: GnosisSafeOwner
 ): Promise<project.PendingAnchor[]> {
   const walletStore = svelteStore.get(wallet.store);
   const txs = await Safe.getPendingTransactions(
     walletStore.environment,
-    org.gnosisSafeAddress
+    gnosis.address
   );
   const isAnchor = (
     anchor: project.PendingAnchor | undefined
@@ -394,8 +413,8 @@ async function fetchPendingAnchors(
           type: "pending",
           projectId: anchorData.projectId,
           commitHash: anchorData.commitHash,
-          threshold: org.threshold,
-          orgAddress: org.orgAddress,
+          threshold: gnosis.threshold,
+          orgAddress: orgAddress,
           confirmations: tx.confirmations ? tx.confirmations.length : 0,
           timestamp: Date.parse(tx.submissionDate),
         };
@@ -420,10 +439,18 @@ export interface OrgAnchors {
 //
 // Includes anchors from transactions that have not been confirmed yet.
 export async function resolveProjectAnchors(
-  org: OrgWithSafe
+  orgAddress: string,
+  owner: Owner
 ): Promise<OrgAnchors> {
-  const pendingAnchors = await fetchPendingAnchors(org);
-  const confirmedAnchors = await graph.getOrgProjectAnchors(org.orgAddress);
+  let pendingAnchors: project.Anchor[];
+  if (owner.type === "wallet") {
+    pendingAnchors = [];
+  } else if (owner.type === "gnosis-safe") {
+    pendingAnchors = await fetchPendingAnchors(orgAddress, owner);
+  } else {
+    pendingAnchors = unreachable(owner);
+  }
+  const confirmedAnchors = await graph.getOrgProjectAnchors(orgAddress);
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
 
   const anchoredProjects: project.Project[] = [];
@@ -537,16 +564,28 @@ async function getClaimedIdentity(
 }
 
 // Returns true if a given org at the given address is owned by a Gnosis safe.
-export async function isMultiSig(address: string): Promise<boolean> {
-  const walletStore = svelteStore.get(wallet.store);
-  const code = await walletStore.provider.getCode(address);
-  // We’re not really checking that the address is the Gnosis Safe
-  // contract. We’re just checking if it is _a_ contract.
-  return code !== "0x";
-}
+export const isMultiSig = memoizeLru(
+  async (address: string): Promise<boolean> => {
+    const walletStore = svelteStore.get(wallet.store);
+    const code = await walletStore.provider.getCode(address);
+    // We’re not really checking that the address is the Gnosis Safe
+    // contract. We’re just checking if it is _a_ contract.
+    return code !== "0x";
+  },
+  address => address,
+  { max: 1000 }
+);
 
-export async function setName(name: string, orgAddress: string): Promise<Contract.TransactionResponse> {
+export async function setName(
+  name: string,
+  orgAddress: string
+): Promise<Contract.TransactionResponse> {
   const walletStore = svelteStore.get(wallet.store);
 
-  return Contract.updateName(name, orgAddress, walletStore.provider, walletStore.signer)
+  return Contract.updateName(
+    name,
+    orgAddress,
+    walletStore.provider,
+    walletStore.signer
+  );
 }

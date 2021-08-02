@@ -4,16 +4,12 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import WalletConnect from "@walletconnect/client";
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
 
 import * as daiToken from "ui/src/funding/daiToken";
 import * as error from "ui/src/error";
-import * as modal from "ui/src/modal";
 import * as mutexExecutor from "ui/src/mutexExecutor";
-
-import ModalWalletQRCode from "ui/Modal/Wallet/QRCode.svelte";
 
 import * as ethereum from "ui/src/ethereum";
 import {
@@ -23,6 +19,7 @@ import {
 } from "ui/src/ethereum/environment";
 import { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
 import * as ethereumDebug from "ui/src/ethereum/debug";
+import { createWalletConnect } from "ui/src/ethereum/walletConnect";
 
 export enum Status {
   Connected = "CONNECTED",
@@ -88,18 +85,20 @@ function getProvider(environment: Environment): ethers.providers.InfuraProvider 
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");
     case Environment.Rinkeby:
       // This account is registered on igor.zuk@protonmail.com.
-      return new ethers.providers.InfuraProvider(
+      return ethers.providers.InfuraProvider.getWebSocketProvider(
         "rinkeby",
         "de5e2a8780c04964950e73b696d1bfb1"
       );
     case Environment.Mainnet:
-      // This account is registered on rudolfs@monadic.xyz.
-      return new ethers.providers.InfuraProvider(
+      // This account is registered on rudolfs@osins.org.
+      return ethers.providers.InfuraProvider.getWebSocketProvider(
         "mainnet",
         "7a19a4bf0af84fcc86ffb693a257fad4"
       );
   }
 }
+
+const walletConnect = createWalletConnect();
 
 function build(
   environment: Environment,
@@ -109,20 +108,7 @@ function build(
     status: Status.NotConnected,
   });
 
-  // We need to reinitialize `WalletConnect` until this issue is fixed:
-  // https://github.com/WalletConnect/walletconnect-monorepo/pull/370
-  function reinitWalletConnect() {
-    walletConnect = newWalletConnect();
-    signer.walletConnect = walletConnect;
-  }
-
-  let walletConnect = newWalletConnect();
-  const signer = new WalletConnectSigner(
-    walletConnect,
-    provider,
-    environment,
-    disconnect
-  );
+  const signer = new WalletConnectSigner(walletConnect, provider, environment);
 
   const unsubscribeStateStore = stateStore.subscribe(state => {
     if (state.status === Status.Connected) {
@@ -137,12 +123,14 @@ function build(
     }
 
     try {
-      await walletConnect.connect();
-    } catch (e) {
-      if (e.message.includes("User close")) {
-        reinitWalletConnect();
-        return;
+      stateStore.set({ status: Status.Connecting });
+      const connected = await walletConnect.connect();
+      // If we connect succesfully, `stateStore` is updated by the
+      // `connection` subscription.
+      if (!connected) {
+        stateStore.set({ status: Status.NotConnected });
       }
+    } catch (e) {
       stateStore.set({ status: Status.NotConnected, error: e });
       error.show(
         new error.Error({
@@ -155,50 +143,27 @@ function build(
       );
       return;
     }
-    await initialize();
   }
 
-  async function disconnect() {
-    await walletConnect.killSession().catch(() => {
-      // When the user disconnects wallet-side, calling `killSession`
-      // app-side trows an error because the wallet has already closed
-      // its socket. Therefore, we simply ignore it.
-    });
-
-    stateStore.set({ status: Status.NotConnected });
-    reinitWalletConnect();
-  }
-
-  async function initialize() {
-    stateStore.set({ status: Status.Connecting });
-    setAccountData();
-  }
-
-  async function setAccountData() {
-    try {
-      const accountAddress = await signer.getAddress();
-      const chainId = walletConnect.chainId;
-
-      const connected = {
-        address: accountAddress,
-        network: networkFromChainId(chainId),
-      };
-      stateStore.set({ status: Status.Connected, connected });
-    } catch (error) {
-      stateStore.set({ status: Status.NotConnected, error });
+  const unsubConnection = walletConnect.connection.subscribe(connection => {
+    if (connection) {
+      stateStore.set({
+        status: Status.Connected,
+        connected: {
+          address: connection.accountAddress,
+          network: networkFromChainId(connection.chainId),
+        },
+      });
+    } else {
+      stateStore.set({ status: Status.NotConnected });
     }
-  }
-
-  if (walletConnect.connected) {
-    initialize();
-  }
+  });
 
   // Periodically refresh the wallet data
-  const REFRESH_INTERVAL_MILLIS = 3000;
+  const REFRESH_INTERVAL_MILLIS = 60000;
   const refreshInterval = setInterval(() => {
     const state = svelteStore.get(stateStore);
     if (state.status === Status.Connected) {
-      setAccountData();
       updateAccountBalances(environment, state.connected.address, provider);
     }
   }, REFRESH_INTERVAL_MILLIS);
@@ -216,45 +181,18 @@ function build(
     environment,
     subscribe: stateStore.subscribe,
     connect,
-    disconnect,
+    disconnect() {
+      return walletConnect.disconnect();
+    },
     provider,
     signer,
     getAddress,
     destroy() {
+      unsubConnection();
       unsubscribeStateStore();
       clearInterval(refreshInterval);
     },
   };
-}
-
-function newWalletConnect(): WalletConnect {
-  // This is set to true if the WalletConnect code closes the modal
-  // instead of the user. This prevents calling back into WalletConnect
-  // with `onClose` and aborting the connection.
-  let modalClosedByWalletConnect = false;
-
-  return new WalletConnect({
-    bridge: "https://radicle.bridge.walletconnect.org",
-    qrcodeModal: {
-      open: (uri: string, onClose, _opts?: unknown) => {
-        modal.toggle(
-          ModalWalletQRCode,
-          () => {
-            if (!modalClosedByWalletConnect) {
-              onClose();
-            }
-          },
-          {
-            uri,
-          }
-        );
-      },
-      close: () => {
-        modalClosedByWalletConnect = true;
-        modal.hide();
-      },
-    },
-  });
 }
 
 export const store: svelteStore.Readable<Wallet> = svelteStore.derived(

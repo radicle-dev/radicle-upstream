@@ -42,7 +42,10 @@
         icon: Icon.ChevronLeftRight,
         active: true,
         onClick: () => {
-          router.push({ type: "org", address, activeTab: "projects" });
+          router.push({
+            type: "org",
+            params: { address, view: "projects" },
+          });
         },
       },
     ];

@@ -11,7 +11,7 @@
   import { ValidationStatus, getValidationState } from "../../src/validation";
   import type { ValidationState } from "../../src/validation";
 
-  import { Button, PasswordInput } from "ui/DesignSystem";
+  import { Button, Icon, PasswordInput } from "ui/DesignSystem";
 
   export let disabled = false;
 
@@ -21,6 +21,7 @@
   let repeatedPassphraseInput: PasswordInput;
   let passphrase = "";
   let repeatedPassphrase = "";
+  let visible: boolean = false;
 
   let validations: { [key: string]: string[] } | false = false;
   let beginValidation = false;
@@ -124,6 +125,12 @@
         }
     }
   };
+
+  const resetCheck = () => {
+    if (passphrase.length === 0) {
+      visible = false;
+    }
+  };
 </script>
 
 <style>
@@ -146,8 +153,13 @@
 
   .buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-top: 1.5rem;
+  }
+
+  .back-and-set-buttons {
+    display: flex;
+    justify-content: flex-end;
   }
 
   .repeat {
@@ -175,6 +187,8 @@
       on:enter={() => {
         repeatedPassphraseInput.focus();
       }}
+      on:change={resetCheck}
+      on:keypress={resetCheck}
       autofocus={true}
       dataCy="passphrase-input"
       placeholder="Enter a secure passphrase"
@@ -182,6 +196,7 @@
       style="margin-top: 1.5rem;"
       validation={passphraseValidation}
       bind:value={passphrase}
+      {visible}
       {disabled} />
 
     <div class="repeat" hidden={!passphrase}>
@@ -189,30 +204,48 @@
       <PasswordInput
         bind:this={repeatedPassphraseInput}
         on:enter={next}
+        on:change={resetCheck}
+        on:keypress={resetCheck}
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
         hint="↵"
         validation={repeatedPassphraseValidation}
         bind:value={repeatedPassphrase}
+        {visible}
         {disabled} />
     </div>
 
     <div class="buttons">
+      <!-- We’re using backticks for the `variant` property because of
+        a bug in Svelte.
+        https://github.com/sveltejs/language-tools/issues/1113 -->
       <Button
-        dataCy="back-button"
-        variant="transparent"
-        style="margin-right: 1rem;"
-        on:click={() => dispatch("previous")}
-        {disabled}>
-        Back
+        dataCy={`${visible ? "hide" : "show"}-passphrase`}
+        variant={`transparent`}
+        style={`margin-right: 1rem; ${
+          passphrase.length === 0 ? "visibility:hidden;" : ""
+        }`}
+        icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
+        on:click={() => (visible = !visible)}>
+        {visible ? "Hide" : "Show"} Passphrase
       </Button>
+      <div class="back-and-set-buttons">
+        <Button
+          dataCy="back-button"
+          variant="transparent"
+          style="margin-right: 1rem;"
+          on:click={() => dispatch("previous")}
+          {disabled}>
+          Back
+        </Button>
 
-      <Button
-        dataCy="set-passphrase-button"
-        disabled={!allowNext}
-        on:click={next}>
-        Set passphrase
-      </Button>
+        <Button
+          dataCy="set-passphrase-button"
+          disabled={!allowNext}
+          on:click={next}>
+          Set passphrase
+        </Button>
+      </div>
     </div>
   </div>
 </div>

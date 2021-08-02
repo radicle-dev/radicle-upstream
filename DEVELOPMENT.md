@@ -7,6 +7,31 @@
 * [Rustup](https://github.com/rust-lang/rustup)
 * Dependencies of [Cypress](https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements)
 
+## Running Upstream from source
+
+To start Upstream run `yarn start`.
+
+Running Upstream with `yarn start` will use `<repo_root>/sandbox/rad_home` as
+the default `RAD_HOME` value to isolate your development state. To reset the
+application state close Upstream, remove `<repo_root>/sandbox/rad_home` and
+start Upstream again.
+
+If you want to run Upstream against your real user data you need to build the
+application package with `yarn dist`. You can find the packaged application in
+the `dist` folder and run it from there.
+
+### Using the Git remote
+
+Upstream provides the `git-remote-rad` binary to fetch and push Git
+repositories. If you want to use the rad remote in development you need to set
+the environment in your terminal:
+
+```bash
+source ./scripts/env
+```
+
+Make sure to source the script from the repository root.
+
 ## Merging changes into master
 
 Maintainers are responsible for adding contribution to the `master` branch on
@@ -60,29 +85,6 @@ linting and formatting are enforced locally on a pre-commit basis with
 
 Additionally we run the same checks as separate build steps on our CI, just to
 make sure only properly formatted and lint-free code lands into master.
-
-
-### Running Upstream
-
-To start Upstream run `yarn start`.
-
-Running upstream with `yarn start` will use `<repo_root>/sandbox/rad_home` as
-the default `RAD_HOME` value to isolate you development state. To reset the
-application state remove `<repo_root>/sandbox/rad_home` and restart the
-application.
-
-### Using the Git remote
-
-Upstream provides the `git-remote-rad` binary to fetch and push Git
-repositories. If you want to use the rad remote in development you need to set
-the environment in your terminal
-
-```bash
-source ./scripts/env
-```
-
-Make sure to source the script from the repository root.
-
 
 ### Feature flagging
 

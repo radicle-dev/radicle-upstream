@@ -25,6 +25,7 @@
   export let hint = "";
   export let spellcheck: boolean = false;
   export let autofocus: boolean = false;
+  export let visible: boolean = false;
 
   export const focus = (): void => {
     inputElement && inputElement.focus();
@@ -37,7 +38,6 @@
   // Can't use normal `autofocus` attribute on the `input`:
   // "Autofocus processing was blocked because a document's URL has a fragment"
   onMount(() => {
-    console.log({ autofocus, inputElement });
     if (autofocus && inputElement) {
       // preventScroll is necessary for onboarding animations to work.
       inputElement.focus({ preventScroll: true });
@@ -51,6 +51,10 @@
   };
 
   $: showHint = hint.length > 0 && value.length === 0;
+
+  $: if (inputElement) {
+    inputElement.type = visible ? "text" : "password";
+  }
 </script>
 
 <style>
@@ -147,6 +151,7 @@
     on:change
     on:input
     on:keydown={onKeydown}
+    on:keypress
     bind:this={inputElement}
     {spellcheck}
     style={inputStyle} />
