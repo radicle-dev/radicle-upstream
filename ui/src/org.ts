@@ -299,7 +299,8 @@ async function fetchOrgs(): Promise<void> {
 
   orgs = await Promise.all(
     orgs.map(async org => {
-      org.registration = await fetchOrgEnsRecord(org.id);
+      // Cast `null` values to `undefined`, to fit the types.
+      org.registration = (await fetchOrgEnsRecord(org.id)) || undefined;
       return org;
     })
   );
@@ -308,18 +309,25 @@ async function fetchOrgs(): Promise<void> {
   orgSidebarStore.set(sortedOrgs);
 }
 
-export async function fetchOrgEnsRecord(
-  orgAddress: string
-): Promise<Registration | undefined> {
-  const walletStore = svelteStore.get(wallet.store);
-  const name = await walletStore.provider.lookupAddress(orgAddress);
+export const fetchOrgEnsRecord = memoizeLru(
+  async (address: string): Promise<Registration | null> => {
+    const walletStore = svelteStore.get(wallet.store);
+    const name = await walletStore.provider.lookupAddress(address);
 
-  if (!name) {
-    return undefined;
-  }
+    // memoizeLru uses `undefined` to designate a cache miss, so when a
+    // memoized function returns `undefined`, it will always be a cache miss.
+    // To work around this we store `null` in the cache instead of
+    // `undefined`, this way orgs that don't have ENS records won't generate
+    // excessive amounts of API requests.
+    if (!name) {
+      return null;
+    }
 
-  return (await getRegistration(name)) || undefined;
-}
+    return (await getRegistration(name)) || null;
+  },
+  address => address,
+  { max: 1000 }
+);
 
 // Owner of an org that controlls the interaction with the org
 // contract. Maybe a simple wallet address that is controlled by one
