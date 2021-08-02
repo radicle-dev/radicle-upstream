@@ -10,7 +10,7 @@
   import Spinner from "./Spinner.svelte";
   import KeyHint from "./KeyHint.svelte";
 
-  import { ValidationState, ValidationStatus } from "ui/src/validation";
+  import type { ValidationState } from "ui/src/validation";
   import { ValidationStatus as Status } from "ui/src/validation";
 
   export let style = "";
@@ -188,7 +188,7 @@
   {#if suffix}
     <p
       style="position: absolute; top: calc(({inputHeight}px - 24px)/2); right: {validation?.status !==
-      ValidationStatus.NotStarted
+      Status.NotStarted
         ? '38px'
         : '10px'};"
       class="suffix">

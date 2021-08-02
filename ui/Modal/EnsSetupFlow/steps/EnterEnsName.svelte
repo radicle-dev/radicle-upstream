@@ -6,14 +6,16 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { SubmitPayload } from "../ens-flow.types";
+  import type { ValidationState } from "ui/src/validation";
+
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
-  import TextInput from "ui/DesignSystem/TextInput.svelte";
-  import { ValidationState, ValidationStatus } from "ui/src/validation";
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import { checkAvailability } from "ui/src/org/ensRegistrar";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
-  import type { SubmitPayload } from "../ens-flow.types";
+  import TextInput from "ui/DesignSystem/TextInput.svelte";
+  import { ValidationStatus } from "ui/src/validation";
+  import { checkAvailability } from "ui/src/org/ensRegistrar";
   import { getRegistration } from "ui/src/org/ensResolver";
 
   export let onSubmit: (payload: SubmitPayload) => void = () => {};

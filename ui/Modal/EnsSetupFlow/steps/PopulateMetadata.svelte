@@ -6,27 +6,24 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { EnsRecord, Registration } from "ui/src/org/ensResolver";
+  import type {
+    EnsConfiguration,
+    EnsMetadataPayload,
+    SubmitPayload,
+  } from "../ens-flow.types";
+  import type { ValidationState } from "ui/src/validation";
+
   import { onMount } from "svelte";
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
   import TextInput from "ui/DesignSystem/TextInput.svelte";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
-  import {
-    EnsRecord,
-    getRegistration,
-    Registration,
-    setRecords,
-  } from "ui/src/org/ensResolver";
+  import { getRegistration, setRecords } from "ui/src/org/ensResolver";
 
   import { CSSPosition } from "ui/src/style";
-  import { ValidationState, ValidationStatus } from "ui/src/validation";
-
-  import type {
-    EnsConfiguration,
-    EnsMetadataPayload,
-    SubmitPayload,
-  } from "../ens-flow.types";
+  import { ValidationStatus } from "ui/src/validation";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
