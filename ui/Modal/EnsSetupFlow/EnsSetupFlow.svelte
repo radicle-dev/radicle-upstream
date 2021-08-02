@@ -177,14 +177,14 @@
 </script>
 
 <style>
-  #ModalContent {
+  .content {
     text-align: center;
     position: relative;
   }
 </style>
 
 <Modal>
-  <div id="ModalContent" style="position: relative">
+  <div class="content" style="position: relative">
     <svelte:component
       this={currentStep.component}
       {ensConfiguration}

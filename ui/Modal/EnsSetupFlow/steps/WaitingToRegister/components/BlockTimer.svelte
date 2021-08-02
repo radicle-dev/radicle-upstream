@@ -42,11 +42,11 @@
     transition: stroke-dashoffset 1s;
   }
 
-  .circleFront {
+  .circle-front {
     stroke: var(--color-primary);
   }
 
-  .circleBack {
+  .circle-back {
     stroke: var(--color-primary-level-2);
   }
 </style>
@@ -63,14 +63,14 @@
       cx="48"
       cy="48"
       r="44"
-      class="circle circleFront"
+      class="circle circle-front"
       stroke-linecap="round"
       stroke-width="8" />
     <circle
       cx="48"
       cy="48"
       r="44"
-      class=".circle circleBack"
+      class=".circle circle-back"
       stroke-width="8" />
   </svg>
 </div>

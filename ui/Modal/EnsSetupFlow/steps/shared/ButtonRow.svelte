@@ -21,7 +21,7 @@
 </script>
 
 <style>
-  #ButtonRow {
+  .button-row {
     margin-top: 24px;
     display: flex;
     justify-content: flex-end;
@@ -29,7 +29,7 @@
   }
 </style>
 
-<div id="ButtonRow">
+<div class="button-row">
   {#if canCancel}
     <Button disabled={disableButtons} variant="transparent" on:click={onCancel}
       >{cancelCopy}</Button>
