@@ -32,7 +32,6 @@
   export let registration: Registration | undefined = undefined;
 
   interface Step {
-    name: string;
     component: typeof SvelteComponent;
     onSubmit?: (payload: SubmitPayload) => void;
   }
@@ -46,11 +45,9 @@
 
   const createNameFlow: Step[] = [
     {
-      name: "Intro",
       component: EnsSetupFlowIntro,
     },
     {
-      name: "EnterName",
       component: EnterEnsName,
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensNameConfiguration) {
@@ -76,7 +73,6 @@
       },
     },
     {
-      name: "ConfirmName",
       component: ConfirmEnsName,
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensNameConfiguration?.minAge) {
@@ -94,15 +90,12 @@
       },
     },
     {
-      name: "WaitingToRegister",
       component: WaitingToRegister,
     },
     {
-      name: "ConfirmRegistration",
       component: ConfirmRegistration,
     },
     {
-      name: "RegistrationSuccess",
       component: RegistrationSuccess,
       onSubmit: () => {
         switchFlow(populateNameMetadataFlow);
@@ -112,7 +105,6 @@
 
   const populateNameMetadataFlow: Step[] = [
     {
-      name: "PopulateMetadata",
       component: PopulateMetadata,
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensMetadata) {
@@ -129,7 +121,6 @@
       },
     },
     {
-      name: "UpdateMetadataSuccess",
       component: UpdateMetadataSuccess,
       onSubmit: () => {
         switchFlow(linkRegistrationFlowSingleSign);
@@ -139,11 +130,9 @@
 
   const linkRegistrationFlowSingleSign: Step[] = [
     {
-      name: "LinkOrgToName",
       component: LinkOrgToName,
     },
     {
-      name: "LinkOrgToNameSuccess",
       component: LinkOrgToNameSuccess,
     },
   ];
