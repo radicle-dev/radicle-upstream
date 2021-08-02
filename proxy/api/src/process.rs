@@ -135,12 +135,18 @@ enum RunError {
 /// # Errors
 ///
 /// Errors when either the peer or the API error.
+#[allow(clippy::too_many_lines)]
 async fn run_rigging(
     rigging: Rigging,
-    restart_signal: impl Future<Output = ()> + Send + 'static,
+    restart_signal: impl Future<Output = ()> + Send + Sync + 'static,
 ) -> Result<(), RunError> {
     // Required for `tokio::select`. We can’t put it on the element directly, though.
-    #![allow(clippy::unreachable)]
+    #![allow(clippy::mut_mut)]
+
+    let restart_signal = restart_signal.shared();
+
+    let (restart_server_signal_tx, restart_server_signal_rx) = tokio::sync::oneshot::channel();
+
     let Rigging {
         ctx,
         peer,
@@ -153,14 +159,21 @@ async fn run_rigging(
     tracing::info!("starting API");
     let api = http::api(server_ctx.clone(), peer_events_sender.clone());
     let (_, server) =
-        warp::serve(api).try_bind_with_graceful_shutdown(server_ctx.http_listen(), async move {
-            restart_signal.await;
+        warp::serve(api).try_bind_with_graceful_shutdown(server_ctx.http_listen(), {
+            let restart_signal = restart_signal.clone();
+            async move {
+                futures::future::select(
+                    Box::pin(restart_signal),
+                    Box::pin(restart_server_signal_rx),
+                )
+                .await;
+            }
         })?;
 
     let server = server.map(Ok);
 
     if let Some(peer) = peer {
-        let mut tasks = vec![server.boxed()];
+        let mut tasks = vec![restart_signal.shared().boxed()];
 
         if let Some(seeds_sender) = seeds_sender {
             let mut peer_control = peer.control();
@@ -191,7 +204,7 @@ async fn run_rigging(
                     last_seeds = seeds;
                 }
             };
-            tasks.push(seeds_event_task.map(Ok).boxed());
+            tasks.push(seeds_event_task.boxed());
         }
         let peer_event_task = {
             let mut peer_events = peer.subscribe();
@@ -214,17 +227,35 @@ async fn run_rigging(
                 }
             }
         };
-        tasks.push(peer_event_task.map(Ok).boxed());
+        tasks.push(peer_event_task.boxed());
 
-        let peer = async move {
-            tracing::info!("starting peer");
-            peer.run().await
-        };
+        let mut tasks = futures::future::select_all(tasks).fuse();
 
-        tasks.push(peer.map_err(RunError::from).boxed());
+        tracing::info!("starting peer");
+        let (peer_shutdown, peer_run) = peer.start();
 
-        let (result, _, _) = futures::future::select_all(tasks).await;
-        result
+        let peer_run = peer_run.fuse();
+        futures::pin_mut!(peer_run);
+        futures::pin_mut!(server);
+        futures::select! {
+            _ = tasks => {
+                let _ = restart_server_signal_tx.send(());
+                drop(peer_shutdown);
+                peer_run.await?;
+                server.await?;
+                Ok(())
+            }
+            result = server => {
+                drop(peer_shutdown);
+                peer_run.await?;
+                result
+            }
+            result = peer_run => {
+                let _ = restart_server_signal_tx.send(());
+                server.await?;
+                result.map_err(RunError::Peer)
+            }
+        }
     } else {
         server.await
     }

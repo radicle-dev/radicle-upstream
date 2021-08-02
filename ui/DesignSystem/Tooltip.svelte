@@ -53,6 +53,11 @@
     z-index: 100;
   }
 
+  .tooltip.bottom,
+  .tooltip.top {
+    transform: translateX(-50%);
+  }
+
   .tooltip.visible {
     visibility: visible;
   }

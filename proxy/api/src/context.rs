@@ -221,9 +221,14 @@ impl Unsealed {
 
             let peer_control = coco_peer.control();
             let run_handle = async move {
-                if let Err(err) = coco_peer.run().await {
+                let (shutdown, run) = coco_peer.start();
+                // We spawn a task for `run` so that it is run to completion even if this future is
+                // dropped.
+                let run = tokio::task::spawn(run);
+                if let Err(err) = run.await {
                     tracing::error!(?err, "peer run error");
                 }
+                drop(shutdown);
             };
             (peer_control, peer, run_handle)
         };
