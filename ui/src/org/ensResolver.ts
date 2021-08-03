@@ -37,33 +37,37 @@ async function setRecords(
   const calls = [];
   const iface = new ethers.utils.Interface(resolverAbi);
 
-  for (const r of records) {
-    switch (r.name) {
+  for (const record of records) {
+    switch (record.name) {
       case "address":
-        calls.push(iface.encodeFunctionData("setAddr", [node, r.value]));
+        calls.push(iface.encodeFunctionData("setAddr", [node, record.value]));
         break;
       case "url":
         calls.push(
-          iface.encodeFunctionData("setText", [node, r.name, r.value])
+          iface.encodeFunctionData("setText", [node, record.name, record.value])
         );
         break;
       case "avatar":
         calls.push(
-          iface.encodeFunctionData("setText", [node, r.name, r.value])
+          iface.encodeFunctionData("setText", [node, record.name, record.value])
         );
         break;
       case "github":
         calls.push(
-          iface.encodeFunctionData("setText", [node, r.name, r.value])
+          iface.encodeFunctionData("setText", [node, record.name, record.value])
         );
         break;
       case "twitter":
         calls.push(
-          iface.encodeFunctionData("setText", [node, `vnd.${r.name}`, r.value])
+          iface.encodeFunctionData("setText", [
+            node,
+            `vnd.${record.name}`,
+            record.value,
+          ])
         );
         break;
       default:
-        console.error(`unknown field "${r.name}"`);
+        console.error(`unknown field "${record.name}"`);
     }
   }
   return resolverContract.multicall(calls);
