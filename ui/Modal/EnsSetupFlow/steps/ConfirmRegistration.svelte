@@ -9,6 +9,7 @@
   import { register } from "ui/src/org/ensRegistrar";
   import type { EnsConfiguration } from "../ens-flow.types";
   import ButtonRow from "./shared/ButtonRow.svelte";
+  import * as error from "ui/src/error";
   import * as wallet from "ui/src/wallet";
   import * as svelteStore from "ui/src/svelteStore";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
@@ -30,11 +31,14 @@
       await register(walletStore.environment, ensConfiguration.name, salt);
 
       onSubmit();
-    } catch (e) {
+    } catch (err) {
       buttonsDisabled = false;
       confirmButtonCopy = "Confirm registration";
 
-      throw e;
+      throw new error.Error({
+        message: "Transaction failed",
+        source: err,
+      });
     }
   }
 

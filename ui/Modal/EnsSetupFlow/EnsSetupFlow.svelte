@@ -8,6 +8,7 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
 
+  import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import type {
     EnsConfiguration,
@@ -51,9 +52,10 @@
       component: EnterEnsName,
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensNameConfiguration) {
-          throw new Error(
-            "Expected EnterName step to return ensNameConfiguration"
-          );
+          throw new error.Error({
+            message: "Expected EnterName step to return ensNameConfiguration",
+            details: { payload },
+          });
         }
 
         ensConfiguration = {
@@ -76,9 +78,11 @@
       component: ConfirmEnsName,
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensNameConfiguration?.minAge) {
-          throw new Error(
-            "Expected ConfirmName step to return ensNameConfiguration with minAge"
-          );
+          throw new error.Error({
+            message:
+              "Expected ConfirmName step to return ensNameConfiguration with minAge",
+            details: { payload },
+          });
         }
 
         ensConfiguration = {
@@ -108,9 +112,10 @@
       component: PopulateMetadata,
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensMetadata) {
-          throw new Error(
-            "Expected PopulateMetadata step to return ensMetadata"
-          );
+          throw new error.Error({
+            message: "Expected PopulateMetadata step to return ensMetadata",
+            details: { payload },
+          });
         }
 
         ensMetadataConfiguration = {

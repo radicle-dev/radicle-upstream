@@ -9,6 +9,7 @@ import type { EnsResolver } from "@ethersproject/providers";
 import * as svelteStore from "ui/src/svelteStore";
 import * as wallet from "ui/src/wallet";
 import type { TransactionResponse } from "./contract";
+import * as error from "ui/src/error";
 
 import { ENS__factory } from "radicle-contracts/build/contract-bindings/ethers";
 
@@ -67,7 +68,10 @@ async function setRecords(
         );
         break;
       default:
-        console.error(`unknown field "${record.name}"`);
+        throw new error.Error({
+          message: `Unknown field ${record.name}`,
+          details: { record },
+        });
     }
   }
   return resolverContract.multicall(calls);
@@ -119,10 +123,14 @@ async function getRegistration(name: string): Promise<Registration | null> {
 }
 
 async function getOwner(name: string): Promise<string> {
-  const ensAddr = (await walletStore.provider.getNetwork()).ensAddress;
+  const network = await walletStore.provider.getNetwork();
+  const ensAddr = network.ensAddress;
 
   if (!ensAddr) {
-    throw new Error("Missing ENS address for network");
+    throw new error.Error({
+      message: "Missing ENS address for network",
+      details: { network },
+    });
   }
 
   const registry = ENS__factory.connect(ensAddr, walletStore.signer);

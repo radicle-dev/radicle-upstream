@@ -16,6 +16,7 @@
 
   import { onMount } from "svelte";
   import * as svelteStore from "ui/src/svelteStore";
+  import * as error from "ui/src/error";
   import * as wallet from "ui/src/wallet";
   import TextInput from "ui/DesignSystem/TextInput.svelte";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
@@ -58,9 +59,11 @@
 
   onMount(async () => {
     if (!ensConfiguration?.name && !ensMetadataConfiguration?.name) {
-      throw new Error(
-        "Expected at least one of ensNameConfiguration or ensMetadataConfiguration props"
-      );
+      throw new error.Error({
+        message:
+          "Expected at least one of ensNameConfiguration or ensMetadataConfiguration props",
+        details: { ensConfiguration },
+      });
     }
 
     /*
@@ -75,20 +78,31 @@
       );
 
       if (!registrationLookup) {
-        throw new Error("Couldn't fetch registration");
+        throw new error.Error({
+          message: "Couldn't fetch registration",
+          details: { ensConfiguration },
+        });
       }
 
       registration = registrationLookup;
     } else {
       if (!ensMetadataConfiguration) {
-        throw new Error("Expected ensMetadataConfiguration to be populated");
+        throw new error.Error({
+          message: "Expected ensMetadataConfiguration to be populated",
+        });
       }
 
       registration = ensMetadataConfiguration;
     }
 
     if (registration.owner !== walletStore.getAddress()) {
-      throw new Error("You don't own this name.");
+      throw new error.Error({
+        message: "You don't own this name",
+        details: {
+          owner: registration.owner,
+          walletAddress: walletStore.getAddress(),
+        },
+      });
     }
 
     if (
@@ -124,15 +138,21 @@
 
   async function handleSubmit() {
     if (!addressValue) {
-      throw new Error("Missing address field value");
+      throw new error.Error({
+        message: "Missing address field value",
+      });
     }
 
     if (!name) {
-      throw new Error("Name is undefined");
+      throw new error.Error({
+        message: "Name is undefined",
+      });
     }
 
     if (!registration.resolver) {
-      throw new Error("Missing ENS resolver");
+      throw new error.Error({
+        message: "Missing ENS resolver",
+      });
     }
 
     buttonsDisabled = true;
@@ -150,7 +170,9 @@
       // Filter out unchanged records.
       records = records.filter(r => {
         if (!ensMetadataConfiguration) {
-          throw new Error("ensMetadataConfiguration is undefined");
+          throw new error.Error({
+            message: "ensMetadataConfiguration is undefined",
+          });
         }
 
         const existingValue = ensMetadataConfiguration[r.name];
@@ -177,10 +199,13 @@
           github: githubValue,
         },
       });
-    } catch (e) {
+    } catch (err) {
       buttonsDisabled = false;
       submitButtonCopy = "Update name metadata";
-      throw e;
+      throw new error.Error({
+        message: "Transaction failed",
+        source: err,
+      });
     }
   }
 </script>

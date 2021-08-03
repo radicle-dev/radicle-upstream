@@ -108,7 +108,9 @@ async function commit(
   );
 
   if (!ownerAddr) {
-    throw new Error("Wallet not initialized");
+    throw new error.Error({
+      message: "Wallet not initialized",
+    });
   }
 
   const commitment = createCommitment(name, ownerAddr, salt);
@@ -145,7 +147,9 @@ async function register(
   const address = walletStore.getAddress();
 
   if (!address) {
-    throw new Error("Wallet not initialized");
+    throw new error.Error({
+      message: "Wallet not initialized",
+    });
   }
 
   const tx = await registrar(environment)

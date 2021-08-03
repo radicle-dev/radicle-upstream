@@ -8,6 +8,7 @@
 <script lang="typescript">
   import { onMount } from "svelte";
 
+  import * as error from "ui/src/error";
   import Emoji from "ui/DesignSystem/Emoji.svelte";
   import TextInput from "ui/DesignSystem/TextInput.svelte";
   import { setName } from "ui/src/org";
@@ -46,7 +47,10 @@
     submitButtonCopy = "Waiting for transaction confirmation...";
 
     if (!ensConfiguration.name || !ensMetadataConfiguration.address) {
-      throw new Error("Name or address undefined");
+      throw new error.Error({
+        message: "Name or address undefined",
+        details: { ensConfiguration },
+      });
     }
     try {
       await setName(
@@ -55,11 +59,14 @@
       );
 
       onSubmit();
-    } catch (e) {
+    } catch (err) {
       buttonsDisabled = false;
       submitButtonCopy = "Link organization to name";
 
-      throw e;
+      throw new error.Error({
+        message: "Transaction failed",
+        source: err,
+      });
     }
   }
 </script>

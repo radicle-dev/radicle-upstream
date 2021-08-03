@@ -14,6 +14,7 @@
   import * as wallet from "ui/src/wallet";
   import * as svelteStore from "ui/src/svelteStore";
   import { commit } from "ui/src/org/ensRegistrar";
+  import * as error from "ui/src/error";
 
   const walletStore = svelteStore.get(wallet.store);
 
@@ -50,15 +51,15 @@
           commitmentSalt: salt,
         },
       });
-    } catch (e) {
-      console.error(e);
-
+    } catch (err) {
       buttonsDisabled = false;
       confirmButtonCopy = "Begin registration";
 
-      throw new Error(
-        "Transaction failed. Please try again and confirm the signature & transaction in your connected wallet."
-      );
+      throw new error.Error({
+        message:
+          "Transaction failed. Please try again and confirm the signature & transaction in your connected wallet.",
+        source: err,
+      });
     }
   }
 </script>
