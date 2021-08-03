@@ -53,7 +53,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
   const owner = await org.getOwner(params.address);
   const projectCount = await org.getProjectCount();
   const anchors = await org.resolveProjectAnchors(params.address, owner);
-  const ensRecord = await org.fetchOrgEnsRecord(params.address);
+  const ensRecord = (await org.fetchOrgEnsRecord(params.address)) || undefined;
 
   switch (owner.type) {
     case "gnosis-safe": {
