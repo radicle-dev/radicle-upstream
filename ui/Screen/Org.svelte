@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { Registration } from "ui/src/org/ensResolver";
+
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
@@ -34,6 +36,7 @@
   export let address: string;
   export let members: org.Member[];
   export let threshold: number;
+  export let registration: Registration | undefined = undefined;
 
   const tabs = (address: string, active: orgRoute.MultiSigView) => {
     return [
@@ -95,6 +98,7 @@
 <SidebarLayout>
   <Header>
     <OrgHeader
+      {registration}
       slot="left"
       orgAddress={address}
       ownerAddress={gnosisSafeAddress}
