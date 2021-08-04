@@ -16,6 +16,10 @@ import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
 import { memoizeLru } from "ui/src/memoizeLru";
 
+import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
+import * as safe from "./safe";
+import type * as wallet from "ui/src/wallet";
+
 export type { TransactionResponse };
 
 const orgFactoryAbi = [
@@ -196,7 +200,7 @@ export function parseAnchorTx(data: string): AnchorData | undefined {
   }
 }
 
-export async function updateName(
+export async function updateSingleSigName(
   name: string,
   orgAddress: string,
   provider: ethers.providers.Provider,
@@ -205,4 +209,35 @@ export async function updateName(
   const org = new ethers.Contract(orgAddress, orgAbi, signer);
 
   return org.setName(name, (await provider.getNetwork()).ensAddress);
+}
+
+export async function updateMultiSigName(
+  name: string,
+  orgAddress: string,
+  safeAddress: string,
+  provider: ethers.providers.Provider,
+  signer: ethers.Signer,
+  wallet: wallet.Wallet
+): Promise<void> {
+  const org = new ethers.Contract(orgAddress, orgAbi, signer);
+
+  const network = await provider.getNetwork();
+  const unsignedTx = await org.populateTransaction.setName(
+    name,
+    network.ensAddress
+  );
+  const txData = unsignedTx.data;
+  if (!txData) {
+    throw new error.Error({
+      message: "Could not generate transaction for `setName` call",
+      details: { unsignedTx },
+    });
+  }
+  const safeTx = {
+    to: orgAddress,
+    value: "0",
+    data: txData,
+    operation: OperationType.Call,
+  };
+  await safe.signAndProposeTransaction(wallet, safeAddress, safeTx);
 }

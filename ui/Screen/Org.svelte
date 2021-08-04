@@ -6,11 +6,13 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type * as orgRoute from "./Org/route";
   import type { Registration } from "ui/src/org/ensResolver";
 
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
+  import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
   import { unreachable } from "ui/src/unreachable";
 
@@ -28,8 +30,8 @@
   import MembersTab from "ui/Screen/Org/Members.svelte";
   import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
+  import EnsSetupFlow from "ui/Modal/EnsSetupFlow/EnsSetupFlow.svelte";
   import MembersMenu from "ui/Screen/Org/MembersMenu.svelte";
-  import type * as orgRoute from "./Org/route";
 
   export let activeTab: orgRoute.MultiSigView;
   export let gnosisSafeAddress: string;
@@ -87,9 +89,13 @@
       {
         title: "Register ENS name",
         icon: Icon.Ethereum,
-        disabled: true,
-        event: () => {},
-        tooltip: "Coming soon",
+        event: () => {
+          modal.toggle(EnsSetupFlow, () => {}, {
+            safeAddress: gnosisSafeAddress,
+            orgAddress: address,
+            registration,
+          });
+        },
       },
     ];
   };

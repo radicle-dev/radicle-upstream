@@ -31,6 +31,7 @@
 
   export let orgAddress: string;
   export let registration: Registration | undefined = undefined;
+  export let safeAddress: string | undefined = undefined;
 
   interface Step {
     component: typeof SvelteComponent;
@@ -128,12 +129,12 @@
     {
       component: UpdateMetadataSuccess,
       onSubmit: () => {
-        switchFlow(linkRegistrationFlowSingleSign);
+        switchFlow(linkRegistrationFlow);
       },
     },
   ];
 
-  const linkRegistrationFlowSingleSign: Step[] = [
+  const linkRegistrationFlow: Step[] = [
     {
       component: LinkOrgToName,
     },
@@ -185,6 +186,7 @@
       {ensMetadataConfiguration}
       {registration}
       {orgAddress}
+      {safeAddress}
       onSubmit={currentStep.onSubmit || goForward} />
   </div>
 </Modal>

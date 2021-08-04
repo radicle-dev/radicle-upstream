@@ -11,7 +11,7 @@
   import * as error from "ui/src/error";
   import Emoji from "ui/DesignSystem/Emoji.svelte";
   import TextInput from "ui/DesignSystem/TextInput.svelte";
-  import { setName } from "ui/src/org";
+  import * as org from "ui/src/org";
   import type { Registration } from "ui/src/org/ensResolver";
 
   import type { EnsConfiguration, EnsMetadataPayload } from "../ens-flow.types";
@@ -23,6 +23,7 @@
   export let registration: Registration | undefined = undefined;
   export let ensConfiguration: EnsConfiguration;
   export let ensMetadataConfiguration: EnsMetadataPayload;
+  export let safeAddress: string | undefined = undefined;
 
   let buttonsDisabled = false;
   let submitButtonCopy = "Link organization to name";
@@ -41,8 +42,7 @@
     }
   });
 
-  // TODO: Implement this for a multisig org
-  async function handleSubmit() {
+  async function linkSingleSig() {
     buttonsDisabled = true;
     submitButtonCopy = "Waiting for transaction confirmation...";
 
@@ -53,7 +53,7 @@
       });
     }
     try {
-      await setName(
+      await org.setSingleSigName(
         `${ensConfiguration.name}.radicle.eth`,
         ensMetadataConfiguration.address
       );
@@ -68,6 +68,29 @@
         source: err,
       });
     }
+  }
+
+  async function linkMultiSig() {
+    buttonsDisabled = true;
+    submitButtonCopy = "Waiting for transaction confirmation...";
+
+    if (
+      !safeAddress ||
+      !ensConfiguration.name ||
+      !ensMetadataConfiguration.address
+    ) {
+      throw new error.Error({
+        message: "Name, owner or address undefined",
+        details: { ensConfiguration },
+      });
+    }
+    await org.setNameMultisig(
+      `${ensConfiguration.name}.radicle.eth`,
+      ensMetadataConfiguration.address,
+      safeAddress
+    );
+
+    onSubmit();
   }
 </script>
 
@@ -99,7 +122,9 @@
 
   <ButtonRow
     disableButtons={buttonsDisabled}
-    onSubmit={handleSubmit}
+    onSubmit={() => {
+      safeAddress ? linkMultiSig() : linkSingleSig();
+    }}
     canCancel={false}
     confirmCopy={submitButtonCopy} />
 </div>

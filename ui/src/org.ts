@@ -584,16 +584,33 @@ export const isMultiSig = memoizeLru(
   { max: 1000 }
 );
 
-export async function setName(
+export async function setSingleSigName(
   name: string,
   orgAddress: string
 ): Promise<Contract.TransactionResponse> {
   const walletStore = svelteStore.get(wallet.store);
 
-  return Contract.updateName(
+  return Contract.updateSingleSigName(
     name,
     orgAddress,
     walletStore.provider,
     walletStore.signer
+  );
+}
+
+export async function setNameMultisig(
+  name: string,
+  orgAddress: string,
+  ownerAddress: string
+): Promise<void> {
+  const walletStore = svelteStore.get(wallet.store);
+
+  await Contract.updateMultiSigName(
+    name,
+    orgAddress,
+    ownerAddress,
+    walletStore.provider,
+    walletStore.signer,
+    walletStore
   );
 }

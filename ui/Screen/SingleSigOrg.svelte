@@ -7,6 +7,7 @@
 -->
 <script lang="typescript">
   import type * as org from "ui/src/org";
+  import type { Registration } from "ui/src/org/ensResolver";
 
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
@@ -26,8 +27,7 @@
   import ProjectsTab from "ui/Screen/Org/Projects.svelte";
   import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
-  import Stepper from "ui/Modal/EnsSetupFlow/EnsSetupFlow.svelte";
-  import type { Registration } from "ui/src/org/ensResolver";
+  import EnsSetupFlow from "ui/Modal/EnsSetupFlow/EnsSetupFlow.svelte";
 
   export let owner: string;
   export let address: string;
@@ -72,7 +72,7 @@
         title: "Register ENS name",
         icon: Icon.Ethereum,
         event: () => {
-          modal.toggle(Stepper, () => {}, {
+          modal.toggle(EnsSetupFlow, () => {}, {
             orgAddress: address,
             registration,
           });
