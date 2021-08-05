@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { SubmitPayload } from "../ens-flow.types";
+  import type { EnsMetadataPayload, SubmitPayload } from "../ens-flow.types";
   import type { ValidationState } from "ui/src/validation";
 
   import * as svelteStore from "ui/src/svelteStore";
@@ -19,8 +19,18 @@
   import { getRegistration } from "ui/src/org/ensResolver";
 
   export let onSubmit: (payload: SubmitPayload) => void = () => {};
+  export let ensMetadataConfiguration: EnsMetadataPayload | undefined;
 
   let name: string;
+  if (ensMetadataConfiguration && ensMetadataConfiguration.name) {
+    const existingName = ensMetadataConfiguration.name.replace(
+      ".radicle.eth",
+      ""
+    );
+    if (existingName.length > 0) {
+      name = existingName;
+    }
+  }
 
   let validationStatus: ValidationState = {
     status: ValidationStatus.NotStarted,
