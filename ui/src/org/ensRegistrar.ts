@@ -63,7 +63,6 @@ function radToken(environment: ethereum.Environment) {
 
 async function checkAvailability(
   environment: ethereum.Environment,
-  signer: ethers.Signer,
   name: string
 ): Promise<{
   available: boolean;
@@ -115,8 +114,8 @@ async function commit(
 
   const commitment = createCommitment(name, ownerAddr, salt);
 
-  // TODO: Once upstream wallet is aware of RAD balance, check if the user has enough rads before committing.
-
+  // TODO: Once upstream wallet is aware of RAD balance, check if the user has
+  // enough rads before committing.
   const tx = await registrar(environment)
     .connect(signer)
     .commitWithPermit(

@@ -53,7 +53,6 @@
 
     const { available, fee } = await checkAvailability(
       walletStore.environment,
-      walletStore.signer,
       name
     );
 
