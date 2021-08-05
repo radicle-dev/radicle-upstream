@@ -182,7 +182,14 @@
             ? existingValue.toLowerCase()
             : existingValue;
 
-        return r.value && normalizedExistingValue !== r.value.toLowerCase();
+        if (
+          r.value === undefined ||
+          (normalizedExistingValue === null && r.value === "")
+        ) {
+          false;
+        } else {
+          return normalizedExistingValue !== r.value.toLowerCase();
+        }
       });
 
       if (records.length > 0) {
