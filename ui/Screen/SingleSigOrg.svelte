@@ -6,13 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type * as org from "ui/src/org";
   import type { Registration } from "ui/src/org/ensResolver";
 
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
-  import * as modal from "ui/src/modal";
+  import * as org from "ui/src/org";
 
   import {
     ActionBar,
@@ -27,7 +26,6 @@
   import ProjectsTab from "ui/Screen/Org/Projects.svelte";
   import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
-  import EnsSetupFlow from "ui/Modal/EnsSetupFlow/EnsSetupFlow.svelte";
 
   export let owner: string;
   export let address: string;
@@ -68,16 +66,7 @@
           ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
         },
       },
-      {
-        title: "Register ENS name",
-        icon: Icon.Ethereum,
-        event: () => {
-          modal.toggle(EnsSetupFlow, () => {}, {
-            orgAddress: address,
-            registration,
-          });
-        },
-      },
+      org.ensMenuItem(address, registration),
     ];
   };
 </script>

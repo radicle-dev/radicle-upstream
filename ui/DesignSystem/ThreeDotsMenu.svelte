@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import { fade } from "svelte/transition";
-  import type { SvelteComponent } from "svelte";
+  import type * as types from "./ThreeDotsMenu.types";
 
   import { CSSPosition } from "ui/src/style";
 
@@ -16,15 +16,7 @@
   import Tooltip from "./Tooltip.svelte";
   import StyledCopyable from "./StyledCopyable.svelte";
 
-  interface MenuItem {
-    title: string;
-    icon: typeof SvelteComponent;
-    event: () => void;
-    tooltip?: string;
-    dataCy?: string;
-    disabled?: boolean;
-  }
-  export let menuItems: MenuItem[];
+  export let menuItems: types.MenuItem[];
   export let headerTitle: string | undefined = undefined;
 
   export let dataCy = "";
@@ -41,7 +33,7 @@
     expanded = false;
   };
 
-  const handleItemSelection = (item: MenuItem) => {
+  const handleItemSelection = (item: types.MenuItem) => {
     hideModal();
     item.event();
   };

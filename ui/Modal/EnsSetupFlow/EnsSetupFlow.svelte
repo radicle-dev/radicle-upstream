@@ -147,7 +147,7 @@
     modal.hide();
   };
 
-  let currentStepIndex = 0;
+  export let currentStepIndex = 0;
 
   let currentFlow: Step[] = createNameFlow;
 
