@@ -213,7 +213,7 @@
 <div>
   <HeadlineAndDescription
     headline="Set your name's metadata"
-    description="This following information will be saved alongside your ENS name, and appears together with your organization across Radicle once linked. You can edit it any time by clicking “Edit name on the organization page."
+    description="This following information will be saved alongside your ENS name, and appears together with your organization across Radicle once linked. You can edit it any time by clicking “Edit ENS name” on the organization page."
     style="margin-bottom: 24px" />
 
   <Tooltip

@@ -624,7 +624,7 @@ export function ensMenuItem(
   registration?: ensResolver.Registration,
   safeAddress?: string
 ): threeDotsMenuTypes.MenuItem {
-  const title = registration?.name ? "Edit ENS settings" : "Registr ENS name";
+  const title = registration?.name ? "Edit ENS name" : "Registr ENS name";
   const currentStepIndex = registration?.name ? 1 : 0;
 
   return {
