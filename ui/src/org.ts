@@ -36,7 +36,7 @@ import { sleep } from "ui/src/sleep";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 import { Icon } from "ui/DesignSystem";
-import EnsSetupFlow from "ui/Modal/EnsSetupFlow/EnsSetupFlow.svelte";
+import EnsSetupFlow from "ui/Modal/Org/EnsSetupFlow/EnsSetupFlow.svelte";
 
 export type { MemberResponse, Org };
 
