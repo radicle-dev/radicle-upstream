@@ -55,8 +55,8 @@
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
       {#if registration?.name}
-        {registration?.name.replace(".radicle.eth", "").trim()}
-        <span class="name-subdomain">.radicle.eth</span>
+        {registration?.name.replace(".radicle.eth", "")}<span
+          class="name-subdomain">.radicle.eth</span>
       {:else}
         {style.ellipsed(orgAddress)}
       {/if}
