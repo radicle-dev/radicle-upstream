@@ -17,6 +17,9 @@
   export let threshold: number | undefined = undefined;
   export let registration: Registration | undefined = undefined;
 
+  const subdomain = ".radicle.eth";
+
+  $: name = registration?.name.replace(subdomain, "");
   $: websiteUrl = registration?.url;
   $: githubUrl =
     registration?.github && `https://github.com/${registration.github}`;
@@ -34,17 +37,16 @@
     min-width: 0;
     white-space: nowrap;
   }
-  .name {
-    margin-bottom: 0.5rem;
-  }
   .row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
   }
-
-  .name-subdomain {
+  .name {
+    margin-bottom: 0.5rem;
+  }
+  .subdomain {
     color: var(--color-foreground-level-4);
   }
 </style>
@@ -62,14 +64,30 @@
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
-      {#if registration?.name}
-        {registration?.name.replace(".radicle.eth", "")}<span
-          class="name-subdomain">.radicle.eth</span>
+      {#if name}
+        {name}<span class="subdomain">{subdomain}</span>
       {:else}
         {style.ellipsed(orgAddress)}
       {/if}
     </h1>
     <div style="display: flex; gap: 1rem;">
+      <div>
+        <div class="row">
+          {#if threshold}
+            <Icon.Gnosis />
+          {:else}
+            <Icon.Ethereum />
+          {/if}
+          {style.ellipsed(ownerAddress)}
+        </div>
+        {#if threshold}
+          <div class="row">
+            <Icon.Orgs />
+            {threshold}
+            {threshold === 1 ? "signature" : "signatures"} required for quorum
+          </div>
+        {/if}
+      </div>
       {#if websiteUrl || githubUrl || twitterUrl}
         <div>
           {#if websiteUrl}
@@ -92,23 +110,6 @@
           {/if}
         </div>
       {/if}
-      <div>
-        <div class="row">
-          {#if threshold}
-            <Icon.Gnosis />
-          {:else}
-            <Icon.Ethereum />
-          {/if}
-          {style.ellipsed(ownerAddress)}
-        </div>
-        {#if threshold}
-          <div class="row">
-            <Icon.Orgs />
-            {threshold}
-            {threshold === 1 ? "signature" : "signatures"} required for quorum
-          </div>
-        {/if}
-      </div>
     </div>
   </div>
 </div>
