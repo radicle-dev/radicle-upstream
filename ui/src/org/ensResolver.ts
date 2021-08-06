@@ -44,25 +44,17 @@ async function setRecords(
         calls.push(iface.encodeFunctionData("setAddr", [node, record.value]));
         break;
       case "url":
-        calls.push(
-          iface.encodeFunctionData("setText", [node, record.name, record.value])
-        );
-        break;
       case "avatar":
         calls.push(
           iface.encodeFunctionData("setText", [node, record.name, record.value])
         );
         break;
       case "github":
-        calls.push(
-          iface.encodeFunctionData("setText", [node, record.name, record.value])
-        );
-        break;
       case "twitter":
         calls.push(
           iface.encodeFunctionData("setText", [
             node,
-            `vnd.${record.name}`,
+            `com.${record.name}`,
             record.value,
           ])
         );
@@ -101,8 +93,8 @@ async function getRegistration(name: string): Promise<Registration | null> {
     resolver.getAddress(),
     resolver.getText("avatar"),
     resolver.getText("url"),
-    resolver.getText("vnd.twitter"),
-    resolver.getText("vnd.github"),
+    resolver.getText("com.twitter"),
+    resolver.getText("com.github"),
   ]);
 
   const [address, avatar, url, twitter, github] = meta.map(
