@@ -14,7 +14,6 @@
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
 
   export let onSubmit: () => void = () => {};
-
   export let ensConfiguration: EnsConfiguration;
 </script>
 

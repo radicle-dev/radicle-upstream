@@ -37,6 +37,7 @@
 
   interface Step {
     component: typeof SvelteComponent;
+    props: () => { [propName: string]: unknown };
     onSubmit?: (payload: SubmitPayload) => void;
   }
 
@@ -50,9 +51,15 @@
   const createNameFlow: Step[] = [
     {
       component: EnsSetupFlowIntro,
+      props: () => {
+        return {};
+      },
     },
     {
       component: EnterEnsName,
+      props: () => {
+        return { ensMetadataConfiguration };
+      },
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensNameConfiguration) {
           throw new error.Error({
@@ -79,6 +86,11 @@
     },
     {
       component: ConfirmEnsName,
+      props: () => {
+        return {
+          ensConfiguration,
+        };
+      },
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensNameConfiguration?.minAge) {
           throw new error.Error({
@@ -98,12 +110,27 @@
     },
     {
       component: WaitingToRegister,
+      props: () => {
+        return {
+          ensConfiguration,
+        };
+      },
     },
     {
       component: ConfirmRegistration,
+      props: () => {
+        return {
+          ensConfiguration,
+        };
+      },
     },
     {
       component: RegistrationSuccess,
+      props: () => {
+        return {
+          ensConfiguration,
+        };
+      },
       onSubmit: () => {
         switchFlow(populateNameMetadataFlow);
       },
@@ -113,6 +140,13 @@
   const populateNameMetadataFlow: Step[] = [
     {
       component: PopulateMetadata,
+      props: () => {
+        return {
+          ensMetadataConfiguration,
+          ensConfiguration,
+          orgAddress,
+        };
+      },
       onSubmit: (payload: SubmitPayload) => {
         if (!payload.ensMetadata) {
           throw new error.Error({
@@ -130,6 +164,9 @@
     },
     {
       component: UpdateMetadataSuccess,
+      props: () => {
+        return { ensConfiguration };
+      },
       onSubmit: () => {
         switchFlow(linkRegistrationFlow);
       },
@@ -139,9 +176,20 @@
   const linkRegistrationFlow: Step[] = [
     {
       component: LinkOrgToName,
+      props: () => {
+        return {
+          registration,
+          ensMetadataConfiguration,
+          ensConfiguration,
+          safeAddress,
+        };
+      },
     },
     {
       component: LinkOrgToNameSuccess,
+      props: () => {
+        return { registration, safeAddress, ensConfiguration };
+      },
     },
   ];
 
@@ -182,11 +230,7 @@
   <div class="content" style="position: relative">
     <svelte:component
       this={currentStep.component}
-      {ensConfiguration}
-      {ensMetadataConfiguration}
-      {registration}
-      {orgAddress}
-      {safeAddress}
+      {...currentStep.props()}
       onSubmit={currentStep.onSubmit || goForward} />
   </div>
 </Modal>

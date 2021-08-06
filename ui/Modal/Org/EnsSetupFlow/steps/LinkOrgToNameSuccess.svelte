@@ -19,7 +19,6 @@
   export let onSubmit: () => void = () => {};
   export let safeAddress: string | undefined = undefined;
   export let registration: Registration | undefined = undefined;
-
   export let ensConfiguration: EnsConfiguration;
 
   onMount(() => {

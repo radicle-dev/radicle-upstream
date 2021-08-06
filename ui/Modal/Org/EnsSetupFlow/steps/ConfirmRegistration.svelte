@@ -20,6 +20,7 @@
   let confirmButtonCopy = "Confirm registration";
 
   export let onSubmit: () => void = () => {};
+  export let ensConfiguration: EnsConfiguration;
 
   async function handleSubmit() {
     buttonsDisabled = true;
@@ -41,8 +42,6 @@
       });
     }
   }
-
-  export let ensConfiguration: EnsConfiguration;
 </script>
 
 <div>
