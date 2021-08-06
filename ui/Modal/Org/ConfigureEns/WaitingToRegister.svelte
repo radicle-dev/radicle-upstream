@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { EnsConfiguration } from "../../ens-flow.types";
-  import BlockTimer from "./components/BlockTimer.svelte";
+  import type { EnsConfiguration } from "../ens-flow.types";
+  import BlockTimer from "./WaitingToRegister/BlockTimer.svelte";
 
   export let onSubmit: () => void = () => {};
   export let ensConfiguration: Partial<EnsConfiguration>;

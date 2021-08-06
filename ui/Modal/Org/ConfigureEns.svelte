@@ -11,7 +11,7 @@
     EnsConfiguration,
     EnsMetadataPayload,
     SubmitPayload,
-  } from "./ens-flow.types";
+  } from "./ConfigureEns/ens-flow.types";
   import type { Registration } from "ui/src/org/ensResolver";
 
   import * as error from "ui/src/error";
@@ -19,16 +19,16 @@
 
   import Modal from "ui/DesignSystem/Modal.svelte";
 
-  import ConfirmEnsName from "./steps/ConfirmEnsName.svelte";
-  import EnsSetupFlowIntro from "./steps/EnsSetupFlowIntro.svelte";
-  import EnterEnsName from "./steps/EnterEnsName.svelte";
-  import WaitingToRegister from "./steps/WaitingToRegister";
-  import ConfirmRegistration from "./steps/ConfirmRegistration.svelte";
-  import RegistrationSuccess from "./steps/RegistrationSuccess.svelte";
-  import PopulateMetadata from "./steps/PopulateMetadata.svelte";
-  import UpdateMetadataSuccess from "./steps/UpdateMetadataSuccess.svelte";
-  import LinkOrgToName from "./steps/LinkOrgToName.svelte";
-  import LinkOrgToNameSuccess from "./steps/LinkOrgToNameSuccess.svelte";
+  import ConfirmEnsName from "./ConfigureEns/ConfirmEnsName.svelte";
+  import ConfigureEnsIntro from "./ConfigureEns/ConfigureEnsIntro.svelte";
+  import EnterEnsName from "./ConfigureEns/EnterEnsName.svelte";
+  import WaitingToRegister from "./ConfigureEns/WaitingToRegister.svelte";
+  import ConfirmRegistration from "./ConfigureEns/ConfirmRegistration.svelte";
+  import RegistrationSuccess from "./ConfigureEns/RegistrationSuccess.svelte";
+  import PopulateMetadata from "./ConfigureEns/PopulateMetadata.svelte";
+  import UpdateMetadataSuccess from "./ConfigureEns/UpdateMetadataSuccess.svelte";
+  import LinkOrgToName from "./ConfigureEns/LinkOrgToName.svelte";
+  import LinkOrgToNameSuccess from "./ConfigureEns/LinkOrgToNameSuccess.svelte";
 
   export let orgAddress: string;
   export let registration: Registration | undefined = undefined;
@@ -50,7 +50,7 @@
 
   const createNameFlow: Step[] = [
     {
-      component: EnsSetupFlowIntro,
+      component: ConfigureEnsIntro,
       props: () => {
         return {};
       },

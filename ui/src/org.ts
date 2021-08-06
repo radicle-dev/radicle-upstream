@@ -36,7 +36,7 @@ import { sleep } from "ui/src/sleep";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 import { Icon } from "ui/DesignSystem";
-import EnsSetupFlow from "ui/Modal/Org/EnsSetupFlow/EnsSetupFlow.svelte";
+import ConfigureEns from "ui/Modal/Org/ConfigureEns.svelte";
 
 export type { MemberResponse, Org };
 
@@ -631,7 +631,7 @@ export function ensMenuItem(
     title,
     icon: Icon.Ethereum,
     event: () => {
-      modal.toggle(EnsSetupFlow, () => {}, {
+      modal.toggle(ConfigureEns, () => {}, {
         safeAddress,
         orgAddress,
         registration,
