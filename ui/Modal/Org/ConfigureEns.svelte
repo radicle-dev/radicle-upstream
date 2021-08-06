@@ -35,10 +35,10 @@
   export let safeAddress: string | undefined = undefined;
   export let currentStepIndex: number = 0;
 
+  // TODO: make sure onSubmit is required on a type level.
   interface Step {
     component: typeof SvelteComponent;
     props: () => { [propName: string]: unknown };
-    onSubmit?: (payload: SubmitPayload) => void;
   }
 
   let ensConfiguration: Partial<EnsConfiguration> = {};
@@ -52,36 +52,39 @@
     {
       component: ConfigureEnsIntro,
       props: () => {
-        return {};
+        return { onSubmit: nextStep };
       },
     },
     {
       component: EnterEnsName,
       props: () => {
-        return { ensMetadataConfiguration };
-      },
-      onSubmit: (payload: SubmitPayload) => {
-        if (!payload.ensNameConfiguration) {
-          throw new error.Error({
-            message: "Expected EnterName step to return ensNameConfiguration",
-            details: { payload },
-          });
-        }
+        return {
+          ensMetadataConfiguration,
+          onSubmit: (payload: SubmitPayload) => {
+            if (!payload.ensNameConfiguration) {
+              throw new error.Error({
+                message:
+                  "Expected EnterName step to return ensNameConfiguration",
+                details: { payload },
+              });
+            }
 
-        ensConfiguration = {
-          ...ensConfiguration,
-          ...payload.ensNameConfiguration,
+            ensConfiguration = {
+              ...ensConfiguration,
+              ...payload.ensNameConfiguration,
+            };
+
+            ensMetadataConfiguration = {
+              ...payload.ensMetadata,
+            };
+
+            if (ensConfiguration.registered) {
+              switchFlow(populateNameMetadataFlow);
+            } else {
+              nextStep();
+            }
+          },
         };
-
-        ensMetadataConfiguration = {
-          ...payload.ensMetadata,
-        };
-
-        if (ensConfiguration.registered) {
-          switchFlow(populateNameMetadataFlow);
-        } else {
-          nextStep();
-        }
       },
     },
     {
@@ -89,23 +92,23 @@
       props: () => {
         return {
           ensConfiguration,
-        };
-      },
-      onSubmit: (payload: SubmitPayload) => {
-        if (!payload.ensNameConfiguration?.minAge) {
-          throw new error.Error({
-            message:
-              "Expected ConfirmName step to return ensNameConfiguration with minAge",
-            details: { payload },
-          });
-        }
+          onSubmit: (payload: SubmitPayload) => {
+            if (!payload.ensNameConfiguration?.minAge) {
+              throw new error.Error({
+                message:
+                  "Expected ConfirmName step to return ensNameConfiguration with minAge",
+                details: { payload },
+              });
+            }
 
-        ensConfiguration = {
-          ...ensConfiguration,
-          ...payload.ensNameConfiguration,
-        };
+            ensConfiguration = {
+              ...ensConfiguration,
+              ...payload.ensNameConfiguration,
+            };
 
-        nextStep();
+            nextStep();
+          },
+        };
       },
     },
     {
@@ -113,6 +116,7 @@
       props: () => {
         return {
           ensConfiguration,
+          onSubmit: nextStep,
         };
       },
     },
@@ -121,6 +125,7 @@
       props: () => {
         return {
           ensConfiguration,
+          onSubmit: nextStep,
         };
       },
     },
@@ -129,10 +134,10 @@
       props: () => {
         return {
           ensConfiguration,
+          onSubmit: () => {
+            switchFlow(populateNameMetadataFlow);
+          },
         };
-      },
-      onSubmit: () => {
-        switchFlow(populateNameMetadataFlow);
       },
     },
   ];
@@ -145,40 +150,43 @@
           ensMetadataConfiguration,
           ensConfiguration,
           orgAddress,
-        };
-      },
-      onSubmit: (payload: SubmitPayload) => {
-        if (!payload.ensMetadata) {
-          throw new error.Error({
-            message: "Expected PopulateMetadata step to return ensMetadata",
-            details: { payload },
-          });
-        }
+          onSubmit: (payload: SubmitPayload) => {
+            if (!payload.ensMetadata) {
+              throw new error.Error({
+                message: "Expected PopulateMetadata step to return ensMetadata",
+                details: { payload },
+              });
+            }
 
-        ensMetadataConfiguration = {
-          ...payload.ensMetadata,
-        };
+            ensMetadataConfiguration = {
+              ...payload.ensMetadata,
+            };
 
-        nextStep();
+            nextStep();
+          },
+        };
       },
     },
     {
       component: UpdateMetadataSuccess,
       props: () => {
-        return { ensConfiguration };
-      },
-      onSubmit: () => {
-        // There's already a registration for the org, and that registration
-        // has the same name as that entered in the name entry step, so we can
-        // skip linking.
-        if (
-          registration &&
-          registration.name === `${ensConfiguration.name}.${ensResolver.DOMAIN}`
-        ) {
-          onEntireFlowFinished();
-        } else {
-          switchFlow(linkRegistrationFlow);
-        }
+        return {
+          ensConfiguration,
+          onSubmit: () => {
+            // There's already a registration for the org, and that
+            // registration has the same name as that entered in the name entry
+            // step, so we can skip linking.
+            if (
+              registration &&
+              registration.name ===
+                `${ensConfiguration.name}.${ensResolver.DOMAIN}`
+            ) {
+              onFlowFinished();
+            } else {
+              switchFlow(linkRegistrationFlow);
+            }
+          },
+        };
       },
     },
   ];
@@ -191,13 +199,14 @@
           ensMetadataConfiguration,
           ensConfiguration,
           safeAddress,
+          onSubmit: nextStep,
         };
       },
     },
     {
       component: LinkOrgToNameSuccess,
       props: () => {
-        return { safeAddress, ensConfiguration };
+        return { safeAddress, ensConfiguration, onSubmit: nextStep };
       },
     },
   ];
@@ -209,7 +218,7 @@
     if (currentFlow[currentStepIndex + 1]) {
       currentStepIndex += 1;
     } else {
-      onEntireFlowFinished();
+      onFlowFinished();
     }
   }
 
@@ -218,7 +227,7 @@
     currentStepIndex = 0;
   }
 
-  function onEntireFlowFinished(): void {
+  function onFlowFinished(): void {
     modal.hide();
   }
 </script>
@@ -232,9 +241,6 @@
 
 <Modal>
   <div class="content">
-    <svelte:component
-      this={currentStep.component}
-      {...currentStep.props()}
-      onSubmit={currentStep.onSubmit || nextStep} />
+    <svelte:component this={currentStep.component} {...currentStep.props()} />
   </div>
 </Modal>
