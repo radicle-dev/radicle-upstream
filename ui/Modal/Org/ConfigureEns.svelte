@@ -80,7 +80,7 @@
         if (ensConfiguration.registered) {
           switchFlow(populateNameMetadataFlow);
         } else {
-          goForward();
+          nextStep();
         }
       },
     },
@@ -105,7 +105,7 @@
           ...payload.ensNameConfiguration,
         };
 
-        goForward();
+        nextStep();
       },
     },
     {
@@ -159,7 +159,7 @@
           ...payload.ensMetadata,
         };
 
-        goForward();
+        nextStep();
       },
     },
     {
@@ -175,7 +175,7 @@
           registration &&
           registration.name === `${ensConfiguration.name}.${ensResolver.DOMAIN}`
         ) {
-          onSuccess();
+          onEntireFlowFinished();
         } else {
           switchFlow(linkRegistrationFlow);
         }
@@ -202,29 +202,24 @@
     },
   ];
 
-  const onSuccess = () => {
-    modal.hide();
-  };
-
   let currentFlow: Step[] = createNameFlow;
-
   $: currentStep = currentFlow[currentStepIndex];
 
-  function goForward() {
+  function nextStep() {
     if (currentFlow[currentStepIndex + 1]) {
       currentStepIndex += 1;
     } else {
-      onSuccess();
+      onEntireFlowFinished();
     }
-  }
-
-  function goToStep(stepNumber: number) {
-    currentStepIndex = stepNumber;
   }
 
   function switchFlow(flow: Step[]) {
     currentFlow = flow;
-    goToStep(0);
+    currentStepIndex = 0;
+  }
+
+  function onEntireFlowFinished(): void {
+    modal.hide();
   }
 </script>
 
@@ -236,10 +231,10 @@
 </style>
 
 <Modal>
-  <div class="content" style="position: relative">
+  <div class="content">
     <svelte:component
       this={currentStep.component}
       {...currentStep.props()}
-      onSubmit={currentStep.onSubmit || goForward} />
+      onSubmit={currentStep.onSubmit || nextStep} />
   </div>
 </Modal>
