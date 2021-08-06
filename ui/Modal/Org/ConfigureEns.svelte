@@ -168,7 +168,17 @@
         return { ensConfiguration };
       },
       onSubmit: () => {
-        switchFlow(linkRegistrationFlow);
+        // There's already a registration for the org, and that registration
+        // has the same name as that entered in the name entry step, so we can
+        // skip linking.
+        if (
+          registration &&
+          registration.name === `${ensConfiguration.name}.radicle.eth`
+        ) {
+          onSuccess();
+        } else {
+          switchFlow(linkRegistrationFlow);
+        }
       },
     },
   ];
@@ -178,7 +188,6 @@
       component: LinkOrgToName,
       props: () => {
         return {
-          registration,
           ensMetadataConfiguration,
           ensConfiguration,
           safeAddress,
@@ -188,7 +197,7 @@
     {
       component: LinkOrgToNameSuccess,
       props: () => {
-        return { registration, safeAddress, ensConfiguration };
+        return { safeAddress, ensConfiguration };
       },
     },
   ];

@@ -6,13 +6,10 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { onMount } from "svelte";
-
   import * as error from "ui/src/error";
   import Emoji from "ui/DesignSystem/Emoji.svelte";
   import TextInput from "ui/DesignSystem/TextInput.svelte";
   import * as org from "ui/src/org";
-  import type { Registration } from "ui/src/org/ensResolver";
 
   import type { EnsConfiguration, EnsMetadataPayload } from "./ens-flow.types";
 
@@ -20,27 +17,12 @@
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
 
   export let onSubmit: () => void = () => {};
-  export let registration: Registration | undefined = undefined;
   export let ensConfiguration: EnsConfiguration;
   export let ensMetadataConfiguration: EnsMetadataPayload;
   export let safeAddress: string | undefined = undefined;
 
   let buttonsDisabled = false;
   let submitButtonCopy = "Link organization to name";
-
-  onMount(() => {
-    /*
-    There's already a registration for the org, and that
-    registration has the same name as that entered in the name
-    entry step, so we can skip linking.
-    */
-    if (
-      registration &&
-      registration.name === `${ensConfiguration.name}.radicle.eth`
-    ) {
-      onSubmit();
-    }
-  });
 
   async function linkSingleSig() {
     buttonsDisabled = true;

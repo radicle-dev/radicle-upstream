@@ -6,11 +6,9 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { onMount } from "svelte";
   import Emoji from "ui/DesignSystem/Emoji.svelte";
 
   import type { EnsConfiguration } from "./ens-flow.types";
-  import type { Registration } from "ui/src/org/ensResolver";
   import * as org from "ui/src/org";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
@@ -18,22 +16,7 @@
 
   export let onSubmit: () => void = () => {};
   export let safeAddress: string | undefined = undefined;
-  export let registration: Registration | undefined = undefined;
   export let ensConfiguration: EnsConfiguration;
-
-  onMount(() => {
-    /*
-    There's already a registration for the org, and that
-    registration has the same name as that entered in the name
-    entry step, so we can skip linking.
-    */
-    if (
-      registration &&
-      registration.name === `${ensConfiguration.name}.radicle.eth`
-    ) {
-      onSubmit();
-    }
-  });
 </script>
 
 <div>
