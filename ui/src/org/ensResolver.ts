@@ -4,14 +4,15 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { ethers } from "ethers";
 import type { EnsResolver } from "@ethersproject/providers";
+import type { TransactionResponse } from "./contract";
+
+import { ethers } from "ethers";
+import { ENS__factory as EnsFactory } from "radicle-contracts/build/contract-bindings/ethers";
+
+import * as error from "ui/src/error";
 import * as svelteStore from "ui/src/svelteStore";
 import * as wallet from "ui/src/wallet";
-import type { TransactionResponse } from "./contract";
-import * as error from "ui/src/error";
-
-import { ENS__factory } from "radicle-contracts/build/contract-bindings/ethers";
 
 const walletStore = svelteStore.get(wallet.store);
 
@@ -23,7 +24,18 @@ const resolverAbi = [
 
 export type EnsRecord = { name: string; value: string };
 
-async function setRecords(
+export interface Registration {
+  name: string;
+  owner: string;
+  address: string | null;
+  url: string | null;
+  avatar: string | null;
+  twitter: string | null;
+  github: string | null;
+  resolver: EnsResolver;
+}
+
+export async function setRecords(
   name: string,
   resolver: EnsResolver,
   records: EnsRecord[]
@@ -69,18 +81,9 @@ async function setRecords(
   return resolverContract.multicall(calls);
 }
 
-export interface Registration {
-  name: string;
-  owner: string;
-  address: string | null;
-  url: string | null;
-  avatar: string | null;
-  twitter: string | null;
-  github: string | null;
-  resolver: EnsResolver;
-}
-
-async function getRegistration(name: string): Promise<Registration | null> {
+export async function getRegistration(
+  name: string
+): Promise<Registration | null> {
   const resolver = await walletStore.provider.getResolver(name);
 
   if (!resolver) {
@@ -125,10 +128,8 @@ async function getOwner(name: string): Promise<string> {
     });
   }
 
-  const registry = ENS__factory.connect(ensAddr, walletStore.signer);
+  const registry = EnsFactory.connect(ensAddr, walletStore.signer);
   const owner = await registry.owner(ethers.utils.namehash(name));
 
   return owner;
 }
-
-export { getRegistration, setRecords };
