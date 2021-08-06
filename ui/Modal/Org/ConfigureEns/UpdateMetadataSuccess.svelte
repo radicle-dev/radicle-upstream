@@ -13,7 +13,7 @@
   import { Emoji } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
 
   export let onSubmit: () => void = () => {};
   export let ensConfiguration: EnsConfiguration;
@@ -21,8 +21,10 @@
 
 <div>
   <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
-  <HeadlineAndDescription
-    headline="Metadata successfully updated"
-    description={`Great, your name ${ensConfiguration.name}.${ensResolver.DOMAIN} has successfully been updated with your supplied metadata.`} />
+  <Header
+    title="Metadata successfully updated"
+    description={`Great, your name ` +
+      `${ensConfiguration.name}.${ensResolver.DOMAIN} has successfully been ` +
+      `updated with your supplied metadata.`} />
   <ButtonRow {onSubmit} canCancel={false} confirmCopy="Continue" />
 </div>

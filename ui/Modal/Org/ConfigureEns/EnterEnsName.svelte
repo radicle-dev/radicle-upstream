@@ -14,7 +14,7 @@
   import { TextInput } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
 
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
@@ -100,8 +100,8 @@
 </script>
 
 <div>
-  <HeadlineAndDescription
-    headline="Let’s name your organization"
+  <Header
+    title="Let’s name your organization"
     description="What should your organization be called?" />
   <TextInput
     bind:value={name}

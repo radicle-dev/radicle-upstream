@@ -10,7 +10,7 @@
   import { ethers } from "ethers";
   import type { EnsConfiguration, SubmitPayload } from "./ens-flow.types";
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
   import * as wallet from "ui/src/wallet";
   import * as svelteStore from "ui/src/svelteStore";
   import { commit } from "ui/src/org/ensRegistrar";
@@ -58,7 +58,8 @@
 
       throw new error.Error({
         message:
-          "Transaction failed. Please try again and confirm the signature & transaction in your connected wallet.",
+          "Transaction failed. Please try again and confirm the signature & " +
+          "transaction in your connected wallet.",
         source: err,
       });
     }
@@ -66,13 +67,11 @@
 </script>
 
 <div>
-  <HeadlineAndDescription
-    headline="Let’s name your organization"
-    description={`${ensConfiguration.name}.${
-      ensResolver.DOMAIN
-    } is available for registration for ${formatFee(
-      ensConfiguration.fee
-    )} RAD.`} />
+  <Header
+    title="Let’s name your organization"
+    description={`${ensConfiguration.name}.${ensResolver.DOMAIN} is ` +
+      `available for registration for ${formatFee(ensConfiguration.fee)} ` +
+      `RAD.`} />
   <ButtonRow
     disableButtons={buttonsDisabled}
     confirmCopy={confirmButtonCopy}

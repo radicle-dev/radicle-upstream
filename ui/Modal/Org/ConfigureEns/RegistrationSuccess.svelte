@@ -11,7 +11,7 @@
   import { Emoji } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
 
   export let onSubmit: () => void = () => {};
   export let ensConfiguration: EnsConfiguration;
@@ -19,9 +19,12 @@
 
 <div>
   <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
-  <HeadlineAndDescription
-    headline="Registration complete"
-    description={`Congratulations, ${ensConfiguration.name}.${ensResolver.DOMAIN} has successfully been registered with your wallet. Next, let's populate your name with organization metadata.`} />
+  <Header
+    title="Registration complete"
+    description={`Congratulations, ` +
+      `${ensConfiguration.name}.${ensResolver.DOMAIN} has successfully been ` +
+      `registered with your wallet. Next, let's populate your name with ` +
+      `organization metadata.`} />
   <p
     style="color: var(--color-foreground-level-5; margin: 16px 0;"
     class="typo-text-small">

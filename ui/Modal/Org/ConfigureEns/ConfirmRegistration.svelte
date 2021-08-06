@@ -13,7 +13,7 @@
   import * as error from "ui/src/error";
   import * as wallet from "ui/src/wallet";
   import * as svelteStore from "ui/src/svelteStore";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
 
   const walletStore = svelteStore.get(wallet.store);
 
@@ -46,9 +46,11 @@
 </script>
 
 <div>
-  <HeadlineAndDescription
-    headline="Almost done"
-    description={`With this last transaction, you’re confirming the registration of your new ENS name ${ensConfiguration.name}.${ensResolver.DOMAIN}.`} />
+  <Header
+    title="Almost done"
+    description={`With this last transaction, you’re confirming the ` +
+      `registration of your new ENS name ` +
+      `${ensConfiguration.name}.${ensResolver.DOMAIN}.`} />
   <ButtonRow
     disableButtons={buttonsDisabled}
     onSubmit={handleSubmit}

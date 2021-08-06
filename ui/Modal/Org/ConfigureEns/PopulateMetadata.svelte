@@ -25,7 +25,7 @@
   import { TextInput, Tooltip } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
 
   const walletStore = svelteStore.get(wallet.store);
 
@@ -223,13 +223,17 @@
 </script>
 
 <div>
-  <HeadlineAndDescription
-    headline="Set your name's metadata"
-    description="This following information will be saved alongside your ENS name, and appears together with your organization across Radicle once linked. You can edit it any time by clicking “Edit ENS name” on the organization page."
+  <Header
+    title="Set your name's metadata"
+    description={"This following information will be saved alongside your " +
+      "ENS name, and appears together with your organization across Radicle " +
+      "once linked. You can edit it any time by clicking “Edit ENS name” on " +
+      "the organization page."}
     style="margin-bottom: 24px" />
 
   <Tooltip
-    value="This is the address of your organization and is required to link your ENS name to it."
+    value={"This is the address of your organization and is required to " +
+      "link your ENS name to it."}
     position={style.CSSPosition.Top}>
     <TextInput
       label="Organization address"

@@ -6,10 +6,9 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  export let headline: string;
-
+  export let title: string;
   export let description: string;
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>
@@ -23,6 +22,6 @@
 </style>
 
 <div {style}>
-  <h1>{headline}</h1>
+  <h1>{title}</h1>
   <p>{description}</p>
 </div>

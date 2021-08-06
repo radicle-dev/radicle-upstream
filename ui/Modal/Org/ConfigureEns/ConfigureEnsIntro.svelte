@@ -9,14 +9,15 @@
   import * as ensResolver from "ui/src/org/ensResolver";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
 
   export let onSubmit: () => void = () => {};
 </script>
 
 <div>
-  <HeadlineAndDescription
-    headline={`Register your ${ensResolver.DOMAIN} name`}
-    description={`Your ${ensResolver.DOMAIN} ENS name allows linking your organization with a name, logo, URL and social media profiles.`} />
+  <Header
+    title={`Register your ${ensResolver.DOMAIN} name`}
+    description={`Your ${ensResolver.DOMAIN} ENS name allows linking your ` +
+      `organization with a name, logo, URL and social media profiles.`} />
   <ButtonRow {onSubmit} />
 </div>

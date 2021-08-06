@@ -15,7 +15,7 @@
   import { Emoji, TextInput } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
+  import Header from "./shared/Header.svelte";
 
   export let onSubmit: () => void = () => {};
   export let ensConfiguration: EnsConfiguration;
@@ -79,10 +79,12 @@
 
 <div>
   <Emoji emoji="🔗" size="huge" style="margin-bottom: 16px" />
-  <HeadlineAndDescription
-    headline="Let’s link your name"
+  <Header
+    title="Let’s link your name"
     style="margin-bottom: 24px"
-    description={`In this last step, we’re updating your organization to point towards your newly created name. Once that’s done, your organization will appear with your new name across Radicle!`} />
+    description={`In this last step, we’re updating your organization to ` +
+      `point towards your newly created name. Once that’s done, your ` +
+      `organization will appear with your new name across Radicle!`} />
 
   <TextInput
     label="Organization address"
