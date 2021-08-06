@@ -16,6 +16,13 @@
   export let ownerAddress: string;
   export let threshold: number | undefined = undefined;
   export let registration: Registration | undefined = undefined;
+
+  $: websiteUrl = registration?.url;
+  $: githubUrl =
+    registration?.github && `https://github.com/${registration.github}`;
+  $: twitterUrl =
+    registration?.twitter &&
+    `https://twitter.com/${registration.twitter.replace("@", "")}`;
 </script>
 
 <style>
@@ -25,6 +32,7 @@
     align-self: center;
     width: -webkit-fill-available;
     min-width: 0;
+    white-space: nowrap;
   }
   .name {
     margin-bottom: 0.5rem;
@@ -61,26 +69,46 @@
         {style.ellipsed(orgAddress)}
       {/if}
     </h1>
-    <div class="row">
-      {#if threshold}
-        <Icon.Gnosis />
-      {:else}
-        <Icon.Ethereum />
+    <div style="display: flex; gap: 1rem;">
+      {#if websiteUrl || githubUrl || twitterUrl}
+        <div>
+          {#if websiteUrl}
+            <div class="row">
+              <Icon.Globe />
+              <a href={websiteUrl}>{websiteUrl}</a>
+            </div>
+          {/if}
+          {#if githubUrl}
+            <div class="row">
+              <Icon.Github />
+              <a href={githubUrl}>{githubUrl}</a>
+            </div>
+          {/if}
+          {#if twitterUrl}
+            <div class="row">
+              <Icon.Twitter />
+              <a href={twitterUrl}>{twitterUrl}</a>
+            </div>
+          {/if}
+        </div>
       {/if}
-      {style.ellipsed(ownerAddress)}
+      <div>
+        <div class="row">
+          {#if threshold}
+            <Icon.Gnosis />
+          {:else}
+            <Icon.Ethereum />
+          {/if}
+          {style.ellipsed(ownerAddress)}
+        </div>
+        {#if threshold}
+          <div class="row">
+            <Icon.Orgs />
+            {threshold}
+            {threshold === 1 ? "signature" : "signatures"} required for quorum
+          </div>
+        {/if}
+      </div>
     </div>
-    {#if threshold}
-      <div class="row">
-        <Icon.Orgs />
-        {threshold}
-        {threshold === 1 ? "signature" : "signatures"} required for quorum
-      </div>
-    {/if}
-    {#if registration?.url}
-      <div class="row">
-        <Icon.Globe />
-        <a href={registration.url}>{registration.url}</a>
-      </div>
-    {/if}
   </div>
 </div>

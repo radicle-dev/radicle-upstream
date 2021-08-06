@@ -47,6 +47,7 @@ import EyeOpen from "./EyeOpen.svelte";
 import File from "./File.svelte";
 import Folder from "./Folder.svelte";
 import Fork from "./Fork.svelte";
+import Github from "./Github.svelte";
 import Globe from "./Globe.svelte";
 import Gnosis from "./Gnosis.svelte";
 import Heart from "./Heart.svelte";
@@ -78,6 +79,7 @@ import TokenStreams from "./TokenStreams.svelte";
 import Topup from "./Topup.svelte";
 import Transactions from "./Transactions.svelte";
 import Trash from "./Trash.svelte";
+import Twitter from "./Twitter.svelte";
 import User from "./User.svelte";
 import Wallet from "./Wallet.svelte";
 import Withdraw from "./Withdraw.svelte";
@@ -126,6 +128,7 @@ export default {
   File,
   Folder,
   Fork,
+  Github,
   Globe,
   Gnosis,
   Heart,
@@ -157,6 +160,7 @@ export default {
   Topup,
   Transactions,
   Trash,
+  Twitter,
   User,
   Wallet,
   Withdraw,
