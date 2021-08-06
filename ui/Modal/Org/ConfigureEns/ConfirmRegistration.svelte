@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import { register } from "ui/src/org/ensRegistrar";
-  import type { EnsConfiguration } from "../ens-flow.types";
+  import type { EnsConfiguration } from "./ens-flow.types";
   import ButtonRow from "./shared/ButtonRow.svelte";
   import * as error from "ui/src/error";
   import * as wallet from "ui/src/wallet";

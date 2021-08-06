@@ -8,7 +8,7 @@
 <script lang="typescript">
   import type { BigNumber } from "@ethersproject/bignumber";
   import { ethers } from "ethers";
-  import type { EnsConfiguration, SubmitPayload } from "../ens-flow.types";
+  import type { EnsConfiguration, SubmitPayload } from "./ens-flow.types";
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
   import * as wallet from "ui/src/wallet";

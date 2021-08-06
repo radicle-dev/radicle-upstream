@@ -11,7 +11,7 @@
     EnsConfiguration,
     EnsMetadataPayload,
     SubmitPayload,
-  } from "../ens-flow.types";
+  } from "./ens-flow.types";
   import type { ValidationState } from "ui/src/validation";
 
   import { onMount } from "svelte";

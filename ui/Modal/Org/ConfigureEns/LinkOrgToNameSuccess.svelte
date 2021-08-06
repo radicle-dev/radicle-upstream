@@ -9,7 +9,7 @@
   import { onMount } from "svelte";
   import Emoji from "ui/DesignSystem/Emoji.svelte";
 
-  import type { EnsConfiguration } from "../ens-flow.types";
+  import type { EnsConfiguration } from "./ens-flow.types";
   import type { Registration } from "ui/src/org/ensResolver";
   import * as org from "ui/src/org";
 

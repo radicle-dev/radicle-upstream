@@ -14,7 +14,7 @@
   import * as org from "ui/src/org";
   import type { Registration } from "ui/src/org/ensResolver";
 
-  import type { EnsConfiguration, EnsMetadataPayload } from "../ens-flow.types";
+  import type { EnsConfiguration, EnsMetadataPayload } from "./ens-flow.types";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";

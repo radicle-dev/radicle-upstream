@@ -6,6 +6,7 @@
 
 import type { BigNumber } from "ethers";
 import type { Registration } from "ui/src/org/ensResolver";
+
 export interface EnsConfiguration {
   owner: string;
   address: string;

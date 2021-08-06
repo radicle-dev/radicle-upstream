@@ -8,7 +8,7 @@
 <script lang="typescript">
   import Emoji from "ui/DesignSystem/Emoji.svelte";
 
-  import type { EnsConfiguration } from "../ens-flow.types";
+  import type { EnsConfiguration } from "./ens-flow.types";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";

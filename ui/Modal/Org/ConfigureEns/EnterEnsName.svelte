@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { EnsMetadataPayload, SubmitPayload } from "../ens-flow.types";
+  import type { EnsMetadataPayload, SubmitPayload } from "./ens-flow.types";
   import type { ValidationState } from "ui/src/validation";
 
   import * as svelteStore from "ui/src/svelteStore";
