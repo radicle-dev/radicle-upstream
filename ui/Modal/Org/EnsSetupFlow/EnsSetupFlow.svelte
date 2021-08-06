@@ -7,15 +7,16 @@
 -->
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
-
-  import * as error from "ui/src/error";
-  import * as modal from "ui/src/modal";
   import type {
     EnsConfiguration,
     EnsMetadataPayload,
     SubmitPayload,
   } from "./ens-flow.types";
   import type { Registration } from "ui/src/org/ensResolver";
+
+  import * as error from "ui/src/error";
+  import * as modal from "ui/src/modal";
+
   import Modal from "ui/DesignSystem/Modal.svelte";
 
   import ConfirmEnsName from "./steps/ConfirmEnsName.svelte";
@@ -32,6 +33,7 @@
   export let orgAddress: string;
   export let registration: Registration | undefined = undefined;
   export let safeAddress: string | undefined = undefined;
+  export let currentStepIndex: number = 0;
 
   interface Step {
     component: typeof SvelteComponent;
@@ -146,8 +148,6 @@
   const onSuccess = () => {
     modal.hide();
   };
-
-  export let currentStepIndex = 0;
 
   let currentFlow: Step[] = createNameFlow;
 
