@@ -62,7 +62,7 @@ function radToken(environment: ethereum.Environment) {
   );
 }
 
-async function checkAvailability(
+export async function checkAvailability(
   environment: ethereum.Environment,
   name: string
 ): Promise<{
@@ -82,7 +82,7 @@ async function checkAvailability(
   };
 }
 
-async function commit(
+export async function commit(
   environment: ethereum.Environment,
   name: string,
   salt: Uint8Array,
@@ -137,7 +137,7 @@ async function commit(
   };
 }
 
-async function register(
+export async function register(
   environment: ethereum.Environment,
   name: string,
   salt: Uint8Array
@@ -220,5 +220,3 @@ function createCommitment(
 
   return ethers.utils.keccak256(bytes);
 }
-
-export { checkAvailability, commit, register };
