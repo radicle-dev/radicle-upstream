@@ -6,13 +6,15 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { register } from "ui/src/org/ensRegistrar";
   import type { EnsConfiguration } from "./ens-flow.types";
-  import ButtonRow from "./shared/ButtonRow.svelte";
+
+  import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
-  import * as wallet from "ui/src/wallet";
   import * as svelteStore from "ui/src/svelteStore";
+  import * as wallet from "ui/src/wallet";
+
+  import ButtonRow from "./shared/ButtonRow.svelte";
   import Header from "./shared/Header.svelte";
 
   const walletStore = svelteStore.get(wallet.store);
@@ -30,7 +32,11 @@
     try {
       const salt = ensConfiguration.commitmentSalt;
 
-      await register(walletStore.environment, ensConfiguration.name, salt);
+      await ensRegistrar.register(
+        walletStore.environment,
+        ensConfiguration.name,
+        salt
+      );
 
       onSubmit();
     } catch (err) {

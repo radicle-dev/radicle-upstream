@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import Button from "ui/DesignSystem/Button.svelte";
   import * as modal from "ui/src/modal";
+  import { Button } from "ui/DesignSystem";
 
   export let canCancel: boolean = true;
   export let confirmCopy: string = "Confirm";

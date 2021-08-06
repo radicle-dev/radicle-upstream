@@ -6,11 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import Emoji from "ui/DesignSystem/Emoji.svelte";
-
   import type { EnsConfiguration } from "./ens-flow.types";
-  import * as org from "ui/src/org";
+
   import * as ensResolver from "ui/src/org/ensResolver";
+  import * as org from "ui/src/org";
+
+  import { Emoji } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import Header from "./shared/Header.svelte";

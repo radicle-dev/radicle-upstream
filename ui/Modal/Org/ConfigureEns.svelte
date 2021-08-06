@@ -19,16 +19,16 @@
 
   import Modal from "ui/DesignSystem/Modal.svelte";
 
-  import ConfirmEnsName from "./ConfigureEns/ConfirmEnsName.svelte";
   import ConfigureEnsIntro from "./ConfigureEns/ConfigureEnsIntro.svelte";
-  import EnterEnsName from "./ConfigureEns/EnterEnsName.svelte";
-  import WaitingToRegister from "./ConfigureEns/WaitingToRegister.svelte";
+  import ConfirmEnsName from "./ConfigureEns/ConfirmEnsName.svelte";
   import ConfirmRegistration from "./ConfigureEns/ConfirmRegistration.svelte";
-  import RegistrationSuccess from "./ConfigureEns/RegistrationSuccess.svelte";
-  import PopulateMetadata from "./ConfigureEns/PopulateMetadata.svelte";
-  import UpdateMetadataSuccess from "./ConfigureEns/UpdateMetadataSuccess.svelte";
+  import EnterEnsName from "./ConfigureEns/EnterEnsName.svelte";
   import LinkOrgToName from "./ConfigureEns/LinkOrgToName.svelte";
   import LinkOrgToNameSuccess from "./ConfigureEns/LinkOrgToNameSuccess.svelte";
+  import PopulateMetadata from "./ConfigureEns/PopulateMetadata.svelte";
+  import RegistrationSuccess from "./ConfigureEns/RegistrationSuccess.svelte";
+  import UpdateMetadataSuccess from "./ConfigureEns/UpdateMetadataSuccess.svelte";
+  import WaitingToRegister from "./ConfigureEns/WaitingToRegister.svelte";
 
   export let orgAddress: string;
   export let registration: ensResolver.Registration | undefined = undefined;

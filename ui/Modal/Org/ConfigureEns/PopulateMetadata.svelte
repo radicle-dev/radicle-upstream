@@ -11,7 +11,6 @@
     EnsMetadataPayload,
     SubmitPayload,
   } from "./ens-flow.types";
-  import type { ValidationState } from "ui/src/validation";
 
   import { onMount } from "svelte";
 
@@ -27,12 +26,12 @@
   import ButtonRow from "./shared/ButtonRow.svelte";
   import Header from "./shared/Header.svelte";
 
-  const walletStore = svelteStore.get(wallet.store);
-
   export let onSubmit: (payload: SubmitPayload) => void = () => {};
   export let ensMetadataConfiguration: EnsMetadataPayload | undefined;
   export let ensConfiguration: EnsConfiguration | undefined;
   export let orgAddress: string;
+
+  const walletStore = svelteStore.get(wallet.store);
 
   const name: string | undefined =
     ensConfiguration?.name || ensMetadataConfiguration?.name || undefined;
@@ -45,11 +44,11 @@
   let buttonsDisabled = true;
   let submitButtonCopy = "Update name metadata";
 
-  let validationStatus: ValidationState = {
+  let validationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.Loading,
   };
 
-  let addressValidationStatus: ValidationState = {
+  let addressValidationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
 

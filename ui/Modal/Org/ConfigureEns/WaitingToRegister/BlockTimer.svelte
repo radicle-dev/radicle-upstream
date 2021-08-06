@@ -6,15 +6,16 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as wallet from "ui/src/wallet";
-  import * as svelteStore from "ui/src/svelteStore";
   import { onDestroy } from "svelte";
 
-  const walletStore = svelteStore.get(wallet.store);
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as wallet from "ui/src/wallet";
 
   export let requiredBlocks = 5;
   export let startBlock: number = 0;
   export let onFinish: () => void = () => {};
+
+  const walletStore = svelteStore.get(wallet.store);
 
   let strokeDashOffset: number = 300;
 

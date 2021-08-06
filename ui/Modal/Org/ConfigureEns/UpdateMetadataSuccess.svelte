@@ -9,7 +9,6 @@
   import type { EnsConfiguration } from "./ens-flow.types";
 
   import * as ensResolver from "ui/src/org/ensResolver";
-
   import { Emoji } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";

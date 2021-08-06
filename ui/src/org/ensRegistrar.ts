@@ -4,16 +4,17 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
+
+import * as ethers from "ethers";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as svelteStore from "ui/src/svelteStore";
 import * as wallet from "ui/src/wallet";
-import { BigNumber, ethers } from "ethers";
-import type { WalletConnectSigner } from "../ethereum/walletConnectSigner";
 
 import {
-  Registrar__factory,
-  RadicleToken__factory,
+  Registrar__factory as RegistrarFactory,
+  RadicleToken__factory as RadicleTokenFactory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 const walletStore = svelteStore.get(wallet.store);
@@ -33,7 +34,7 @@ function registrarAddress(network: ethereum.Environment): string {
 }
 
 function registrar(environment: ethereum.Environment) {
-  return Registrar__factory.connect(
+  return RegistrarFactory.connect(
     registrarAddress(environment),
     walletStore.signer
   );
@@ -55,7 +56,7 @@ function radTokenAddress(network: ethereum.Environment): string {
 }
 
 function radToken(environment: ethereum.Environment) {
-  return RadicleToken__factory.connect(
+  return RadicleTokenFactory.connect(
     radTokenAddress(environment),
     walletStore.signer
   );
@@ -66,7 +67,7 @@ async function checkAvailability(
   name: string
 ): Promise<{
   available: boolean;
-  fee: BigNumber;
+  fee: ethers.BigNumber;
 }> {
   const r = registrar(environment);
 
@@ -85,7 +86,7 @@ async function commit(
   environment: ethereum.Environment,
   name: string,
   salt: Uint8Array,
-  fee: BigNumber
+  fee: ethers.BigNumber
 ): Promise<{
   receipt: ethers.providers.TransactionReceipt;
   minAge: number;
@@ -195,9 +196,9 @@ async function permitSignature(
     message: {
       owner: ownerAddr.toLowerCase(),
       spender: spenderAddr.toLowerCase(),
-      value: BigNumber.from(value).toString(),
-      nonce: BigNumber.from(nonce).toString(),
-      deadline: BigNumber.from(deadline).toString(),
+      value: ethers.BigNumber.from(value).toString(),
+      nonce: ethers.BigNumber.from(nonce).toString(),
+      deadline: ethers.BigNumber.from(deadline).toString(),
     },
   };
 

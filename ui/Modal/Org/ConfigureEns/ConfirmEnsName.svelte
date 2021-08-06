@@ -7,20 +7,23 @@
 -->
 <script lang="typescript">
   import type { BigNumber } from "@ethersproject/bignumber";
-  import { ethers } from "ethers";
   import type { EnsConfiguration, SubmitPayload } from "./ens-flow.types";
+
+  import { ethers } from "ethers";
+
   import ButtonRow from "./shared/ButtonRow.svelte";
   import Header from "./shared/Header.svelte";
-  import * as wallet from "ui/src/wallet";
-  import * as svelteStore from "ui/src/svelteStore";
-  import { commit } from "ui/src/org/ensRegistrar";
+
+  import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
-
-  const walletStore = svelteStore.get(wallet.store);
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as wallet from "ui/src/wallet";
 
   export let onSubmit: (payload: SubmitPayload) => void = () => {};
   export let ensConfiguration: EnsConfiguration;
+
+  const walletStore = svelteStore.get(wallet.store);
 
   let buttonsDisabled = false;
   let confirmButtonCopy = "Begin registration";
@@ -38,7 +41,7 @@
     try {
       const salt = ethers.utils.randomBytes(32);
 
-      const commitResult = await commit(
+      const commitResult = await ensRegistrar.commit(
         walletStore.environment,
         ensConfiguration.name,
         salt,
