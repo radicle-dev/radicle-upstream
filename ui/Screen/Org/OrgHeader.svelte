@@ -8,18 +8,16 @@
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
   import { Avatar, Icon } from "ui/DesignSystem";
-  import type { Registration } from "ui/src/org/ensResolver";
 
+  import * as ensResolver from "ui/src/org/ensResolver";
   import * as style from "ui/src/style";
 
   export let orgAddress: string;
   export let ownerAddress: string;
   export let threshold: number | undefined = undefined;
-  export let registration: Registration | undefined = undefined;
+  export let registration: ensResolver.Registration | undefined = undefined;
 
-  const subdomain = ".radicle.eth";
-
-  $: name = registration?.name.replace(subdomain, "");
+  $: name = registration?.name.replace(`.${ensResolver.DOMAIN}`, "");
   $: websiteUrl = registration?.url;
   $: githubUrl =
     registration?.github && `https://github.com/${registration.github}`;
@@ -46,7 +44,7 @@
   .name {
     margin-bottom: 0.5rem;
   }
-  .subdomain {
+  .domain {
     color: var(--color-foreground-level-4);
   }
 </style>
@@ -65,7 +63,7 @@
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
       {#if name}
-        {name}<span class="subdomain">{subdomain}</span>
+        {name}<span class="domain">{ensResolver.DOMAIN}</span>
       {:else}
         {style.ellipsed(orgAddress)}
       {/if}

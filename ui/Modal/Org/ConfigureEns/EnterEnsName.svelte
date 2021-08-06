@@ -7,16 +7,18 @@
 -->
 <script lang="typescript">
   import type { EnsMetadataPayload, SubmitPayload } from "./ens-flow.types";
-  import type { ValidationState } from "ui/src/validation";
 
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
+
+  import { TextInput } from "ui/DesignSystem";
+
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
-  import TextInput from "ui/DesignSystem/TextInput.svelte";
-  import { ValidationStatus } from "ui/src/validation";
-  import { checkAvailability } from "ui/src/org/ensRegistrar";
-  import { getRegistration } from "ui/src/org/ensResolver";
+
+  import * as ensRegistrar from "ui/src/org/ensRegistrar";
+  import * as ensResolver from "ui/src/org/ensResolver";
+  import * as validation from "ui/src/validation";
 
   export let onSubmit: (payload: SubmitPayload) => void = () => {};
   export let ensMetadataConfiguration: EnsMetadataPayload | undefined;
@@ -24,7 +26,7 @@
   let name: string;
   if (ensMetadataConfiguration && ensMetadataConfiguration.name) {
     const existingName = ensMetadataConfiguration.name.replace(
-      ".radicle.eth",
+      `.${ensResolver.DOMAIN}`,
       ""
     );
     if (existingName.length > 0) {
@@ -32,8 +34,8 @@
     }
   }
 
-  let validationStatus: ValidationState = {
-    status: ValidationStatus.NotStarted,
+  let validationStatus: validation.ValidationState = {
+    status: validation.ValidationStatus.NotStarted,
   };
 
   const walletStore = svelteStore.get(wallet.store);
@@ -41,17 +43,17 @@
   async function handleSubmit() {
     if (!name) {
       validationStatus = {
-        status: ValidationStatus.Error,
+        status: validation.ValidationStatus.Error,
         message: "This field is required.",
       };
       return;
     }
 
     validationStatus = {
-      status: ValidationStatus.Loading,
+      status: validation.ValidationStatus.Loading,
     };
 
-    const { available, fee } = await checkAvailability(
+    const { available, fee } = await ensRegistrar.checkAvailability(
       walletStore.environment,
       name
     );
@@ -64,7 +66,9 @@
         },
       });
     } else {
-      const registration = await getRegistration(`${name}.radicle.eth`);
+      const registration = await ensResolver.getRegistration(
+        `${name}.${ensResolver.DOMAIN}`
+      );
 
       if (registration && registration.owner === walletStore.getAddress()) {
         onSubmit({
@@ -80,7 +84,7 @@
       }
 
       validationStatus = {
-        status: ValidationStatus.Error,
+        status: validation.ValidationStatus.Error,
         message: "Sorry, but that name is already taken.",
       };
     }
@@ -90,7 +94,7 @@
   $: {
     name;
     validationStatus = {
-      status: ValidationStatus.NotStarted,
+      status: validation.ValidationStatus.NotStarted,
     };
   }
 </script>
@@ -102,7 +106,7 @@
   <TextInput
     bind:value={name}
     validation={validationStatus}
-    suffix=".radicle.eth"
+    suffix={`.${ensResolver.DOMAIN}`}
     placeholder="Your organization name"
     style="margin: 16px auto; width: 352px;" />
   <ButtonRow onSubmit={handleSubmit} confirmCopy="Continue" />

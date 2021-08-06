@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import * as ensResolver from "ui/src/org/ensResolver";
+
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
 
@@ -14,7 +16,7 @@
 
 <div>
   <HeadlineAndDescription
-    headline="Register your radicle.eth name"
-    description="Your radicle.eth ENS name allows linking your organization with a name, logo, URL and social media profiles." />
+    headline={`Register your ${ensResolver.DOMAIN} name`}
+    description={`Your ${ensResolver.DOMAIN} ENS name allows linking your organization with a name, logo, URL and social media profiles.`} />
   <ButtonRow {onSubmit} />
 </div>

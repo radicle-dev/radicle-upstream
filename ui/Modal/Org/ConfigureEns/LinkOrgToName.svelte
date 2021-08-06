@@ -6,12 +6,13 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { EnsConfiguration, EnsMetadataPayload } from "./ens-flow.types";
+
+  import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
-  import Emoji from "ui/DesignSystem/Emoji.svelte";
-  import TextInput from "ui/DesignSystem/TextInput.svelte";
   import * as org from "ui/src/org";
 
-  import type { EnsConfiguration, EnsMetadataPayload } from "./ens-flow.types";
+  import { Emoji, TextInput } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
@@ -36,7 +37,7 @@
     }
     try {
       await org.setSingleSigName(
-        `${ensConfiguration.name}.radicle.eth`,
+        `${ensConfiguration.name}.${ensResolver.DOMAIN}`,
         ensMetadataConfiguration.address
       );
 
@@ -67,7 +68,7 @@
       });
     }
     await org.setNameMultisig(
-      `${ensConfiguration.name}.radicle.eth`,
+      `${ensConfiguration.name}.${ensResolver.DOMAIN}`,
       ensMetadataConfiguration.address,
       safeAddress
     );
@@ -93,7 +94,7 @@
     label="Name"
     disabled
     style="margin-bottom: 24px"
-    value={`${ensConfiguration.name}.radicle.eth`} />
+    value={`${ensConfiguration.name}.${ensResolver.DOMAIN}`} />
 
   <p
     style="color: var(--color-foreground-level-5; margin: 16px 0;"

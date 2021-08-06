@@ -22,6 +22,7 @@ const resolverAbi = [
   "function setText(bytes32 node, string calldata key, string calldata value)",
 ];
 
+export const DOMAIN = "radicle.eth";
 export type EnsRecord = { name: string; value: string };
 
 export interface Registration {
@@ -45,7 +46,7 @@ export async function setRecords(
     resolverAbi,
     walletStore.signer
   );
-  const node = ethers.utils.namehash(`${name}.radicle.eth`);
+  const node = ethers.utils.namehash(`${name}.${DOMAIN}`);
 
   const calls = [];
   const iface = new ethers.utils.Interface(resolverAbi);

@@ -14,6 +14,7 @@
   import * as wallet from "ui/src/wallet";
   import * as svelteStore from "ui/src/svelteStore";
   import { commit } from "ui/src/org/ensRegistrar";
+  import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
 
   const walletStore = svelteStore.get(wallet.store);
@@ -67,9 +68,9 @@
 <div>
   <HeadlineAndDescription
     headline="Let’s name your organization"
-    description={`${
-      ensConfiguration.name
-    }.radicle.eth is available for registration for ${formatFee(
+    description={`${ensConfiguration.name}.${
+      ensResolver.DOMAIN
+    } is available for registration for ${formatFee(
       ensConfiguration.fee
     )} RAD.`} />
   <ButtonRow

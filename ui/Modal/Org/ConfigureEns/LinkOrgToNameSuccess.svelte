@@ -10,6 +10,7 @@
 
   import type { EnsConfiguration } from "./ens-flow.types";
   import * as org from "ui/src/org";
+  import * as ensResolver from "ui/src/org/ensResolver";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
@@ -36,7 +37,7 @@
     <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
     <HeadlineAndDescription
       headline="That's it!"
-      description={`Great, your organization now points to your new name ${ensConfiguration.name}.radicle.eth. Shortly, your name will start appearing across Radicle in place of your organization address!`} />
+      description={`Great, your organization now points to your new name ${ensConfiguration.name}.${ensResolver.DOMAIN}. Shortly, your name will start appearing across Radicle in place of your organization address!`} />
     <ButtonRow {onSubmit} canCancel={false} confirmCopy="Amazing, thanks!" />
   {/if}
 </div>

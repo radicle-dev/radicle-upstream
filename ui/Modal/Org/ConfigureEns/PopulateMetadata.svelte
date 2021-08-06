@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { EnsRecord, Registration } from "ui/src/org/ensResolver";
   import type {
     EnsConfiguration,
     EnsMetadataPayload,
@@ -15,16 +14,15 @@
   import type { ValidationState } from "ui/src/validation";
 
   import { onMount } from "svelte";
-  import * as svelteStore from "ui/src/svelteStore";
+
+  import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as style from "ui/src/style";
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as validation from "ui/src/validation";
   import * as wallet from "ui/src/wallet";
-  import TextInput from "ui/DesignSystem/TextInput.svelte";
-  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
-  import { getRegistration, setRecords } from "ui/src/org/ensResolver";
-
-  import { CSSPosition } from "ui/src/style";
-  import { ValidationStatus } from "ui/src/validation";
+  import { TextInput, Tooltip } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
@@ -48,14 +46,14 @@
   let submitButtonCopy = "Update name metadata";
 
   let validationStatus: ValidationState = {
-    status: ValidationStatus.Loading,
+    status: validation.ValidationStatus.Loading,
   };
 
   let addressValidationStatus: ValidationState = {
-    status: ValidationStatus.NotStarted,
+    status: validation.ValidationStatus.NotStarted,
   };
 
-  let registration: Registration;
+  let registration: ensResolver.Registration;
 
   onMount(async () => {
     if (!ensConfiguration?.name && !ensMetadataConfiguration?.name) {
@@ -73,8 +71,8 @@
     already populated so we can skip fetching.
     */
     if (ensConfiguration && !ensMetadataConfiguration?.resolver) {
-      const registrationLookup = await getRegistration(
-        `${ensConfiguration.name}.radicle.eth`
+      const registrationLookup = await ensResolver.getRegistration(
+        `${ensConfiguration.name}.${ensResolver.DOMAIN}`
       );
 
       if (!registrationLookup) {
@@ -110,7 +108,7 @@
       registration.address?.toLowerCase() !== addressValue?.toLowerCase()
     ) {
       addressValidationStatus = {
-        status: ValidationStatus.Error,
+        status: validation.ValidationStatus.Error,
         message: `This name is currently pointing to an organization with address ${registration.address}.
           Updating metadata will overwrite the existing organization link for this name.`,
       };
@@ -118,7 +116,7 @@
 
     buttonsDisabled = false;
     validationStatus = {
-      status: ValidationStatus.NotStarted,
+      status: validation.ValidationStatus.NotStarted,
     };
   });
 
@@ -159,7 +157,10 @@
     submitButtonCopy = "Waiting for transaction confirmation...";
 
     try {
-      let records: { name: keyof Registration; value: string | undefined }[] = [
+      let records: {
+        name: keyof ensResolver.Registration;
+        value: string | undefined;
+      }[] = [
         { name: "address", value: addressValue },
         { name: "url", value: urlValue },
         { name: "avatar", value: avatarValue },
@@ -193,7 +194,11 @@
       });
 
       if (records.length > 0) {
-        await setRecords(name, registration.resolver, records as EnsRecord[]);
+        await ensResolver.setRecords(
+          name,
+          registration.resolver,
+          records as ensResolver.EnsRecord[]
+        );
       }
 
       onSubmit({
@@ -225,7 +230,7 @@
 
   <Tooltip
     value="This is the address of your organization and is required to link your ENS name to it."
-    position={CSSPosition.Top}>
+    position={style.CSSPosition.Top}>
     <TextInput
       label="Organization address"
       style="margin-bottom: 24px"

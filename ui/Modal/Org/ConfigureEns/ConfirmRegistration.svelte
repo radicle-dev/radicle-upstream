@@ -9,6 +9,7 @@
   import { register } from "ui/src/org/ensRegistrar";
   import type { EnsConfiguration } from "./ens-flow.types";
   import ButtonRow from "./shared/ButtonRow.svelte";
+  import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as wallet from "ui/src/wallet";
   import * as svelteStore from "ui/src/svelteStore";
@@ -47,7 +48,7 @@
 <div>
   <HeadlineAndDescription
     headline="Almost done"
-    description={`With this last transaction, you’re confirming the registration of your new ENS name ${ensConfiguration.name}.radicle.eth.`} />
+    description={`With this last transaction, you’re confirming the registration of your new ENS name ${ensConfiguration.name}.${ensResolver.DOMAIN}.`} />
   <ButtonRow
     disableButtons={buttonsDisabled}
     onSubmit={handleSubmit}

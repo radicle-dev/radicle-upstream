@@ -6,9 +6,11 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import Emoji from "ui/DesignSystem/Emoji.svelte";
-
   import type { EnsConfiguration } from "./ens-flow.types";
+
+  import * as ensResolver from "ui/src/org/ensResolver";
+
+  import { Emoji } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
@@ -21,6 +23,6 @@
   <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
   <HeadlineAndDescription
     headline="Metadata successfully updated"
-    description={`Great, your name ${ensConfiguration.name}.radicle.eth has successfully been updated with your supplied metadata.`} />
+    description={`Great, your name ${ensConfiguration.name}.${ensResolver.DOMAIN} has successfully been updated with your supplied metadata.`} />
   <ButtonRow {onSubmit} canCancel={false} confirmCopy="Continue" />
 </div>

@@ -6,9 +6,9 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import Emoji from "ui/DesignSystem/Emoji.svelte";
-
   import type { EnsConfiguration } from "./ens-flow.types";
+  import * as ensResolver from "ui/src/org/ensResolver";
+  import { Emoji } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import HeadlineAndDescription from "./shared/HeadlineAndDescription.svelte";
@@ -21,7 +21,7 @@
   <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
   <HeadlineAndDescription
     headline="Registration complete"
-    description={`Congratulations, ${ensConfiguration.name}.radicle.eth has successfully been registered with your wallet. Next, let's populate your name with organization metadata.`} />
+    description={`Congratulations, ${ensConfiguration.name}.${ensResolver.DOMAIN} has successfully been registered with your wallet. Next, let's populate your name with organization metadata.`} />
   <p
     style="color: var(--color-foreground-level-5; margin: 16px 0;"
     class="typo-text-small">

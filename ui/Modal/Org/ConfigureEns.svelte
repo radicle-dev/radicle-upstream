@@ -12,8 +12,8 @@
     EnsMetadataPayload,
     SubmitPayload,
   } from "./ConfigureEns/ens-flow.types";
-  import type { Registration } from "ui/src/org/ensResolver";
 
+  import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
 
@@ -31,7 +31,7 @@
   import LinkOrgToNameSuccess from "./ConfigureEns/LinkOrgToNameSuccess.svelte";
 
   export let orgAddress: string;
-  export let registration: Registration | undefined = undefined;
+  export let registration: ensResolver.Registration | undefined = undefined;
   export let safeAddress: string | undefined = undefined;
   export let currentStepIndex: number = 0;
 
@@ -173,7 +173,7 @@
         // skip linking.
         if (
           registration &&
-          registration.name === `${ensConfiguration.name}.radicle.eth`
+          registration.name === `${ensConfiguration.name}.${ensResolver.DOMAIN}`
         ) {
           onSuccess();
         } else {
