@@ -36,7 +36,7 @@
       });
     }
     try {
-      await org.setSingleSigName(
+      await org.setNameSingleSig(
         `${ensConfiguration.name}.${ensResolver.DOMAIN}`,
         ensMetadataConfiguration.address
       );
@@ -67,7 +67,7 @@
         details: { ensConfiguration },
       });
     }
-    await org.setNameMultisig(
+    await org.proposeSetNameChange(
       `${ensConfiguration.name}.${ensResolver.DOMAIN}`,
       ensMetadataConfiguration.address,
       safeAddress

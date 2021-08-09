@@ -66,3 +66,15 @@ export function etherscanUrl(ethEnv: Environment, query: string): string {
       return `https://etherscan.io/search?f=0&q=${query}`;
   }
 }
+
+export function ensAddress(env: Environment): string {
+  if (env === Environment.Local) {
+    throw new error.Error({
+      code: error.Code.FeatureNotAvailableForGivenNetwork,
+      message: "ENS is not supported on the Local environment",
+    });
+  } else {
+    // https://docs.ens.domains/ens-deployments
+    return "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e";
+  }
+}
