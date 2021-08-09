@@ -53,7 +53,7 @@ ways with a fast-forward merge being preferred.
 
    ```bash
    git checkout master
-   git merge --fast-forward origin/feature-branch
+   git merge --ff origin/feature-branch
    git push
    ```
 
@@ -65,7 +65,7 @@ You can squash merge a branch with
 
 ```bash
 git checkout master
-git merge --squah --signoff <branch-name>
+git merge --squash --signoff <branch-name>
 git push
 ```
 
