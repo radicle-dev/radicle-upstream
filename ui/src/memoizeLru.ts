@@ -13,7 +13,7 @@ import LruCache from "lru-cache";
 export function memoizeLru<Args extends unknown[], V>(
   f: (...args: Args) => Promise<V>,
   makeKey: (...args: Args) => string,
-  options?: LruCache.Options<string, V>
+  options?: LruCache.Options<string, { value: V }>
 ): (...args: Args) => Promise<V> {
   const cache = new LruCache(options);
   return async function (...args: Args): Promise<V> {
@@ -21,10 +21,10 @@ export function memoizeLru<Args extends unknown[], V>(
     const cached = cache.get(key);
     if (cached === undefined) {
       const value = await f(...args);
-      cache.set(key, value);
+      cache.set(key, { value });
       return value;
     } else {
-      return cached;
+      return cached.value;
     }
   };
 }
