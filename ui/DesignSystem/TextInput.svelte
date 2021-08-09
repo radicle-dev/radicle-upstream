@@ -25,7 +25,6 @@
   export let validation: ValidationState | undefined = undefined;
   export let validationStyle = "";
   export let hint = "";
-  export let label = "";
   export let showLeftItem: boolean = false;
   export let showSuccessCheck: boolean = false;
   export let spellcheck: boolean = false;
@@ -41,8 +40,6 @@
   }
 
   $: showHint = hint.length > 0 && value.length === 0;
-
-  $: inputOffset = `${label ? 36 : 0}px`;
 </script>
 
 <style>
@@ -137,23 +134,9 @@
     position: absolute;
     right: 0.75rem;
   }
-
-  .label {
-    text-align: left;
-    padding-left: 12px;
-    margin-bottom: 12px;
-  }
 </style>
 
 <div {style} class="wrapper">
-  {#if label}
-    <p
-      class="label typo-text-bold"
-      style="color: var(--color-foreground-level-6">
-      {label}
-    </p>
-  {/if}
-
   <div bind:clientHeight={inputHeight}>
     <input
       data-cy={dataCy}
@@ -199,26 +182,22 @@
   {#if validation}
     {#if validation && validation.status === Status.Loading}
       <Spinner
-        style="justify-content: flex-start; top: calc({inputOffset} - {label
-          ? '18px'
-          : '0px'}); position: absolute; height: 100%;
+        style="justify-content: flex-start; position: absolute; height: 100%;
         right: 10px;" />
     {:else if validation && validation.status === Status.Success && showSuccessCheck}
       <Icon.CheckCircle
         style="fill: var(--color-positive); justify-content: flex-start;
-        position: absolute; top: calc({inputOffset} + ({inputHeight}px - 24px)/2); right: 10px;" />
+        position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
     {:else if validation && validation.status === Status.Error}
       <Icon.ExclamationCircle
         dataCy="validation-error-icon"
         style="fill: var(--color-negative); justify-content: flex-start;
-        position: absolute; top: calc({inputOffset} + ({inputHeight}px - 24px)/2); right: 10px;" />
+        position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
       <div class="validation-row" style={validationStyle}>
         <p>{validation.message}</p>
       </div>
     {:else if showHint}
-      <div
-        class="hint"
-        style="top: calc({inputOffset} + ({inputHeight}px - 28px)/2)">
+      <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
         <KeyHint {hint} />
       </div>
     {/if}
