@@ -9,6 +9,7 @@ import * as ethersBytes from "@ethersproject/bytes";
 import type {
   Provider,
   TransactionRequest,
+  TransactionReceipt,
   TransactionResponse,
 } from "@ethersproject/abstract-provider";
 import {
@@ -103,7 +104,8 @@ export class WalletConnectSigner extends ethers.Signer {
       data: bytesLikeToString(tx.data) || "",
       hash: txHash,
       confirmations: 1,
-      wait: () => this._provider.waitForTransaction(txHash),
+      wait: (confirmations: number = 1): Promise<TransactionReceipt> =>
+        this._provider.waitForTransaction(txHash, confirmations),
     };
   }
 

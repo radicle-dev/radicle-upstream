@@ -124,10 +124,10 @@ export async function commit(
     signature.s
   );
 
-  await tx.wait(1);
+  const receipt = await tx.wait(1);
 
   return {
-    receipt: await wallet.provider.getTransactionReceipt(tx.hash),
+    receipt,
     minAge,
   };
 }
@@ -152,9 +152,7 @@ export async function register(
     ethers.BigNumber.from(salt)
   );
 
-  await tx.wait();
-
-  return wallet.provider.getTransactionReceipt(tx.hash);
+  return tx.wait(1);
 }
 
 async function permitSignature(
