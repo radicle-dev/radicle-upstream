@@ -37,7 +37,9 @@ notice = "warn"
 # A list of advisory IDs to ignore. Note that ignored advisories will still
 # output a note when they are encountered.
 ignore = [
-    #"RUSTSEC-0000-0000",
+  # The affected functionality is not exposed in our project.
+  # `tar` is only used as a `radicle-surf` build dependency.
+  "RUSTSEC-2021-0080"
 ]
 # Threshold for security vulnerabilities, any vulnerability with a CVSS score
 # lower than the range specified will be ignored. Note that ignored advisories
