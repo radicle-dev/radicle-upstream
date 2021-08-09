@@ -32,25 +32,22 @@ async function main() {
         });
       },
       handler: async ({ files }) => {
-        let paths: string[];
-        if (files) {
-          paths = files;
-        } else {
-          paths = await getPaths();
+        if (!files || files.length === 0) {
+          files = await getPaths();
         }
 
         let failure = false;
-        for (const path of paths) {
-          const content = await fs.readFile(path, "utf8");
+        for (const file of files) {
+          const content = await fs.readFile(file, "utf8");
           if (!hasLicenseHeader(content)) {
             failure = true;
-            console.error(`License missing from ${path}`);
+            console.error(`License missing from ${file}`);
           }
         }
 
         if (failure) {
           throw new UserError(
-            "License headers missing. Run `./scripts/license-headers.ts add` to fix this."
+            "License headers missing. Run `./scripts/license-header.ts add` to fix this."
           );
         }
       },

@@ -38,7 +38,11 @@ export interface WalletConnect {
   // Sign a message with the key for `address`. `message` must be
   // hex-encoded.
   signMessage(address: string, message: string): Promise<string>;
-  signTypedData(params: unknown[]): Promise<string>;
+
+  // Sign typed data for the given address as specified in
+  // [EIP-712](https://eips.ethereum.org/EIPS/eip-712).
+  signTypedData(address: string, typedData: unknown): Promise<string>;
+
   // Submit a transaction to the network via the wallet and return the
   // transaction hash. Requires user confirmation. Throws when no
   // wallet is connected.
@@ -106,8 +110,8 @@ export class WalletConnectClient implements WalletConnect {
     return this.connector.signMessage([address, message]);
   }
 
-  signTypedData(params: unknown[]): Promise<string> {
-    return this.connector.signTypedData(params);
+  signTypedData(address: string, typedData: unknown): Promise<string> {
+    return this.connector.signTypedData([address, JSON.stringify(typedData)]);
   }
 
   sendTransaction(tx: ITxData): Promise<string> {
@@ -168,7 +172,7 @@ function createConnector(): Connector {
   // with `onClose` and aborting the connection.
   let modalClosedByWalletConnect = false;
 
-  return new Connector({
+  const connector = new Connector({
     bridge: "https://radicle.bridge.walletconnect.org",
     qrcodeModal: {
       open: (uri: string, onClose, _opts?: unknown) => {
@@ -190,6 +194,20 @@ function createConnector(): Connector {
       },
     },
   });
+
+  const clientMeta = {
+    name: "Radicle Upstream",
+    description: "Desktop client for Radicle",
+    url: "http://radicle.xyz",
+    icons: ["https://radicle.xyz/img/radicle-walletconnect-icon.png"],
+  };
+
+  // @ts-expect-error: Electron owerwrites window APIs, which means that when
+  // setting `clientMeta` via the Connector params they get overwritten and
+  // return `undefined`.
+  connector._clientMeta = clientMeta;
+
+  return connector;
 }
 
 // Try to run `f` with `mutex.runExclusive()`. Throws an error if

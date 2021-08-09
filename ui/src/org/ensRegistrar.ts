@@ -202,7 +202,7 @@ async function permitSignature(
     },
   };
 
-  const sig = await owner.signTypedData([ownerAddr, JSON.stringify(data)]);
+  const sig = await owner.signTypedData(ownerAddr, data);
 
   return ethers.utils.splitSignature(sig);
 }

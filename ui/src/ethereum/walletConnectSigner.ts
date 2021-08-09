@@ -107,8 +107,8 @@ export class WalletConnectSigner extends ethers.Signer {
     };
   }
 
-  async signTypedData(params: unknown[]): Promise<string> {
-    return this.walletConnect.signTypedData(params);
+  async signTypedData(address: string, typedData: unknown): Promise<string> {
+    return this.walletConnect.signTypedData(address, typedData);
   }
 
   async signTransaction(
