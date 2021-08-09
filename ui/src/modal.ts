@@ -40,7 +40,7 @@ export const show = (
 export const toggle = (
   modalComponent: typeof SvelteComponent,
   onHide: OnHide = doNothing,
-  modalComponentProps: unknown = {}
+  modalComponentProps: { [propName: string]: unknown } = {}
 ): void => {
   const stored = get(store);
 
