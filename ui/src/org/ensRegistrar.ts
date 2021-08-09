@@ -10,14 +10,12 @@ import * as ethers from "ethers";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import * as svelteStore from "ui/src/svelteStore";
-import * as wallet from "ui/src/wallet";
+import * as Wallet from "ui/src/wallet";
 
 import {
   Registrar__factory as RegistrarFactory,
   RadicleToken__factory as RadicleTokenFactory,
 } from "radicle-contracts/build/contract-bindings/ethers";
-
-const walletStore = svelteStore.get(wallet.store);
 
 function registrarAddress(network: ethereum.Environment): string {
   switch (network) {
@@ -33,10 +31,11 @@ function registrarAddress(network: ethereum.Environment): string {
   }
 }
 
-function registrar(environment: ethereum.Environment) {
+function registrar() {
+  const wallet = svelteStore.get(Wallet.store);
   return RegistrarFactory.connect(
-    registrarAddress(environment),
-    walletStore.signer
+    registrarAddress(wallet.environment),
+    wallet.signer
   );
 }
 
@@ -55,21 +54,19 @@ function radTokenAddress(network: ethereum.Environment): string {
   }
 }
 
-function radToken(environment: ethereum.Environment) {
+function radToken() {
+  const wallet = svelteStore.get(Wallet.store);
   return RadicleTokenFactory.connect(
-    radTokenAddress(environment),
-    walletStore.signer
+    radTokenAddress(wallet.environment),
+    wallet.signer
   );
 }
 
-export async function checkAvailability(
-  environment: ethereum.Environment,
-  name: string
-): Promise<{
+export async function checkAvailability(name: string): Promise<{
   available: boolean;
   fee: ethers.BigNumber;
 }> {
-  const r = registrar(environment);
+  const r = registrar();
 
   const [available, fee] = await Promise.all([
     r.available(name),
@@ -91,60 +88,57 @@ export async function commit(
   receipt: ethers.providers.TransactionReceipt;
   minAge: number;
 }> {
-  const signer = walletStore.signer;
-  const minAge = (await registrar(environment).minCommitmentAge()).toNumber();
-  const ownerAddr = walletStore.getAddress();
+  const wallet = svelteStore.get(Wallet.store);
+  const ownerAddr = wallet.getAddress();
+  if (!ownerAddr) {
+    throw new error.Error({
+      message: "Wallet not connected",
+    });
+  }
+
+  const minAge = (await registrar().minCommitmentAge()).toNumber();
   const spender = registrarAddress(environment);
   const deadline = ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(
     3600
   ); // Expire one hour from now.
-  const token = radToken(environment);
+  const token = radToken();
   const signature = await permitSignature(
-    walletStore.signer,
+    wallet.signer,
     token,
     spender,
     fee,
     deadline
   );
 
-  if (!ownerAddr) {
-    throw new error.Error({
-      message: "Wallet not initialized",
-    });
-  }
-
   const commitment = createCommitment(name, ownerAddr, salt);
 
   // TODO: Once upstream wallet is aware of RAD balance, check if the user has
   // enough rads before committing.
-  const tx = await registrar(environment)
-    .connect(signer)
-    .commitWithPermit(
-      commitment,
-      ownerAddr.toLowerCase(),
-      fee,
-      deadline,
-      signature.v,
-      signature.r,
-      signature.s
-    );
+  const tx = await registrar().commitWithPermit(
+    commitment,
+    ownerAddr.toLowerCase(),
+    fee,
+    deadline,
+    signature.v,
+    signature.r,
+    signature.s
+  );
 
   await tx.wait(1);
 
   return {
-    receipt: await walletStore.provider.getTransactionReceipt(tx.hash),
+    receipt: await wallet.provider.getTransactionReceipt(tx.hash),
     minAge,
   };
 }
 
 export async function register(
-  environment: ethereum.Environment,
   name: string,
   salt: Uint8Array
 ): Promise<ethers.providers.TransactionReceipt> {
-  const signer = walletStore.signer;
+  const wallet = svelteStore.get(Wallet.store);
 
-  const address = walletStore.getAddress();
+  const address = wallet.getAddress();
 
   if (!address) {
     throw new error.Error({
@@ -152,13 +146,15 @@ export async function register(
     });
   }
 
-  const tx = await registrar(environment)
-    .connect(signer)
-    .register(name, address, ethers.BigNumber.from(salt));
+  const tx = await registrar().register(
+    name,
+    address,
+    ethers.BigNumber.from(salt)
+  );
 
   await tx.wait();
 
-  return walletStore.provider.getTransactionReceipt(tx.hash);
+  return wallet.provider.getTransactionReceipt(tx.hash);
 }
 
 async function permitSignature(
@@ -168,9 +164,10 @@ async function permitSignature(
   value: ethers.BigNumberish,
   deadline: ethers.BigNumberish
 ): Promise<ethers.Signature> {
+  const wallet = svelteStore.get(Wallet.store);
   const ownerAddr = (await owner.getAddress()).toLowerCase();
   const nonce = await token.nonces(ownerAddr);
-  const chainId = (await walletStore.provider.getNetwork()).chainId;
+  const chainId = (await wallet.provider.getNetwork()).chainId;
 
   const data = {
     domain: {

@@ -38,8 +38,6 @@
     status: validation.ValidationStatus.NotStarted,
   };
 
-  const walletStore = svelteStore.get(wallet.store);
-
   async function handleSubmit() {
     if (!name) {
       validationStatus = {
@@ -53,10 +51,7 @@
       status: validation.ValidationStatus.Loading,
     };
 
-    const { available, fee } = await ensRegistrar.checkAvailability(
-      walletStore.environment,
-      name
-    );
+    const { available, fee } = await ensRegistrar.checkAvailability(name);
 
     if (available) {
       onSubmit({
@@ -69,6 +64,8 @@
       const registration = await ensResolver.getRegistration(
         `${name}.${ensResolver.DOMAIN}`
       );
+
+      const walletStore = svelteStore.get(wallet.store);
 
       if (registration && registration.owner === walletStore.getAddress()) {
         onSubmit({
