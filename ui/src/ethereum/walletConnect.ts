@@ -163,7 +163,7 @@ function createConnector(): Connector {
   // with `onClose` and aborting the connection.
   let modalClosedByWalletConnect = false;
 
-  return new Connector({
+  const connector = new Connector({
     bridge: "https://radicle.bridge.walletconnect.org",
     qrcodeModal: {
       open: (uri: string, onClose, _opts?: unknown) => {
@@ -185,6 +185,20 @@ function createConnector(): Connector {
       },
     },
   });
+
+  const clientMeta = {
+    name: "Radicle Upstream",
+    description: "Desktop client for Radicle",
+    url: "http://radicle.xyz",
+    icons: ["https://radicle.xyz/img/radicle-walletconnect-icon.png"],
+  };
+
+  // @ts-expect-error: Electron owerwrites window APIs, which means that when
+  // setting `clientMeta` via the Connector params they get overwritten and
+  // return `undefined`.
+  connector._clientMeta = clientMeta;
+
+  return connector;
 }
 
 // Try to run `f` with `mutex.runExclusive()`. Throws an error if
