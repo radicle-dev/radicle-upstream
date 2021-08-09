@@ -6,7 +6,7 @@
 
 import * as proxy from "../../ui/src/proxy";
 
-const proxyClient = new proxy.Client("http://localhost:17246");
+const proxyClient = new proxy.Client("http://127.0.0.1:17246");
 
 export const resetProxyState = (): void => {
   cy.then(() => proxyClient.control.reset());
