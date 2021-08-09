@@ -33,7 +33,8 @@
   export let orgAddress: string;
   export let registration: ensResolver.Registration | undefined = undefined;
   export let safeAddress: string | undefined = undefined;
-  export let currentStepIndex: number = 0;
+
+  let currentStepIndex = registration?.name ? 1 : 0;
 
   // TODO: make sure onSubmit is required on a type level.
   interface Step {
