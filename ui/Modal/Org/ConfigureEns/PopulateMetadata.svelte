@@ -221,6 +221,14 @@
   }
 </script>
 
+<style>
+  .label {
+    padding-left: 12px;
+    margin-bottom: 12px;
+    color: var(--color-foreground-level-6);
+  }
+</style>
+
 <div>
   <Header
     title="Set your name's metadata"
@@ -230,41 +238,41 @@
       "the organization page."}
     style="margin-bottom: 24px" />
 
+  <div class="label typo-text-bold">Organization address</div>
   <Tooltip
     value={"This is the address of your organization and is required to " +
       "link your ENS name to it."}
     position={style.CSSPosition.Top}>
     <TextInput
-      label="Organization address"
       style="margin-bottom: 24px"
       disabled
       value={addressValue}
       validation={addressValidationStatus} />
   </Tooltip>
 
+  <div class="label typo-text-bold">Website URL</div>
   <TextInput
-    label="Website URL"
     style="margin-bottom: 24px"
     placeholder="https://radicle.xyz/"
     bind:value={urlValue}
     validation={validationStatus} />
 
+  <div class="label typo-text-bold">Avatar URL</div>
   <TextInput
-    label="Avatar URL"
     style="margin-bottom: 24px"
     placeholder="https://radicle.xyz/logo.png"
     bind:value={avatarValue}
     validation={validationStatus} />
 
+  <div class="label typo-text-bold">Twitter username</div>
   <TextInput
-    label="Twitter username"
     style="margin-bottom: 24px"
     placeholder="@radicle"
     bind:value={twitterValue}
     validation={validationStatus} />
 
+  <div class="label typo-text-bold">GitHub username</div>
   <TextInput
-    label="GitHub username"
     style="margin-bottom: 24px"
     placeholder="radicle-dev"
     bind:value={githubValue}

@@ -77,6 +77,14 @@
   }
 </script>
 
+<style>
+  .label {
+    padding-left: 12px;
+    margin-bottom: 12px;
+    color: var(--color-foreground-level-6);
+  }
+</style>
+
 <div>
   <Emoji emoji="🔗" size="huge" style="margin-bottom: 16px" />
   <Header
@@ -86,14 +94,14 @@
       `point towards your newly created name. Once that’s done, your ` +
       `organization will appear with your new name across Radicle!`} />
 
+  <div class="label typo-text-bold">Organization address</div>
   <TextInput
-    label="Organization address"
     disabled
     style="margin-bottom: 24px"
     value={ensMetadataConfiguration.address || undefined} />
 
+  <div class="label typo-text-bold">Name</div>
   <TextInput
-    label="Name"
     disabled
     style="margin-bottom: 24px"
     value={`${ensConfiguration.name}.${ensResolver.DOMAIN}`} />
