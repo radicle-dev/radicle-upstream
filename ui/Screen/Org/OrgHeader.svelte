@@ -63,7 +63,7 @@
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
       {#if name}
-        {name}<span class="domain">{ensResolver.DOMAIN}</span>
+        {name}.<span class="domain">{ensResolver.DOMAIN}</span>
       {:else}
         {style.ellipsed(orgAddress)}
       {/if}
