@@ -6,7 +6,6 @@
 
 import * as lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
-import type * as threeDotsMenuTypes from "ui/DesignSystem/ThreeDotsMenu.types";
 
 import type * as identity from "ui/src/proxy/identity";
 import type * as project from "ui/src/project";
@@ -35,7 +34,6 @@ import { identitySha1Urn } from "ui/src/urn";
 import { sleep } from "ui/src/sleep";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
-import { Icon } from "ui/DesignSystem";
 import ConfigureEns from "ui/Modal/Org/ConfigureEns.svelte";
 
 export type { MemberResponse, Org };
@@ -619,24 +617,14 @@ export async function setNameMultisig(
   );
 }
 
-export function ensMenuItem(
+export function openEnsConfiguration(
   orgAddress: string,
   registration?: ensResolver.Registration,
   safeAddress?: string
-): threeDotsMenuTypes.MenuItem {
-  const title = registration?.name ? "Edit ENS name" : "Registr ENS name";
-  const currentStepIndex = registration?.name ? 1 : 0;
-
-  return {
-    title,
-    icon: Icon.Ethereum,
-    event: () => {
-      modal.toggle(ConfigureEns, () => {}, {
-        safeAddress,
-        orgAddress,
-        registration,
-        currentStepIndex,
-      });
-    },
-  };
+): void {
+  modal.show(ConfigureEns, () => {}, {
+    safeAddress,
+    orgAddress,
+    registration,
+  });
 }

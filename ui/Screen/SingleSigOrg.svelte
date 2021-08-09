@@ -66,7 +66,11 @@
           ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
         },
       },
-      org.ensMenuItem(address, registration),
+      {
+        title: registration?.name ? "Edit ENS name" : "Register ENS name",
+        icon: Icon.Ethereum,
+        event: () => org.openEnsConfiguration(address, registration),
+      },
     ];
   };
 </script>
