@@ -120,12 +120,6 @@
     flex-shrink: 0;
   }
 
-  .image {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
-  }
-
   .pulsate {
     opacity: 1;
     animation: pulsate 3.5s ease-out infinite;
@@ -144,7 +138,7 @@
 
 <div data-cy={dataCy} class={`container ${size}`} {style}>
   {#if imageUrl}
-    <img class={`image ${avatarClass}`} src={imageUrl} alt="user-avatar" />
+    <img class={`avatar ${avatarClass}`} src={imageUrl} alt="user-avatar" />
   {:else if avatarFallback}
     <div
       class={`avatar ${avatarClass}`}
