@@ -103,10 +103,12 @@ export class WalletConnectSigner extends ethers.Signer {
       data: bytesLikeToString(tx.data) || "",
       hash: txHash,
       confirmations: 1,
-      wait: () => {
-        throw new Error("this should never be called");
-      },
+      wait: () => this._provider.waitForTransaction(txHash),
     };
+  }
+
+  async signTypedData(address: string, typedData: unknown): Promise<string> {
+    return this.walletConnect.signTypedData(address, typedData);
   }
 
   async signTransaction(
