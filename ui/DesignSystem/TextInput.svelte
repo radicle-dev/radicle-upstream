@@ -19,6 +19,7 @@
   export let value = "";
   export let dataCy = "";
   export let disabled: boolean = false;
+  export let suffix: string = "";
   export let inputElement: HTMLInputElement | undefined = undefined;
 
   export let validation: ValidationState | undefined = undefined;
@@ -79,6 +80,10 @@
 
   input.left-item {
     padding-left: 2.5rem;
+  }
+
+  .suffix {
+    color: var(--color-foreground-level-5);
   }
 
   input:focus,
@@ -161,6 +166,17 @@
     <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
       <KeyHint {hint} />
     </div>
+  {/if}
+
+  {#if suffix}
+    <p
+      style="position: absolute; top: calc(({inputHeight}px - 24px)/2); right: {validation &&
+      validation.status !== Status.NotStarted
+        ? '38px'
+        : '10px'};"
+      class="suffix">
+      {suffix}
+    </p>
   {/if}
 
   {#if validation}

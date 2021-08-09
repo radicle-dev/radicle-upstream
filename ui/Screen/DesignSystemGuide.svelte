@@ -387,6 +387,10 @@
       </Swatch>
 
       <Swatch>
+        <TextInput style="flex: 1;" value="I have a..." suffix="suffix" />
+      </Swatch>
+
+      <Swatch>
         <TextInput
           placeholder="And I'm an input with a validation error."
           style="flex: 1"
