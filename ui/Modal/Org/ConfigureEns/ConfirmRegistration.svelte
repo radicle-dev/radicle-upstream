@@ -11,13 +11,9 @@
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
-  import * as svelteStore from "ui/src/svelteStore";
-  import * as wallet from "ui/src/wallet";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
   import Header from "./shared/Header.svelte";
-
-  const walletStore = svelteStore.get(wallet.store);
 
   let buttonsDisabled = false;
   let confirmButtonCopy = "Confirm registration";
@@ -32,11 +28,7 @@
     try {
       const salt = ensConfiguration.commitmentSalt;
 
-      await ensRegistrar.register(
-        walletStore.environment,
-        ensConfiguration.name,
-        salt
-      );
+      await ensRegistrar.register(ensConfiguration.name, salt);
 
       onSubmit();
     } catch (err) {
