@@ -586,35 +586,40 @@ export const isMultiSig = memoizeLru(
   { max: 1000 }
 );
 
-export async function setSingleSigName(
+export async function setNameSingleSig(
   name: string,
   orgAddress: string
 ): Promise<Contract.TransactionResponse> {
   const walletStore = svelteStore.get(wallet.store);
 
-  return Contract.updateSingleSigName(
-    name,
-    orgAddress,
-    walletStore.provider,
-    walletStore.signer
-  );
+  const ensAddress = ethereum.ensAddress(walletStore.environment);
+
+  return Contract.setName(walletStore.signer, orgAddress, name, ensAddress);
 }
 
-export async function setNameMultisig(
+// Propose a transaction to change the wallet name to the Gnosis safe.
+export async function proposeSetNameChange(
   name: string,
   orgAddress: string,
   ownerAddress: string
 ): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
 
-  await Contract.updateMultiSigName(
-    name,
+  const ensAddress = ethereum.ensAddress(walletStore.environment);
+
+  const data = await Contract.populateSetNameTransaction(
     orgAddress,
-    ownerAddress,
-    walletStore.provider,
-    walletStore.signer,
-    walletStore
+    name,
+    ensAddress
   );
+
+  const safeTx = {
+    to: orgAddress,
+    value: "0",
+    data,
+    operation: OperationType.Call,
+  };
+  await Safe.signAndProposeTransaction(walletStore, ownerAddress, safeTx);
 }
 
 export function openEnsConfiguration(

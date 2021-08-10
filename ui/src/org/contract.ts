@@ -16,10 +16,6 @@ import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
 import { memoizeLru } from "ui/src/memoizeLru";
 
-import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
-import * as safe from "./safe";
-import type * as wallet from "ui/src/wallet";
-
 export type { TransactionResponse };
 
 const orgFactoryAbi = [
@@ -200,32 +196,27 @@ export function parseAnchorTx(data: string): AnchorData | undefined {
   }
 }
 
-export async function updateSingleSigName(
-  name: string,
+export async function setName(
+  signer: ethers.Signer,
   orgAddress: string,
-  provider: ethers.providers.Provider,
-  signer: ethers.Signer
+  name: string,
+  ensAddress: string
 ): Promise<TransactionResponse> {
   const org = new ethers.Contract(orgAddress, orgAbi, signer);
 
-  return org.setName(name, (await provider.getNetwork()).ensAddress);
+  return org.setName(name, ensAddress);
 }
 
-export async function updateMultiSigName(
-  name: string,
+// Returns the hex encoded data for a transaction that will set the
+// org ENS name.
+export async function populateSetNameTransaction(
   orgAddress: string,
-  safeAddress: string,
-  provider: ethers.providers.Provider,
-  signer: ethers.Signer,
-  wallet: wallet.Wallet
-): Promise<void> {
-  const org = new ethers.Contract(orgAddress, orgAbi, signer);
+  name: string,
+  ensAddress: string
+): Promise<string> {
+  const org = new ethers.Contract(orgAddress, orgAbi);
 
-  const network = await provider.getNetwork();
-  const unsignedTx = await org.populateTransaction.setName(
-    name,
-    network.ensAddress
-  );
+  const unsignedTx = await org.populateTransaction.setName(name, ensAddress);
   const txData = unsignedTx.data;
   if (!txData) {
     throw new error.Error({
@@ -233,11 +224,6 @@ export async function updateMultiSigName(
       details: { unsignedTx },
     });
   }
-  const safeTx = {
-    to: orgAddress,
-    value: "0",
-    data: txData,
-    operation: OperationType.Call,
-  };
-  await safe.signAndProposeTransaction(wallet, safeAddress, safeTx);
+
+  return txData;
 }
