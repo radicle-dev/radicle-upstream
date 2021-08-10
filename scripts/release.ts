@@ -18,6 +18,7 @@ import * as semver from "semver";
 import fetch from "node-fetch";
 
 const currentVersion: string = require("../package.json").version;
+const releaseBucket = "radicle-upstream-releases";
 
 function main() {
   if (!semver.gte(process.version, "14.14.0")) {
@@ -149,23 +150,23 @@ const publishRcBinaries: yargs.CommandModule<unknown, unknown> = {
       buildStatuses
     );
 
-    const linuxBinary = `releases.radicle.xyz/radicle-upstream-${version}-rc.AppImage`;
+    const linuxBinaryPath = `radicle-upstream-${version}-rc.AppImage`;
     await runVerbose("gsutil", [
       "cp",
       `gs://builds.radicle.xyz/radicle-upstream/${linuxBuildUuid}/dist/radicle-upstream-${version}.AppImage`,
-      `gs://${linuxBinary}`,
+      `gs://${releaseBucket}/${linuxBinaryPath}`,
     ]);
 
-    const macosBinary = `releases.radicle.xyz/radicle-upstream-${version}-rc.dmg`;
+    const macosBinaryPath = `radicle-upstream-${version}-rc.dmg`;
     await runVerbose("gsutil", [
       "cp",
       `gs://builds.radicle.xyz/radicle-upstream/${macosBuildUuid}/dist/radicle-upstream-${version}.dmg`,
-      `gs://${macosBinary}`,
+      `gs://${releaseBucket}/${macosBinaryPath}`,
     ]);
 
     console.log("Release candidate binaries published as");
-    console.log(`  https://${linuxBinary}`);
-    console.log(`  https://${macosBinary}`);
+    console.log(`  https://releases.radicle.xyz/${linuxBinaryPath}`);
+    console.log(`  https://releases.radicle.xyz/${macosBinaryPath}`);
   },
 };
 
@@ -179,15 +180,15 @@ const publish: yargs.CommandModule<unknown, unknown> = {
       "cp",
       // don't overwrite existing files
       "-n",
-      `gs://releases.radicle.xyz/radicle-upstream-${version}-rc.AppImage`,
-      `gs://releases.radicle.xyz/radicle-upstream-${version}.AppImage`,
+      `gs://${releaseBucket}/radicle-upstream-${version}-rc.AppImage`,
+      `gs://${releaseBucket}/radicle-upstream-${version}.AppImage`,
     ]);
     await runVerbose("gsutil", [
       "cp",
       // don't overwrite existing files
       "-n",
-      `gs://releases.radicle.xyz/radicle-upstream-${version}-rc.dmg`,
-      `gs://releases.radicle.xyz/radicle-upstream-${version}.dmg`,
+      `gs://${releaseBucket}/radicle-upstream-${version}-rc.dmg`,
+      `gs://${releaseBucket}/radicle-upstream-${version}.dmg`,
     ]);
 
     await runVerbose("git", ["tag", `v${version}`]);
