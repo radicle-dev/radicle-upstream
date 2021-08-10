@@ -179,7 +179,6 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
             let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
-            let shareable_entity_identifier = format!("cloudhead@{}", peer_id);
             assert_eq!(
                 have,
                 json!({
@@ -193,7 +192,6 @@ mod test {
                             "expiration": "2021-03-19T23:15:30.001Z",
                         }
                     },
-                    "shareableEntityIdentifier": &shareable_entity_identifier,
                 })
             );
         });
@@ -259,7 +257,6 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
-            let shareable_entity_identifier = format!("cloudhead_next@{}", peer_id);
             assert_eq!(
                 have,
                 json!({
@@ -273,7 +270,6 @@ mod test {
                             "expiration": "2021-03-19T23:15:30.001Z",
                         }
                     },
-                    "shareableEntityIdentifier": &shareable_entity_identifier,
                 })
             );
         });
@@ -339,7 +335,6 @@ mod test {
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
-            let shareable_entity_identifier = format!("cloudhead@{}", peer_id);
             assert_eq!(
                 have,
                 json!({
@@ -350,7 +345,6 @@ mod test {
                         "handle": "cloudhead",
                         "ethereum": null
                     },
-                    "shareableEntityIdentifier": &shareable_entity_identifier,
                 })
             );
         });
@@ -375,7 +369,6 @@ mod test {
         let handle = user.subject().name.to_string();
         let peer_id = ctx.peer.peer_id();
         let urn = user.urn();
-        let shareable_entity_identifier = (peer_id, user.into_inner().into_inner()).into();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         assert_eq!(res.status(), StatusCode::OK);
@@ -384,7 +377,6 @@ mod test {
             json!(identity::Identity {
                 peer_id,
                 urn: urn.clone(),
-                shareable_entity_identifier,
                 metadata: identity::Metadata {
                     handle,
                     ethereum: None

@@ -22,7 +22,6 @@ use radicle_daemon::{
 use crate::{
     error,
     ethereum::{address::Address, claim_ext::V1 as EthereumClaimExtV1},
-    identifier::Identifier,
 };
 
 use std::convert::TryFrom;
@@ -35,8 +34,6 @@ pub struct Identity {
     pub peer_id: PeerId,
     /// The coco URN.
     pub urn: Urn,
-    /// Unambiguous identifier pointing at this identity.
-    pub shareable_entity_identifier: Identifier,
     /// Bundle of user provided data.
     pub metadata: Metadata,
     /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
@@ -46,14 +43,9 @@ pub struct Identity {
 impl From<(PeerId, DaemonPerson)> for Identity {
     fn from((peer_id, user): (PeerId, DaemonPerson)) -> Self {
         let identity = Person::from(user);
-        let shareable_entity_identifier = Identifier {
-            handle: identity.metadata.handle.clone(),
-            peer_id,
-        };
         Self {
             peer_id,
             urn: identity.urn,
-            shareable_entity_identifier,
             metadata: identity.metadata,
             avatar_fallback: identity.avatar_fallback,
         }

@@ -30,14 +30,12 @@ export interface CreateParams {
 
 export interface Project {
   urn: string;
-  shareableEntityIdentifier: string;
   metadata: Metadata;
   stats: Stats;
 }
 
 const projectSchema: zod.Schema<Project> = zod.object({
   urn: zod.string(),
-  shareableEntityIdentifier: zod.string(),
   metadata: metadataSchema,
   stats: zod.object({
     branches: zod.number(),
@@ -48,13 +46,11 @@ const projectSchema: zod.Schema<Project> = zod.object({
 
 export interface FailedProject {
   urn: string;
-  shareableEntityIdentifier: string;
   metadata: Metadata;
 }
 
 const failedProjectSchema: zod.Schema<FailedProject> = zod.object({
   urn: zod.string(),
-  shareableEntityIdentifier: zod.string(),
   metadata: metadataSchema,
 });
 
