@@ -33,7 +33,7 @@ pub fn local_peer_status_stream(
 
 /// Notification handlers to serve event streams.
 mod handler {
-    use futures::StreamExt as _;
+    use futures::{future::Either, StreamExt as _};
     use warp::{sse, Rejection, Reply};
 
     use crate::{
@@ -60,15 +60,25 @@ mod handler {
                 Notification::LocalPeer(event) => Some(sse::Event::default().json_data(event)),
             }
         };
+
+        let shutdown = ctx.shutdown.clone();
+
         let stream = async_stream::stream! {
             use tokio::sync::broadcast::error::RecvError;
             loop {
-                match notifications.recv().await {
-                    Ok(notification) => yield notification,
-                    Err(RecvError::Lagged(_)) => {},
-                    Err(RecvError::Closed) => break,
+                match futures::future::select(Box::pin(notifications.recv()), Box::pin(shutdown.notified())).await {
+                    Either::Left((notification, _)) =>
+                        match notification {
+                            Ok(notification) => yield notification,
+                            Err(RecvError::Lagged(_)) => {},
+                            Err(RecvError::Closed) => break,
 
+                        }
+                    Either::Right(_) => {
+                        break;
+                    }
                 }
+
             }
         };
 

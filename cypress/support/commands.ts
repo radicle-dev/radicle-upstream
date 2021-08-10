@@ -5,15 +5,22 @@
 // LICENSE file.
 
 import * as proxy from "../../ui/src/proxy";
+import { sleep } from "ui/src/sleep";
 
 const proxyClient = new proxy.Client("http://127.0.0.1:17246");
 
 export const resetProxyState = (): void => {
-  cy.then(() => proxyClient.control.reset());
+  cy.then(async () => {
+    await proxyClient.control.reset();
+    await waitSealed();
+  });
 };
 
 export const sealKeystore = (): void => {
-  cy.then(() => proxyClient.control.seal());
+  cy.then(async () => {
+    await proxyClient.control.seal();
+    await waitSealed();
+  });
 };
 
 export const restartAndUnlock = (): void => {
@@ -194,4 +201,27 @@ function getCurrentTestName() {
 
   testTitles = testTitles.reverse();
   return testTitles.join(" -- ");
+}
+
+// Wait until the proxy has been re-sealed or reset.
+async function waitSealed() {
+  let remainingTries = 100;
+  for (;;) {
+    remainingTries -= 1;
+    if (remainingTries < 0) {
+      throw new Error("Waiting for unsealed timed out");
+    }
+
+    try {
+      await proxyClient.sessionGet();
+      await sleep(10);
+    } catch (err) {
+      if (
+        err instanceof proxy.ResponseError &&
+        [404, 403].includes(err.response.status)
+      ) {
+        return;
+      }
+    }
+  }
 }
