@@ -8,8 +8,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import * as Style from "ui/src/style";
-
   import Button from "./Button.svelte";
   import Emoji from "./Emoji.svelte";
   import Tooltip from "./Tooltip.svelte";
@@ -83,7 +81,7 @@
     <p class="text">{text}</p>
   {/if}
   {#if primaryActionText.length}
-    <Tooltip value={tooltipMessage} position={Style.CSSPosition.Bottom}>
+    <Tooltip value={tooltipMessage} position="bottom">
       <Button
         disabled={primaryActionDisabled}
         dataCy="primary-action"

@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as style from "ui/src/style";
   import * as org from "ui/src/org";
   import { Button, Icon, Tooltip } from "ui/DesignSystem";
 
@@ -32,7 +31,7 @@
   }
 </script>
 
-<Tooltip value={tooltipMessage} position={style.CSSPosition.Left}>
+<Tooltip value={tooltipMessage} position="left">
   <Button
     {disabled}
     variant="transparent"

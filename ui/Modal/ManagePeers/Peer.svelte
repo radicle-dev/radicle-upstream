@@ -12,7 +12,6 @@
   import type { User } from "ui/src/project";
 
   import { BadgeType } from "ui/src/badge";
-  import { CSSPosition } from "ui/src/style";
   import { PeerType, PeerRole } from "ui/src/project";
 
   import {
@@ -68,9 +67,7 @@
   </div>
   {#if peer.type !== PeerType.Local}
     {#if peer.role === PeerRole.Maintainer}
-      <Tooltip
-        position={CSSPosition.Top}
-        value="Can't unfollow the maintainer's remote">
+      <Tooltip position="top" value="Can't unfollow the maintainer's remote">
         <FollowToggle disabled following />
       </Tooltip>
     {:else}
