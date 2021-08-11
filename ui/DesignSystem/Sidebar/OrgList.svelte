@@ -35,7 +35,7 @@
 
 {#if $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
   {#each $orgSidebarStore as org (org.id)}
-    <Tooltip value={org.registration?.name || org.id}>
+    <Tooltip value={org.registration?.domain || org.id}>
       <SidebarItem
         indicator={true}
         onClick={() =>

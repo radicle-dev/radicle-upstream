@@ -5,8 +5,16 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="typescript" context="module">
+  export interface Result {
+    registration?: ensResolver.Registration;
+    name: string;
+    fee: ethers.BigNumber;
+  }
+</script>
+
 <script lang="typescript">
-  import type { EnsMetadataPayload, SubmitPayload } from "./ens-flow.types";
+  import type * as ethers from "ethers";
 
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
@@ -20,19 +28,10 @@
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as validation from "ui/src/validation";
 
-  export let onSubmit: (payload: SubmitPayload) => void = () => {};
-  export let ensMetadataConfiguration: EnsMetadataPayload | undefined;
+  export let onSubmit: (result: Result) => void;
+  export let currentName: string | undefined;
 
-  let name: string;
-  if (ensMetadataConfiguration && ensMetadataConfiguration.name) {
-    const existingName = ensMetadataConfiguration.name.replace(
-      `.${ensResolver.DOMAIN}`,
-      ""
-    );
-    if (existingName.length > 0) {
-      name = existingName;
-    }
-  }
+  let name = currentName;
 
   let validationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
@@ -55,10 +54,8 @@
 
     if (available) {
       onSubmit({
-        ensNameConfiguration: {
-          name,
-          fee,
-        },
+        name,
+        fee,
       });
     } else {
       const registration = await ensResolver.getRegistration(
@@ -69,14 +66,9 @@
 
       if (registration && registration.owner === walletStore.getAddress()) {
         onSubmit({
-          ensNameConfiguration: {
-            name,
-            address: walletStore.getAddress(),
-            registered: true,
-          },
-          ensMetadata: {
-            ...registration,
-          },
+          registration,
+          name,
+          fee,
         });
       }
 

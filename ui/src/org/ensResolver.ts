@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { EnsResolver } from "@ethersproject/providers";
 import type { TransactionResponse } from "./contract";
 
 import { ethers } from "ethers";
@@ -25,28 +24,43 @@ export const DOMAIN = "radicle.eth";
 export type EnsRecord = { name: string; value: string };
 
 export interface Registration {
-  name: string;
+  // The fully qualified domain name for the registration.
+  domain: string;
+  // Address that owns this registration
   owner: string;
+  // Address record
   address: string | null;
   url: string | null;
   avatar: string | null;
   twitter: string | null;
   github: string | null;
-  resolver: EnsResolver;
 }
 
 export async function setRecords(
-  name: string,
-  resolver: EnsResolver,
+  domain: string,
   records: EnsRecord[]
 ): Promise<TransactionResponse> {
   const wallet = svelteStore.get(Wallet.store);
+
+  const resolver = await wallet.provider.getResolver(domain);
+
+  // The type definitions of `ethers` are not correct. `getResolver()`
+  // can return `null`.
+  //
+  // See https://github.com/ethers-io/ethers.js/issues/1850
+  if (!resolver) {
+    throw new error.Error({
+      message: "Domain is not registered",
+      details: { domain },
+    });
+  }
+
   const resolverContract = new ethers.Contract(
     resolver.address,
     resolverAbi,
     wallet.signer
   );
-  const node = ethers.utils.namehash(`${name}.${DOMAIN}`);
+  const node = ethers.utils.namehash(domain);
 
   const calls = [];
   const iface = new ethers.utils.Interface(resolverAbi);
@@ -83,10 +97,10 @@ export async function setRecords(
 }
 
 export async function getRegistration(
-  name: string
+  domain: string
 ): Promise<Registration | null> {
   const wallet = svelteStore.get(Wallet.store);
-  const resolver = await wallet.provider.getResolver(name);
+  const resolver = await wallet.provider.getResolver(domain);
 
   // The type definitions of `ethers` are not correct. `getResolver()`
   // can return `null`.
@@ -96,7 +110,7 @@ export async function getRegistration(
     return null;
   }
 
-  const owner = await getOwner(name);
+  const owner = await getOwner(domain);
 
   const meta = await Promise.allSettled([
     resolver.getAddress(),
@@ -112,14 +126,13 @@ export async function getRegistration(
   );
 
   return {
-    name,
+    domain,
     url,
     avatar,
     owner,
     address,
     twitter,
     github,
-    resolver,
   };
 }
 

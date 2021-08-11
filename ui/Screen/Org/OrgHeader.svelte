@@ -17,7 +17,7 @@
   export let threshold: number | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
 
-  $: name = registration?.name.replace(`.${ensResolver.DOMAIN}`, "");
+  $: name = registration?.domain.replace(`.${ensResolver.DOMAIN}`, "");
   $: websiteUrl = registration?.url;
   $: githubUrl =
     registration?.github && `https://github.com/${registration.github}`;
