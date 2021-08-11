@@ -12,9 +12,8 @@ import { ENS__factory as EnsFactory } from "radicle-contracts/build/contract-bin
 
 import * as error from "ui/src/error";
 import * as svelteStore from "ui/src/svelteStore";
-import * as wallet from "ui/src/wallet";
-
-const walletStore = svelteStore.get(wallet.store);
+import * as Wallet from "ui/src/wallet";
+import * as ethereum from "ui/src/ethereum";
 
 const resolverAbi = [
   "function multicall(bytes[] calldata data) returns(bytes[] memory results)",
@@ -41,10 +40,11 @@ export async function setRecords(
   resolver: EnsResolver,
   records: EnsRecord[]
 ): Promise<TransactionResponse> {
+  const wallet = svelteStore.get(Wallet.store);
   const resolverContract = new ethers.Contract(
     resolver.address,
     resolverAbi,
-    walletStore.signer
+    wallet.signer
   );
   const node = ethers.utils.namehash(`${name}.${DOMAIN}`);
 
@@ -85,8 +85,13 @@ export async function setRecords(
 export async function getRegistration(
   name: string
 ): Promise<Registration | null> {
-  const resolver = await walletStore.provider.getResolver(name);
+  const wallet = svelteStore.get(Wallet.store);
+  const resolver = await wallet.provider.getResolver(name);
 
+  // The type definitions of `ethers` are not correct. `getResolver()`
+  // can return `null`.
+  //
+  // See https://github.com/ethers-io/ethers.js/issues/1850
   if (!resolver) {
     return null;
   }
@@ -119,17 +124,10 @@ export async function getRegistration(
 }
 
 async function getOwner(name: string): Promise<string> {
-  const network = await walletStore.provider.getNetwork();
-  const ensAddr = network.ensAddress;
+  const wallet = svelteStore.get(Wallet.store);
+  const ensAddr = ethereum.ensAddress(wallet.environment);
 
-  if (!ensAddr) {
-    throw new error.Error({
-      message: "Missing ENS address for network",
-      details: { network },
-    });
-  }
-
-  const registry = EnsFactory.connect(ensAddr, walletStore.signer);
+  const registry = EnsFactory.connect(ensAddr, wallet.signer);
   const owner = await registry.owner(ethers.utils.namehash(name));
 
   return owner;
