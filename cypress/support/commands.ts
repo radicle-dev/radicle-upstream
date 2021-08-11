@@ -84,15 +84,13 @@ export const pasteInto = (ids: string[], value: string): void => {
 export const createProjectWithFixture = (
   name = "platinum",
   description = "Best project ever.",
-  defaultBranch = "master",
-  fakePeers: string[] = []
+  defaultBranch = "master"
 ): void => {
   cy.then(async () => {
     await proxyClient.control.projectCreate({
       name,
       description,
       defaultBranch,
-      fakePeers,
     });
   });
 };

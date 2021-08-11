@@ -8,7 +8,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { isExperimental } from "ui/src/config";
   import { PeerRole } from "ui/src/project";
   import type { User } from "ui/src/project";
 
@@ -22,7 +21,7 @@
   export let rounded: boolean = false;
   export let peers: User[];
   export let selected: User;
-  export let showProfile: boolean = isExperimental;
+  export let showProfile: boolean = true;
   let dropdownHeight: number;
 
   const orderPeers = (peers: User[]): User[] => {
@@ -190,7 +189,7 @@
               <Tooltip value="Go to profile" position="top">
                 <div
                   class="open-profile"
-                  data-cy={peer.identity.metadata.handle}
+                  data-cy={`open-profile-${peer.identity.metadata.handle}`}
                   on:click|stopPropagation={() => onOpen(peer)}>
                   <Icon.ArrowBoxUpRight />
                 </div>

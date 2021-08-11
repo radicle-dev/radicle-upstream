@@ -6,21 +6,23 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { fetchUser, user as store } from "../src/userProfile";
+  import * as remote from "ui/src/remote";
+  import * as userProfile from "ui/src/userProfile";
 
   import {
     ActionBar,
     Header,
     Icon,
-    Remote,
     SidebarLayout,
     TabBar,
   } from "ui/DesignSystem";
 
   import UserProfileHeader from "./UserProfile/UserProfileHeader.svelte";
-  import ProjectsTab from "ui/Screen/UserProfile/Projects.svelte";
+  import ProjectsTab from "./UserProfile/Projects.svelte";
 
   export let urn: string;
+
+  const userProfileStore = userProfile.user;
 
   const tabs = [
     {
@@ -31,22 +33,22 @@
     },
   ];
 
-  fetchUser(urn);
+  userProfile.fetchUser(urn);
 </script>
 
-<SidebarLayout>
-  <Remote {store} let:data={identity}>
+<SidebarLayout dataCy="user-profile-screen">
+  {#if $userProfileStore.status === remote.Status.Success}
     <Header>
       <UserProfileHeader
         slot="left"
-        name={identity.metadata.handle}
-        peerId={identity.peerId}
-        avatarFallback={identity.avatarFallback} />
+        identityMetadata={$userProfileStore.data.metadata}
+        deviceIds={$userProfileStore.data.peerIds}
+        avatarFallback={$userProfileStore.data.avatarFallback} />
     </Header>
 
     <ActionBar>
       <TabBar slot="left" {tabs} />
     </ActionBar>
     <ProjectsTab {urn} />
-  </Remote>
+  {/if}
 </SidebarLayout>

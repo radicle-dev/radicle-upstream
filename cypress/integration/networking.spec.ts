@@ -122,6 +122,22 @@ context("p2p networking", () => {
               .pickWithContent(["peer-dropdown-entry"], "abbey")
               .should("not.exist");
 
+            cy.log("open maintainer's profile from the contributor's client");
+            commands
+              .pick("peer-dropdown-entry", "open-profile-rudolfs")
+              .click();
+            commands.pick("user-profile-screen").should("exist");
+            commands
+              .pickWithContent(["entity-name"], "rudolfs")
+              .should("exist");
+            commands.pick("peer-id").then(el => {
+              const peerId = el.attr("title");
+              expect(peerId).equal(maintainerNode.peerId);
+            });
+            commands
+              .pickWithContent(["project-list"], projectName)
+              .should("exist");
+
             cy.log("add contributor remote on maintainer's node");
             nodeManager.asNode(maintainerNode);
 

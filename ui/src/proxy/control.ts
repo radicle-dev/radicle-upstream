@@ -10,7 +10,6 @@ interface ProjectCreateParams {
   name: string;
   description: string;
   defaultBranch: string;
-  fakePeers: string[];
 }
 
 export class Control {

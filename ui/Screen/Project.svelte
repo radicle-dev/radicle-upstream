@@ -22,6 +22,7 @@
     store,
   } from "ui/src/screen/project";
   import * as sess from "ui/src/session";
+  import * as userProfile from "ui/src/userProfile";
   import type { Urn } from "ui/src/urn";
   import {
     Button,
@@ -80,14 +81,7 @@
   };
 
   const onOpenPeer = ({ detail: peer }: { detail: User }) => {
-    if (peer.identity.urn === session.identity.urn) {
-      router.push({ type: "profile", activeTab: "projects" });
-    } else {
-      router.push({
-        type: "userProfile",
-        urn: peer.identity.urn,
-      });
-    }
+    userProfile.openUserProfile(peer.identity.urn);
   };
   const onPeerModal = () => {
     modal.toggle(ModalManagePeers);
