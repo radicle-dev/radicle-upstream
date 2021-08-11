@@ -32,7 +32,6 @@ export interface RemoteIdentity {
 
 export interface Identity extends RemoteIdentity {
   peerId: string;
-  shareableEntityIdentifier: string;
 }
 
 export interface Metadata {
@@ -63,5 +62,4 @@ export const remoteIdentitySchema = zod.object({
 
 export const identitySchema = remoteIdentitySchema.extend({
   peerId: zod.string(),
-  shareableEntityIdentifier: zod.string(),
 });

@@ -11,7 +11,6 @@
   import { isExperimental } from "ui/src/config";
   import { PeerRole } from "ui/src/project";
   import type { User } from "ui/src/project";
-  import { CSSPosition } from "ui/src/style";
 
   import Icon from "./Icon";
   import Overlay from "./Overlay.svelte";
@@ -179,7 +178,7 @@
           class:selected={peer.identity.peerId === selected.identity.peerId}
           on:click|stopPropagation={() => onSelect(peer)}>
           {#if peer.role === PeerRole.Tracker}
-            <Tooltip position={CSSPosition.Left} value="Remote has no changes">
+            <Tooltip position="left" value="Remote has no changes">
               <Peer {peer} />
             </Tooltip>
           {:else}
@@ -188,7 +187,7 @@
 
           <div class="action">
             {#if showProfile}
-              <Tooltip value="Go to profile" position={CSSPosition.Top}>
+              <Tooltip value="Go to profile" position="top">
                 <div
                   class="open-profile"
                   data-cy={peer.identity.metadata.handle}

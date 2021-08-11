@@ -175,6 +175,8 @@ pub struct Unsealed {
     pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
     pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
+    /// Notification to shutdown the HTTP server
+    pub shutdown: Arc<tokio::sync::Notify>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -244,6 +246,7 @@ impl Unsealed {
                 service_handle: service::Handle::dummy(),
                 auth_token: Arc::new(RwLock::new(None)),
                 keystore: Arc::new(keystore::memory()),
+                shutdown: Arc::new(tokio::sync::Notify::new()),
             },
             run_handle,
         ))

@@ -9,8 +9,6 @@
   import { fade } from "svelte/transition";
   import type { SvelteComponent } from "svelte";
 
-  import { CSSPosition } from "ui/src/style";
-
   import Icon from "./Icon";
   import Overlay from "./Overlay.svelte";
   import Tooltip from "./Tooltip.svelte";
@@ -150,7 +148,7 @@
           <div class="menu" data-cy="dropdown-menu">
             {#each menuItems as item}
               {#if item !== undefined}
-                <Tooltip value={item.tooltip} position={CSSPosition.Left}>
+                <Tooltip value={item.tooltip} position="left">
                   <div
                     data-cy={item.dataCy}
                     class="menu-item"

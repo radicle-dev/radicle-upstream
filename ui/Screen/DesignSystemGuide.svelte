@@ -7,7 +7,6 @@
 -->
 <script>
   import * as notification from "../src/notification.ts";
-  import { CSSPosition } from "../src/style";
   import { ValidationStatus } from "../src/validation.ts";
 
   import {
@@ -387,6 +386,10 @@
       </Swatch>
 
       <Swatch>
+        <TextInput style="flex: 1;" value="I have a..." suffix="suffix" />
+      </Swatch>
+
+      <Swatch>
         <TextInput
           placeholder="And I'm an input with a validation error."
           style="flex: 1"
@@ -683,25 +686,25 @@
 
     <Section title="Tooltips" subTitle="Top, Right, Bottom, Left">
       <Swatch>
-        <Tooltip value="Top" position={CSSPosition.Top}>
+        <Tooltip value="Top" position="top">
           <Button variant="outline">Hover me!</Button>
         </Tooltip>
       </Swatch>
 
       <Swatch>
-        <Tooltip value="Right" position={CSSPosition.Right}>
+        <Tooltip value="Right" position="right">
           <Button variant="outline">Hover me!</Button>
         </Tooltip>
       </Swatch>
 
       <Swatch>
-        <Tooltip value="Bottom" position={CSSPosition.Bottom}>
+        <Tooltip value="Bottom" position="bottom">
           <Button variant="outline">Hover me!</Button>
         </Tooltip>
       </Swatch>
 
       <Swatch>
-        <Tooltip value="Left" position={CSSPosition.Left}>
+        <Tooltip value="Left" position="left">
           <Button variant="outline">Hover me!</Button>
         </Tooltip>
       </Swatch>

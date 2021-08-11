@@ -16,7 +16,6 @@
 
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
-  import * as style from "ui/src/style";
   import * as svelteStore from "ui/src/svelteStore";
   import * as validation from "ui/src/validation";
   import * as wallet from "ui/src/wallet";
@@ -242,7 +241,7 @@
   <Tooltip
     value={"This is the address of your organization and is required to " +
       "link your ENS name to it."}
-    position={style.CSSPosition.Top}>
+    position="top">
     <TextInput
       style="margin-bottom: 24px"
       disabled

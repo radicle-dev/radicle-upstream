@@ -6,22 +6,26 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { CSSPosition } from "ui/src/style";
-  import { calculatePosition, Visibility } from "ui/src/tooltip";
+  type Position = "top" | "right" | "bottom" | "left";
+  type Offset = { top: number; left: number };
 
-  export let value = "";
-
-  export let position: CSSPosition = CSSPosition.Right;
+  export let value: string | undefined = undefined;
+  export let position: Position = "right";
 
   let container: Element | null = null;
   let message: Element | null = null;
-  let tooltip = { className: Visibility.Hidden, x: 0, y: 0 };
 
-  const hide = () => {
-    tooltip.className = Visibility.Hidden;
+  let visibility: "hidden" | "visible" = "hidden";
+  let offset: Offset = {
+    top: 0,
+    left: 0,
   };
 
-  const show = (_event: MouseEvent) => {
+  function hide() {
+    visibility = "hidden";
+  }
+
+  function show() {
     if (!container || !message) {
       // This can never happen: `show` can only be triggered if
       // `container` and `message` have been bound.
@@ -31,11 +35,41 @@
     const containerRect = container.getBoundingClientRect();
     const messageRect = message.getBoundingClientRect();
 
-    tooltip = {
-      className: Visibility.Visible,
-      ...calculatePosition(position, containerRect, messageRect),
-    };
-  };
+    visibility = "visible";
+    offset = calculateOffset(position, containerRect, messageRect);
+  }
+
+  function calculateOffset(
+    position: Position,
+    container: DOMRect,
+    message: DOMRect
+  ): Offset {
+    switch (position) {
+      case "top":
+        return {
+          top: container.top - 40,
+          left: container.left + container.width / 2,
+        };
+
+      case "right":
+        return {
+          top: container.top + container.height / 2 - 16,
+          left: container.right + 8,
+        };
+
+      case "bottom":
+        return {
+          top: container.bottom + 8,
+          left: container.left + container.width / 2,
+        };
+
+      case "left":
+        return {
+          top: container.top + container.height / 2 - 16,
+          left: container.left - message.width - 8,
+        };
+    }
+  }
 </script>
 
 <style>
@@ -48,7 +82,6 @@
     border-radius: 0.5rem;
     padding: 4px 8px;
     position: fixed;
-
     pointer-events: none;
     z-index: 100;
   }
@@ -57,17 +90,9 @@
   .tooltip.top {
     transform: translateX(-50%);
   }
-
-  .tooltip.visible {
-    visibility: visible;
-  }
-
-  .tooltip.hidden {
-    visibility: hidden;
-  }
 </style>
 
-{#if value.length > 0}
+{#if value}
   <div
     bind:this={container}
     data-cy="tooltip"
@@ -76,8 +101,8 @@
     <slot />
     <div
       bind:this={message}
-      class={`tooltip ${tooltip.className} ${position}`}
-      style={`top: ${tooltip.y}px; left: ${tooltip.x}px;`}>
+      class={`tooltip ${position}`}
+      style={`top: ${offset.top}px; left: ${offset.left}px; visibility: ${visibility}`}>
       <p>{value}</p>
     </div>
   </div>

@@ -199,7 +199,7 @@ impl Handle {
                 },
             },
         }
-        self.reload_notify.notify_one();
+        self.reload_notify.notify_waiters()
     }
 
     /// Create a handle where none of the methods have any effect.

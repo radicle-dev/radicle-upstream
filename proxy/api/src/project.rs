@@ -72,8 +72,6 @@ impl TryFrom<RadProject> for Metadata {
 pub struct Project<S> {
     /// Unique identifier of the project in the network.
     pub urn: Urn,
-    /// Unambiguous identifier pointing at this identity.
-    pub shareable_entity_identifier: String,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
     /// High-level statistics about the project
@@ -92,7 +90,6 @@ impl Partial {
     pub fn fulfill(self, stats: Stats) -> Full {
         Project {
             urn: self.urn,
-            shareable_entity_identifier: self.shareable_entity_identifier,
             metadata: self.metadata,
             stats,
         }
@@ -110,8 +107,7 @@ impl TryFrom<RadProject> for Partial {
         let metadata = Metadata::try_from(project)?;
 
         Ok(Self {
-            urn: urn.clone(),
-            shareable_entity_identifier: format!("%{}", urn),
+            urn,
             metadata,
             stats: (),
         })
@@ -129,8 +125,7 @@ impl TryFrom<(RadProject, Stats)> for Full {
         let metadata = Metadata::try_from(project)?;
 
         Ok(Self {
-            urn: urn.clone(),
-            shareable_entity_identifier: format!("%{}", urn),
+            urn,
             metadata,
             stats,
         })

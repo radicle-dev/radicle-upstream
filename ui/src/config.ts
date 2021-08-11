@@ -43,4 +43,4 @@ const query = qs.parse(
 
 // The address of the proxy in `host:port` format.
 export const proxyAddress =
-  typeof query.backend === "string" ? query.backend : "localhost:17246";
+  typeof query.backend === "string" ? query.backend : "127.0.0.1:17246";

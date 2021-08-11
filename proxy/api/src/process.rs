@@ -155,6 +155,10 @@ async fn run_rigging(
 
     let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
     let server_ctx = ctx.clone();
+    let ctx_shutdown = match ctx {
+        context::Context::Sealed(_) => None,
+        context::Context::Unsealed(ref unsealed) => Some(unsealed.shutdown.clone()),
+    };
 
     tracing::info!("starting API");
     let api = http::api(server_ctx.clone(), peer_events_sender.clone());
@@ -167,6 +171,9 @@ async fn run_rigging(
                     Box::pin(restart_server_signal_rx),
                 )
                 .await;
+                if let Some(ctx_shutdown) = ctx_shutdown {
+                    ctx_shutdown.notify_waiters()
+                }
             }
         })?;
 
@@ -240,9 +247,9 @@ async fn run_rigging(
         futures::select! {
             _ = tasks => {
                 let _ = restart_server_signal_tx.send(());
+                server.await?;
                 drop(peer_shutdown);
                 peer_run.await?;
-                server.await?;
                 Ok(())
             }
             result = server => {
@@ -302,6 +309,7 @@ async fn rig(
             service_handle: service_handle.clone(),
             auth_token,
             keystore: environment.keystore.clone(),
+            shutdown: Arc::new(tokio::sync::Notify::new()),
         });
 
         Ok(Rigging {

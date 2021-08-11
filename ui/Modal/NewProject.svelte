@@ -41,7 +41,6 @@
     TextInput,
     Tooltip,
   } from "ui/DesignSystem";
-  import { CSSPosition } from "ui/src/style";
 
   type RepoType = "new" | "existing";
 
@@ -274,7 +273,7 @@
       value={isExisting
         ? "The project’s name is taken from the chosen repository"
         : ""}
-      position={CSSPosition.Top}>
+      position="top">
       <TextInput
         placeholder="Project name*"
         dataCy="name"

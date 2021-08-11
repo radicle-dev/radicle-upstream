@@ -155,7 +155,7 @@ export class Fetcher {
       headers,
       body: body === undefined ? null : JSON.stringify(body),
       credentials: "include",
-      ...options,
+      signal: options.abort,
     });
   }
 }

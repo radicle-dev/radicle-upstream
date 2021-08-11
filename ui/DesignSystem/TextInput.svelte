@@ -170,8 +170,8 @@
 
   {#if suffix}
     <p
-      style="position: absolute; top: calc(({inputHeight}px - 24px)/2); right: {validation?.status !==
-      Status.NotStarted
+      style="position: absolute; top: calc(({inputHeight}px - 24px)/2); right: {validation &&
+      validation.status !== Status.NotStarted
         ? '38px'
         : '10px'};"
       class="suffix">

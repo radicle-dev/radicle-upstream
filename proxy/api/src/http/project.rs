@@ -491,7 +491,6 @@ mod test {
                 ],
                 "name": "Upstream",
             },
-            "shareableEntityIdentifier": format!("%{}", meta.urn.to_string()),
             "stats": {
                 "branches": 1,
                 "commits": 1,
@@ -572,7 +571,6 @@ mod test {
                     maintainer
                 ],
             },
-            "shareableEntityIdentifier": format!("%{}", meta.urn.to_string()),
             "stats": {
                 "branches": 2,
                 "commits": 15,
