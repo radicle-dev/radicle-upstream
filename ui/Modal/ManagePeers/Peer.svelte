@@ -11,7 +11,6 @@
   import type { Urn } from "../../src/urn";
   import type { User } from "ui/src/project";
 
-  import { BadgeType } from "ui/src/badge";
   import { PeerType, PeerRole } from "ui/src/project";
 
   import {
@@ -62,9 +61,9 @@
         {peer.identity.metadata.handle}
       </p>
       {#if peer.role === PeerRole.Maintainer}
-        <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
+        <Badge style="margin-left: 0.5rem" variant="maintainer" />
       {:else if peer.type === PeerType.Local}
-        <Badge style="margin-left: 0.5rem" variant={BadgeType.You} />
+        <Badge style="margin-left: 0.5rem" variant="you" />
       {/if}
     </div>
     <PeerId

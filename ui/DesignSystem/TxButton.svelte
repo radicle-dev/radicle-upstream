@@ -8,19 +8,17 @@
 <script lang="typescript">
   import Button from "./Button.svelte";
 
-  import type { ButtonVariant } from "ui/src/style";
-
   import * as notification from "ui/src/notification";
   import * as error from "ui/src/error";
   import * as transaction from "ui/src/transaction";
 
-  export let variant: ButtonVariant = "primary";
   export let style = "";
   export let dataCy = "";
   export let onClick: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let errorLabel: string;
   export let disabled = false;
+  export let variant: "primary" | "destructive" = "primary";
 
   let running = false;
 

@@ -8,7 +8,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { ButtonVariant } from "ui/src/style";
   import Button from "./Button.svelte";
   import Icon from "./Icon";
 
@@ -17,7 +16,7 @@
   export let style: string | undefined = undefined;
 
   let hovering: boolean = false;
-  let variant: ButtonVariant;
+  let variant: "primary" | "outline";
   let title: string;
 
   const dispatch = createEventDispatcher();

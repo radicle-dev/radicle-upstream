@@ -9,7 +9,6 @@
   import { createEventDispatcher } from "svelte";
   import { getDirectoryPath } from "ui/src/ipc";
 
-  import type { ButtonVariant } from "ui/src/style";
   import type { ValidationState } from "ui/src/validation";
 
   import Button from "./Button.svelte";
@@ -19,7 +18,6 @@
   export let style = "";
   export let path = "";
   export let validation: ValidationState | undefined = undefined;
-  export let buttonVariant: ButtonVariant = "primary";
 
   const dispatch = createEventDispatcher();
 
@@ -46,10 +44,5 @@
     disabled
     style="margin-right: 0.5rem; flex: 1" />
 
-  <Button
-    dataCy="choose-path-button"
-    variant={buttonVariant}
-    on:click={openFileDialog}>
-    Choose
-  </Button>
+  <Button dataCy="choose-path-button" on:click={openFileDialog}>Choose</Button>
 </div>

@@ -9,7 +9,6 @@
   import type * as project from "ui/src/project";
 
   import Badge from "./Badge.svelte";
-  import { BadgeType } from "ui/src/badge";
   import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
 
   export let title: string;
@@ -51,7 +50,7 @@
   <div class="title-row">
     <p class="typo-text-bold typo-overflow-ellipsis" {title}>{title}</p>
     {#if showMaintainerBadge}
-      <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
+      <Badge style="margin-left: 0.5rem" variant="maintainer" />
     {/if}
     {#if anchor}
       <ProjectAnchorPopover {anchor} replicated={true} />
