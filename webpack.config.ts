@@ -231,9 +231,12 @@ function licensePlugin(): WebpackPluginInstance {
       }
     },
     excludedPackageTest: packageName => {
-      // The @apollo/client package has fake `package.json` files in
+      // These packages have fake `package.json` files in
       // subdirectories. We don’t want to pick those up.
-      return packageName.startsWith("@apollo/client/");
+      return (
+        packageName.startsWith("@apollo/client/") ||
+        packageName.startsWith("ts-invariant/")
+      );
     },
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
