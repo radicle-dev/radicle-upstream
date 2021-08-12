@@ -9,11 +9,12 @@
   import * as ethers from "ethers";
 
   import { unreachable } from "ui/src/unreachable";
-  import * as wallet from "ui/src/wallet";
-  import * as svelteStore from "ui/src/svelteStore";
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as ipc from "ui/src/ipc";
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as wallet from "ui/src/wallet";
 
   import ConfirmRegistration from "./ConfirmRegistration.svelte";
   import ButtonRow from "./shared/ButtonRow.svelte";
@@ -22,6 +23,8 @@
   export let done: () => void;
   export let name: string;
   export let fee: ethers.BigNumber;
+
+  const accountBalancesStore = wallet.accountBalancesStore;
 
   type State =
     | {
@@ -36,6 +39,7 @@
 
   let state: State = { type: "commit" };
   let buttonsDisabled = false;
+  let insufficientFunds = false;
   let confirmButtonCopy = "Begin registration";
 
   function formatFee(fee: ethers.BigNumber) {
@@ -80,7 +84,28 @@
       );
     }
   }
+
+  $: {
+    console.log($accountBalancesStore.rad);
+    if (
+      state.type === "commit" &&
+      $accountBalancesStore.rad &&
+      fee > $accountBalancesStore.rad
+    ) {
+      insufficientFunds = true;
+      buttonsDisabled = true;
+    } else {
+      insufficientFunds = false;
+      buttonsDisabled = false;
+    }
+  }
 </script>
+
+<style>
+  .insufficient-funds {
+    color: var(--color-negative);
+  }
+</style>
 
 {#if state.type === "commit"}
   <Header
@@ -88,6 +113,18 @@
     description={`${name}.${ensResolver.DOMAIN} is ` +
       `available for registration for ${formatFee(fee)} ` +
       `RAD.`} />
+  {#if insufficientFunds}
+    <div class="insufficient-funds">
+      You don't have enough RAD in your wallet to register this name.
+    </div>
+    <div
+      class="typo-link"
+      on:click={() => {
+        ipc.openUrl("https://coinmarketcap.com/currencies/radicle");
+      }}>
+      Buy more RAD
+    </div>
+  {/if}
   <ButtonRow
     disableButtons={buttonsDisabled}
     confirmCopy={confirmButtonCopy}
