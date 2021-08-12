@@ -6,9 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { EnsConfiguration, EnsMetadataPayload } from "./ens-flow.types";
-
-  import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as org from "ui/src/org";
 
@@ -17,31 +14,28 @@
   import ButtonRow from "./shared/ButtonRow.svelte";
   import Header from "./shared/Header.svelte";
 
-  export let onSubmit: () => void = () => {};
-  export let ensConfiguration: EnsConfiguration;
-  export let ensMetadataConfiguration: EnsMetadataPayload;
+  export let onSubmit: () => void;
+  export let domain: string;
+  export let orgAddress: string;
   export let safeAddress: string | undefined = undefined;
 
   let buttonsDisabled = false;
   let submitButtonCopy = "Link organization to name";
 
-  async function linkSingleSig() {
+  let linked = false;
+
+  async function link() {
     buttonsDisabled = true;
     submitButtonCopy = "Waiting for transaction confirmation...";
 
-    if (!ensConfiguration.name || !ensMetadataConfiguration.address) {
-      throw new error.Error({
-        message: "Name or address undefined",
-        details: { ensConfiguration },
-      });
-    }
     try {
-      await org.setNameSingleSig(
-        `${ensConfiguration.name}.${ensResolver.DOMAIN}`,
-        ensMetadataConfiguration.address
-      );
+      if (safeAddress) {
+        await org.proposeSetNameChange(domain, orgAddress, safeAddress);
+      } else {
+        await org.setNameSingleSig(domain, orgAddress);
+      }
 
-      onSubmit();
+      linked = true;
     } catch (err) {
       buttonsDisabled = false;
       submitButtonCopy = "Link organization to name";
@@ -51,29 +45,6 @@
         source: err,
       });
     }
-  }
-
-  async function linkMultiSig() {
-    buttonsDisabled = true;
-    submitButtonCopy = "Waiting for transaction confirmation...";
-
-    if (
-      !safeAddress ||
-      !ensConfiguration.name ||
-      !ensMetadataConfiguration.address
-    ) {
-      throw new error.Error({
-        message: "Name, owner or address undefined",
-        details: { ensConfiguration },
-      });
-    }
-    await org.proposeSetNameChange(
-      `${ensConfiguration.name}.${ensResolver.DOMAIN}`,
-      ensMetadataConfiguration.address,
-      safeAddress
-    );
-
-    onSubmit();
   }
 </script>
 
@@ -85,7 +56,7 @@
   }
 </style>
 
-<div>
+{#if !linked}
   <Emoji emoji="🔗" size="huge" style="margin-bottom: 16px" />
   <Header
     title="Let’s link your name"
@@ -95,16 +66,10 @@
       `organization will appear with your new name across Radicle!`} />
 
   <div class="label typo-text-bold">Organization address</div>
-  <TextInput
-    disabled
-    style="margin-bottom: 24px"
-    value={ensMetadataConfiguration.address || undefined} />
+  <TextInput disabled style="margin-bottom: 24px" value={orgAddress} />
 
   <div class="label typo-text-bold">Name</div>
-  <TextInput
-    disabled
-    style="margin-bottom: 24px"
-    value={`${ensConfiguration.name}.${ensResolver.DOMAIN}`} />
+  <TextInput disabled style="margin-bottom: 24px" value={domain} />
 
   <p
     style="color: var(--color-foreground-level-5; margin: 16px 0;"
@@ -115,9 +80,31 @@
 
   <ButtonRow
     disableButtons={buttonsDisabled}
-    onSubmit={() => {
-      safeAddress ? linkMultiSig() : linkSingleSig();
-    }}
+    onSubmit={link}
     canCancel={false}
     confirmCopy={submitButtonCopy} />
-</div>
+{:else if safeAddress}
+  <Emoji emoji="🤝" size="huge" style="margin-bottom: 16px" />
+  <Header
+    title="Approve on Gnosis"
+    description={"As a final step your organisation will have to confirm " +
+      "the transaction on Gnosis. After it's been approved and executed " +
+      "your newly registered name will start appearing across Radicle in " +
+      "place of your organization address!"} />
+  <ButtonRow
+    onSubmit={() => {
+      safeAddress && org.openOnGnosisSafe(safeAddress, "transactions");
+      onSubmit();
+    }}
+    canCancel={false}
+    confirmCopy="View proposal on Gnosis" />
+{:else}
+  <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
+  <Header
+    title="That's it!"
+    description={`Great, your organization now points to your new name ` +
+      `${domain}. Shortly, your name ` +
+      `will start appearing across Radicle in place of your organization ` +
+      `address!`} />
+  <ButtonRow {onSubmit} canCancel={false} confirmCopy="Amazing, thanks!" />
+{/if}

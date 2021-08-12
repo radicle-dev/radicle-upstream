@@ -11,7 +11,7 @@
   import ButtonRow from "./shared/ButtonRow.svelte";
   import Header from "./shared/Header.svelte";
 
-  export let onSubmit: () => void = () => {};
+  export let onSubmit: () => void;
 </script>
 
 <div>

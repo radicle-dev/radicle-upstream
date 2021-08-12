@@ -67,7 +67,7 @@
         },
       },
       {
-        title: registration?.name ? "Edit ENS name" : "Register ENS name",
+        title: registration ? "Edit ENS name" : "Register ENS name",
         icon: Icon.Ethereum,
         event: () => org.openEnsConfiguration(address, registration),
       },
