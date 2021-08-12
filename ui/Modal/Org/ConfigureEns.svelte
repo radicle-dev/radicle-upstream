@@ -31,7 +31,7 @@
     | { type: "enterEnsName"; currentName: string | undefined }
     | { type: "register"; name: string; fee: ethers.BigNumber }
     | {
-        type: "UpdateMetadata";
+        type: "updateMetadata";
         registration: ensResolver.Registration;
       }
     | {
@@ -63,7 +63,7 @@
         });
       }
       state = {
-        type: "UpdateMetadata",
+        type: "updateMetadata",
         registration,
       };
     };
@@ -84,7 +84,7 @@
   function enterEnsNameDone(result: enterEnsName.Result) {
     if (result.registration) {
       state = {
-        type: "UpdateMetadata",
+        type: "updateMetadata",
         registration: result.registration,
       };
     } else {
@@ -130,7 +130,7 @@
         name={state.name}
         fee={state.fee}
         done={bindRegistrationDone(state.name)} />
-    {:else if state.type === "UpdateMetadata"}
+    {:else if state.type === "updateMetadata"}
       <UpdateMetadata
         {orgAddress}
         registration={state.registration}
