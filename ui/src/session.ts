@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as svelte from "svelte";
 import { Readable, derived, get } from "svelte/store";
 
 import * as proxy from "./proxy";
@@ -47,11 +46,18 @@ sessionStore.subscribe(data => {
   }
 });
 
-// Return the unseleased session if the session is unsealed, undefined otherwise.
-export const unsealed = (): UnsealedSession | undefined => {
+// Return the unseleased session if the session is unsealed. Throw an error
+// otherwise.
+export const unsealed = (): UnsealedSession => {
   const session = sessionStore.unwrap();
   if (session === undefined || session.status !== Status.UnsealedSession) {
-    return undefined;
+    throw new error.Error({
+      code: error.Code.UnsealedSessionExpected,
+      message: "session is not unsealed",
+      details: {
+        session,
+      },
+    });
   } else {
     return session;
   }
@@ -84,26 +90,6 @@ export const settings: Readable<Settings> = derived(sessionStore, sess => {
     return defaultSetttings();
   }
 });
-
-// Get the unsealed session from the Svelte context. Throws if the
-// session is not unsealed.
-//
-// The function uses `svelte.getContext` and must be called from a
-// component.
-export const getUnsealedFromContext = (): UnsealedSession => {
-  const session = svelte.getContext("session") as Session;
-  if (session.status === Status.UnsealedSession) {
-    return session;
-  } else {
-    throw new error.Error({
-      code: error.Code.UnsealedSessionExpected,
-      message: "session is not unsealed",
-      details: {
-        status: session.status,
-      },
-    });
-  }
-};
 
 const fetchSession = async (): Promise<void> => {
   try {
