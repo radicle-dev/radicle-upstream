@@ -62,12 +62,19 @@ pub struct Person {
     pub metadata: Metadata,
     /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
     pub avatar_fallback: avatar::Avatar,
+    /// The user's PeerIds.
+    pub peer_ids: Vec<PeerId>,
 }
 
 impl From<DaemonPerson> for Person {
     fn from(person: DaemonPerson) -> Self {
         let urn = person.urn();
         let handle = person.subject().name.to_string();
+        let peer_ids = person
+            .delegations()
+            .iter()
+            .map(|pk| PeerId::from(*pk))
+            .collect::<Vec<PeerId>>();
         let ethereum = match person.payload().get_ext::<EthereumClaimExtV1>() {
             Ok(ext_opt) => ext_opt.map(Ethereum::from),
             Err(err) => {
@@ -79,6 +86,7 @@ impl From<DaemonPerson> for Person {
         Self {
             avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
             urn,
+            peer_ids,
             metadata: Metadata { handle, ethereum },
         }
     }
@@ -207,7 +215,6 @@ pub async fn get_remote(
     peer: &net::peer::Peer<BoxedSigner>,
     id: Urn,
 ) -> Result<Option<Person>, error::Error> {
-    let all_users = state::list_users(peer).await.map_err(error::Error::State)?;
-    let user = all_users.into_iter().find(|user| user.urn() == id);
+    let user = state::get_user(peer, id).await?;
     Ok(user.map(Person::from))
 }

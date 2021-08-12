@@ -405,8 +405,7 @@ This section describes how to release a new version of Upstream.
 ### Prerequisites
 
 * [`gcloud`][gc] to upload artifacts. You need to ask for access to the
-  `releases.radicle.xyz` storage bucket. See also points 1 and 2 from the
-  [Docker image updates][do] section.
+  `radicle-upstream-releases` storage bucket.
 * [`hub`][hb] version >= 2.14 to interact with GitHub’s API. See [its
   documentation][hub-config] on how to configure access
 * [`brew`][br] to update the Uptream cask.

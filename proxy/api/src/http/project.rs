@@ -348,7 +348,7 @@ mod test {
     use warp::{http::StatusCode, test::request};
 
     use radicle_daemon::{
-        config, identities::payload::Person, include, state, state::init_owner, LocalUrl,
+        config, identities::payload::Person, include, state::init_owner, LocalUrl,
     };
     use radicle_source::surf::vcs::git::git2;
 
@@ -620,46 +620,6 @@ mod test {
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(project));
         });
-
-        Ok(())
-    }
-
-    // TODO(xla): Reintroduce when tracking is properly supported at the level of state
-    // manipulation.
-    #[ignore]
-    #[tokio::test]
-    async fn list_for_user() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir()?;
-        let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
-        let api = super::filters(ctx.clone().into());
-
-        let owner = init_owner(
-            &ctx.peer,
-            Person {
-                name: "cloudhead".into(),
-            },
-        )
-        .await?;
-        crate::control::setup_fixtures(&ctx.peer, &owner).await?;
-
-        let projects = project::Projects::list(&ctx.peer).await?;
-        let project = projects.into_iter().next().unwrap();
-        let coco_project = state::get_project(&ctx.peer, project.urn.clone())
-            .await?
-            .unwrap();
-
-        let (peer_id, local_identity) =
-            crate::control::track_fake_peer(&ctx.peer, &coco_project, "rafalca").await;
-        let user: identity::Identity = (peer_id, local_identity.into_inner().into_inner()).into();
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/user/{}", user.urn))
-            .reply(&api)
-            .await;
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        assert_eq!(have, json!(vec![project]));
 
         Ok(())
     }

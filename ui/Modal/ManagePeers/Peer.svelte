@@ -5,13 +5,12 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="ts">
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
   import type { Urn } from "../../src/urn";
   import type { User } from "ui/src/project";
 
-  import { BadgeType } from "ui/src/badge";
   import { PeerType, PeerRole } from "ui/src/project";
 
   import {
@@ -40,11 +39,19 @@
     max-width: 22em;
     flex-direction: column;
   }
+  .user-profile {
+    display: inline-flex;
+    cursor: pointer;
+  }
 </style>
 
 <div class="peer" data-cy={`peer-${peer.identity.metadata.handle}`}>
   <div class="left">
-    <div style="display: flex;">
+    <div
+      class="user-profile"
+      on:click={() => {
+        dispatch("userProfileClick", { urn: peer.identity.urn });
+      }}>
       <Avatar
         avatarFallback={peer.identity.avatarFallback}
         size="small"
@@ -54,9 +61,9 @@
         {peer.identity.metadata.handle}
       </p>
       {#if peer.role === PeerRole.Maintainer}
-        <Badge style="margin-left: 0.5rem" variant={BadgeType.Maintainer} />
+        <Badge style="margin-left: 0.5rem" variant="maintainer" />
       {:else if peer.type === PeerType.Local}
-        <Badge style="margin-left: 0.5rem" variant={BadgeType.You} />
+        <Badge style="margin-left: 0.5rem" variant="you" />
       {/if}
     </div>
     <PeerId

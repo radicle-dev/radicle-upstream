@@ -8,9 +8,13 @@
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
 
-  import type { ButtonVariant as Variant } from "ui/src/style";
-
-  export let variant: Variant = "primary";
+  export let variant:
+    | "primary"
+    | "vanilla"
+    | "transparent"
+    | "outline"
+    | "destructive"
+    | "embedded" = "primary";
 
   export let disabled: boolean = false;
   export let transition: boolean = true;

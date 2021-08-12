@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { BadgeType } from "ui/src/badge";
   import { PeerRole, PeerType } from "ui/src/project";
   import type { User } from "ui/src/project";
 
@@ -38,11 +37,11 @@
   </p>
   {#if peer.role === PeerRole.Maintainer}
     <p class="badge">
-      <Badge variant={BadgeType.Maintainer} />
+      <Badge variant="maintainer" />
     </p>
   {:else if peer.type === PeerType.Local}
     <p class="badge">
-      <Badge variant={BadgeType.You} />
+      <Badge variant="you" />
     </p>
   {/if}
 </div>

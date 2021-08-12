@@ -22,6 +22,8 @@
 
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
+  import * as userProfile from "ui/src/userProfile";
+  import * as modal from "ui/src/modal";
 
   let newPeer: PeerId;
 
@@ -103,6 +105,10 @@
       style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
       <Peer
         {peer}
+        on:userProfileClick={event => {
+          userProfile.openUserProfile(event.detail.urn);
+          modal.hide();
+        }}
         on:unfollow={event => {
           unfollowPeer(event.detail.projectUrn, event.detail.peerId);
         }}

@@ -24,9 +24,7 @@ use radicle_daemon::{
         },
         git_ext::OneLevel,
         identities::Project,
-        keys,
         net::peer::Peer,
-        peer::PeerId,
         refspec_pattern,
         signer::BoxedSigner,
     },
@@ -127,96 +125,6 @@ fn platinum_directory() -> io::Result<path::PathBuf> {
     path::Path::new(cargo_manifest_dir)
         .join("../../fixtures/git-platinum")
         .canonicalize()
-}
-
-/// TODO(finto): Burn this. It's just a big foot gun and it breaks whenever we try to access
-/// `signed_refs`.
-///
-/// Create and track a fake peer.
-pub async fn track_fake_peer(
-    peer: &Peer<BoxedSigner>,
-    project: &Project,
-    fake_user_handle: &str,
-) -> (PeerId, LocalIdentity) {
-    // TODO(finto): We're faking a lot of the networking interaction here.
-    // Create git references of the form and track the peer.
-    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/signed_refs/heads
-    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/id
-    //   refs/namespaces/<platinum_project.id>/remotes/<fake_peer_id>/rad/self <- points
-    //   to fake_user
-    let urn = project.urn();
-    let fake_user =
-        state::init_user(peer, fake_user_handle.to_string()).await.unwrap_or_else(|_| panic!("User account creation for fake peer: {} failed, make sure your mocked user accounts don't clash!", fake_user_handle));
-    let remote = PeerId::from(keys::SecretKey::new());
-    let monorepo = git2::Repository::open(state::monorepo(peer)).expect("failed to open monorepo");
-    let prefix = format!("refs/namespaces/{}/refs/remotes/{}", urn.id, remote);
-
-    // Grab the Oid of master for the given project.
-    let target = monorepo
-        .find_reference(&format!("refs/namespaces/{}/refs/heads/master", urn.id))
-        .expect("failed to get master")
-        .target()
-        .expect("missing target");
-
-    // TODO: try pass branches in
-    // Creates a new reference to the 'target' Oid above.
-    {
-        let _heads = monorepo
-            .reference(
-                &format!("{}/heads/master", prefix),
-                target,
-                false,
-                "remote heads",
-            )
-            .expect("failed to create heads");
-    }
-
-    // Copy the rad/id under the remote
-    let target = monorepo
-        .find_reference(&format!("refs/namespaces/{}/refs/rad/id", urn.id))
-        .expect("failed to get rad/id")
-        .target()
-        .expect("missing target");
-    {
-        let _rad_id = monorepo
-            .reference(&format!("{}/rad/id", prefix), target, false, "rad/id")
-            .expect("failed to create rad/id");
-    }
-
-    // Create symlink to the User Identity for this project
-    {
-        let _rad_self = monorepo
-            .reference_symbolic(
-                &format!("{}/rad/self", prefix),
-                &format!("refs/namespaces/{}/refs/rad/id", fake_user.urn().id),
-                false,
-                "rad/self",
-            )
-            .expect("failed to create rad/self");
-    }
-
-    // Create the copy of the rad/refs under the remote
-    let target = monorepo
-        .find_reference(&format!("refs/namespaces/{}/refs/rad/signed_refs", urn.id))
-        .expect("failed to get rad/signed_refs")
-        .target()
-        .expect("missing target");
-    {
-        let _rad_id = monorepo
-            .reference(
-                &format!("{}/rad/signed_refs", prefix),
-                target,
-                false,
-                "rad/signed_refs",
-            )
-            .expect("failed to create rad/refs");
-    }
-
-    state::track(peer, urn, remote)
-        .await
-        .expect("failed to track peer");
-
-    (remote, fake_user)
 }
 
 /// This function exists as a standalone because the logic does not play well with async in

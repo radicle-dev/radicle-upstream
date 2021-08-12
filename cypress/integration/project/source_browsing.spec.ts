@@ -10,8 +10,6 @@ context("project source browsing", () => {
   beforeEach(() => {
     commands.resetProxyState();
     commands.onboardUser("cloudhead");
-
-    // TODO(sos): add fake peers again when we have a peer testnet
     commands.createProjectWithFixture();
   });
 

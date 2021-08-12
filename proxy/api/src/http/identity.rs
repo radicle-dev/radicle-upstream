@@ -387,46 +387,4 @@ mod test {
 
         Ok(())
     }
-
-    // TODO(xla): Reintroduce when tracking is properly supported at the level of state
-    // manipulation.
-    #[ignore]
-    #[tokio::test]
-    async fn list() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
-        let api = super::filters(ctx.clone().into());
-
-        let fintohaps: identity::Identity = {
-            let metadata = identity::Metadata {
-                handle: "cloudhead".to_string(),
-                ethereum: None,
-            };
-            let id = identity::create(&ctx.peer, metadata).await?;
-
-            let owner = state::get_local(&ctx.peer, id.urn.clone()).await?.unwrap();
-
-            session::initialize(&ctx.store, id, &ctx.default_seeds)?;
-
-            let platinum_project = crate::control::replicate_platinum(
-                &ctx.peer,
-                &owner,
-                "git-platinum",
-                "fixture data",
-                crate::control::default_branch(),
-            )
-            .await?;
-
-            let (peer_id, local_identity) =
-                crate::control::track_fake_peer(&ctx.peer, &platinum_project, "fintohaps").await;
-            (peer_id, local_identity.into_inner().into_inner()).into()
-        };
-
-        let res = request().method("GET").path("/").reply(&api).await;
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(have, json!([fintohaps]));
-        Ok(())
-    }
 }

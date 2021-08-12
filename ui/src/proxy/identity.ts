@@ -28,9 +28,13 @@ export interface RemoteIdentity {
   avatarFallback: Avatar;
   metadata: Metadata;
   urn: string;
+  peerIds: string[];
 }
 
-export interface Identity extends RemoteIdentity {
+export interface Identity {
+  avatarFallback: Avatar;
+  metadata: Metadata;
+  urn: string;
   peerId: string;
 }
 
@@ -58,8 +62,20 @@ export const remoteIdentitySchema = zod.object({
       .nullable(),
   }),
   urn: zod.string(),
+  peerIds: zod.array(zod.string()),
 });
 
-export const identitySchema = remoteIdentitySchema.extend({
+export const identitySchema = zod.object({
+  avatarFallback: avatarSchema,
+  metadata: zod.object({
+    handle: zod.string(),
+    ethereum: zod
+      .object({
+        address: zod.string(),
+        expiration: zod.string(),
+      })
+      .nullable(),
+  }),
+  urn: zod.string(),
   peerId: zod.string(),
 });

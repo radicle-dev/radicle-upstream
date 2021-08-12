@@ -6,10 +6,19 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Avatar, List, StyledCopyable } from "ui/DesignSystem";
   import type * as org from "ui/src/org";
+  import type * as project from "ui/src/project";
+  import * as userProfile from "ui/src/userProfile";
+
+  import { Avatar, List, StyledCopyable } from "ui/DesignSystem";
 
   export let members: org.Member[];
+
+  function openUserProfile({ detail: member }: { detail: project.User }) {
+    if (member.identity) {
+      userProfile.openUserProfile(member.identity.urn);
+    }
+  }
 </script>
 
 <style>
@@ -39,7 +48,7 @@
 </style>
 
 <div class="container">
-  <List items={members} let:item={member} styleHoverState={false}>
+  <List items={members} let:item={member} on:select={openUserProfile}>
     <div class="list-item">
       {#if member.identity}
         <div style="display: flex">

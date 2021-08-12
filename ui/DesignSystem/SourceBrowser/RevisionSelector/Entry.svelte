@@ -7,7 +7,6 @@
 -->
 <script lang="typescript">
   import { RevisionType } from "ui/src/source";
-  import { BadgeType } from "ui/src/badge";
   import type { Branch, Tag } from "ui/src/source";
 
   import Badge from "ui/DesignSystem/Badge.svelte";
@@ -70,6 +69,6 @@
   {/if}
   <p class="revision-name typo-overflow-ellipsis">{revision.name}</p>
   {#if defaultBranch}
-    <Badge variant={BadgeType.DefaultBranch} />
+    <Badge variant="default" />
   {/if}
 </div>

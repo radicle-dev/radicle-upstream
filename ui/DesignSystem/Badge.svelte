@@ -6,9 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { BadgeType } from "ui/src/badge";
-
-  export let variant: BadgeType = BadgeType.Maintainer;
+  export let variant: "maintainer" | "you" | "default" = "maintainer";
   export let style: string = "";
 
   const caption = String(variant);

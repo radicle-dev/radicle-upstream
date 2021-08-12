@@ -80,11 +80,6 @@ mod handler {
         .await
         .map_err(error::Error::from)?;
 
-        if let Some(user_handle_list) = input.fake_peers {
-            for user_handle in user_handle_list {
-                let _fake_peer = crate::control::track_fake_peer(&ctx.peer, &meta, &user_handle);
-            }
-        }
         let branch = state::get_branch(&ctx.peer, meta.urn(), None, None)
             .await
             .map_err(error::Error::from)?;
@@ -125,6 +120,4 @@ pub struct CreateInput {
     description: String,
     /// Configured default branch.
     default_branch: git_ext::OneLevel,
-    /// Create and track fake peers
-    fake_peers: Option<Vec<String>>,
 }
