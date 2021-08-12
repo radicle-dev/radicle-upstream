@@ -25,7 +25,7 @@ const addresses = {
 };
 
 // Get the address of the Pool Contract for the given environment
-export function daiTokenAddress(environment: ethereum.Environment): string {
+function daiTokenAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
       return addresses.local;
@@ -38,9 +38,9 @@ export function daiTokenAddress(environment: ethereum.Environment): string {
 
 export function connect(
   signerOrProvider: Signer | ethers.providers.Provider,
-  address: string
+  environment: ethereum.Environment
 ): ERC20 {
-  return Erc20Factory.connect(address, signerOrProvider);
+  return Erc20Factory.connect(daiTokenAddress(environment), signerOrProvider);
 }
 
 // Start watching an allowance on a given token.

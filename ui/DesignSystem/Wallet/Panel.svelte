@@ -12,12 +12,14 @@
   import Icon from "ui/DesignSystem/Icon";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
+  import * as config from "ui/src/config";
   import * as ethereum from "ui/src/ethereum";
   import { ellipsed } from "ui/src/style";
   import { Button } from "ui/DesignSystem";
 
   export let dai: BigNumber | null;
   export let eth: BigNumber | null;
+  export let rad: BigNumber | null;
   export let address: string;
   export let onDisconnect: () => void;
   export let style = "";
@@ -80,8 +82,13 @@
     <div class="supported">
       <h5>Supported tokens</h5>
       <h3>
-        {formatBalance(dai)} DAI
+        {formatBalance(rad)} RAD
       </h3>
+      {#if config.isDev}
+        <h3>
+          {formatBalance(dai)} DAI
+        </h3>
+      {/if}
     </div>
   </div>
 

@@ -7,7 +7,7 @@
 import * as svelteStore from "svelte/store";
 
 import * as contract from "./contract";
-import * as daiToken from "./daiToken";
+import * as daiToken from "ui/src/wallet/daiToken";
 import * as transaction from "../transaction";
 import * as validation from "../validation";
 
@@ -84,8 +84,7 @@ export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
   const poolAddress = contract.poolAddress(wallet.environment);
   const poolContract = contract.pool(wallet.signer, poolAddress);
-  const daiTokenAddress = daiToken.daiTokenAddress(wallet.environment);
-  const daiTokenContract = daiToken.connect(wallet.signer, daiTokenAddress);
+  const daiTokenContract = daiToken.connect(wallet.signer, wallet.environment);
   const watcher = new PoolWatcher(poolContract, daiTokenContract);
 
   loadPoolData(watcher);
