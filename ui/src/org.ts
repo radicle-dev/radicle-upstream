@@ -47,7 +47,7 @@ const ORG_POLL_INTERVAL_MS = 2000;
 // immediately but retry again.
 const updateOrgsForever = async (): Promise<never> => {
   let showError = true;
-  let remainingRetriesUnavailable = 0;
+  let remainingRetriesUnavailable = 20;
 
   for (;;) {
     const walletStore = svelteStore.get(wallet.store);

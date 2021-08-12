@@ -96,6 +96,7 @@
             onDisconnect={wallet.disconnect}
             dai={$accountBalancesStore.dai}
             eth={$accountBalancesStore.eth}
+            rad={$accountBalancesStore.rad}
             address={w.connected.address} />
         </div>
         {#if supportedNetwork($ethereumEnvironment) === w.connected.network}

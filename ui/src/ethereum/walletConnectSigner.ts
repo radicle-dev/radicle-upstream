@@ -118,15 +118,14 @@ export class WalletConnectSigner extends ethers.Signer {
   ): Promise<string> {
     const tx = await resolveProperties(transaction);
     const from = tx.from || (await this.getAddress());
-    const nonce = await this._provider.getTransactionCount(from);
 
     const signedTx = await this.walletConnect.signTransaction({
       from,
       to: tx.to,
-      value: maybeBigNumberToString(tx.value || 0),
-      gasLimit: maybeBigNumberToString(tx.gasLimit || 200 * 1000),
-      gasPrice: maybeBigNumberToString(tx.gasPrice || 0),
-      nonce,
+      value: maybeBigNumberToString(tx.value),
+      gasLimit: maybeBigNumberToString(tx.gasLimit),
+      gasPrice: maybeBigNumberToString(tx.gasPrice),
+      nonce: maybeBigNumberToString(tx.nonce),
       data: bytesLikeToString(tx.data),
     });
     return signedTx;
