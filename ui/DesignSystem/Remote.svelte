@@ -11,11 +11,8 @@
   import * as error from "ui/src/error";
   import * as remote from "ui/src/remote";
 
-  import WithContext from "./WithContext.svelte";
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let store: Readable<remote.Data<any>>;
-  export let context: string | undefined = undefined;
 
   export let disableErrorLogging: boolean = false;
 
@@ -45,11 +42,7 @@
 {:else if $store.status === remote.Status.Loading}
   <slot name="loading" />
 {:else if $store.status === remote.Status.Success}
-  {#if context}
-    <WithContext {data} name={context}>
-      <slot {data} />
-    </WithContext>
-  {:else if (Array.isArray(data) && data.length === 0) || data === null}
+  {#if (Array.isArray(data) && data.length === 0) || data === null}
     <slot name="empty" />
   {:else}
     <slot {data} />

@@ -34,13 +34,7 @@ export const fetchUser = (urn: string): void => {
 };
 
 export const openUserProfile = async (userUrn: string): Promise<void> => {
-  const unsealed = session.unsealed();
-  if (!unsealed) {
-    throw new error.Error({
-      message: "Expected unsealed session",
-    });
-  }
-  if (userUrn === unsealed.identity.urn) {
+  if (userUrn === session.unsealed().identity.urn) {
     router.push({ type: "profile", activeTab: "projects" });
   } else {
     router.push({

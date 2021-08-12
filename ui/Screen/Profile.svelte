@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import * as modal from "../src/modal";
-  import * as sess from "../src/session";
+  import * as Session from "ui/src/session";
   import { unreachable } from "ui/src/unreachable";
   import * as router from "ui/src/router";
 
@@ -49,7 +49,7 @@
     ];
   };
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
 </script>
 
 <SidebarLayout style="margin-top: 0;" dataCy="profile-screen">

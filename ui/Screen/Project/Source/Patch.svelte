@@ -8,7 +8,7 @@
 <script lang="typescript">
   import * as remote from "ui/src/remote";
   import type { Project } from "ui/src/project";
-  import * as sess from "ui/src/session";
+  import * as Session from "ui/src/session";
   import type { PatchDetails } from "ui/src/project/patch";
   import * as patch from "ui/src/project/patch";
 
@@ -20,7 +20,7 @@
   export let id: string;
   export let peerId: string;
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
 
   const patchRemote = remote.createStore<PatchDetails>();
   $: {

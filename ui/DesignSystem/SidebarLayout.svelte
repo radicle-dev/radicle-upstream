@@ -6,14 +6,14 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as sess from "ui/src/session";
+  import * as Session from "ui/src/session";
 
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy: string = "";
   export let style: string = "";
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
 </script>
 
 <style>

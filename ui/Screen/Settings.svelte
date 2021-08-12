@@ -11,8 +11,7 @@
   import { selectedEnvironment as ethereumEnvironment } from "../src/ethereum";
   import * as ethereum from "../src/ethereum";
   import * as ipc from "../src/ipc";
-  import { settings, updateAppearance } from "../src/session";
-  import * as sess from "../src/session";
+  import * as Session from "ui/src/session";
   import {
     themeOptions,
     uiFontOptions,
@@ -20,6 +19,8 @@
   } from "../src/settings";
   import { updateChecker } from "../src/updateChecker";
   import * as modal from "../src/modal";
+
+  const settingsStore = Session.settings;
 
   import {
     Button,
@@ -30,13 +31,22 @@
   import ModalShortcuts from "../Modal/Shortcuts.svelte";
 
   const updateTheme = (event: CustomEvent) =>
-    updateAppearance({ ...$settings.appearance, theme: event.detail });
+    Session.updateAppearance({
+      ...$settingsStore.appearance,
+      theme: event.detail,
+    });
 
   const updateUIFont = (event: CustomEvent) =>
-    updateAppearance({ ...$settings.appearance, uiFont: event.detail });
+    Session.updateAppearance({
+      ...$settingsStore.appearance,
+      uiFont: event.detail,
+    });
 
   const updateCodeFont = (event: CustomEvent) =>
-    updateAppearance({ ...$settings.appearance, codeFont: event.detail });
+    Session.updateAppearance({
+      ...$settingsStore.appearance,
+      codeFont: event.detail,
+    });
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -87,7 +97,7 @@
     },
   ];
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
 </script>
 
 <style>
@@ -184,7 +194,7 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settings.appearance.theme}
+              active={$settingsStore.appearance.theme}
               options={themeOptions}
               on:select={updateTheme} />
           </div>
@@ -199,7 +209,7 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settings.appearance.uiFont}
+              active={$settingsStore.appearance.uiFont}
               options={uiFontOptions}
               on:select={updateUIFont} />
           </div>
@@ -214,7 +224,7 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settings.appearance.codeFont}
+              active={$settingsStore.appearance.codeFont}
               options={codeFontOptions}
               on:select={updateCodeFont} />
           </div>

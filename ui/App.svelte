@@ -6,6 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import * as Session from "ui/src/session";
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
   import * as error from "ui/src/error";
   import * as ethereum from "ui/src/ethereum";
@@ -17,31 +18,26 @@
   import * as walletModule from "ui/src/wallet";
 
   import { unreachable } from "ui/src/unreachable";
-  import { fetch, session as sessionStore, Status } from "ui/src/session";
   import "ui/src/localPeer";
 
-  import {
-    EmptyState,
-    NotificationFaucet,
-    ModalOverlay,
-    Remote,
-  } from "ui/DesignSystem";
+  import { NotificationFaucet, ModalOverlay } from "ui/DesignSystem";
 
   import Hotkeys from "ui/Hotkeys.svelte";
   import Theme from "ui/Theme.svelte";
 
   import Bsod from "ui/Screen/Bsod.svelte";
   import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
+  import Loading from "ui/Screen/Loading.svelte";
   import Lock from "ui/Screen/Lock.svelte";
+  import Network from "ui/Screen/Network.svelte";
   import NetworkDiagnostics from "ui/Screen/NetworkDiagnostics.svelte";
   import Onboarding from "ui/Screen/Onboarding.svelte";
   import Org from "ui/Screen/Org.svelte";
-  import SingleSigOrg from "ui/Screen/SingleSigOrg.svelte";
   import Profile from "ui/Screen/Profile.svelte";
-  import UserProfile from "ui/Screen/UserProfile.svelte";
   import Project from "ui/Screen/Project.svelte";
-  import Network from "ui/Screen/Network.svelte";
   import Settings from "ui/Screen/Settings.svelte";
+  import SingleSigOrg from "ui/Screen/SingleSigOrg.svelte";
+  import UserProfile from "ui/Screen/UserProfile.svelte";
   import Wallet from "ui/Screen/Wallet.svelte";
 
   router.initialize();
@@ -49,26 +45,27 @@
   org.initialize();
   transaction.initialize();
 
-  const walletStore = walletModule.store;
   const activeRouteStore = router.activeRouteStore;
   const ethereumEnvironment = ethereum.selectedEnvironment;
+  const sessionStore = Session.session;
+  const walletStore = walletModule.store;
 
   sessionStore.subscribe(session => {
     // We’re not using a reactive statement here to prevent this code from
     // running when `activeRouteStore` is updated.
     switch (session.status) {
       case remote.Status.NotAsked:
-        fetch();
+        Session.fetch();
         break;
 
       case remote.Status.Success:
-        if (session.data.status === Status.NoSession) {
+        if (session.data.status === Session.Status.NoSession) {
           hotkeys.disable();
           router.push({ type: "onboarding" });
-        } else if (session.data.status === Status.SealedSession) {
+        } else if (session.data.status === Session.Status.SealedSession) {
           hotkeys.disable();
           router.push({ type: "lock" });
-        } else if (session.data.status === Status.UnsealedSession) {
+        } else if (session.data.status === Session.Status.UnsealedSession) {
           hotkeys.enable();
           if (
             $activeRouteStore.type === "onboarding" ||
@@ -104,24 +101,13 @@
   }
 </script>
 
-<style>
-  .error {
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-</style>
-
 <Bsod />
 <Hotkeys />
 <ModalOverlay />
 <NotificationFaucet />
 <Theme />
 
-<Remote store={sessionStore} context="session" disableErrorLogging={true}>
+{#if $sessionStore.status === remote.Status.Success}
   {#if $activeRouteStore.type === "designSystemGuide"}
     <DesignSystemGuide />
   {:else if $activeRouteStore.type === "lock"}
@@ -158,12 +144,10 @@
   {:else if $activeRouteStore.type === "wallet"}
     <Wallet activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "boot"}
-    <!-- TODO: show some loading screen -->
+    <Loading />
   {:else}
     {unreachable($activeRouteStore)}
   {/if}
-
-  <div slot="loading" class="error">
-    <EmptyState headerText="Loading..." emoji="🕵️" text="" />
-  </div>
-</Remote>
+{:else}
+  <Loading />
+{/if}

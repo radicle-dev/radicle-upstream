@@ -11,12 +11,12 @@
   import UnresolvedAnchorList from "ui/Screen/Org/UnresolvedAnchorList.svelte";
 
   import * as router from "ui/src/router";
-  import * as sess from "ui/src/session";
+  import * as Session from "ui/src/session";
   import * as org from "ui/src/org";
 
   import { EmptyState, ProjectList } from "ui/DesignSystem";
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
 
   export let address: string;
   export let anchors: org.OrgAnchors;

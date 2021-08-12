@@ -13,11 +13,11 @@
   import type { Project } from "ui/src/project";
   import { showNotificationsForFailedProjects } from "../../src/profile";
   import * as router from "ui/src/router";
-  import * as sess from "ui/src/session";
+  import * as Session from "ui/src/session";
 
   import { EmptyState, Error, ProjectList, Remote } from "ui/DesignSystem";
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
 
   const create = () => {
     modal.toggle(ModalNewProject);

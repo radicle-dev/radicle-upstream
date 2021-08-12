@@ -16,7 +16,7 @@
   import * as proxy from "../../src/proxy";
   import * as router from "ui/src/router";
   import type { Project } from "ui/src/project";
-  import * as sess from "ui/src/session";
+  import * as Session from "ui/src/session";
   import type { Urn } from "../../src/urn";
 
   import {
@@ -31,7 +31,7 @@
     Remote,
   } from "ui/DesignSystem";
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
   const onCancel = (urn: Urn): void => {
     proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };

@@ -21,7 +21,7 @@
     refreshPeers,
     store,
   } from "ui/src/screen/project";
-  import * as sess from "ui/src/session";
+  import * as Session from "ui/src/session";
   import * as userProfile from "ui/src/userProfile";
   import type { Urn } from "ui/src/urn";
   import {
@@ -49,7 +49,7 @@
     hoverstyle = "";
   };
 
-  const session = sess.getUnsealedFromContext();
+  const session = Session.unsealed();
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
