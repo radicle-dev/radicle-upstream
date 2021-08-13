@@ -106,7 +106,7 @@
 {#if !updated}
   <Modal
     emoji="📋"
-    title="Set your name’s metadata"
+    title="Set your org’s metadata"
     desc={"This will be shown alongside your ENS name, and appears together with your org across Radicle. You can edit it at any time by clicking “Edit ENS name” on the org page."}>
     <div class="label typo-text-bold">Organization address</div>
     <Tooltip
@@ -122,7 +122,7 @@
     <div class="label typo-text-bold">Website URL</div>
     <TextInput
       style="margin-bottom: 24px"
-      placeholder="The URL to your org's website"
+      placeholder="The URL to your org’s website"
       bind:value={urlValue} />
 
     <div class="label typo-text-bold">Avatar URL</div>
@@ -134,13 +134,13 @@
     <div class="label typo-text-bold">Twitter username</div>
     <TextInput
       style="margin-bottom: 24px"
-      placeholder="Your org's Twitter handle"
+      placeholder="Your org’s Twitter handle"
       bind:value={twitterValue} />
 
     <div class="label typo-text-bold">GitHub username</div>
     <TextInput
       style="margin-bottom: 24px"
-      placeholder="Your org's GitHub username"
+      placeholder="Your org’s GitHub username"
       bind:value={githubValue} />
 
     <ButtonRow
@@ -151,8 +151,8 @@
 {:else}
   <Modal
     emoji="🎉"
-    title="Metadata successfully updated"
-    desc={`Great, your name ${registration.domain} has successfully been updated with your supplied metadata.`}>
+    title="Metadata updated"
+    desc={"Great, your org’s metadata has been successfully updated!"}>
     <ButtonRow {onSubmit} canCancel={false} confirmCopy="Continue" />
   </Modal>
 {/if}
