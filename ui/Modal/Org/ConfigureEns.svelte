@@ -13,9 +13,9 @@
   import * as error from "ui/src/error";
   import { unreachable } from "ui/src/unreachable";
 
-  import ConfigureEnsIntro from "./ConfigureEns/ConfigureEnsIntro.svelte";
-  import EnterEnsName from "./ConfigureEns/EnterEnsName.svelte";
+  import Intro from "./ConfigureEns/Intro.svelte";
   import LinkOrgToName from "./ConfigureEns/LinkOrgToName.svelte";
+  import RegisterName from "./ConfigureEns/RegisterName.svelte";
   import UpdateMetadata from "./ConfigureEns/UpdateMetadata.svelte";
 
   export let orgAddress: string;
@@ -25,7 +25,7 @@
 
   type State =
     | { type: "intro" }
-    | { type: "enterEnsName"; name: string }
+    | { type: "registerName"; name: string }
     | {
         type: "updateMetadata";
         registration: ensResolver.Registration;
@@ -41,7 +41,7 @@
         `.${ensResolver.DOMAIN}`,
         ""
       );
-      return { type: "enterEnsName", name: existingName };
+      return { type: "registerName", name: existingName };
     } else {
       return { type: "intro" };
     }
@@ -65,14 +65,14 @@
     };
   }
 
-  function configureEnsIntroDone() {
+  function introDone() {
     const existingName = registration?.domain.replace(
       `.${ensResolver.DOMAIN}`,
       ""
     );
 
     state = {
-      type: "enterEnsName",
+      type: "registerName",
       name: existingName || "",
     };
   }
@@ -92,9 +92,9 @@
 </script>
 
 {#if state.type === "intro"}
-  <ConfigureEnsIntro onSubmit={configureEnsIntroDone} {fee} />
-{:else if state.type === "enterEnsName"}
-  <EnterEnsName
+  <Intro onSubmit={introDone} {fee} />
+{:else if state.type === "registerName"}
+  <RegisterName
     name={state.name}
     {fee}
     done={bindRegistrationDone(state.name)} />
