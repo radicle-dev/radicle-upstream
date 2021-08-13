@@ -29,25 +29,40 @@
   export let currentName: string | undefined;
   export let fee: ethers.BigNumber;
 
-  let name = currentName;
+  let name = currentName || "";
 
   let validationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
 
-  async function handleSubmit() {
+  let timeoutHandle: NodeJS.Timeout;
+  let userInputStarted: boolean = name !== "";
+
+  function validateName(name: string | undefined): void {
+    if (!userInputStarted) {
+      userInputStarted = true;
+      return;
+    }
+
     if (!name) {
       validationStatus = {
         status: validation.ValidationStatus.Error,
         message: "You need to enter a name.",
       };
-      return;
+    } else {
+      validationStatus = {
+        status: validation.ValidationStatus.Loading,
+      };
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+      }
+      timeoutHandle = setTimeout(() => {
+        checkNameAvailability();
+      }, 1000);
     }
+  }
 
-    validationStatus = {
-      status: validation.ValidationStatus.Loading,
-    };
-
+  async function checkNameAvailability(): Promise<void> {
     const available = await ensRegistrar.isAvailable(name);
 
     if (available) {
@@ -63,9 +78,9 @@
 
         return;
       }
-      onSubmit({
-        name,
-      });
+
+      // Show the green checkmark on the right side of the input box.
+      validationStatus = { status: validation.ValidationStatus.Success };
     } else {
       const registration = await ensResolver.getRegistration(
         `${name}.${ensResolver.DOMAIN}`
@@ -74,10 +89,8 @@
       const walletStore = svelteStore.get(wallet.store);
 
       if (registration && registration.owner === walletStore.getAddress()) {
-        onSubmit({
-          registration,
-          name,
-        });
+        validationStatus = { status: validation.ValidationStatus.Success };
+        return;
       }
 
       validationStatus = {
@@ -87,13 +100,24 @@
     }
   }
 
-  // Reset validation when user changes input
-  $: {
-    name;
-    validationStatus = {
-      status: validation.ValidationStatus.NotStarted,
-    };
+  async function handleSubmit(): Promise<void> {
+    /*   const walletStore = svelteStore.get(wallet.store); */
+    /*   const registration = await ensResolver.getRegistration( */
+    /*     `${name}.${ensResolver.DOMAIN}` */
+    /*   ); */
+    /*   if (registration && registration.owner === walletStore.getAddress()) { */
+    /*     onSubmit({ */
+    /*       registration, */
+    /*       name, */
+    /*     }); */
+    /*   } else { */
+    /*     onSubmit({ */
+    /*       name, */
+    /*     }); */
+    /*   } */
   }
+
+  $: validateName(name);
 </script>
 
 <Modal
@@ -102,10 +126,15 @@
   desc="What should your org be called? This name will show up on the top of your profile and anywhere you interact as an org on Radicle.">
   <TextInput
     bind:value={name}
+    showSuccessCheck
     validation={validationStatus}
     suffix={`.${ensResolver.DOMAIN}`}
     placeholder="Your organization name"
     style="margin: 16px auto; width: 352px;" />
 
-  <ButtonRow onSubmit={handleSubmit} confirmCopy="Continue" />
+  <ButtonRow
+    onSubmit={handleSubmit}
+    confirmCopy="Continue"
+    disableButtons={validationStatus.status !==
+      validation.ValidationStatus.Success} />
 </Modal>
