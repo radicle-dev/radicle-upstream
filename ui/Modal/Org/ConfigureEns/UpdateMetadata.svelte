@@ -8,6 +8,7 @@
 <script lang="typescript">
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as validation from "ui/src/validation";
 
   import { Modal, TextInput, Tooltip } from "ui/DesignSystem";
 
@@ -31,6 +32,20 @@
     avatarValue = registration.avatar || undefined;
     twitterValue = registration.twitter || undefined;
     githubValue = registration.github || undefined;
+  }
+
+  let orgAddressValidationStatus: validation.ValidationState = {
+    status: validation.ValidationStatus.NotStarted,
+  };
+
+  if (
+    registration.address &&
+    registration.address.toLowerCase() !== orgAddress.toLowerCase()
+  ) {
+    orgAddressValidationStatus = {
+      status: validation.ValidationStatus.Error,
+      message: `This name already points to your org with the address ${registration.address}. If you change this here, it will overwrite the existing metadata associated with this ENS name.`,
+    };
   }
 
   async function setRecords() {
@@ -104,7 +119,11 @@
     <Tooltip
       value={"This is the address of your organization and is required to link your ENS name to it."}
       position="top">
-      <TextInput style="margin-bottom: 24px" disabled value={orgAddress} />
+      <TextInput
+        style="margin-bottom: 24px"
+        disabled
+        value={orgAddress}
+        validation={orgAddressValidationStatus} />
     </Tooltip>
 
     <div class="label typo-text-bold">Website URL</div>
