@@ -37,7 +37,7 @@
     if (!name) {
       validationStatus = {
         status: validation.ValidationStatus.Error,
-        message: "This field is required.",
+        message: "You need to enter a name.",
       };
       return;
     }
@@ -85,7 +85,7 @@
 <Modal
   emoji="📇"
   title="Let’s name your organization"
-  desc="What should your organization be called?">
+  desc="What should your organization be called? This name will show up on the top of your profile and anywhere you interact as an org on Radicle.">
   <TextInput
     bind:value={name}
     validation={validationStatus}

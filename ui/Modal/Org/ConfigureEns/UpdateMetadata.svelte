@@ -98,8 +98,8 @@
 {#if !updated}
   <Modal
     emoji="📇"
-    title="Set your name's metadata"
-    desc={"This following information will be saved alongside your ENS name, and appears together with your organization across Radicle once linked. You can edit it any time by clicking “Edit ENS name” on the organization page."}>
+    title="Set your name’s metadata"
+    desc={"This will be shown alongside your ENS name, and appears together with your org across Radicle. You can edit it at any time by clicking “Edit ENS name” on the org page."}>
     <div class="label typo-text-bold">Organization address</div>
     <Tooltip
       value={"This is the address of your organization and is required to link your ENS name to it."}
