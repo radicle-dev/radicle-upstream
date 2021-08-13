@@ -34,7 +34,7 @@
         type: "register";
         commitmentSalt: Uint8Array;
         commitmentBlock: number;
-        requiredBlocks: number;
+        minAge: number;
       };
 
   let state: State = { type: "commit" };
@@ -60,7 +60,7 @@
 
       state = {
         type: "register",
-        requiredBlocks: commitResult.minAge,
+        minAge: commitResult.minAge,
         commitmentBlock: commitResult.receipt.blockNumber,
         commitmentSalt: salt,
       };
@@ -129,7 +129,7 @@
     {name}
     commitmentSalt={state.commitmentSalt}
     commitmentBlock={state.commitmentBlock}
-    requiredBlocks={state.requiredBlocks}
+    minAge={state.minAge}
     {done} />
 {:else}
   {unreachable(state)}
