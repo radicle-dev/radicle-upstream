@@ -52,26 +52,19 @@
   }
 </style>
 
-<div id="wrapper">
-  <svg
-    width="96"
-    height="96"
-    viewBox="0 0 96 96"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg">
-    <circle
-      style="stroke-dasharray: 300; stroke-dashoffset: {strokeDashOffset}; transform: rotate(-90deg); transform-origin: center;"
-      cx="48"
-      cy="48"
-      r="44"
-      class="circle circle-front"
-      stroke-linecap="round"
-      stroke-width="8" />
-    <circle
-      cx="48"
-      cy="48"
-      r="44"
-      class=".circle circle-back"
-      stroke-width="8" />
-  </svg>
-</div>
+<svg
+  width="96"
+  height="96"
+  viewBox="0 0 96 96"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg">
+  <circle
+    style={`stroke-dasharray: 300; stroke-dashoffset: ${strokeDashOffset}; transform: rotate(-90deg); transform-origin: center;`}
+    cx="48"
+    cy="48"
+    r="44"
+    class="circle circle-front"
+    stroke-linecap="round"
+    stroke-width="8" />
+  <circle cx="48" cy="48" r="44" class=".circle circle-back" stroke-width="8" />
+</svg>

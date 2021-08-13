@@ -51,7 +51,7 @@
     emoji="📇"
     title="Awaiting registration commitment"
     desc="This will take about one minute. The waiting period is required to ensure another person hasn’t tried to register the same name.">
-    <div style="color: var(--color-foreground-level-5);">
+    <div style="display: flex; justify-content: center;">
       <BlockTimer
         onFinish={() => (state = "readyToRegister")}
         {requiredBlocks}
