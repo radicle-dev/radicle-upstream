@@ -74,16 +74,7 @@
   <Modal
     emoji="🎉"
     title="Registration complete"
-    desc={`Congratulations, ` +
-      `${name}.${ensResolver.DOMAIN} has successfully been ` +
-      `registered with your wallet. Next, let's populate your name with ` +
-      `organization metadata.`}>
-    <p
-      style="color: var(--color-foreground-level-5; margin: 16px 0;"
-      class="typo-text-small">
-      You can also do this later by selecting "Register ENS Name" and entering
-      your existing name.
-    </p>
+    desc={`Congratulations, ${name}.${ensResolver.DOMAIN} has successfully been registered with your wallet. Next, let's populate your name with organization metadata. You can also do this later by selecting "Register ENS Name" and entering your existing name.`}>
     <ButtonRow
       onSubmit={done}
       cancelCopy="Do this later"

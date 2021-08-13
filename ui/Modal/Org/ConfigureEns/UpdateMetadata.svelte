@@ -86,7 +86,7 @@
       updated = true;
     } catch (err) {
       buttonsDisabled = false;
-      submitButtonCopy = "Update name metadata";
+      submitButtonCopy = "Update org metadata";
       throw new error.Error({
         message: "Transaction failed",
         source: err,
@@ -105,7 +105,7 @@
 
 {#if !updated}
   <Modal
-    emoji="📇"
+    emoji="📋"
     title="Set your name’s metadata"
     desc={"This will be shown alongside your ENS name, and appears together with your org across Radicle. You can edit it at any time by clicking “Edit ENS name” on the org page."}>
     <div class="label typo-text-bold">Organization address</div>
@@ -122,25 +122,25 @@
     <div class="label typo-text-bold">Website URL</div>
     <TextInput
       style="margin-bottom: 24px"
-      placeholder="https://radicle.xyz/"
+      placeholder="The URL to your org's website"
       bind:value={urlValue} />
 
     <div class="label typo-text-bold">Avatar URL</div>
     <TextInput
       style="margin-bottom: 24px"
-      placeholder="https://radicle.xyz/logo.png"
+      placeholder="A URL that points to the avatar for your org"
       bind:value={avatarValue} />
 
     <div class="label typo-text-bold">Twitter username</div>
     <TextInput
       style="margin-bottom: 24px"
-      placeholder="@radicle"
+      placeholder="Your org's Twitter handle"
       bind:value={twitterValue} />
 
     <div class="label typo-text-bold">GitHub username</div>
     <TextInput
       style="margin-bottom: 24px"
-      placeholder="radicle-dev"
+      placeholder="Your org's GitHub username"
       bind:value={githubValue} />
 
     <ButtonRow

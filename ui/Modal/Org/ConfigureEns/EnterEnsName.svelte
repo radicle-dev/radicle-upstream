@@ -84,8 +84,8 @@
 
 <Modal
   emoji="📇"
-  title="Let’s name your organization"
-  desc="What should your organization be called? This name will show up on the top of your profile and anywhere you interact as an org on Radicle.">
+  title="Let’s name your org"
+  desc="What should your org be called? This name will show up on the top of your profile and anywhere you interact as an org on Radicle.">
   <TextInput
     bind:value={name}
     validation={validationStatus}

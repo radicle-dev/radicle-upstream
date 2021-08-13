@@ -83,7 +83,7 @@
   </Modal>
 {:else if safeAddress}
   <Modal
-    emoji="🤝"
+    emoji="🔗"
     title="Approve on Gnosis"
     desc={"As a final step your organisation will have to confirm " +
       "the transaction on Gnosis. After it's been approved and executed " +
