@@ -12,7 +12,6 @@
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
-  import * as ipc from "ui/src/ipc";
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
@@ -23,8 +22,6 @@
   export let done: () => void;
   export let name: string;
   export let fee: ethers.BigNumber;
-
-  const accountBalancesStore = wallet.accountBalancesStore;
 
   type State =
     | {
@@ -39,7 +36,6 @@
 
   let state: State = { type: "commit" };
   let buttonsDisabled = false;
-  let insufficientFunds = false;
   let confirmButtonCopy = "Begin registration";
 
   async function commit() {
@@ -71,54 +67,21 @@
       error.show(
         new error.Error({
           message:
-            "Transaction failed. Please try again and confirm the signature & " +
-            "transaction in your connected wallet.",
+            "Transaction failed. Please try again and confirm the signature & transaction in your connected wallet.",
           source: err,
         })
       );
     }
   }
-
-  $: {
-    if (
-      state.type === "commit" &&
-      $accountBalancesStore.rad &&
-      fee > $accountBalancesStore.rad
-    ) {
-      insufficientFunds = true;
-      buttonsDisabled = true;
-    } else {
-      insufficientFunds = false;
-      buttonsDisabled = false;
-    }
-  }
 </script>
-
-<style>
-  .insufficient-funds {
-    color: var(--color-negative);
-  }
-</style>
 
 {#if state.type === "commit"}
   <Modal
     emoji="📇"
     title="Let’s name your organization"
-    desc={`${name}.${ensResolver.DOMAIN} is ` +
-      `available for registration for ${ensRegistrar.formatFee(fee)} ` +
-      `RAD.`}>
-    {#if insufficientFunds}
-      <div class="insufficient-funds">
-        You don't have enough RAD in your wallet to register this name.
-      </div>
-      <div
-        class="typo-link"
-        on:click={() => {
-          ipc.openUrl("https://coinmarketcap.com/currencies/radicle");
-        }}>
-        Buy more RAD
-      </div>
-    {/if}
+    desc={`${name}.${
+      ensResolver.DOMAIN
+    } is available for registration for ${ensRegistrar.formatFee(fee)} RAD.`}>
     <ButtonRow
       disableButtons={buttonsDisabled}
       confirmCopy={confirmButtonCopy}

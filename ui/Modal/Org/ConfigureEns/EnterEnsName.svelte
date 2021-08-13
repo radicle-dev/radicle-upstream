@@ -13,6 +13,7 @@
 </script>
 
 <script lang="typescript">
+  import type * as ethers from "ethers";
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
@@ -26,6 +27,7 @@
 
   export let onSubmit: (result: Result) => void;
   export let currentName: string | undefined;
+  export let fee: ethers.BigNumber;
 
   let name = currentName;
 
@@ -49,6 +51,18 @@
     const available = await ensRegistrar.isAvailable(name);
 
     if (available) {
+      const accountBalancesStore = wallet.accountBalancesStore;
+      const radBalance = svelteStore.get(accountBalancesStore).rad;
+
+      if (radBalance && radBalance < fee) {
+        validationStatus = {
+          status: validation.ValidationStatus.Error,
+          message:
+            "You don't have enough RAD in your wallet to register this name.",
+        };
+
+        return;
+      }
       onSubmit({
         name,
       });

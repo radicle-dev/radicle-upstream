@@ -111,7 +111,10 @@
 {#if state.type === "intro"}
   <ConfigureEnsIntro onSubmit={configureEnsIntroDone} {fee} />
 {:else if state.type === "enterEnsName"}
-  <EnterEnsName currentName={state.currentName} onSubmit={enterEnsNameDone} />
+  <EnterEnsName
+    currentName={state.currentName}
+    {fee}
+    onSubmit={enterEnsNameDone} />
 {:else if state.type === "register"}
   <Register name={state.name} {fee} done={bindRegistrationDone(state.name)} />
 {:else if state.type === "updateMetadata"}
