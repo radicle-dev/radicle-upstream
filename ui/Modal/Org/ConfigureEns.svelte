@@ -25,11 +25,12 @@
   export let orgAddress: string;
   export let registration: ensResolver.Registration | undefined = undefined;
   export let safeAddress: string | undefined = undefined;
+  export let fee: ethers.BigNumber;
 
   type State =
     | { type: "intro" }
     | { type: "enterEnsName"; currentName: string | undefined }
-    | { type: "register"; name: string; fee: ethers.BigNumber }
+    | { type: "register"; name: string }
     | {
         type: "updateMetadata";
         registration: ensResolver.Registration;
@@ -91,7 +92,6 @@
       state = {
         type: "register",
         name: result.name,
-        fee: result.fee,
       };
     }
   }
@@ -120,7 +120,7 @@
 <Modal>
   <div class="content">
     {#if state.type === "intro"}
-      <ConfigureEnsIntro onSubmit={configureEnsIntroDone} />
+      <ConfigureEnsIntro onSubmit={configureEnsIntroDone} {fee} />
     {:else if state.type === "enterEnsName"}
       <EnterEnsName
         currentName={state.currentName}
@@ -128,7 +128,7 @@
     {:else if state.type === "register"}
       <Register
         name={state.name}
-        fee={state.fee}
+        {fee}
         done={bindRegistrationDone(state.name)} />
     {:else if state.type === "updateMetadata"}
       <UpdateMetadata

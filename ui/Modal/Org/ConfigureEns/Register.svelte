@@ -42,12 +42,6 @@
   let insufficientFunds = false;
   let confirmButtonCopy = "Begin registration";
 
-  function formatFee(fee: ethers.BigNumber) {
-    return ethers.utils.commify(
-      parseFloat(ethers.utils.formatUnits(fee)).toFixed(2)
-    );
-  }
-
   async function commit() {
     buttonsDisabled = true;
     confirmButtonCopy = "Waiting for transaction confirmation...";
@@ -86,7 +80,6 @@
   }
 
   $: {
-    console.log($accountBalancesStore.rad);
     if (
       state.type === "commit" &&
       $accountBalancesStore.rad &&
@@ -111,7 +104,7 @@
   <Header
     title="Let’s name your organization"
     description={`${name}.${ensResolver.DOMAIN} is ` +
-      `available for registration for ${formatFee(fee)} ` +
+      `available for registration for ${ensRegistrar.formatFee(fee)} ` +
       `RAD.`} />
   {#if insufficientFunds}
     <div class="insufficient-funds">

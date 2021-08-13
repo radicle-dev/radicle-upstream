@@ -9,13 +9,10 @@
   export interface Result {
     registration?: ensResolver.Registration;
     name: string;
-    fee: ethers.BigNumber;
   }
 </script>
 
 <script lang="typescript">
-  import type * as ethers from "ethers";
-
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
@@ -50,12 +47,11 @@
       status: validation.ValidationStatus.Loading,
     };
 
-    const { available, fee } = await ensRegistrar.checkAvailability(name);
+    const available = await ensRegistrar.isAvailable(name);
 
     if (available) {
       onSubmit({
         name,
-        fee,
       });
     } else {
       const registration = await ensResolver.getRegistration(
@@ -68,7 +64,6 @@
         onSubmit({
           registration,
           name,
-          fee,
         });
       }
 

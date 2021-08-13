@@ -7,6 +7,7 @@
 import * as lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
+import type { Org, MemberResponse } from "./org/theGraphApi";
 import type * as identity from "ui/src/proxy/identity";
 import type * as project from "ui/src/project";
 import type * as ensResolver from "ui/src/org/ensResolver";
@@ -14,24 +15,24 @@ import type * as ensResolver from "ui/src/org/ensResolver";
 import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
+import { claimsAddress, ClaimsContract } from "./attestation/contract";
+import { getRegistration, Registration } from "./org/ensResolver";
+import { identitySha1Urn } from "ui/src/urn";
 import { memoizeLru } from "ui/src/memoizeLru";
+import { sleep } from "ui/src/sleep";
+import { unreachable } from "ui/src/unreachable";
+import * as ensRegistrar from "./org/ensRegistrar";
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
+import * as graph from "./org/theGraphApi";
 import * as ipc from "ui/src/ipc";
 import * as modal from "ui/src/modal";
 import * as notification from "ui/src/notification";
 import * as proxy from "ui/src/proxy";
 import * as router from "ui/src/router";
 import * as svelteStore from "ui/src/svelteStore";
-import { unreachable } from "ui/src/unreachable";
 import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
-import { getRegistration, Registration } from "./org/ensResolver";
-import { claimsAddress, ClaimsContract } from "./attestation/contract";
-import type { Org, MemberResponse } from "./org/theGraphApi";
-import * as graph from "./org/theGraphApi";
-import { identitySha1Urn } from "ui/src/urn";
-import { sleep } from "ui/src/sleep";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 import ConfigureEns from "ui/Modal/Org/ConfigureEns.svelte";
@@ -621,14 +622,16 @@ export async function proposeSetNameChange(
   await Safe.signAndProposeTransaction(walletStore, ownerAddress, safeTx);
 }
 
-export function openEnsConfiguration(
+export async function openEnsConfiguration(
   orgAddress: string,
   registration?: ensResolver.Registration,
   safeAddress?: string
-): void {
+): Promise<void> {
+  const fee = await ensRegistrar.getFee();
   modal.show(ConfigureEns, () => {}, {
     safeAddress,
     orgAddress,
     registration,
+    fee,
   });
 }

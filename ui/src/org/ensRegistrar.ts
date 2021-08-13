@@ -62,21 +62,20 @@ function radToken() {
   );
 }
 
-export async function checkAvailability(name: string): Promise<{
-  available: boolean;
-  fee: ethers.BigNumber;
-}> {
+export async function isAvailable(name: string): Promise<boolean> {
   const r = registrar();
+  return r.available(name);
+}
 
-  const [available, fee] = await Promise.all([
-    r.available(name),
-    r.registrationFeeRad(),
-  ]);
+export async function getFee(): Promise<ethers.BigNumber> {
+  const r = registrar();
+  return await r.registrationFeeRad();
+}
 
-  return {
-    available,
-    fee,
-  };
+export function formatFee(fee: ethers.BigNumber): string {
+  return ethers.utils.commify(
+    parseFloat(ethers.utils.formatUnits(fee)).toFixed(2)
+  );
 }
 
 export async function commit(
