@@ -18,21 +18,14 @@
   export let registration: ensResolver.Registration;
   export let orgAddress: string;
 
-  let urlValue: string | undefined;
-  let avatarValue: string | undefined;
-  let twitterValue: string | undefined;
-  let githubValue: string | undefined;
+  let urlValue: string | undefined = registration.url || undefined;
+  let avatarValue: string | undefined = registration.avatar || undefined;
+  let twitterValue: string | undefined = registration.twitter || undefined;
+  let githubValue: string | undefined = registration.github || undefined;
 
   let updated = false;
   let buttonsDisabled = false;
   let submitButtonCopy = "Update name metadata";
-
-  $: {
-    urlValue = registration.url || undefined;
-    avatarValue = registration.avatar || undefined;
-    twitterValue = registration.twitter || undefined;
-    githubValue = registration.github || undefined;
-  }
 
   let orgAddressValidationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
