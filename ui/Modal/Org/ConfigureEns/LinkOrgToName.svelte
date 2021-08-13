@@ -9,10 +9,9 @@
   import * as error from "ui/src/error";
   import * as org from "ui/src/org";
 
-  import { Emoji, TextInput } from "ui/DesignSystem";
+  import { Modal, TextInput } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import Header from "./shared/Header.svelte";
 
   export let onSubmit: () => void;
   export let domain: string;
@@ -57,54 +56,55 @@
 </style>
 
 {#if !linked}
-  <Emoji emoji="🔗" size="huge" style="margin-bottom: 16px" />
-  <Header
+  <Modal
+    emoji="🔗"
     title="Let’s link your name"
-    style="margin-bottom: 24px"
-    description={`In this last step, we’re updating your organization to ` +
+    desc={`In this last step, we’re updating your organization to ` +
       `point towards your newly created name. Once that’s done, your ` +
-      `organization will appear with your new name across Radicle!`} />
+      `organization will appear with your new name across Radicle!`}>
+    <div class="label typo-text-bold">Organization address</div>
+    <TextInput disabled style="margin-bottom: 24px" value={orgAddress} />
 
-  <div class="label typo-text-bold">Organization address</div>
-  <TextInput disabled style="margin-bottom: 24px" value={orgAddress} />
+    <div class="label typo-text-bold">Name</div>
+    <TextInput disabled style="margin-bottom: 24px" value={domain} />
 
-  <div class="label typo-text-bold">Name</div>
-  <TextInput disabled style="margin-bottom: 24px" value={domain} />
+    <p
+      style="color: var(--color-foreground-level-5; margin: 16px 0;"
+      class="typo-text-small">
+      You can also do this later by selecting "Register ENS Name" and entering
+      your existing name.
+    </p>
 
-  <p
-    style="color: var(--color-foreground-level-5; margin: 16px 0;"
-    class="typo-text-small">
-    You can also do this later by selecting "Register ENS Name" and entering
-    your existing name.
-  </p>
-
-  <ButtonRow
-    disableButtons={buttonsDisabled}
-    onSubmit={link}
-    canCancel={false}
-    confirmCopy={submitButtonCopy} />
+    <ButtonRow
+      disableButtons={buttonsDisabled}
+      onSubmit={link}
+      canCancel={false}
+      confirmCopy={submitButtonCopy} />
+  </Modal>
 {:else if safeAddress}
-  <Emoji emoji="🤝" size="huge" style="margin-bottom: 16px" />
-  <Header
+  <Modal
+    emoji="🤝"
     title="Approve on Gnosis"
-    description={"As a final step your organisation will have to confirm " +
+    desc={"As a final step your organisation will have to confirm " +
       "the transaction on Gnosis. After it's been approved and executed " +
       "your newly registered name will start appearing across Radicle in " +
-      "place of your organization address!"} />
-  <ButtonRow
-    onSubmit={() => {
-      safeAddress && org.openOnGnosisSafe(safeAddress, "transactions");
-      onSubmit();
-    }}
-    canCancel={false}
-    confirmCopy="View proposal on Gnosis" />
+      "place of your organization address!"}>
+    <ButtonRow
+      onSubmit={() => {
+        safeAddress && org.openOnGnosisSafe(safeAddress, "transactions");
+        onSubmit();
+      }}
+      canCancel={false}
+      confirmCopy="View proposal on Gnosis" />
+  </Modal>
 {:else}
-  <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
-  <Header
+  <Modal
+    emoji="🎉"
     title="That's it!"
-    description={`Great, your organization now points to your new name ` +
+    desc={`Great, your organization now points to your new name ` +
       `${domain}. Shortly, your name ` +
       `will start appearing across Radicle in place of your organization ` +
-      `address!`} />
-  <ButtonRow {onSubmit} canCancel={false} confirmCopy="Amazing, thanks!" />
+      `address!`}>
+    <ButtonRow {onSubmit} canCancel={false} confirmCopy="Amazing, thanks!" />
+  </Modal>
 {/if}

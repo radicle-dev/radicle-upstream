@@ -11,21 +11,20 @@
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
 
+  import { Modal } from "ui/DesignSystem";
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import Header from "./shared/Header.svelte";
 
   export let fee: ethers.BigNumber;
   export let onSubmit: () => void;
 </script>
 
-<div>
-  <Header
-    title={`Register your ${ensResolver.DOMAIN} name`}
-    description={`Your ${ensResolver.DOMAIN} name allows linking your ` +
-      `organization with a name, logo, URL and social media profiles.`}
-    style="margin-bottom: 1rem;" />
-
-  ENS name registration costs {ensRegistrar.formatFee(fee)} RAD, you'll also need
-  sufficient ETH to cover transaction costs.
+<Modal
+  emoji="📇"
+  title={`Register your ${ensResolver.DOMAIN} name`}
+  desc={`Your ${
+    ensResolver.DOMAIN
+  } name allows linking your organization with a name, logo, URL and social media profiles. The registration costs ${ensRegistrar.formatFee(
+    fee
+  )} RAD, you'll also need sufficient ETH funds to cover transaction costs.`}>
   <ButtonRow {onSubmit} confirmCopy="Let's go" />
-</div>
+</Modal>

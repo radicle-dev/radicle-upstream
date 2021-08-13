@@ -9,10 +9,9 @@
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
 
-  import { TextInput, Tooltip, Emoji } from "ui/DesignSystem";
+  import { Modal, TextInput, Tooltip } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import Header from "./shared/Header.svelte";
 
   export let onSubmit: () => void;
   export let registration: ensResolver.Registration;
@@ -97,56 +96,51 @@
 </style>
 
 {#if !updated}
-  <Header
+  <Modal
+    emoji="📇"
     title="Set your name's metadata"
-    description={"This following information will be saved alongside your " +
-      "ENS name, and appears together with your organization across Radicle " +
-      "once linked. You can edit it any time by clicking “Edit ENS name” on " +
-      "the organization page."}
-    style="margin-bottom: 24px" />
+    desc={"This following information will be saved alongside your ENS name, and appears together with your organization across Radicle once linked. You can edit it any time by clicking “Edit ENS name” on the organization page."}>
+    <div class="label typo-text-bold">Organization address</div>
+    <Tooltip
+      value={"This is the address of your organization and is required to link your ENS name to it."}
+      position="top">
+      <TextInput style="margin-bottom: 24px" disabled value={orgAddress} />
+    </Tooltip>
 
-  <div class="label typo-text-bold">Organization address</div>
-  <Tooltip
-    value={"This is the address of your organization and is required to " +
-      "link your ENS name to it."}
-    position="top">
-    <TextInput style="margin-bottom: 24px" disabled value={orgAddress} />
-  </Tooltip>
+    <div class="label typo-text-bold">Website URL</div>
+    <TextInput
+      style="margin-bottom: 24px"
+      placeholder="https://radicle.xyz/"
+      bind:value={urlValue} />
 
-  <div class="label typo-text-bold">Website URL</div>
-  <TextInput
-    style="margin-bottom: 24px"
-    placeholder="https://radicle.xyz/"
-    bind:value={urlValue} />
+    <div class="label typo-text-bold">Avatar URL</div>
+    <TextInput
+      style="margin-bottom: 24px"
+      placeholder="https://radicle.xyz/logo.png"
+      bind:value={avatarValue} />
 
-  <div class="label typo-text-bold">Avatar URL</div>
-  <TextInput
-    style="margin-bottom: 24px"
-    placeholder="https://radicle.xyz/logo.png"
-    bind:value={avatarValue} />
+    <div class="label typo-text-bold">Twitter username</div>
+    <TextInput
+      style="margin-bottom: 24px"
+      placeholder="@radicle"
+      bind:value={twitterValue} />
 
-  <div class="label typo-text-bold">Twitter username</div>
-  <TextInput
-    style="margin-bottom: 24px"
-    placeholder="@radicle"
-    bind:value={twitterValue} />
+    <div class="label typo-text-bold">GitHub username</div>
+    <TextInput
+      style="margin-bottom: 24px"
+      placeholder="radicle-dev"
+      bind:value={githubValue} />
 
-  <div class="label typo-text-bold">GitHub username</div>
-  <TextInput
-    style="margin-bottom: 24px"
-    placeholder="radicle-dev"
-    bind:value={githubValue} />
-
-  <ButtonRow
-    disableButtons={buttonsDisabled}
-    confirmCopy={submitButtonCopy}
-    onSubmit={setRecords} />
+    <ButtonRow
+      disableButtons={buttonsDisabled}
+      confirmCopy={submitButtonCopy}
+      onSubmit={setRecords} />
+  </Modal>
 {:else}
-  <Emoji emoji="🎉" size="huge" style="margin-bottom: 16px" />
-  <Header
+  <Modal
+    emoji="🎉"
     title="Metadata successfully updated"
-    description={`Great, your name ` +
-      `${registration.domain} has successfully been ` +
-      `updated with your supplied metadata.`} />
-  <ButtonRow {onSubmit} canCancel={false} confirmCopy="Continue" />
+    desc={`Great, your name ${registration.domain} has successfully been updated with your supplied metadata.`}>
+    <ButtonRow {onSubmit} canCancel={false} confirmCopy="Continue" />
+  </Modal>
 {/if}

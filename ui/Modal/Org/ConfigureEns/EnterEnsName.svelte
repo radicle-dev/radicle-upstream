@@ -16,10 +16,9 @@
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
-  import { TextInput } from "ui/DesignSystem";
+  import { Modal, TextInput } from "ui/DesignSystem";
 
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import Header from "./shared/Header.svelte";
 
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
@@ -83,15 +82,16 @@
   }
 </script>
 
-<div>
-  <Header
-    title="Let’s name your organization"
-    description="What should your organization be called?" />
+<Modal
+  emoji="📇"
+  title="Let’s name your organization"
+  desc="What should your organization be called?">
   <TextInput
     bind:value={name}
     validation={validationStatus}
     suffix={`.${ensResolver.DOMAIN}`}
     placeholder="Your organization name"
     style="margin: 16px auto; width: 352px;" />
+
   <ButtonRow onSubmit={handleSubmit} confirmCopy="Continue" />
-</div>
+</Modal>

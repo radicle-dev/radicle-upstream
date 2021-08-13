@@ -32,9 +32,11 @@
     width: 100%;
     margin-top: 1.5rem;
   }
-
   .desc {
     color: var(--color-foreground-level-6);
+    text-align: center;
+  }
+  h1 {
     text-align: center;
   }
 </style>

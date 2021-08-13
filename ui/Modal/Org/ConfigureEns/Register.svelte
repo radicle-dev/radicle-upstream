@@ -16,9 +16,9 @@
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
+  import { Modal } from "ui/DesignSystem";
   import ConfirmRegistration from "./ConfirmRegistration.svelte";
   import ButtonRow from "./shared/ButtonRow.svelte";
-  import Header from "./shared/Header.svelte";
 
   export let done: () => void;
   export let name: string;
@@ -101,27 +101,29 @@
 </style>
 
 {#if state.type === "commit"}
-  <Header
+  <Modal
+    emoji="📇"
     title="Let’s name your organization"
-    description={`${name}.${ensResolver.DOMAIN} is ` +
+    desc={`${name}.${ensResolver.DOMAIN} is ` +
       `available for registration for ${ensRegistrar.formatFee(fee)} ` +
-      `RAD.`} />
-  {#if insufficientFunds}
-    <div class="insufficient-funds">
-      You don't have enough RAD in your wallet to register this name.
-    </div>
-    <div
-      class="typo-link"
-      on:click={() => {
-        ipc.openUrl("https://coinmarketcap.com/currencies/radicle");
-      }}>
-      Buy more RAD
-    </div>
-  {/if}
-  <ButtonRow
-    disableButtons={buttonsDisabled}
-    confirmCopy={confirmButtonCopy}
-    onSubmit={commit} />
+      `RAD.`}>
+    {#if insufficientFunds}
+      <div class="insufficient-funds">
+        You don't have enough RAD in your wallet to register this name.
+      </div>
+      <div
+        class="typo-link"
+        on:click={() => {
+          ipc.openUrl("https://coinmarketcap.com/currencies/radicle");
+        }}>
+        Buy more RAD
+      </div>
+    {/if}
+    <ButtonRow
+      disableButtons={buttonsDisabled}
+      confirmCopy={confirmButtonCopy}
+      onSubmit={commit} />
+  </Modal>
 {:else if state.type === "register"}
   <ConfirmRegistration
     {name}

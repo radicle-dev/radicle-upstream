@@ -13,8 +13,6 @@
   import * as error from "ui/src/error";
   import { unreachable } from "ui/src/unreachable";
 
-  import Modal from "ui/DesignSystem/Modal.svelte";
-
   import ConfigureEnsIntro from "./ConfigureEns/ConfigureEnsIntro.svelte";
   import EnterEnsName from "./ConfigureEns/EnterEnsName.svelte";
   import type * as enterEnsName from "./ConfigureEns/EnterEnsName.svelte";
@@ -110,39 +108,23 @@
   }
 </script>
 
-<style>
-  .content {
-    text-align: center;
-    position: relative;
-  }
-</style>
-
-<Modal>
-  <div class="content">
-    {#if state.type === "intro"}
-      <ConfigureEnsIntro onSubmit={configureEnsIntroDone} {fee} />
-    {:else if state.type === "enterEnsName"}
-      <EnterEnsName
-        currentName={state.currentName}
-        onSubmit={enterEnsNameDone} />
-    {:else if state.type === "register"}
-      <Register
-        name={state.name}
-        {fee}
-        done={bindRegistrationDone(state.name)} />
-    {:else if state.type === "updateMetadata"}
-      <UpdateMetadata
-        {orgAddress}
-        registration={state.registration}
-        onSubmit={bindPopulateMetadataDone(state.registration.domain)} />
-    {:else if state.type === "linkOrgToName"}
-      <LinkOrgToName
-        domain={state.domain}
-        {orgAddress}
-        {safeAddress}
-        onSubmit={linkOrgToNameDone} />
-    {:else}
-      {unreachable(state)}
-    {/if}
-  </div>
-</Modal>
+{#if state.type === "intro"}
+  <ConfigureEnsIntro onSubmit={configureEnsIntroDone} {fee} />
+{:else if state.type === "enterEnsName"}
+  <EnterEnsName currentName={state.currentName} onSubmit={enterEnsNameDone} />
+{:else if state.type === "register"}
+  <Register name={state.name} {fee} done={bindRegistrationDone(state.name)} />
+{:else if state.type === "updateMetadata"}
+  <UpdateMetadata
+    {orgAddress}
+    registration={state.registration}
+    onSubmit={bindPopulateMetadataDone(state.registration.domain)} />
+{:else if state.type === "linkOrgToName"}
+  <LinkOrgToName
+    domain={state.domain}
+    {orgAddress}
+    {safeAddress}
+    onSubmit={linkOrgToNameDone} />
+{:else}
+  {unreachable(state)}
+{/if}
