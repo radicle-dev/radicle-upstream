@@ -15,10 +15,8 @@
 
   import ConfigureEnsIntro from "./ConfigureEns/ConfigureEnsIntro.svelte";
   import EnterEnsName from "./ConfigureEns/EnterEnsName.svelte";
-  import type * as enterEnsName from "./ConfigureEns/EnterEnsName.svelte";
   import LinkOrgToName from "./ConfigureEns/LinkOrgToName.svelte";
   import UpdateMetadata from "./ConfigureEns/UpdateMetadata.svelte";
-  import Register from "./ConfigureEns/Register.svelte";
 
   export let orgAddress: string;
   export let registration: ensResolver.Registration | undefined = undefined;
@@ -27,8 +25,7 @@
 
   type State =
     | { type: "intro" }
-    | { type: "enterEnsName"; currentName: string | undefined }
-    | { type: "register"; name: string }
+    | { type: "enterEnsName"; name: string }
     | {
         type: "updateMetadata";
         registration: ensResolver.Registration;
@@ -40,11 +37,11 @@
 
   let state: State = ((): State => {
     if (registration) {
-      const currentName = registration.domain.replace(
+      const existingName = registration.domain.replace(
         `.${ensResolver.DOMAIN}`,
         ""
       );
-      return { type: "enterEnsName", currentName };
+      return { type: "enterEnsName", name: existingName };
     } else {
       return { type: "intro" };
     }
@@ -69,29 +66,15 @@
   }
 
   function configureEnsIntroDone() {
-    const currentName = registration?.domain.replace(
+    const existingName = registration?.domain.replace(
       `.${ensResolver.DOMAIN}`,
       ""
     );
 
     state = {
       type: "enterEnsName",
-      currentName,
+      name: existingName || "",
     };
-  }
-
-  function enterEnsNameDone(result: enterEnsName.Result) {
-    if (result.registration) {
-      state = {
-        type: "updateMetadata",
-        registration: result.registration,
-      };
-    } else {
-      state = {
-        type: "register",
-        name: result.name,
-      };
-    }
   }
 
   function bindPopulateMetadataDone(domain: string) {
@@ -112,11 +95,9 @@
   <ConfigureEnsIntro onSubmit={configureEnsIntroDone} {fee} />
 {:else if state.type === "enterEnsName"}
   <EnterEnsName
-    currentName={state.currentName}
+    name={state.name}
     {fee}
-    onSubmit={enterEnsNameDone} />
-{:else if state.type === "register"}
-  <Register name={state.name} {fee} done={bindRegistrationDone(state.name)} />
+    done={bindRegistrationDone(state.name)} />
 {:else if state.type === "updateMetadata"}
   <UpdateMetadata
     {orgAddress}
