@@ -62,9 +62,7 @@
   <Modal
     emoji="📇"
     title="Almost done"
-    desc={`With this last transaction, you’re confirming the ` +
-      `registration of your new ENS name ` +
-      `${name}.${ensResolver.DOMAIN}.`}>
+    desc={`With this last transaction, you’re confirming the registration of your new ENS name ${name}.${ensResolver.DOMAIN}.`}>
     <ButtonRow
       disableButtons={buttonsDisabled}
       onSubmit={register}
