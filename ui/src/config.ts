@@ -13,6 +13,8 @@ export const UPSTREAM_DEFAULT_BRANCH = "main";
 export const GIT_DEFAULT_BRANCH = "master";
 export const NOTIFICATION_TIMEOUT = 8000; // ms
 export const FADE_DURATION = 200;
+export const INFURA_API_KEY_RINKEBY = "de5e2a8780c04964950e73b696d1bfb1";
+export const INFURA_API_KEY_MAINNET = "7a19a4bf0af84fcc86ffb693a257fad4";
 
 // Configuration values.
 export interface Config {
@@ -22,12 +24,17 @@ export interface Config {
   //
   // This is `true` in the cypress and node test environments.
   experimentalFeaturesEnabled: boolean;
+  // If set, a test wallet is used to automatically sign Ethereum
+  // transactions. The value is the mnemonic from which the private key
+  // is derived.
+  testWalletMnemonic?: string;
   isDev: boolean;
 }
 
 const partialConfigSchema: zod.Schema<Partial<Config>> = zod.object({
   proxyAddress: zod.string().optional(),
   experimentalFeaturesEnabled: zod.boolean().optional(),
+  testWalletMnemonic: zod.string().optional(),
   isDev: zod.boolean().optional(),
 });
 

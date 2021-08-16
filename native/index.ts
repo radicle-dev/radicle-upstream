@@ -360,6 +360,10 @@ function buildConfig(): Partial<Config> {
   if (["1", "true"].includes(process.env.RADICLE_UPSTREAM_EXPERIMENTAL || "")) {
     config.experimentalFeaturesEnabled = true;
   }
+  if (process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC) {
+    config.testWalletMnemonic =
+      process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC;
+  }
   if (isDev) {
     config.isDev = true;
   }

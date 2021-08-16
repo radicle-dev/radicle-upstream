@@ -1,3 +1,18 @@
+# Ethereum development
+
+# Test Wallet
+
+The app can be run with a test wallet that automatically connects and signs
+transaction without user interaction on the Rinkeby network. To use the test
+wallet set the following environment variable.
+
+```bash
+RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC="foo bar" yarn run start
+```
+
+The value of the variable is the mnemonic phrase used to derive your private
+key.
+
 ## Features based on Ethereum
 ### Funding
 
@@ -68,6 +83,8 @@ Read more about Orgs [here][org].
   funding (aka token streams) feature are not yet deployed.
 
 ### Local environment
+
+**⚠️ This section is outdated and will be rewritten ⚠️**
 
 In the local environment, we set up these three pieces as follows:
 
