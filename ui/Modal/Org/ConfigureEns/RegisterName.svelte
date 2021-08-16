@@ -15,7 +15,7 @@
   import { Modal, TextInput } from "ui/DesignSystem";
 
   import ConfirmRegistration from "./ConfirmRegistration.svelte";
-  import ButtonRow from "./shared/ButtonRow.svelte";
+  import ButtonRow from "./ButtonRow.svelte";
 
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";

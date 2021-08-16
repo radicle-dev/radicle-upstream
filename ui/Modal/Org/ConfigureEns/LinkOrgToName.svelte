@@ -11,7 +11,7 @@
 
   import { Modal, TextInput } from "ui/DesignSystem";
 
-  import ButtonRow from "./shared/ButtonRow.svelte";
+  import ButtonRow from "./ButtonRow.svelte";
 
   export let onSubmit: () => void;
   export let domain: string;

@@ -12,7 +12,7 @@
   import { unreachable } from "ui/src/unreachable";
   import { Modal } from "ui/DesignSystem";
 
-  import ButtonRow from "./shared/ButtonRow.svelte";
+  import ButtonRow from "./ButtonRow.svelte";
   import BlockTimer from "./BlockTimer.svelte";
 
   let buttonsDisabled = false;
