@@ -37,7 +37,7 @@
     In order to use our funding features, you need to connect an Ethereum
     wallet.
   </p>
-  <Button disabled={connecting} on:click={onConnect}>
+  <Button disabled={connecting} on:click={onConnect} dataCy="connect-wallet">
     Connect your wallet
   </Button>
 </div>

@@ -18,23 +18,16 @@ import {
 } from "@ethersproject/properties";
 import * as svelteStore from "svelte/store";
 
-import { Environment } from "./environment";
 import type { WalletConnect } from "./walletConnect";
 
 export class WalletConnectSigner extends ethers.Signer {
   private walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
-  private _environment: Environment;
 
-  constructor(
-    walletConnect: WalletConnect,
-    provider: Provider,
-    environment: Environment
-  ) {
+  constructor(walletConnect: WalletConnect, provider: Provider) {
     super();
     defineReadOnly(this, "provider", provider);
     this._provider = provider;
-    this._environment = environment;
     this.walletConnect = walletConnect;
   }
 
@@ -68,14 +61,6 @@ export class WalletConnectSigner extends ethers.Signer {
   async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
-    // When using a local Ethereum environment, we want our app to send
-    // the transaction to the local Ethereum node and have the external
-    // wallet just sign the transaction. In all other environments, we
-    // want the external wallet to submit the transaction to the network.
-    if (this._environment === Environment.Local) {
-      return super.sendTransaction(transaction);
-    }
-
     const tx = await resolveProperties(transaction);
     const from = tx.from || (await this.getAddress());
 

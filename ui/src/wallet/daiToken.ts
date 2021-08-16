@@ -19,7 +19,7 @@ import {
 export { ERC20 };
 
 const addresses = {
-  local: "0xff1d4d289bf0aaaf918964c57ac30481a67728ef",
+  local: "0x1d3e6acf736f4730f709cda657040be1f0d4500f",
   rinkeby: "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
   mainnet: "0x6b175474e89094c44da98b954eedeac495271d0f",
 };

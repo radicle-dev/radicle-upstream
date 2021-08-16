@@ -20,7 +20,7 @@ import * as error from "ui/src/error";
 
 const addresses = {
   claims: {
-    local: "0x785e8de68df899d77ce689f863e4166849c8bfd5",
+    local: "0xff1d4d289bf0aaaf918964c57ac30481a67728ef",
     rinkeby: "0x6c7b50EA0AFB02d73AE3846B3B9EBC31808300a6",
     mainnet: "0x4a7DFda4F2e9F062965cC87f775841fB58AEA83e",
   },

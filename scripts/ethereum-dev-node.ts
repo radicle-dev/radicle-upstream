@@ -8,7 +8,7 @@
 
 import * as fs from "fs/promises";
 import execa from "execa";
-import { deployAll } from "radicle-contracts";
+import * as radicleContracts from "radicle-contracts";
 import * as ethers from "ethers";
 import waitOn from "wait-on";
 
@@ -51,14 +51,24 @@ async function main() {
     "http://localhost:8545"
   );
   const signer = provider.getSigner(0);
+  const address = await signer.getAddress();
 
-  const contracts = await deployAll(signer);
+  const claimsContract = await radicleContracts.deployClaims(signer);
+  const radContract = await radicleContracts.deployRadicleToken(
+    signer,
+    address
+  );
 
-  const tokenDecimals = await contracts.rad.decimals();
+  const poolContract = await radicleContracts.deployErc20Pool(
+    signer,
+    10,
+    radContract.address
+  );
 
   // Set the initial balance of the used erc20 token for the development account.
+  const tokenDecimals = await radContract.decimals();
   await (
-    await contracts.rad.transfer(
+    await radContract.transfer(
       devEthAccount,
       ethers.BigNumber.from(100).mul(
         ethers.BigNumber.from(10).pow(tokenDecimals)
@@ -66,14 +76,10 @@ async function main() {
     )
   ).wait();
 
-  console.log(`\nRad token deployed at ${contracts.rad.address.toLowerCase()}`);
-  console.log(`ENS deployed at ${contracts.ens.address.toLowerCase()}`);
-  console.log(
-    `Erc20 Pool deployed at ${contracts.erc20Pool.address.toLowerCase()}`
-  );
-  console.log(
-    `Claims contract deployed at ${contracts.claims.address.toLowerCase()}`
-  );
+  console.log();
+  console.log(`Rad token deployed at ${radContract.address}`);
+  console.log(`Claims contract deployed at ${claimsContract.address}`);
+  console.log(`Erc20 Pool deployed at ${poolContract.address}`);
 
   await ganache;
 }

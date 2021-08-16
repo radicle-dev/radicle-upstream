@@ -14,7 +14,11 @@ import { isEqual } from "lodash";
 import * as ethers from "ethers";
 
 import * as Error from "ui/src/error";
-import { config, INFURA_API_KEY_RINKEBY } from "ui/src/config";
+import {
+  config,
+  isCypressTestEnv,
+  INFURA_API_KEY_RINKEBY,
+} from "ui/src/config";
 import * as bacon from "ui/src/bacon";
 
 // Data provided by a connected wallet
@@ -65,8 +69,13 @@ export interface WalletConnect {
 // Create a `WalletConnect` instance. Creates a test instance when
 // running in Cypress.
 export function createWalletConnect(): WalletConnect {
-  if (config.isDev && config.testWalletMnemonic) {
-    return new TestClient(config.testWalletMnemonic);
+  if (isCypressTestEnv) {
+    return new TestClient(
+      "image napkin cruise dentist name plunge crisp muscle nest floor vessel blush",
+      1
+    );
+  } else if (config.isDev && config.testWalletMnemonic) {
+    return new TestClient(config.testWalletMnemonic, 4);
   } else {
     return new WalletConnectClient();
   }
@@ -217,24 +226,37 @@ export class WalletConnectClient implements WalletConnect {
 export class TestClient implements WalletConnect {
   private _connection: svelteStore.Writable<Connection | undefined> =
     svelteStore.writable(undefined);
+  private chainId: number;
   private wallet: ethers.Wallet;
   private provider: ethers.providers.Provider;
 
   public connection: svelteStore.Readable<Connection | undefined>;
 
-  constructor(mnemonic: string) {
+  // Create a new `TestClient`.
+  //
+  // If `chain` id is 1 (i.e. mainnet) then we submit transactions to a
+  // local node. Otherwise, we submit transaction to the Rinkeby
+  // testnet.
+  constructor(mnemonic: string, chainId: number) {
     this.connection = svelteStore.derived(this._connection, x => x);
     this.wallet = ethers.Wallet.fromMnemonic(mnemonic);
-    this.provider = ethers.providers.InfuraProvider.getWebSocketProvider(
-      "rinkeby",
-      INFURA_API_KEY_RINKEBY
-    );
+    this.chainId = chainId;
+    if (chainId === 1) {
+      this.provider = new ethers.providers.JsonRpcProvider(
+        "http://localhost:8545"
+      );
+    } else {
+      this.provider = ethers.providers.InfuraProvider.getWebSocketProvider(
+        "rinkeby",
+        INFURA_API_KEY_RINKEBY
+      );
+    }
   }
 
   async connect(): Promise<boolean> {
     this._connection.set({
       accountAddress: this.wallet.address,
-      chainId: 4,
+      chainId: this.chainId,
     });
     return true;
   }

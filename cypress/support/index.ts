@@ -6,6 +6,7 @@
 
 import "./assertions";
 import * as ipcStub from "./ipc-stub";
+import * as commands from "./commands";
 
 // Prepare the application `window` instance for cypress test.
 Cypress.on("window:before:load", appWindow => {
@@ -23,11 +24,13 @@ Cypress.on("window:before:load", appWindow => {
 afterEach(function () {
   if (this.currentTest && this.currentTest.state !== "failed") {
     cy.visit("./cypress/empty.html");
+    commands.ethereumDevNode.stop();
   }
 });
 
 // Common setup for all tests.
 beforeEach(() => {
+  commands.ethereumDevNode.stop();
   cy.window().then(win => {
     win.localStorage.setItem(
       "radicle.settings.updateChecker.isEnabled",

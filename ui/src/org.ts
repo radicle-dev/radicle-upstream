@@ -30,6 +30,7 @@ import type { Org, MemberResponse } from "./org/theGraphApi";
 import * as graph from "./org/theGraphApi";
 import { identitySha1Urn } from "ui/src/urn";
 import { sleep } from "ui/src/sleep";
+import { isCypressTestEnv } from "ui/src/config";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
@@ -89,7 +90,9 @@ const updateOrgsForever = async (): Promise<never> => {
 // Start a background task that continously updates the org data for
 // the sidebar.
 export function initialize(): void {
-  updateOrgsForever();
+  if (!isCypressTestEnv) {
+    updateOrgsForever();
+  }
 }
 
 export function openOnGnosisSafe(

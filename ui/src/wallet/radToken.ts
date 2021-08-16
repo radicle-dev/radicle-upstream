@@ -6,7 +6,6 @@
 
 import type * as ethers from "ethers";
 import * as ethereum from "ui/src/ethereum";
-import * as error from "ui/src/error";
 
 import {
   ERC20,
@@ -14,6 +13,7 @@ import {
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 const addresses = {
+  local: "0x1d3e6acf736f4730f709cda657040be1f0d4500f",
   rinkeby: "0x7b6CbebC5646D996d258dcD4ca1d334B282e9948",
   mainnet: "0x31c8EAcBFFdD875c74b94b077895Bd78CF1E64A3",
 };
@@ -21,10 +21,7 @@ const addresses = {
 function radTokenAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "The RAD token is not available on the Local testnet",
-      });
+      return addresses.local;
     case ethereum.Environment.Rinkeby:
       return addresses.rinkeby;
     case ethereum.Environment.Mainnet:

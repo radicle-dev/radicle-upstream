@@ -75,7 +75,7 @@
 <div class="panel" {style}>
   <div class="balances">
     <h3>Balance</h3>
-    <h2>
+    <h2 data-cy="eth-balance">
       {formatBalance(eth)} ETH
     </h2>
     <div class="supported">

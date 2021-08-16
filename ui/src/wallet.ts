@@ -79,7 +79,12 @@ async function updateAccountBalances(
       accountBalancesStore.set(result);
     }
   } catch (err) {
-    error.show(err);
+    error.show(
+      new error.Error({
+        message: "Failed to get account balances",
+        source: err,
+      })
+    );
   }
 }
 
@@ -112,7 +117,7 @@ function build(
     status: Status.NotConnected,
   });
 
-  const signer = new WalletConnectSigner(walletConnect, provider, environment);
+  const signer = new WalletConnectSigner(walletConnect, provider);
 
   const unsubscribeStateStore = stateStore.subscribe(state => {
     if (state.status === Status.Connected) {

@@ -8,13 +8,17 @@ import qs from "qs";
 
 import type { Config } from "ui/src/config";
 
-import type { NodeSession } from "../plugins/nodeManager/shared";
+import { createPlugin } from "cypress/support/plugin";
 import {
   pluginMethods,
+  NodeSession,
   NodeManagerPlugin,
-} from "../plugins/nodeManager/shared";
+} from "cypress/plugins/nodeManager/shared";
 
-const nodeManagerPlugin = createNodeManagerPlugin();
+const nodeManagerPlugin = createPlugin<NodeManagerPlugin>(
+  "nodeManager",
+  pluginMethods
+);
 
 const startAndOnboardNode = (
   dataDir: string,
@@ -119,43 +123,3 @@ export const asNode = (node: NodeSession): void => {
   });
   cy.visit(`./public/index.html?${query}`);
 };
-
-// Replaces the return type `Promise<S>` of the function type `T` with
-// `Cypress.Chainable<S>`.
-//
-// For example, if
-//
-//    T ≡ (foo: number) => Promise<string>
-//
-// then
-//
-//    ChainableReturn<T> ≡ (foo: number) => Cypress.Chainable<string>
-//
-type ChainableReturn<T> = T extends (...params: infer P) => Promise<infer R>
-  ? (...params: P) => Cypress.Chainable<R>
-  : never;
-
-// Replaces the return type `Promise<S>` of all the properties in the
-// API object `R` with `Cypress.Chainable<S>`.
-//
-// For example, if
-//
-//    R ≡ { bar: (foo: number) => Promise<string> }
-//
-// then
-//
-//    ChainableApi<R> ≡ { bar: (foo: number) => Cypress.Chainable<string> }
-//
-type ChainableApi<R> = {
-  [K in keyof R]: ChainableReturn<R[K]>;
-};
-
-function createNodeManagerPlugin(): ChainableApi<NodeManagerPlugin> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const nodeManagerPlugin: any = {};
-  pluginMethods.forEach(task => {
-    nodeManagerPlugin[task] = (arg: unknown) =>
-      cy.task(task, arg, { log: false });
-  });
-  return nodeManagerPlugin;
-}

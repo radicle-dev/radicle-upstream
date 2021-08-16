@@ -19,7 +19,7 @@ import type { TypedEvent } from "radicle-contracts/build/contract-bindings/ether
 import * as ethereum from "../ethereum";
 
 const addresses = {
-  local: "0x56a32c0c857f1ae733562078a693ea845d9bb423",
+  local: "0x801Db725a6B32DC3C9917CDB4CD0138F0C5907E7",
   rinkeby: "0x8c6E1E293346cc4cD31A1972D94DaDcecEd98997",
 };
 

@@ -61,11 +61,11 @@
       </div>
     {/if}
     {#if rejectedTxs.length > 0}
-      <div class="list">
+      <div class="list" data-cy="rejected-transactions">
         <TxList title="Rejected transactions" txs={rejectedTxs} />
       </div>
     {/if}
-    <div class="list">
+    <div class="list" data-cy="transactions">
       {#each txMonthSections as section}
         <TxList title={section.title} txs={section.items} />
       {/each}

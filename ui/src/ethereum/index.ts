@@ -8,7 +8,7 @@ import * as svelteStore from "svelte/store";
 import Big from "big.js";
 import * as ethers from "ethers";
 import persistentStore from "svelte-persistent-store/dist";
-import { config } from "ui/src/config";
+import { config, isCypressTestEnv } from "ui/src/config";
 import * as error from "ui/src/error";
 
 import { Environment, Network, supportedNetwork } from "./environment";
@@ -29,6 +29,10 @@ if (
   selectedEnvironment.set(
     config.isDev ? Environment.Rinkeby : Environment.Mainnet
   );
+}
+
+if (isCypressTestEnv) {
+  selectedEnvironment.set(Environment.Local);
 }
 
 // EIP-20 token decimals for the tokens we operate with across

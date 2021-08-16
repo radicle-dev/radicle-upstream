@@ -4,8 +4,10 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as proxy from "../../ui/src/proxy";
+import * as proxy from "ui/src/proxy";
 import { sleep } from "ui/src/sleep";
+import { createPlugin } from "cypress/support/plugin";
+import * as ethereumDevNodeApi from "cypress/plugins/ethereumDevNode/api";
 
 const proxyClient = new proxy.Client("http://127.0.0.1:17246");
 
@@ -172,6 +174,11 @@ export const onboardUser = (
 export const metaKey = (): string => {
   return navigator.platform.includes("Mac") ? "meta" : "ctrl";
 };
+
+export const ethereumDevNode = createPlugin<ethereumDevNodeApi.Plugin>(
+  "ethereumDevNode",
+  ethereumDevNodeApi.methods
+);
 
 /**
  * Invokes `cy.request` and assert that the response status code is 2xx.
