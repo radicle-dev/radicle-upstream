@@ -163,7 +163,7 @@
     "@gnosis.pm/safe-core-sdk": "^0.2.0",
     "@gnosis.pm/safe-core-sdk-types": "^0.1.1",
     "@gnosis.pm/safe-service-client": "^0.1.0-alpha.0",
-    "@walletconnect/client": "^1.5.4",
+    "@walletconnect/client": "^1.6.0",
     "assert": "^2.0.0",
     "async-mutex": "^0.3.1",
     "baconjs": "^3.0.17",
