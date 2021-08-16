@@ -43,7 +43,7 @@
     status: validation.ValidationStatus.NotStarted,
   };
 
-  let timeoutHandle: NodeJS.Timeout;
+  let timeoutHandle: number;
   let userInputStarted: boolean = name !== "";
   let nextStep: "registerName" | "updateMetadata";
 
@@ -65,7 +65,7 @@
       if (timeoutHandle) {
         clearTimeout(timeoutHandle);
       }
-      timeoutHandle = setTimeout(() => {
+      timeoutHandle = window.setTimeout(() => {
         checkNameAvailability();
       }, 1000);
     }
