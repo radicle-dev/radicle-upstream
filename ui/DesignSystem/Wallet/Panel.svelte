@@ -12,7 +12,7 @@
   import Icon from "ui/DesignSystem/Icon";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
-  import * as config from "ui/src/config";
+  import { config } from "ui/src/config";
   import * as ethereum from "ui/src/ethereum";
   import { ellipsed } from "ui/src/style";
   import { Button } from "ui/DesignSystem";

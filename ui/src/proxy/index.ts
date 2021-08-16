@@ -5,7 +5,8 @@
 // LICENSE file.
 
 import * as zod from "zod";
-import * as config from "../config";
+
+import { config } from "ui/src/config";
 
 import * as settings from "./settings";
 import * as identity from "./identity";

@@ -17,8 +17,6 @@ declare global {
           handle: (event: unknown, message: MainMessage) => void
         ) => void;
       };
-      isDev: boolean;
-      isExperimental: boolean;
     };
   }
 }

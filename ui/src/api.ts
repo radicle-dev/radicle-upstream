@@ -6,7 +6,7 @@
 
 import qs from "qs";
 
-import * as config from "./config";
+import { config } from "ui/src/config";
 
 interface Options {
   query?: Record<string, unknown>;

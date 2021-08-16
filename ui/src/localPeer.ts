@@ -11,7 +11,7 @@ import * as zod from "zod";
 import * as svelteStore from "svelte/store";
 
 import type * as identity from "./identity";
-import * as config from "./config";
+import { config } from "./config";
 import * as notifiation from "./notification";
 import * as remote from "./remote";
 import * as session from "./session";

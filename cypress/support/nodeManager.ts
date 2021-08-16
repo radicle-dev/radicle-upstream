@@ -4,6 +4,10 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import qs from "qs";
+
+import type { Config } from "ui/src/config";
+
 import type { NodeSession } from "../plugins/nodeManager/shared";
 import {
   pluginMethods,
@@ -102,10 +106,18 @@ export const asNode = (node: NodeSession): void => {
   cy.log(`switching UI to node ${node.id}`);
 
   cy.setCookie("auth-token", node.authToken);
-  // NB: it is important that we pass `localhost` instead of `127.0.0.1` here.
-  // I haven't figured out why, but when we use `127.0.0.1` instead of
-  // `localhost`, the app loads with a auth-cookie mismatch error.
-  cy.visit(`./public/index.html?backend=localhost:${node.httpPort}`);
+
+  const config: Partial<Config> = {
+    // NB: it is important that we pass `localhost` instead of `127.0.0.1` here.
+    // I haven't figured out why, but when we use `127.0.0.1` instead of
+    // `localhost`, the app loads with a auth-cookie mismatch error.
+    proxyAddress: `localhost:${node.httpPort}`,
+  };
+
+  const query = qs.stringify({
+    config: JSON.stringify(config),
+  });
+  cy.visit(`./public/index.html?${query}`);
 };
 
 // Replaces the return type `Promise<S>` of the function type `T` with

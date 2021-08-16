@@ -142,14 +142,14 @@ mkdir /Users/rudolfs/work/20000
 
 RAD_HOME="/Users/rudolfs/work/19000" \
 RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:19000 --peer-listen 0.0.0.0:19000" \
-RADICLE_UPSTREAM_UI_ARGS="backend=localhost:19000" \
+RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:19000" \
 yarn start
 
 # And then in a separate shell, launch the second instance.
 
 RAD_HOME="/Users/rudolfs/work/20000" \
 RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:20000 --peer-listen 0.0.0.0:20000" \
-RADICLE_UPSTREAM_UI_ARGS="backend=localhost:20000" \
+RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:20000" \
 yarn start
 ```
 

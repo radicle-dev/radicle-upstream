@@ -15,6 +15,7 @@ import {
 } from "electron";
 import fs from "fs";
 import path from "path";
+import qs from "qs";
 import { ProxyProcessManager } from "./proxy-process-manager";
 import {
   MainMessage,
@@ -23,6 +24,7 @@ import {
   mainProcessMethods,
 } from "./ipc-types";
 import { parseRadicleUrl, throttled } from "./nativeCustomProtocolHandler";
+import type { Config } from "ui/src/config";
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -134,15 +136,12 @@ class WindowManager {
       this.messages = [];
     });
 
-    let uiUrl;
+    const query = qs.stringify({
+      config: JSON.stringify(buildConfig()),
+    });
 
-    if (isDev && process.env.RADICLE_UPSTREAM_UI_ARGS) {
-      uiUrl = `../public/index.html?${process.env.RADICLE_UPSTREAM_UI_ARGS}`;
-    } else {
-      uiUrl = "../public/index.html";
-    }
-
-    window.loadURL(`file://${path.join(__dirname, uiUrl)}`);
+    const htmlPath = path.resolve(__dirname, "..", "public", "index.html");
+    window.loadURL(`file://${htmlPath}?${query}`);
 
     this.window = window;
   }
@@ -351,4 +350,18 @@ function execAsync(cmd: string): Promise<{ stdout: string; stderr: string }> {
       }
     });
   });
+}
+
+function buildConfig(): Partial<Config> {
+  const config: Partial<Config> = {};
+  if (process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS) {
+    config.proxyAddress = process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS;
+  }
+  if (["1", "true"].includes(process.env.RADICLE_UPSTREAM_EXPERIMENTAL || "")) {
+    config.experimentalFeaturesEnabled = true;
+  }
+  if (isDev) {
+    config.isDev = true;
+  }
+  return config;
 }

@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as config from "ui/src/config";
+  import { config } from "ui/src/config";
   import * as router from "ui/src/router";
   import { unreachable } from "ui/src/unreachable";
 

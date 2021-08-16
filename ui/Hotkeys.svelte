@@ -17,7 +17,7 @@
   import * as screen from "./src/screen";
   import { isMac } from "./src/settings";
   import * as hotkeys from "./src/hotkeys";
-  import { isDev } from "./src/config";
+  import { config } from "./src/config";
 
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
     if ($activeRouteStore.type === "designSystemGuide") {
@@ -49,7 +49,7 @@
 
     const shortcut = [
       ...hotkeys.shortcuts,
-      ...(isDev ? hotkeys.devShortcuts : []),
+      ...(config.isDev ? hotkeys.devShortcuts : []),
     ].find(shortcut => {
       const match = shortcut.key === event.key;
       return shortcut.modifierKey ? match && modifierKey : match;
