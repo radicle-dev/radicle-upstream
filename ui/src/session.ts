@@ -6,7 +6,7 @@
 
 import { Readable, derived, get } from "svelte/store";
 
-import { retryFetch } from "ui/src/retryOnError";
+import { retryOnError } from "ui/src/retryOnError";
 
 import * as proxy from "./proxy";
 import * as error from "./error";
@@ -93,9 +93,36 @@ export const settings: Readable<Settings> = derived(sessionStore, sess => {
   }
 });
 
-const fetchSession = async (): Promise<void> => {
+// Fetches the session from the proxy and updates the session store.
+//
+// If `waitUnsealed` is `true` we’ll retry if the session is still
+// sealed.
+const fetchSession = async (waitUnsealed = false): Promise<void> => {
   try {
-    const ses = await retryFetch(() => proxy.client.sessionGet(), 100, 50);
+    const ses = await retryOnError(
+      () => proxy.client.sessionGet(),
+      (err: unknown) => {
+        if (
+          waitUnsealed &&
+          err instanceof proxy.ResponseError &&
+          err.response.status === 403
+        ) {
+          // Session is still sealed but we’re waiting for it to become
+          // unsealed.
+          return true;
+        } else if (
+          error instanceof Error &&
+          error.message === "Failed to fetch"
+        ) {
+          // Can’t connect to the proxy—it’s still restaring
+          return true;
+        } else {
+          return false;
+        }
+      },
+      100,
+      50
+    );
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
   } catch (err) {
     if (err instanceof proxy.ResponseError) {
@@ -136,7 +163,7 @@ export const unseal = async (passphrase: string): Promise<boolean> => {
     }
   }
   sessionStore.loading();
-  await fetchSession();
+  await fetchSession(true);
   return true;
 };
 
