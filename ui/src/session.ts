@@ -110,10 +110,7 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
           // Session is still sealed but we’re waiting for it to become
           // unsealed.
           return true;
-        } else if (
-          error instanceof Error &&
-          error.message === "Failed to fetch"
-        ) {
+        } else if (err instanceof Error && err.message === "Failed to fetch") {
           // Can’t connect to the proxy—it’s still restaring
           return true;
         } else {
