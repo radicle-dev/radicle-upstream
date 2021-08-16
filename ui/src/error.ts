@@ -227,7 +227,13 @@ ipc.listenProxyError(proxyError => {
   setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
 
-if (!config.isCypressTestEnv && !config.isNodeTestEnv) {
+// If we’re not in any kind of test environment we show unhandled
+// errors to the user.
+if (
+  !config.isCypressTestEnv &&
+  !config.isCypressTestRunner &&
+  !config.isNodeTestEnv
+) {
   window.addEventListener("unhandledrejection", ev => {
     ev.preventDefault();
     show(fromUnknown(ev.reason, Code.UnhandledRejection));
