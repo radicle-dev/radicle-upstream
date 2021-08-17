@@ -122,7 +122,7 @@
       };
     }
 
-    registration = await ensResolver.getRegistration(
+    const registration = await ensResolver.getRegistration(
       `${nameInputValue}.${ensResolver.DOMAIN}`
     );
 
