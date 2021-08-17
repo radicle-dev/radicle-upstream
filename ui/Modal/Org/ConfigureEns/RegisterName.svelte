@@ -14,20 +14,21 @@
 
 <script lang="typescript">
   import * as ethers from "ethers";
+  import * as lodash from "lodash";
 
   import { unreachable } from "ui/src/unreachable";
+  import * as ensRegistrar from "ui/src/org/ensRegistrar";
+  import * as ensResolver from "ui/src/org/ensResolver";
+  import * as error from "ui/src/error";
+  import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as svelteStore from "ui/src/svelteStore";
+  import * as validation from "ui/src/validation";
   import * as wallet from "ui/src/wallet";
 
   import { Modal, TextInput } from "ui/DesignSystem";
 
-  import ConfirmRegistration from "./ConfirmRegistration.svelte";
   import ButtonRow from "./ButtonRow.svelte";
-
-  import * as ensRegistrar from "ui/src/org/ensRegistrar";
-  import * as ensResolver from "ui/src/org/ensResolver";
-  import * as error from "ui/src/error";
-  import * as validation from "ui/src/validation";
+  import ConfirmRegistration from "./ConfirmRegistration.svelte";
 
   export let registrationDone: (result: Result) => void;
   export let currentName: string | undefined;
@@ -48,12 +49,10 @@
 
   let state: State = { type: "validateAndCommit" };
 
-  let validationStatus: validation.ValidationState = {
+  let userInputStarted: boolean = nameInputValue !== "";
+  let validationState: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
-
-  let timeoutHandle: number;
-  let userInputStarted: boolean = nameInputValue !== "";
   let registration: ensResolver.Registration | null;
 
   $: validateName(nameInputValue);
@@ -65,24 +64,39 @@
     }
 
     if (!nameInputValue) {
-      validationStatus = {
+      validationState = {
         status: validation.ValidationStatus.Error,
         message: "You need to enter a name.",
       };
     } else {
-      validationStatus = {
+      validationState = {
         status: validation.ValidationStatus.Loading,
       };
-      if (timeoutHandle) {
-        clearTimeout(timeoutHandle);
-      }
-      timeoutHandle = window.setTimeout(() => {
-        validateFormAndQueueNextAction();
-      }, 1000);
+      debouncedValidateFormAndSetState();
     }
   }
 
-  async function validateFormAndQueueNextAction(): Promise<void> {
+  const debouncedValidateFormAndSetState = lodash.debounce(
+    validateFormAndSetState,
+    1000
+  );
+
+  const validateFormExecutor = mutexExecutor.create();
+
+  async function validateFormAndSetState(): Promise<void> {
+    const validationResult = await validateFormExecutor.run(async () => {
+      return await validateForm();
+    });
+
+    if (validationResult) {
+      ({ validationState, registration } = validationResult);
+    }
+  }
+
+  async function validateForm(): Promise<{
+    validationState: validation.ValidationState;
+    registration: ensResolver.Registration | null;
+  }> {
     const available = await ensRegistrar.isAvailable(nameInputValue);
 
     if (available) {
@@ -90,35 +104,46 @@
       const radBalance = svelteStore.get(accountBalancesStore).rad;
 
       if (radBalance && radBalance < fee) {
-        validationStatus = {
-          status: validation.ValidationStatus.Error,
-          message:
-            "You don't have enough RAD in your wallet to register this name.",
+        return {
+          validationState: {
+            status: validation.ValidationStatus.Error,
+            message:
+              "You don't have enough RAD in your wallet to register this name.",
+          },
+          registration: null,
         };
-
-        return;
       }
 
-      validationStatus = { status: validation.ValidationStatus.Success };
-      // Commit to name after user clicks button.
-    } else {
-      registration = await ensResolver.getRegistration(
-        `${nameInputValue}.${ensResolver.DOMAIN}`
-      );
-
-      const walletStore = svelteStore.get(wallet.store);
-
-      if (registration && registration.owner === walletStore.getAddress()) {
-        validationStatus = { status: validation.ValidationStatus.Success };
-        // Go to update metadata after user clicks button.
-        return;
-      }
-
-      validationStatus = {
-        status: validation.ValidationStatus.Error,
-        message: "Sorry, but that name is already taken.",
+      return {
+        validationState: {
+          status: validation.ValidationStatus.Success,
+        },
+        registration: null,
       };
     }
+
+    registration = await ensResolver.getRegistration(
+      `${nameInputValue}.${ensResolver.DOMAIN}`
+    );
+
+    const walletStore = svelteStore.get(wallet.store);
+
+    if (registration && registration.owner === walletStore.getAddress()) {
+      return {
+        validationState: {
+          status: validation.ValidationStatus.Success,
+        },
+        registration,
+      };
+    }
+
+    return {
+      validationState: {
+        status: validation.ValidationStatus.Error,
+        message: "Sorry, but that name is already taken.",
+      },
+      registration: null,
+    };
   }
 
   async function commitOrGoToUpdateMetadata(): Promise<void> {
@@ -173,7 +198,7 @@
     <TextInput
       bind:value={nameInputValue}
       showSuccessCheck
-      validation={validationStatus}
+      validation={validationState}
       suffix={`.${ensResolver.DOMAIN}`}
       placeholder="Your organization name"
       style="margin: 16px auto; width: 352px;" />
@@ -181,7 +206,7 @@
     <ButtonRow
       onSubmit={commitOrGoToUpdateMetadata}
       confirmCopy="Continue"
-      disableButtons={validationStatus.status !==
+      disableButtons={validationState.status !==
         validation.ValidationStatus.Success} />
   </Modal>
 {:else if state.type === "register"}
