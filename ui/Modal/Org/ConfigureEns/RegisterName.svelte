@@ -121,7 +121,7 @@
     }
   }
 
-  async function handleSubmit(): Promise<void> {
+  async function commitOrGoToUpdateMetadata(): Promise<void> {
     if (registration) {
       registrationDone({
         name: nameInputValue,
@@ -179,7 +179,7 @@
       style="margin: 16px auto; width: 352px;" />
 
     <ButtonRow
-      onSubmit={handleSubmit}
+      onSubmit={commitOrGoToUpdateMetadata}
       confirmCopy="Continue"
       disableButtons={validationStatus.status !==
         validation.ValidationStatus.Success} />
