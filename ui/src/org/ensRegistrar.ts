@@ -78,15 +78,30 @@ export function formatFee(fee: ethers.BigNumber): string {
   );
 }
 
-export async function commit(
+// Expire one hour from now.
+const deadline = ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(3600);
+
+export async function getPermitSignature(
   environment: ethereum.Environment,
+  fee: ethers.BigNumber
+): Promise<ethers.Signature> {
+  const wallet = svelteStore.get(Wallet.store);
+  const spender = registrarAddress(environment);
+  const token = radToken();
+  return await permitSignature(wallet.signer, token, spender, fee, deadline);
+}
+
+export interface CommitResult {
+  tx: ethers.ContractTransaction;
+  minAge: number;
+}
+
+export async function commit(
   name: string,
   salt: Uint8Array,
-  fee: ethers.BigNumber
-): Promise<{
-  receipt: ethers.providers.TransactionReceipt;
-  minAge: number;
-}> {
+  fee: ethers.BigNumber,
+  signature: ethers.Signature
+): Promise<CommitResult> {
   const wallet = svelteStore.get(Wallet.store);
   const ownerAddr = wallet.getAddress();
   if (!ownerAddr) {
@@ -96,23 +111,9 @@ export async function commit(
   }
 
   const minAge = (await registrar().minCommitmentAge()).toNumber();
-  const spender = registrarAddress(environment);
-  const deadline = ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(
-    3600
-  ); // Expire one hour from now.
-  const token = radToken();
-  const signature = await permitSignature(
-    wallet.signer,
-    token,
-    spender,
-    fee,
-    deadline
-  );
 
   const commitment = createCommitment(name, ownerAddr, salt);
 
-  // TODO: Once upstream wallet is aware of RAD balance, check if the user has
-  // enough rads before committing.
   const tx = await registrar().commitWithPermit(
     commitment,
     ownerAddr.toLowerCase(),
@@ -123,10 +124,8 @@ export async function commit(
     signature.s
   );
 
-  const receipt = await tx.wait(1);
-
   return {
-    receipt,
+    tx,
     minAge,
   };
 }

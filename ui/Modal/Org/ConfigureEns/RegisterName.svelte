@@ -21,7 +21,9 @@
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as mutexExecutor from "ui/src/mutexExecutor";
+  import * as notification from "ui/src/notification";
   import * as svelteStore from "ui/src/svelteStore";
+  import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
   import * as wallet from "ui/src/wallet";
 
@@ -33,8 +35,6 @@
   export let registrationDone: (result: Result) => void;
   export let currentName: string | undefined;
   export let fee: ethers.BigNumber;
-
-  let nameInputValue: string = currentName || "";
 
   type State =
     | {
@@ -48,12 +48,14 @@
       };
 
   let state: State = { type: "validateAndCommit" };
+  let nameInputValue: string = currentName || "";
 
   let userInputStarted: boolean = nameInputValue !== "";
   let validationState: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
   let registration: ensResolver.Registration | null;
+  let commitInProgress: boolean = false;
 
   $: validateName(nameInputValue);
 
@@ -158,35 +160,96 @@
   }
 
   async function commit() {
-    // TODO: show notification to confirm tx in wallet
+    commitInProgress = true;
+
+    const walletStore = svelteStore.get(wallet.store);
+    const signNotification = notification.info({
+      message:
+        "Waiting for you to sign the commitment permit in your connected wallet",
+      showIcon: true,
+      persist: true,
+    });
+    let signature: ethers.Signature;
 
     try {
-      const salt = ethers.utils.randomBytes(32);
-
-      const walletStore = svelteStore.get(wallet.store);
-
-      const commitResult = await ensRegistrar.commit(
+      signature = await ensRegistrar.getPermitSignature(
         walletStore.environment,
-        nameInputValue,
-        salt,
         fee
       );
-
-      state = {
-        type: "register",
-        minAge: commitResult.minAge,
-        commitmentBlock: commitResult.receipt.blockNumber,
-        commitmentSalt: salt,
-      };
     } catch (err) {
       error.show(
         new error.Error({
-          message:
-            "Transaction failed. Please try again and confirm the signature & transaction in your connected wallet.",
+          message: err.message,
           source: err,
         })
       );
+      commitInProgress = false;
+      // Don't advance the flow unless the user confirms the signature.
+      return;
+    } finally {
+      signNotification.remove();
     }
+
+    const commitNotification = notification.info({
+      message:
+        "Waiting for you to confirm the commitment transaction in your connected wallet",
+      showIcon: true,
+      persist: true,
+    });
+    const salt = ethers.utils.randomBytes(32);
+
+    let commitResult: ensRegistrar.CommitResult;
+    try {
+      commitResult = await ensRegistrar.commit(
+        nameInputValue,
+        salt,
+        fee,
+        signature
+      );
+    } catch (err) {
+      error.show(
+        new error.Error({
+          message: err.message,
+          source: err,
+        })
+      );
+      commitInProgress = false;
+      // Don't advance flow unless the user confirms the tx.
+      return;
+    } finally {
+      commitNotification.remove();
+    }
+    transaction.add(transaction.registerEnsName(commitResult.tx));
+
+    const txNotification = notification.info({
+      message: "Waiting for the transaction to be included",
+      showIcon: true,
+      persist: true,
+    });
+
+    let receipt;
+    try {
+      receipt = await commitResult.tx.wait(1);
+    } catch (err) {
+      error.show(
+        new error.Error({
+          message: err.message,
+          source: err,
+        })
+      );
+      commitInProgress = false;
+      // Don't advance flow unless we have the tx receipt.
+      return;
+    } finally {
+      txNotification.remove();
+    }
+
+    state = {
+      type: "register",
+      minAge: commitResult.minAge,
+      commitmentBlock: receipt.blockNumber,
+      commitmentSalt: salt,
+    };
   }
 </script>
 
@@ -207,7 +270,7 @@
       onSubmit={commitOrGoToUpdateMetadata}
       confirmCopy="Continue"
       disableButtons={validationState.status !==
-        validation.ValidationStatus.Success} />
+        validation.ValidationStatus.Success || commitInProgress} />
   </Modal>
 {:else if state.type === "register"}
   <ConfirmRegistration
