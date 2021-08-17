@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.10](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.9...v0.2.10) (2021-08-16)
+
+
+### Features
+
+* add `suffix` property to text input ([0f55cbd](https://github.com/radicle-dev/radicle-upstream/commit/0f55cbdfb18cc8e38fa21530b699360d06f6cda1)), closes [#2191](https://github.com/radicle-dev/radicle-upstream/issues/2191)
+* add signTypedData to wallet connect ([0a54a05](https://github.com/radicle-dev/radicle-upstream/commit/0a54a0593b78b2a2d6e6d7d29f79a21c99f67223))
+* show other user profiles ([0925202](https://github.com/radicle-dev/radicle-upstream/commit/09252027248c9db8b74675160b017ae05f5ef867))
+* show RAD token balance on wallet screen ([2314723](https://github.com/radicle-dev/radicle-upstream/commit/231472330adc7c8397760e5ea75ae34951a6b582))
+
+
+### Bug Fixes
+
+* check all files for licenses by default ([a359dfc](https://github.com/radicle-dev/radicle-upstream/commit/a359dfcbd63abafe18ab6c5921485b2697aee7e1))
+* don’t handle unhandled errors in cypress runner ([86aa571](https://github.com/radicle-dev/radicle-upstream/commit/86aa571f3d857763ee5341c6fc06c87a96769b77))
+* fix dev commands for merging prs ([dfcfbac](https://github.com/radicle-dev/radicle-upstream/commit/dfcfbac0369609b0cdc1693f6573c0d3716610cd))
+* fix race conditions in source browsing tests ([0c8de68](https://github.com/radicle-dev/radicle-upstream/commit/0c8de68d216edf43771b0379e986c1d622f51273))
+* ignore security advisory that we’re unaffected by ([966d53e](https://github.com/radicle-dev/radicle-upstream/commit/966d53e9ba2b243f6a7dec818c3bf9820334329c))
+* include more data in claim errors ([8080e29](https://github.com/radicle-dev/radicle-upstream/commit/8080e296d01a3a9af3744cf9c676757a4df7ba83))
+* properly memoize `undefined` return value ([ae8fc76](https://github.com/radicle-dev/radicle-upstream/commit/ae8fc76d5b7e9e6319b5d0298e38ca788762de14))
+* properly scale avatar images ([30f3bdc](https://github.com/radicle-dev/radicle-upstream/commit/30f3bdccb55dbfb3076e197025f4acbe9cb25ac4))
+* remove WalletConnect signer defaults ([f1777c6](https://github.com/radicle-dev/radicle-upstream/commit/f1777c6dda25bab98c669af6bc872906c0685735))
+* retry graph requests on 503 ([80ac00b](https://github.com/radicle-dev/radicle-upstream/commit/80ac00b5df24d1780fa1d88445dca9ad1ed50bf3)), closes [#2183](https://github.com/radicle-dev/radicle-upstream/issues/2183)
+* show icon and website when connecting via walletConnect ([c377197](https://github.com/radicle-dev/radicle-upstream/commit/c377197a9aa5ce4aa549989868c7dd5fa5305147))
+* silent retries if graph is unavailable ([f53d739](https://github.com/radicle-dev/radicle-upstream/commit/f53d73907a497a022faff07e1f95ddae46c70f7d))
+* tests wait until keystore is sealed ([4b17c2e](https://github.com/radicle-dev/radicle-upstream/commit/4b17c2efec8edd4e144853be8b558295e298ffb9))
+* update radicle-link to properly shutdown ([06bd982](https://github.com/radicle-dev/radicle-upstream/commit/06bd9826ac38f54151b70f408b8d5594affc2d29)), closes [#2133](https://github.com/radicle-dev/radicle-upstream/issues/2133)
+* use proxy IP instead of hostname ([3766946](https://github.com/radicle-dev/radicle-upstream/commit/37669464dad7bd6598c7818e7fa0eddedf282d2a)), closes [#2181](https://github.com/radicle-dev/radicle-upstream/issues/2181)
+* wait until session is unsealed ([0b491a2](https://github.com/radicle-dev/radicle-upstream/commit/0b491a2f4d4e9252935eb5d1b47074dd8c996ae8))
+* **ui:** fix top and bottom tooltip alignment ([c5ffde9](https://github.com/radicle-dev/radicle-upstream/commit/c5ffde9e92bf4fcf8bb32096d6c29c28c2edc91f))
+
 ### [0.2.9](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.8...v0.2.9) (2021-07-23)
 
 
