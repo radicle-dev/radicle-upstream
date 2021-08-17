@@ -57,6 +57,7 @@
       const domain = `${result.name}.${ensResolver.DOMAIN}`;
       registration = await ensResolver.getRegistration(domain);
 
+      // TODO(thomas): handle exception
       if (!registration) {
         throw new error.Error({
           message: "Domain not registered",
