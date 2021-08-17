@@ -219,7 +219,7 @@
     } finally {
       commitNotification.remove();
     }
-    transaction.add(transaction.registerEnsName(commitResult.tx));
+    transaction.add(transaction.commitEnsName(commitResult.tx));
 
     const txNotification = notification.info({
       message: "Waiting for the transaction to be included",

@@ -48,6 +48,7 @@ type MetaTx =
   | AnchorProject
   | ClaimRadicleIdentity
   | CollectFunds
+  | CommitEnsName
   | CreateOrg
   | Erc20Allowance
   | RegisterEnsName
@@ -66,6 +67,10 @@ interface CreateOrg {
 
 interface RegisterEnsName {
   kind: TxKind.RegisterEnsName;
+}
+
+interface CommitEnsName {
+  kind: TxKind.CommitEnsName;
 }
 
 interface ClaimRadicleIdentity {
@@ -115,6 +120,7 @@ export enum TxKind {
   AnchorProject = "Anchor Project",
   ClaimRadicleIdentity = "Claim Radicle Identity",
   CollectFunds = "Collect Funds",
+  CommitEnsName = "Commit ENS name",
   CreateOrg = "Create Org",
   Erc20Allowance = "ERC-20 Allowance",
   RegisterEnsName = "Register ENS name",
@@ -145,6 +151,10 @@ export function createOrg(txc: ContractTransaction): Tx {
 
 export function registerEnsName(txc: ContractTransaction): Tx {
   return { ...txData(txc), kind: TxKind.RegisterEnsName };
+}
+
+export function commitEnsName(txc: ContractTransaction): Tx {
+  return { ...txData(txc), kind: TxKind.CommitEnsName };
 }
 
 export function claimRadicleIdentity(
@@ -381,8 +391,9 @@ function direction(tx: Tx): Direction {
       return Direction.Incoming;
 
     case TxKind.AnchorProject:
-    case TxKind.CreateOrg:
     case TxKind.ClaimRadicleIdentity:
+    case TxKind.CommitEnsName:
+    case TxKind.CreateOrg:
     case TxKind.Erc20Allowance:
     case TxKind.RegisterEnsName:
     case TxKind.SupportOnboarding:
@@ -400,6 +411,7 @@ export function emoji(tx: Tx): string {
       return "🎪";
     case TxKind.ClaimRadicleIdentity:
       return "🧦";
+    case TxKind.CommitEnsName:
     case TxKind.RegisterEnsName:
       return "📇";
     case TxKind.CollectFunds:
@@ -420,6 +432,7 @@ export function txIcon(tx: Tx): typeof SvelteComponent {
     case TxKind.Withdraw:
       return Icon.Withdraw;
     case TxKind.Erc20Allowance:
+    case TxKind.CommitEnsName:
     case TxKind.RegisterEnsName:
       return Icon.Ethereum;
     case TxKind.SupportOnboarding:

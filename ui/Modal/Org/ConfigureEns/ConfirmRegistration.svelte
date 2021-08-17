@@ -6,19 +6,21 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type * as ethers from "ethers";
   import type * as registerName from "./RegisterName.svelte";
 
+  import { Modal } from "ui/DesignSystem";
+  import { unreachable } from "ui/src/unreachable";
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
-  import { unreachable } from "ui/src/unreachable";
-  import { Modal } from "ui/DesignSystem";
+  import * as notification from "ui/src/notification";
+  import * as transaction from "ui/src/transaction";
 
   import ButtonRow from "./ButtonRow.svelte";
   import BlockTimer from "./BlockTimer.svelte";
 
   let buttonsDisabled = false;
-  let confirmButtonCopy = "Confirm registration";
 
   export let registrationDone: (result: registerName.Result) => void;
   export let name: string;
@@ -30,21 +32,58 @@
 
   async function register() {
     buttonsDisabled = true;
-    confirmButtonCopy = "Waiting for transaction confirmation...";
 
+    const registrationNotification = notification.info({
+      message:
+        "Waiting for you to confirm the registration transaction in your connected wallet",
+      showIcon: true,
+      persist: true,
+    });
+
+    let registrationTx: ethers.ContractTransaction;
     try {
-      await ensRegistrar.register(name, commitmentSalt);
-
-      state = "success";
+      registrationTx = await ensRegistrar.register(name, commitmentSalt);
     } catch (err) {
       buttonsDisabled = false;
-      confirmButtonCopy = "Confirm registration";
 
-      throw new error.Error({
-        message: "Transaction failed",
-        source: err,
-      });
+      error.show(
+        new error.Error({
+          message: err.message,
+          source: err,
+        })
+      );
+      // Don't advance flow if the user rejected the tx.
+      return;
+    } finally {
+      registrationNotification.remove();
     }
+
+    transaction.add(transaction.registerEnsName(registrationTx));
+
+    const txNotification = notification.info({
+      message: "Waiting for the transaction to be included",
+      showIcon: true,
+      persist: true,
+    });
+
+    try {
+      await registrationTx.wait(1);
+    } catch (err) {
+      buttonsDisabled = false;
+
+      error.show(
+        new error.Error({
+          message: err.message,
+          source: err,
+        })
+      );
+      // Don't advance flow unless we have the tx receipt.
+      return;
+    } finally {
+      txNotification.remove();
+    }
+
+    state = "success";
   }
 </script>
 
@@ -68,7 +107,7 @@
     <ButtonRow
       disableButtons={buttonsDisabled}
       onSubmit={register}
-      confirmCopy={confirmButtonCopy} />
+      confirmCopy="Confirm registration" />
   </Modal>
 {:else if state === "success"}
   <Modal

@@ -133,7 +133,7 @@ export async function commit(
 export async function register(
   name: string,
   salt: Uint8Array
-): Promise<ethers.providers.TransactionReceipt> {
+): Promise<ethers.ContractTransaction> {
   const wallet = svelteStore.get(Wallet.store);
 
   const address = wallet.getAddress();
@@ -144,13 +144,7 @@ export async function register(
     });
   }
 
-  const tx = await registrar().register(
-    name,
-    address,
-    ethers.BigNumber.from(salt)
-  );
-
-  return tx.wait(1);
+  return await registrar().register(name, address, ethers.BigNumber.from(salt));
 }
 
 async function permitSignature(
