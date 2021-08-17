@@ -29,10 +29,12 @@
   import * as error from "ui/src/error";
   import * as validation from "ui/src/validation";
 
-  export let done: () => void;
+  export let done: (name: string) => void;
   export let enterEnsNameDone: (result: Result) => void;
-  export let name: string = "";
+  export let currentName: string | undefined;
   export let fee: ethers.BigNumber;
+
+  let nameInputValue: string = currentName || "";
 
   type State =
     | {
@@ -52,16 +54,16 @@
   };
 
   let timeoutHandle: number;
-  let userInputStarted: boolean = name !== "";
+  let userInputStarted: boolean = nameInputValue !== "";
   let nextStep: "registerName" | "updateMetadata";
 
-  function validateName(name: string | undefined): void {
+  function validateName(nameInputValue: string | undefined): void {
     if (!userInputStarted) {
       userInputStarted = true;
       return;
     }
 
-    if (!name) {
+    if (!nameInputValue) {
       validationStatus = {
         status: validation.ValidationStatus.Error,
         message: "You need to enter a name.",
@@ -81,7 +83,7 @@
 
   let registration: ensResolver.Registration | null;
   async function checkNameAvailability(): Promise<void> {
-    const available = await ensRegistrar.isAvailable(name);
+    const available = await ensRegistrar.isAvailable(nameInputValue);
 
     if (available) {
       const accountBalancesStore = wallet.accountBalancesStore;
@@ -101,7 +103,7 @@
       nextStep = "registerName";
     } else {
       registration = await ensResolver.getRegistration(
-        `${name}.${ensResolver.DOMAIN}`
+        `${nameInputValue}.${ensResolver.DOMAIN}`
       );
 
       const walletStore = svelteStore.get(wallet.store);
@@ -124,7 +126,7 @@
       commit();
     } else {
       enterEnsNameDone({
-        name,
+        name: nameInputValue,
         registration: registration ? registration : undefined,
       });
     }
@@ -140,7 +142,7 @@
 
       const commitResult = await ensRegistrar.commit(
         walletStore.environment,
-        name,
+        nameInputValue,
         salt,
         fee
       );
@@ -162,7 +164,7 @@
     }
   }
 
-  $: validateName(name);
+  $: validateName(nameInputValue);
 </script>
 
 {#if state.type === "commit"}
@@ -171,7 +173,7 @@
     title="Let’s name your org"
     desc="What should your org be called? This name will show up on the top of your profile and anywhere you interact as an org on Radicle.">
     <TextInput
-      bind:value={name}
+      bind:value={nameInputValue}
       showSuccessCheck
       validation={validationStatus}
       suffix={`.${ensResolver.DOMAIN}`}
@@ -186,7 +188,7 @@
   </Modal>
 {:else if state.type === "register"}
   <ConfirmRegistration
-    {name}
+    name={nameInputValue}
     commitmentSalt={state.commitmentSalt}
     commitmentBlock={state.commitmentBlock}
     minAge={state.minAge}

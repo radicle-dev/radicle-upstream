@@ -26,7 +26,7 @@
 
   type State =
     | { type: "intro" }
-    | { type: "registerName"; name: string }
+    | { type: "registerName"; currentName: string | undefined }
     | {
         type: "updateMetadata";
         registration: ensResolver.Registration;
@@ -38,17 +38,17 @@
 
   let state: State = ((): State => {
     if (registration) {
-      const existingName = registration.domain.replace(
+      const currentName = registration.domain.replace(
         `.${ensResolver.DOMAIN}`,
         ""
       );
-      return { type: "registerName", name: existingName };
+      return { type: "registerName", currentName };
     } else {
       return { type: "intro" };
     }
   })();
 
-  function bindRegistrationDone(name: string) {
+  function registrationDone(name: string) {
     const domain = `${name}.${ensResolver.DOMAIN}`;
     return async function () {
       // TODO handle exception
@@ -67,14 +67,14 @@
   }
 
   function introDone() {
-    const existingName = registration?.domain.replace(
+    const currentName = registration?.domain.replace(
       `.${ensResolver.DOMAIN}`,
       ""
     );
 
     state = {
       type: "registerName",
-      name: existingName || "",
+      currentName,
     };
   }
 
@@ -105,10 +105,10 @@
   <Intro onSubmit={introDone} {fee} />
 {:else if state.type === "registerName"}
   <RegisterName
-    name={state.name}
+    currentName={state.currentName}
     {fee}
     {enterEnsNameDone}
-    done={bindRegistrationDone(state.name)} />
+    done={registrationDone} />
 {:else if state.type === "updateMetadata"}
   <UpdateMetadata
     {orgAddress}
