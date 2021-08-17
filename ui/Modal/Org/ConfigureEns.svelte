@@ -48,21 +48,26 @@
     }
   })();
 
-  function registrationDone(name: string) {
-    const domain = `${name}.${ensResolver.DOMAIN}`;
-    return async function () {
-      // TODO handle exception
-      const registration = await ensResolver.getRegistration(domain);
+  async function registrationDone(result: registerName.Result) {
+    let registration: ensResolver.Registration | null;
+
+    if (result.registration) {
+      registration = result.registration;
+    } else {
+      const domain = `${result.name}.${ensResolver.DOMAIN}`;
+      registration = await ensResolver.getRegistration(domain);
+
       if (!registration) {
         throw new error.Error({
           message: "Domain not registered",
           details: { domain },
         });
       }
-      state = {
-        type: "updateMetadata",
-        registration,
-      };
+    }
+
+    state = {
+      type: "updateMetadata",
+      registration,
     };
   }
 
@@ -76,15 +81,6 @@
       type: "registerName",
       currentName,
     };
-  }
-
-  function enterEnsNameDone(result: registerName.Result) {
-    if (result.registration) {
-      state = {
-        type: "updateMetadata",
-        registration: result.registration,
-      };
-    }
   }
 
   function bindPopulateMetadataDone(domain: string) {
@@ -104,11 +100,7 @@
 {#if state.type === "intro"}
   <Intro onSubmit={introDone} {fee} />
 {:else if state.type === "registerName"}
-  <RegisterName
-    currentName={state.currentName}
-    {fee}
-    {enterEnsNameDone}
-    done={registrationDone} />
+  <RegisterName currentName={state.currentName} {fee} {registrationDone} />
 {:else if state.type === "updateMetadata"}
   <UpdateMetadata
     {orgAddress}

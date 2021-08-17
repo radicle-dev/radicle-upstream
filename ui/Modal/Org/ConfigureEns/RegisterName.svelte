@@ -7,7 +7,7 @@
 -->
 <script lang="typescript" context="module">
   export interface Result {
-    registration?: ensResolver.Registration;
+    registration: ensResolver.Registration | null;
     name: string;
   }
 </script>
@@ -29,8 +29,7 @@
   import * as error from "ui/src/error";
   import * as validation from "ui/src/validation";
 
-  export let done: (name: string) => void;
-  export let enterEnsNameDone: (result: Result) => void;
+  export let registrationDone: (result: Result) => void;
   export let currentName: string | undefined;
   export let fee: ethers.BigNumber;
 
@@ -38,7 +37,7 @@
 
   type State =
     | {
-        type: "commit";
+        type: "validateAndCommit";
       }
     | {
         type: "register";
@@ -47,7 +46,7 @@
         minAge: number;
       };
 
-  let state: State = { type: "commit" };
+  let state: State = { type: "validateAndCommit" };
 
   let validationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
@@ -55,7 +54,9 @@
 
   let timeoutHandle: number;
   let userInputStarted: boolean = nameInputValue !== "";
-  let nextStep: "registerName" | "updateMetadata";
+  let registration: ensResolver.Registration | null;
+
+  $: validateName(nameInputValue);
 
   function validateName(nameInputValue: string | undefined): void {
     if (!userInputStarted) {
@@ -76,13 +77,12 @@
         clearTimeout(timeoutHandle);
       }
       timeoutHandle = window.setTimeout(() => {
-        checkNameAvailability();
+        validateFormAndQueueNextAction();
       }, 1000);
     }
   }
 
-  let registration: ensResolver.Registration | null;
-  async function checkNameAvailability(): Promise<void> {
+  async function validateFormAndQueueNextAction(): Promise<void> {
     const available = await ensRegistrar.isAvailable(nameInputValue);
 
     if (available) {
@@ -100,7 +100,7 @@
       }
 
       validationStatus = { status: validation.ValidationStatus.Success };
-      nextStep = "registerName";
+      // Commit to name after user clicks button.
     } else {
       registration = await ensResolver.getRegistration(
         `${nameInputValue}.${ensResolver.DOMAIN}`
@@ -110,7 +110,7 @@
 
       if (registration && registration.owner === walletStore.getAddress()) {
         validationStatus = { status: validation.ValidationStatus.Success };
-        nextStep = "updateMetadata";
+        // Go to update metadata after user clicks button.
         return;
       }
 
@@ -122,13 +122,13 @@
   }
 
   async function handleSubmit(): Promise<void> {
-    if (nextStep === "registerName") {
-      commit();
-    } else {
-      enterEnsNameDone({
+    if (registration) {
+      registrationDone({
         name: nameInputValue,
-        registration: registration ? registration : undefined,
+        registration,
       });
+    } else {
+      commit();
     }
   }
 
@@ -163,11 +163,9 @@
       );
     }
   }
-
-  $: validateName(nameInputValue);
 </script>
 
-{#if state.type === "commit"}
+{#if state.type === "validateAndCommit"}
   <Modal
     emoji="📇"
     title="Let’s name your org"
@@ -192,7 +190,7 @@
     commitmentSalt={state.commitmentSalt}
     commitmentBlock={state.commitmentBlock}
     minAge={state.minAge}
-    {done} />
+    {registrationDone} />
 {:else}
   {unreachable(state)}
 {/if}

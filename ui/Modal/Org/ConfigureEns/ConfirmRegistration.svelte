@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type * as registerName from "./RegisterName.svelte";
+
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
@@ -18,7 +20,7 @@
   let buttonsDisabled = false;
   let confirmButtonCopy = "Confirm registration";
 
-  export let done: (name: string) => void;
+  export let registrationDone: (result: registerName.Result) => void;
   export let name: string;
   export let commitmentSalt: Uint8Array;
   export let commitmentBlock: number;
@@ -75,7 +77,7 @@
     desc={`Congratulations, ${name}.${ensResolver.DOMAIN} has successfully been registered with your wallet. Next, let's populate your name with organization metadata. You can also do this later by selecting "Register ENS Name" and entering your existing name.`}>
     <ButtonRow
       onSubmit={() => {
-        done(name);
+        registrationDone({ name, registration: null });
       }}
       cancelCopy="Do this later"
       confirmCopy="Set organization metadata" />
