@@ -16,6 +16,7 @@
   import Intro from "./ConfigureEns/Intro.svelte";
   import LinkOrgToName from "./ConfigureEns/LinkOrgToName.svelte";
   import RegisterName from "./ConfigureEns/RegisterName.svelte";
+  import type * as registerName from "./ConfigureEns/RegisterName.svelte";
   import UpdateMetadata from "./ConfigureEns/UpdateMetadata.svelte";
 
   export let orgAddress: string;
@@ -77,6 +78,15 @@
     };
   }
 
+  function enterEnsNameDone(result: registerName.Result) {
+    if (result.registration) {
+      state = {
+        type: "updateMetadata",
+        registration: result.registration,
+      };
+    }
+  }
+
   function bindPopulateMetadataDone(domain: string) {
     return () => {
       state = {
@@ -97,6 +107,7 @@
   <RegisterName
     name={state.name}
     {fee}
+    {enterEnsNameDone}
     done={bindRegistrationDone(state.name)} />
 {:else if state.type === "updateMetadata"}
   <UpdateMetadata

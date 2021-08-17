@@ -5,6 +5,13 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="typescript" context="module">
+  export interface Result {
+    registration?: ensResolver.Registration;
+    name: string;
+  }
+</script>
+
 <script lang="typescript">
   import * as ethers from "ethers";
 
@@ -23,6 +30,7 @@
   import * as validation from "ui/src/validation";
 
   export let done: () => void;
+  export let enterEnsNameDone: (result: Result) => void;
   export let name: string = "";
   export let fee: ethers.BigNumber;
 
@@ -71,6 +79,7 @@
     }
   }
 
+  let registration: ensResolver.Registration | null;
   async function checkNameAvailability(): Promise<void> {
     const available = await ensRegistrar.isAvailable(name);
 
@@ -91,7 +100,7 @@
       validationStatus = { status: validation.ValidationStatus.Success };
       nextStep = "registerName";
     } else {
-      const registration = await ensResolver.getRegistration(
+      registration = await ensResolver.getRegistration(
         `${name}.${ensResolver.DOMAIN}`
       );
 
@@ -114,7 +123,10 @@
     if (nextStep === "registerName") {
       commit();
     } else {
-      done();
+      enterEnsNameDone({
+        name,
+        registration: registration ? registration : undefined,
+      });
     }
   }
 
