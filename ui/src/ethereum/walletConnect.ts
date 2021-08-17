@@ -173,7 +173,7 @@ function createConnector(): Connector {
   let modalClosedByWalletConnect = false;
 
   const connector = new Connector({
-    bridge: "https://radicle.bridge.walletconnect.org",
+    bridge: "https://bridge.walletconnect.org",
     qrcodeModal: {
       open: (uri: string, onClose, _opts?: unknown) => {
         modal.toggle(
