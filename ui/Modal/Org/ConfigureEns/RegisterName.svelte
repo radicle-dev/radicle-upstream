@@ -57,15 +57,24 @@
   let registration: ensResolver.Registration | null;
   let commitInProgress: boolean = false;
 
-  $: validateName(nameInputValue);
+  let name: string;
 
-  function validateName(nameInputValue: string | undefined): void {
+  const validateFormExecutor = mutexExecutor.create();
+  const debouncedValidateFormAndSetState = debounce(
+    validateFormAndSetState,
+    1000 // 1 second
+  );
+
+  $: runAllValidations(nameInputValue);
+
+  function runAllValidations(nameInputValue: string | undefined): void {
     if (!userInputStarted) {
       userInputStarted = true;
       return;
     }
 
     if (!nameInputValue) {
+      debouncedValidateFormAndSetState.cancel();
       validationState = {
         status: validation.ValidationStatus.Error,
         message: "You need to enter a name.",
@@ -74,32 +83,26 @@
       validationState = {
         status: validation.ValidationStatus.Loading,
       };
-      debouncedValidateFormAndSetState();
+      debouncedValidateFormAndSetState(nameInputValue);
     }
   }
 
-  const debouncedValidateFormAndSetState = debounce(
-    validateFormAndSetState,
-    1000
-  );
-
-  const validateFormExecutor = mutexExecutor.create();
-
-  async function validateFormAndSetState(): Promise<void> {
+  async function validateFormAndSetState(name: string): Promise<void> {
     const validationResult = await validateFormExecutor.run(async () => {
-      return await validateForm();
+      return await runAsyncValidations(name);
     });
 
     if (validationResult) {
-      ({ validationState, registration } = validationResult);
+      ({ name, validationState, registration } = validationResult);
     }
   }
 
-  async function validateForm(): Promise<{
+  async function runAsyncValidations(name: string): Promise<{
+    name: string;
     validationState: validation.ValidationState;
     registration: ensResolver.Registration | null;
   }> {
-    const available = await ensRegistrar.isAvailable(nameInputValue);
+    const available = await ensRegistrar.isAvailable(name);
 
     if (available) {
       const accountBalancesStore = wallet.accountBalancesStore;
@@ -107,6 +110,7 @@
 
       if (radBalance && radBalance < fee) {
         return {
+          name,
           validationState: {
             status: validation.ValidationStatus.Error,
             message:
@@ -117,6 +121,7 @@
       }
 
       return {
+        name,
         validationState: {
           status: validation.ValidationStatus.Success,
         },
@@ -125,13 +130,14 @@
     }
 
     const registration = await ensResolver.getRegistration(
-      `${nameInputValue}.${ensResolver.DOMAIN}`
+      `${name}.${ensResolver.DOMAIN}`
     );
 
     const walletStore = svelteStore.get(wallet.store);
 
     if (registration && registration.owner === walletStore.getAddress()) {
       return {
+        name,
         validationState: {
           status: validation.ValidationStatus.Success,
         },
@@ -140,6 +146,7 @@
     }
 
     return {
+      name,
       validationState: {
         status: validation.ValidationStatus.Error,
         message: "Sorry, but that name is already taken.",
@@ -151,7 +158,7 @@
   async function commitOrGoToUpdateMetadata(): Promise<void> {
     if (registration) {
       registrationDone({
-        name: nameInputValue,
+        name,
         registration,
       });
     } else {
@@ -198,7 +205,7 @@
     let commitResult: ensRegistrar.CommitResult;
     try {
       commitResult = await ensRegistrar.commit(
-        nameInputValue,
+        name,
         salt,
         fee,
         signature,
@@ -272,7 +279,7 @@
   </Modal>
 {:else if state.type === "register"}
   <ConfirmRegistration
-    name={nameInputValue}
+    {name}
     commitmentSalt={state.commitmentSalt}
     commitmentBlock={state.commitmentBlock}
     minimumCommitmentAge={state.minimumCommitmentAge}
