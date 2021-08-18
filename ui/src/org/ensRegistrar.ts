@@ -37,29 +37,6 @@ function registrar() {
   );
 }
 
-// TODO: Move RAD-related logic to its own file
-function radTokenAddress(network: ethereum.Environment): string {
-  switch (network) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "ENS Registrar not available on the Local testnet",
-      });
-    case ethereum.Environment.Rinkeby:
-      return "0x7b6CbebC5646D996d258dcD4ca1d334B282e9948";
-    case ethereum.Environment.Mainnet:
-      return "0x31c8EAcBFFdD875c74b94b077895Bd78CF1E64A3";
-  }
-}
-
-function radToken() {
-  const wallet = svelteStore.get(Wallet.store);
-  return RadicleTokenFactory.connect(
-    radTokenAddress(wallet.environment),
-    wallet.signer
-  );
-}
-
 export async function isAvailable(name: string): Promise<boolean> {
   const r = registrar();
   return r.available(name);
@@ -149,7 +126,12 @@ export async function permitSignature(
   const wallet = svelteStore.get(Wallet.store);
   const spenderAddr = registrarAddress(wallet.environment);
   const owner = wallet.signer;
-  const token = radToken();
+
+  const token = RadicleTokenFactory.connect(
+    Wallet.radToken.radTokenAddress(wallet.environment),
+    wallet.signer
+  );
+
   const ownerAddr = (await owner.getAddress()).toLowerCase();
   const nonce = await token.nonces(ownerAddr);
   const chainId = (await wallet.provider.getNetwork()).chainId;

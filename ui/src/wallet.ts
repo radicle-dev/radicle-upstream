@@ -22,6 +22,8 @@ import { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
 import * as ethereumDebug from "ui/src/ethereum/debug";
 import { createWalletConnect } from "ui/src/ethereum/walletConnect";
 
+export { radToken };
+
 export enum Status {
   Connected = "CONNECTED",
   Connecting = "CONNECTING",

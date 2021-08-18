@@ -18,7 +18,7 @@ const addresses = {
   mainnet: "0x31c8EAcBFFdD875c74b94b077895Bd78CF1E64A3",
 };
 
-function radTokenAddress(environment: ethereum.Environment): string {
+export function radTokenAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
       throw new error.Error({
