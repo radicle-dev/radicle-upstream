@@ -172,7 +172,7 @@
 
     const deadline = ensRegistrar.deadline();
     try {
-      signature = await ensRegistrar.getPermitSignature(fee, deadline);
+      signature = await ensRegistrar.permitSignature(fee, deadline);
     } catch (err) {
       error.show(
         new error.Error({

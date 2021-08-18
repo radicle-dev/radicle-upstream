@@ -4,8 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
-
 import * as ethers from "ethers";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
@@ -83,16 +81,6 @@ export function deadline(): ethers.BigNumber {
   return ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(3600);
 }
 
-export async function getPermitSignature(
-  fee: ethers.BigNumber,
-  deadline: ethers.BigNumber
-): Promise<ethers.Signature> {
-  const wallet = svelteStore.get(Wallet.store);
-  const spender = registrarAddress(wallet.environment);
-  const token = radToken();
-  return await permitSignature(wallet.signer, token, spender, fee, deadline);
-}
-
 export interface CommitResult {
   tx: ethers.ContractTransaction;
   // The minimum number of blocks that must have passed between a commitment
@@ -154,14 +142,14 @@ export async function register(
   return await registrar().register(name, address, ethers.BigNumber.from(salt));
 }
 
-async function permitSignature(
-  owner: WalletConnectSigner,
-  token: ethers.Contract,
-  spenderAddr: string,
+export async function permitSignature(
   value: ethers.BigNumberish,
   deadline: ethers.BigNumberish
 ): Promise<ethers.Signature> {
   const wallet = svelteStore.get(Wallet.store);
+  const spenderAddr = registrarAddress(wallet.environment);
+  const owner = wallet.signer;
+  const token = radToken();
   const ownerAddr = (await owner.getAddress()).toLowerCase();
   const nonce = await token.nonces(ownerAddr);
   const chainId = (await wallet.provider.getNetwork()).chainId;
