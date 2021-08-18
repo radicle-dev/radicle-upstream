@@ -67,18 +67,21 @@
   async function validateFormAndSetState(
     name: string | undefined
   ): Promise<void> {
+    validationState = {
+      status: validation.ValidationStatus.Loading,
+    };
+
     const validationResult = await validateFormExecutor.run(
       async abortSignal => {
-        validationState = {
-          status: validation.ValidationStatus.Loading,
-        };
-
         if (!name) {
-          validationState = {
-            status: validation.ValidationStatus.Error,
-            message: "You need to enter a name.",
+          return {
+            registration: null,
+            validatedName: "",
+            validationState: {
+              status: validation.ValidationStatus.Error,
+              message: "You need to enter a name.",
+            },
           };
-          return;
         }
 
         // Debouce.
