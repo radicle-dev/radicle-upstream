@@ -73,17 +73,17 @@
       return;
     }
 
-    if (!name) {
+    if (name) {
+      validationState = {
+        status: validation.ValidationStatus.Loading,
+      };
+      debouncedValidateFormAndSetState(name);
+    } else {
       debouncedValidateFormAndSetState.cancel();
       validationState = {
         status: validation.ValidationStatus.Error,
         message: "You need to enter a name.",
       };
-    } else {
-      validationState = {
-        status: validation.ValidationStatus.Loading,
-      };
-      debouncedValidateFormAndSetState(name);
     }
   }
 
