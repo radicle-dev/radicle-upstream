@@ -67,9 +67,6 @@
   async function validateFormAndSetState(
     name: string | undefined
   ): Promise<void> {
-    // Cancel previous call.
-    await validateFormExecutor.run(async () => {});
-
     const validationResult = await validateFormExecutor.run(async () => {
       validationState = {
         status: validation.ValidationStatus.Loading,
