@@ -68,7 +68,8 @@
     name: string | undefined
   ): Promise<void> {
     // Cancel previous call.
-    await validateFormExecutor.run(async () => true);
+    await validateFormExecutor.run(async () => {});
+
     const validationResult = await validateFormExecutor.run(async () => {
       validationState = {
         status: validation.ValidationStatus.Loading,
@@ -80,10 +81,10 @@
           message: "You need to enter a name.",
         };
         return;
-      } else {
-        // Debouce.
-        await sleep(1000);
       }
+
+      // Debouce.
+      await sleep(1000);
 
       return await runAsyncValidations(name);
     });
