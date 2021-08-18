@@ -4,8 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
-
 import * as ethers from "ethers";
 import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
@@ -39,29 +37,6 @@ function registrar() {
   );
 }
 
-// TODO: Move RAD-related logic to its own file
-function radTokenAddress(network: ethereum.Environment): string {
-  switch (network) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "ENS Registrar not available on the Local testnet",
-      });
-    case ethereum.Environment.Rinkeby:
-      return "0x7b6CbebC5646D996d258dcD4ca1d334B282e9948";
-    case ethereum.Environment.Mainnet:
-      return "0x31c8EAcBFFdD875c74b94b077895Bd78CF1E64A3";
-  }
-}
-
-function radToken() {
-  const wallet = svelteStore.get(Wallet.store);
-  return RadicleTokenFactory.connect(
-    radTokenAddress(wallet.environment),
-    wallet.signer
-  );
-}
-
 export async function isAvailable(name: string): Promise<boolean> {
   const r = registrar();
   return r.available(name);
@@ -78,15 +53,25 @@ export function formatFee(fee: ethers.BigNumber): string {
   );
 }
 
+export function deadline(): ethers.BigNumber {
+  // Expire one hour from now.
+  return ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(3600);
+}
+
+export interface CommitResult {
+  tx: ethers.ContractTransaction;
+  // The minimum number of blocks that must have passed between a commitment
+  // and name registration.
+  minimumCommitmentAge: number;
+}
+
 export async function commit(
-  environment: ethereum.Environment,
   name: string,
   salt: Uint8Array,
-  fee: ethers.BigNumber
-): Promise<{
-  receipt: ethers.providers.TransactionReceipt;
-  minAge: number;
-}> {
+  fee: ethers.BigNumber,
+  signature: ethers.Signature,
+  deadline: ethers.BigNumber
+): Promise<CommitResult> {
   const wallet = svelteStore.get(Wallet.store);
   const ownerAddr = wallet.getAddress();
   if (!ownerAddr) {
@@ -95,24 +80,12 @@ export async function commit(
     });
   }
 
-  const minAge = (await registrar().minCommitmentAge()).toNumber();
-  const spender = registrarAddress(environment);
-  const deadline = ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(
-    3600
-  ); // Expire one hour from now.
-  const token = radToken();
-  const signature = await permitSignature(
-    wallet.signer,
-    token,
-    spender,
-    fee,
-    deadline
-  );
+  const minimumCommitmentAge = (
+    await registrar().minCommitmentAge()
+  ).toNumber();
 
   const commitment = createCommitment(name, ownerAddr, salt);
 
-  // TODO: Once upstream wallet is aware of RAD balance, check if the user has
-  // enough rads before committing.
   const tx = await registrar().commitWithPermit(
     commitment,
     ownerAddr.toLowerCase(),
@@ -123,18 +96,16 @@ export async function commit(
     signature.s
   );
 
-  const receipt = await tx.wait(1);
-
   return {
-    receipt,
-    minAge,
+    tx,
+    minimumCommitmentAge,
   };
 }
 
 export async function register(
   name: string,
   salt: Uint8Array
-): Promise<ethers.providers.TransactionReceipt> {
+): Promise<ethers.ContractTransaction> {
   const wallet = svelteStore.get(Wallet.store);
 
   const address = wallet.getAddress();
@@ -145,23 +116,22 @@ export async function register(
     });
   }
 
-  const tx = await registrar().register(
-    name,
-    address,
-    ethers.BigNumber.from(salt)
-  );
-
-  return tx.wait(1);
+  return await registrar().register(name, address, ethers.BigNumber.from(salt));
 }
 
-async function permitSignature(
-  owner: WalletConnectSigner,
-  token: ethers.Contract,
-  spenderAddr: string,
+export async function permitSignature(
   value: ethers.BigNumberish,
   deadline: ethers.BigNumberish
 ): Promise<ethers.Signature> {
   const wallet = svelteStore.get(Wallet.store);
+  const spenderAddr = registrarAddress(wallet.environment);
+  const owner = wallet.signer;
+
+  const token = RadicleTokenFactory.connect(
+    Wallet.radToken.radTokenAddress(wallet.environment),
+    wallet.signer
+  );
+
   const ownerAddr = (await owner.getAddress()).toLowerCase();
   const nonce = await token.nonces(ownerAddr);
   const chainId = (await wallet.provider.getNetwork()).chainId;

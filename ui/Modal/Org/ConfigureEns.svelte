@@ -13,12 +13,11 @@
   import * as error from "ui/src/error";
   import { unreachable } from "ui/src/unreachable";
 
-  import ConfigureEnsIntro from "./ConfigureEns/ConfigureEnsIntro.svelte";
-  import EnterEnsName from "./ConfigureEns/EnterEnsName.svelte";
-  import type * as enterEnsName from "./ConfigureEns/EnterEnsName.svelte";
+  import Intro from "./ConfigureEns/Intro.svelte";
   import LinkOrgToName from "./ConfigureEns/LinkOrgToName.svelte";
+  import RegisterName from "./ConfigureEns/RegisterName.svelte";
+  import type * as registerName from "./ConfigureEns/RegisterName.svelte";
   import UpdateMetadata from "./ConfigureEns/UpdateMetadata.svelte";
-  import Register from "./ConfigureEns/Register.svelte";
 
   export let orgAddress: string;
   export let registration: ensResolver.Registration | undefined = undefined;
@@ -27,8 +26,7 @@
 
   type State =
     | { type: "intro" }
-    | { type: "enterEnsName"; currentName: string | undefined }
-    | { type: "register"; name: string }
+    | { type: "registerName"; currentName: string | undefined }
     | {
         type: "updateMetadata";
         registration: ensResolver.Registration;
@@ -44,54 +42,46 @@
         `.${ensResolver.DOMAIN}`,
         ""
       );
-      return { type: "enterEnsName", currentName };
+      return { type: "registerName", currentName };
     } else {
       return { type: "intro" };
     }
   })();
 
-  function bindRegistrationDone(name: string) {
-    const domain = `${name}.${ensResolver.DOMAIN}`;
-    return async function () {
-      // TODO handle exception
-      const registration = await ensResolver.getRegistration(domain);
+  async function registrationDone(result: registerName.Result) {
+    let registration: ensResolver.Registration | null;
+
+    if (result.registration) {
+      registration = result.registration;
+    } else {
+      const domain = `${result.name}.${ensResolver.DOMAIN}`;
+      // TODO(thomas): handle exception
+      registration = await ensResolver.getRegistration(domain);
+
       if (!registration) {
         throw new error.Error({
           message: "Domain not registered",
           details: { domain },
         });
       }
-      state = {
-        type: "updateMetadata",
-        registration,
-      };
+    }
+
+    state = {
+      type: "updateMetadata",
+      registration,
     };
   }
 
-  function configureEnsIntroDone() {
+  function introDone() {
     const currentName = registration?.domain.replace(
       `.${ensResolver.DOMAIN}`,
       ""
     );
 
     state = {
-      type: "enterEnsName",
+      type: "registerName",
       currentName,
     };
-  }
-
-  function enterEnsNameDone(result: enterEnsName.Result) {
-    if (result.registration) {
-      state = {
-        type: "updateMetadata",
-        registration: result.registration,
-      };
-    } else {
-      state = {
-        type: "register",
-        name: result.name,
-      };
-    }
   }
 
   function bindPopulateMetadataDone(domain: string) {
@@ -109,14 +99,9 @@
 </script>
 
 {#if state.type === "intro"}
-  <ConfigureEnsIntro onSubmit={configureEnsIntroDone} {fee} />
-{:else if state.type === "enterEnsName"}
-  <EnterEnsName
-    currentName={state.currentName}
-    {fee}
-    onSubmit={enterEnsNameDone} />
-{:else if state.type === "register"}
-  <Register name={state.name} {fee} done={bindRegistrationDone(state.name)} />
+  <Intro onSubmit={introDone} {fee} />
+{:else if state.type === "registerName"}
+  <RegisterName currentName={state.currentName} {fee} {registrationDone} />
 {:else if state.type === "updateMetadata"}
   <UpdateMetadata
     {orgAddress}

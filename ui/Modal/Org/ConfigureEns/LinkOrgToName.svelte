@@ -11,7 +11,7 @@
 
   import { Modal, TextInput } from "ui/DesignSystem";
 
-  import ButtonRow from "./shared/ButtonRow.svelte";
+  import ButtonRow from "./ButtonRow.svelte";
 
   export let onSubmit: () => void;
   export let domain: string;
@@ -59,9 +59,7 @@
   <Modal
     emoji="🔗"
     title="Let’s link your name"
-    desc={`In this last step, we’re updating your organization to ` +
-      `point towards your newly created name. Once that’s done, your ` +
-      `organization will appear with your new name across Radicle!`}>
+    desc={`In this last step, we’re updating your organization to point towards your newly created name. Once that’s done, your organization will appear with your new name across Radicle!`}>
     <div class="label typo-text-bold">Organization address</div>
     <TextInput disabled style="margin-bottom: 24px" value={orgAddress} />
 
@@ -85,10 +83,7 @@
   <Modal
     emoji="🔗"
     title="Approve on Gnosis"
-    desc={"As a final step your organisation will have to confirm " +
-      "the transaction on Gnosis. After it's been approved and executed " +
-      "your newly registered name will start appearing across Radicle in " +
-      "place of your organization address!"}>
+    desc={"As a final step your organisation will have to confirm the transaction on Gnosis. After it's been approved and executed your newly registered name will start appearing across Radicle in place of your organization address!"}>
     <ButtonRow
       onSubmit={() => {
         safeAddress && org.openOnGnosisSafe(safeAddress, "transactions");
@@ -101,10 +96,7 @@
   <Modal
     emoji="🎉"
     title="That's it!"
-    desc={`Great, your organization now points to your new name ` +
-      `${domain}. Shortly, your name ` +
-      `will start appearing across Radicle in place of your organization ` +
-      `address!`}>
+    desc={`Great, your organization now points to your new name ${domain}. Shortly, your name will start appearing across Radicle in place of your organization address!`}>
     <ButtonRow {onSubmit} canCancel={false} confirmCopy="Amazing, thanks!" />
   </Modal>
 {/if}

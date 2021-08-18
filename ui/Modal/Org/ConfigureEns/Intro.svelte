@@ -12,7 +12,7 @@
   import * as ensResolver from "ui/src/org/ensResolver";
 
   import { Modal } from "ui/DesignSystem";
-  import ButtonRow from "./shared/ButtonRow.svelte";
+  import ButtonRow from "./ButtonRow.svelte";
 
   export let fee: ethers.BigNumber;
   export let onSubmit: () => void;
