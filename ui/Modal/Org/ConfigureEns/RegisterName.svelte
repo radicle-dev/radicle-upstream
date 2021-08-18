@@ -13,8 +13,8 @@
 </script>
 
 <script lang="typescript">
+  import { debounce } from "lodash";
   import * as ethers from "ethers";
-  import * as lodash from "lodash";
 
   import { unreachable } from "ui/src/unreachable";
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
@@ -78,7 +78,7 @@
     }
   }
 
-  const debouncedValidateFormAndSetState = lodash.debounce(
+  const debouncedValidateFormAndSetState = debounce(
     validateFormAndSetState,
     1000
   );
