@@ -13,9 +13,9 @@
 </script>
 
 <script lang="typescript">
-  import { debounce } from "lodash";
   import * as ethers from "ethers";
 
+  import { sleep } from "ui/src/sleep";
   import { unreachable } from "ui/src/unreachable";
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
@@ -50,7 +50,6 @@
   let state: State = { type: "validateAndCommit" };
   let nameInputValue: string = currentName || "";
 
-  let userInputStarted: boolean = nameInputValue !== "";
   let commitInProgress: boolean = false;
 
   let validatedName: string;
@@ -59,36 +58,33 @@
   };
   let registration: ensResolver.Registration | null;
 
+  let userInputStarted: boolean = nameInputValue !== "";
+  $: (userInputStarted && validateFormAndSetState(nameInputValue)) ||
+    (userInputStarted = true);
+
   const validateFormExecutor = mutexExecutor.create();
-  const debouncedValidateFormAndSetState = debounce(
-    validateFormAndSetState,
-    1000 // 1 second
-  );
 
-  $: runAllValidations(nameInputValue);
-
-  function runAllValidations(name: string | undefined): void {
-    if (!userInputStarted) {
-      userInputStarted = true;
-      return;
-    }
-
-    if (name) {
+  async function validateFormAndSetState(
+    name: string | undefined
+  ): Promise<void> {
+    // Cancel previous call.
+    await validateFormExecutor.run(async () => true);
+    const validationResult = await validateFormExecutor.run(async () => {
       validationState = {
         status: validation.ValidationStatus.Loading,
       };
-      debouncedValidateFormAndSetState(name);
-    } else {
-      debouncedValidateFormAndSetState.cancel();
-      validationState = {
-        status: validation.ValidationStatus.Error,
-        message: "You need to enter a name.",
-      };
-    }
-  }
 
-  async function validateFormAndSetState(name: string): Promise<void> {
-    const validationResult = await validateFormExecutor.run(async () => {
+      if (!name) {
+        validationState = {
+          status: validation.ValidationStatus.Error,
+          message: "You need to enter a name.",
+        };
+        return;
+      } else {
+        // Debouce.
+        await sleep(1000);
+      }
+
       return await runAsyncValidations(name);
     });
 
