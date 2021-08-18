@@ -78,15 +78,17 @@ export function formatFee(fee: ethers.BigNumber): string {
   );
 }
 
-// Expire one hour from now.
-const deadline = ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(3600);
+export function deadline(): ethers.BigNumber {
+  // Expire one hour from now.
+  return ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(3600);
+}
 
 export async function getPermitSignature(
-  environment: ethereum.Environment,
-  fee: ethers.BigNumber
+  fee: ethers.BigNumber,
+  deadline: ethers.BigNumber
 ): Promise<ethers.Signature> {
   const wallet = svelteStore.get(Wallet.store);
-  const spender = registrarAddress(environment);
+  const spender = registrarAddress(wallet.environment);
   const token = radToken();
   return await permitSignature(wallet.signer, token, spender, fee, deadline);
 }
@@ -100,7 +102,8 @@ export async function commit(
   name: string,
   salt: Uint8Array,
   fee: ethers.BigNumber,
-  signature: ethers.Signature
+  signature: ethers.Signature,
+  deadline: ethers.BigNumber
 ): Promise<CommitResult> {
   const wallet = svelteStore.get(Wallet.store);
   const ownerAddr = wallet.getAddress();

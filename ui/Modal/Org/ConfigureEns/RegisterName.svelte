@@ -162,7 +162,6 @@
   async function commit() {
     commitInProgress = true;
 
-    const walletStore = svelteStore.get(wallet.store);
     const signNotification = notification.info({
       message:
         "Waiting for you to sign the commitment permit in your connected wallet",
@@ -171,11 +170,9 @@
     });
     let signature: ethers.Signature;
 
+    const deadline = ensRegistrar.deadline();
     try {
-      signature = await ensRegistrar.getPermitSignature(
-        walletStore.environment,
-        fee
-      );
+      signature = await ensRegistrar.getPermitSignature(fee, deadline);
     } catch (err) {
       error.show(
         new error.Error({
@@ -204,7 +201,8 @@
         nameInputValue,
         salt,
         fee,
-        signature
+        signature,
+        deadline
       );
     } catch (err) {
       error.show(
