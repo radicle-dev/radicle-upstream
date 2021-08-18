@@ -11,13 +11,13 @@
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
-  export let minAge: number;
+  export let minimumCommitmentAge: number;
   export let startBlock: number;
   export let onFinish: () => void;
 
   const walletStore = svelteStore.get(wallet.store);
 
-  const requiredBlockCount = minAge + 1;
+  const requiredBlockCount = minimumCommitmentAge + 1;
   let confirmedBlockCount: number = 0;
   let done: boolean = false;
 

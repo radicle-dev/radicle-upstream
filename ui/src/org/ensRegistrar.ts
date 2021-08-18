@@ -95,7 +95,9 @@ export async function getPermitSignature(
 
 export interface CommitResult {
   tx: ethers.ContractTransaction;
-  minAge: number;
+  // The minimum number of blocks that must have passed between a commitment
+  // and name registration.
+  minimumCommitmentAge: number;
 }
 
 export async function commit(
@@ -113,7 +115,9 @@ export async function commit(
     });
   }
 
-  const minAge = (await registrar().minCommitmentAge()).toNumber();
+  const minimumCommitmentAge = (
+    await registrar().minCommitmentAge()
+  ).toNumber();
 
   const commitment = createCommitment(name, ownerAddr, salt);
 
@@ -129,7 +133,7 @@ export async function commit(
 
   return {
     tx,
-    minAge,
+    minimumCommitmentAge,
   };
 }
 

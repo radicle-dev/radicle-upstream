@@ -26,7 +26,7 @@
   export let name: string;
   export let commitmentSalt: Uint8Array;
   export let commitmentBlock: number;
-  export let minAge: number;
+  export let minimumCommitmentAge: number;
 
   let state: "waiting" | "readyToRegister" | "success" = "waiting";
 
@@ -95,7 +95,7 @@
     <div style="display: flex; justify-content: center;">
       <BlockTimer
         onFinish={() => (state = "readyToRegister")}
-        {minAge}
+        {minimumCommitmentAge}
         startBlock={commitmentBlock} />
     </div>
   </Modal>

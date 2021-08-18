@@ -44,7 +44,7 @@
         type: "register";
         commitmentSalt: Uint8Array;
         commitmentBlock: number;
-        minAge: number;
+        minimumCommitmentAge: number;
       };
 
   let state: State = { type: "validateAndCommit" };
@@ -244,7 +244,7 @@
 
     state = {
       type: "register",
-      minAge: commitResult.minAge,
+      minimumCommitmentAge: commitResult.minimumCommitmentAge,
       commitmentBlock: receipt.blockNumber,
       commitmentSalt: salt,
     };
@@ -275,7 +275,7 @@
     name={nameInputValue}
     commitmentSalt={state.commitmentSalt}
     commitmentBlock={state.commitmentBlock}
-    minAge={state.minAge}
+    minimumCommitmentAge={state.minimumCommitmentAge}
     {registrationDone} />
 {:else}
   {unreachable(state)}
