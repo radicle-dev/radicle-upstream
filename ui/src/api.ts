@@ -6,8 +6,7 @@
 
 import qs from "qs";
 
-import * as config from "./config";
-import { sleep } from "ui/src/sleep";
+import { config } from "ui/src/config";
 
 interface Options {
   query?: Record<string, unknown>;
@@ -121,20 +120,3 @@ export const set = async <T>(
       ...options,
     })
   );
-
-export const withRetry = async <T>(
-  request: () => Promise<T>,
-  delayTime: number,
-  retries: number
-): Promise<T> => {
-  for (; ; retries--) {
-    try {
-      return await request();
-    } catch (error) {
-      if (error.message !== "Failed to fetch" || retries < 0) {
-        throw error;
-      }
-    }
-    await sleep(delayTime);
-  }
-};

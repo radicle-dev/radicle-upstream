@@ -277,7 +277,7 @@ const setLatestRelease: yargs.CommandModule<unknown, unknown> = {
         "cache-control:no-cache",
         "cp",
         latestPath,
-        `gs://releases.radicle.xyz/${fileName}`,
+        `gs://${releaseBucket}/${fileName}`,
       ]);
     });
   },

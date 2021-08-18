@@ -6,12 +6,30 @@
 
 import type {} from "../../native/preload";
 import qs from "qs";
+import * as zod from "zod";
 
 export const HIDDEN_BRANCHES = ["rad/contributor", "rad/project"];
 export const UPSTREAM_DEFAULT_BRANCH = "main";
 export const GIT_DEFAULT_BRANCH = "master";
 export const NOTIFICATION_TIMEOUT = 8000; // ms
 export const FADE_DURATION = 200;
+
+// Configuration values.
+export interface Config {
+  // The address of the proxy in `host:port` format.
+  proxyAddress: string;
+  // `true` if experimental features should be enabled.
+  //
+  // This is `true` in the cypress and node test environments.
+  experimentalFeaturesEnabled: boolean;
+  isDev: boolean;
+}
+
+const partialConfigSchema: zod.Schema<Partial<Config>> = zod.object({
+  proxyAddress: zod.string().optional(),
+  experimentalFeaturesEnabled: zod.boolean().optional(),
+  isDev: zod.boolean().optional(),
+});
 
 // `true` if we are running unit tests with Jest.
 export const isNodeTestEnv = Boolean(
@@ -26,21 +44,38 @@ export const isCypressTestEnv = (globalThis as any).isCypressTestEnv === true;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isCypressTestRunner = Boolean((globalThis as any).cy);
 
-// `true` if the app is running in development mode or in test mode
-export const isDev =
-  isNodeTestEnv || (window.electron ? window.electron.isDev : true);
+export const config = getConfig();
 
-// `true` if experimental features should be enabled. This is
-// controlled by the the `RADICLE_UPSTREAM_EXPERIMENTAL` flag.
-//
-// This is `true` in the cypress and node test environments.
-export const isExperimental =
-  isNodeTestEnv || (window.electron ? window.electron.isExperimental : false);
+// Load the partial configuration from the query string parameters and
+// populate it with the default values.
+function getConfig(): Config {
+  const config = loadPartialConfig();
+  return {
+    experimentalFeaturesEnabled: isNodeTestEnv || isCypressTestEnv,
+    isDev: isNodeTestEnv || isCypressTestEnv,
+    proxyAddress: "127.0.0.1:17246",
+    ...config,
+  };
+}
 
-const query = qs.parse(
-  isNodeTestEnv ? "" : window.location.search.replace("?", "")
-);
+function loadPartialConfig(): Partial<Config> {
+  if (isNodeTestEnv) {
+    return {};
+  }
 
-// The address of the proxy in `host:port` format.
-export const proxyAddress =
-  typeof query.backend === "string" ? query.backend : "127.0.0.1:17246";
+  const queryString = window.location.search.replace("?", "");
+  const query = qs.parse(queryString);
+  if (typeof query.config !== "string") {
+    return {};
+  }
+
+  const configData = JSON.parse(query.config);
+  const result = partialConfigSchema.safeParse(configData);
+  if (result.success) {
+    return result.data;
+  } else {
+    console.error("Failed to parse user configuration");
+    console.error(result.error);
+    return {};
+  }
+}

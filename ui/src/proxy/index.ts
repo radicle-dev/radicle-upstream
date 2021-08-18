@@ -5,8 +5,8 @@
 // LICENSE file.
 
 import * as zod from "zod";
-import * as config from "../config";
-import { sleep } from "ui/src/sleep";
+
+import { config } from "ui/src/config";
 
 import * as settings from "./settings";
 import * as identity from "./identity";
@@ -160,20 +160,3 @@ export class Client {
 }
 
 export const client = new Client(`http://${config.proxyAddress}`);
-
-export const withRetry = async <T>(
-  request: () => Promise<T>,
-  delayTime: number,
-  retries: number
-): Promise<T> => {
-  for (; ; retries--) {
-    try {
-      return await request();
-    } catch (error) {
-      if (error.message !== "Failed to fetch" || retries < 0) {
-        throw error;
-      }
-    }
-    await sleep(delayTime);
-  }
-};

@@ -6,14 +6,14 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { isDev } from "ui/src/config";
+  import { config } from "ui/src/config";
   import * as hotkeys from "ui/src/hotkeys";
 
   import { KeyHint, Modal } from "ui/DesignSystem";
 
   const shortcuts = [
     ...hotkeys.shortcuts,
-    ...(isDev ? hotkeys.devShortcuts : []),
+    ...(config.isDev ? hotkeys.devShortcuts : []),
     hotkeys.escape,
   ];
 </script>

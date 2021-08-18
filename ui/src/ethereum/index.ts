@@ -8,7 +8,7 @@ import * as svelteStore from "svelte/store";
 import Big from "big.js";
 import * as ethers from "ethers";
 import persistentStore from "svelte-persistent-store/dist";
-import * as config from "ui/src/config";
+import { config } from "ui/src/config";
 import * as error from "ui/src/error";
 
 import { Environment, Network, supportedNetwork } from "./environment";

@@ -485,7 +485,7 @@ export function convertError(e: globalThis.Error, label: string): error.Error {
   return new error.Error({
     code,
     message: `${label}: ${message}`,
-    source: error.fromJsError(e),
+    source: e,
   });
 }
 

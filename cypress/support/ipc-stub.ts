@@ -62,8 +62,6 @@ export function setup(window: Window): void {
       },
       on: ipcRendererMessages.on.bind(ipcRendererMessages),
     },
-    isDev: true,
-    isExperimental: true,
   };
 }
 

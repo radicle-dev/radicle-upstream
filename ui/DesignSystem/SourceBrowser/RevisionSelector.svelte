@@ -9,7 +9,7 @@
   import { createEventDispatcher } from "svelte";
 
   import type { Branch, Tag } from "ui/src/source";
-  import * as config from "ui/src/config";
+  import { config } from "ui/src/config";
 
   import Icon from "ui/DesignSystem/Icon";
   import Overlay from "ui/DesignSystem/Overlay.svelte";
@@ -31,7 +31,7 @@
         return false;
       } else if (rev.type === "tag") {
         // Show tags only if in experimental mode
-        return config.isExperimental;
+        return config.experimentalFeaturesEnabled;
       } else {
         return true;
       }

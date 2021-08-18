@@ -8,7 +8,7 @@
 <script lang="typescript">
   import { fade, fly } from "svelte/transition";
 
-  import { withRetry } from "ui/src/api";
+  import { retryFetch } from "ui/src/retryOnError";
   import { State } from "ui/src/onboarding";
   import { createIdentity } from "ui/src/identity";
   import * as error from "ui/src/error";
@@ -58,7 +58,7 @@
         createIdentityInProgress = true;
         await session.createKeystore(passphrase);
         // Retry until the API is up
-        const identity = await withRetry(
+        const identity = await retryFetch(
           () => createIdentity({ handle }),
           100,
           50
