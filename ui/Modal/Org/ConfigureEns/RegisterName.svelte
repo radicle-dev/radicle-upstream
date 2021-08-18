@@ -51,13 +51,13 @@
   let nameInputValue: string = currentName || "";
 
   let userInputStarted: boolean = nameInputValue !== "";
+  let commitInProgress: boolean = false;
+
+  let validatedName: string;
   let validationState: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
   let registration: ensResolver.Registration | null;
-  let commitInProgress: boolean = false;
-
-  let name: string;
 
   const validateFormExecutor = mutexExecutor.create();
   const debouncedValidateFormAndSetState = debounce(
@@ -67,13 +67,13 @@
 
   $: runAllValidations(nameInputValue);
 
-  function runAllValidations(nameInputValue: string | undefined): void {
+  function runAllValidations(name: string | undefined): void {
     if (!userInputStarted) {
       userInputStarted = true;
       return;
     }
 
-    if (!nameInputValue) {
+    if (!name) {
       debouncedValidateFormAndSetState.cancel();
       validationState = {
         status: validation.ValidationStatus.Error,
@@ -83,7 +83,7 @@
       validationState = {
         status: validation.ValidationStatus.Loading,
       };
-      debouncedValidateFormAndSetState(nameInputValue);
+      debouncedValidateFormAndSetState(name);
     }
   }
 
@@ -93,12 +93,12 @@
     });
 
     if (validationResult) {
-      ({ name, validationState, registration } = validationResult);
+      ({ validatedName, validationState, registration } = validationResult);
     }
   }
 
   async function runAsyncValidations(name: string): Promise<{
-    name: string;
+    validatedName: string;
     validationState: validation.ValidationState;
     registration: ensResolver.Registration | null;
   }> {
@@ -110,7 +110,7 @@
 
       if (radBalance && radBalance < fee) {
         return {
-          name,
+          validatedName: name,
           validationState: {
             status: validation.ValidationStatus.Error,
             message:
@@ -121,7 +121,7 @@
       }
 
       return {
-        name,
+        validatedName: name,
         validationState: {
           status: validation.ValidationStatus.Success,
         },
@@ -137,7 +137,7 @@
 
     if (registration && registration.owner === walletStore.getAddress()) {
       return {
-        name,
+        validatedName: name,
         validationState: {
           status: validation.ValidationStatus.Success,
         },
@@ -146,7 +146,7 @@
     }
 
     return {
-      name,
+      validatedName: name,
       validationState: {
         status: validation.ValidationStatus.Error,
         message: "Sorry, but that name is already taken.",
@@ -155,18 +155,18 @@
     };
   }
 
-  async function commitOrGoToUpdateMetadata(): Promise<void> {
+  function commitOrGoToUpdateMetadata(): void {
     if (registration) {
       registrationDone({
-        name,
+        name: validatedName,
         registration,
       });
     } else {
-      commit();
+      commit(validatedName);
     }
   }
 
-  async function commit() {
+  async function commit(name: string) {
     commitInProgress = true;
 
     const signNotification = notification.info({
@@ -279,7 +279,7 @@
   </Modal>
 {:else if state.type === "register"}
   <ConfirmRegistration
-    {name}
+    name={validatedName}
     commitmentSalt={state.commitmentSalt}
     commitmentBlock={state.commitmentBlock}
     minimumCommitmentAge={state.minimumCommitmentAge}
