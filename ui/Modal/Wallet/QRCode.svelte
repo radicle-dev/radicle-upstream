@@ -31,14 +31,13 @@
     padding: calc(var(--content-padding) / 2);
     border-radius: 1rem;
     background-color: white;
+    box-shadow: var(--elevation-medium);
   }
 
   .connector {
     display: flex;
     align-items: center;
     justify-content: center;
-
-    padding-top: 0.625rem;
     color: var(--color-foreground-level-5);
   }
 </style>
@@ -55,10 +54,11 @@
     <div data-cy="qr-code">
       {@html svgString}
     </div>
-    <p class="typo-text-bold connector">
-      <Copyable showIcon={true} styleContent={false} copyContent={uri}>
-        <p class="typo-text-small-mono">{ellipsed(uri, 5)}</p>
-      </Copyable>
-    </p>
   </div>
+
+  <p class="typo-text-bold connector">
+    <Copyable showIcon={true} styleContent={false} copyContent={uri}>
+      <p class="typo-text-small-mono">{ellipsed(uri, 5)}</p>
+    </Copyable>
+  </p>
 </Modal>
