@@ -41,6 +41,7 @@
       kind === TxKind.ClaimRadicleIdentity ||
       kind === TxKind.CommitEnsName ||
       kind === TxKind.CreateOrg ||
+      kind === TxKind.LinkEnsNameToOrg ||
       kind === TxKind.RegisterEnsName ||
       kind === TxKind.UpdateEnsMetadata
     );
