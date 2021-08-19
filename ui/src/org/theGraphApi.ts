@@ -10,6 +10,7 @@ import * as multihash from "multihashes";
 import * as svelteStore from "svelte/store";
 
 import type * as project from "ui/src/project";
+import type * as ensResolver from "ui/src/org/ensResolver";
 
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
@@ -160,7 +161,8 @@ export async function getGnosisSafeMembers(
 }
 
 export async function getOrgProjectAnchors(
-  orgAddress: string
+  orgAddress: string,
+  registration?: ensResolver.Registration
 ): Promise<project.Anchor[]> {
   const response = (
     await orgsSubgraphClient().query({
@@ -206,6 +208,7 @@ export async function getOrgProjectAnchors(
         projectId: decodedProjectId,
         commitHash: decodedCommitHash,
         timestamp: project.anchor.timestamp,
+        registration,
       };
 
       return anchor;

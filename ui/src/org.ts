@@ -399,7 +399,8 @@ export async function fetchMembers(
 // Gnosis safe.
 async function fetchPendingAnchors(
   orgAddress: string,
-  gnosis: GnosisSafeOwner
+  gnosis: GnosisSafeOwner,
+  registration?: ensResolver.Registration
 ): Promise<project.PendingAnchor[]> {
   const walletStore = svelteStore.get(wallet.store);
   const txs = await Safe.getPendingTransactions(
@@ -427,6 +428,7 @@ async function fetchPendingAnchors(
           orgAddress: orgAddress,
           confirmations: tx.confirmations ? tx.confirmations.length : 0,
           timestamp: Date.parse(tx.submissionDate),
+          registration,
         };
         return anchor;
       }
@@ -450,17 +452,18 @@ export interface OrgAnchors {
 // Includes anchors from transactions that have not been confirmed yet.
 export async function resolveProjectAnchors(
   orgAddress: string,
-  owner: Owner
+  owner: Owner,
+  registration?: ensResolver.Registration
 ): Promise<OrgAnchors> {
   let pendingAnchors: project.Anchor[];
   if (owner.type === "wallet") {
     pendingAnchors = [];
   } else if (owner.type === "gnosis-safe") {
-    pendingAnchors = await fetchPendingAnchors(orgAddress, owner);
+    pendingAnchors = await fetchPendingAnchors(orgAddress, owner, registration);
   } else {
     pendingAnchors = unreachable(owner);
   }
-  const confirmedAnchors = await graph.getOrgProjectAnchors(orgAddress);
+  const confirmedAnchors = await graph.getOrgProjectAnchors(orgAddress, registration);
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
 
   const anchoredProjects: project.Project[] = [];

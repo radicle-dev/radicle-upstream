@@ -104,6 +104,7 @@
               size="small"
               style="margin: 0 0.5rem 0 0.5rem;"
               variant="square"
+              imageUrl={anchor.registration?.avatar || undefined}
               avatarFallback={radicleAvatar.generate(
                 anchor.orgAddress,
                 radicleAvatar.Usage.Any
@@ -111,7 +112,7 @@
             <p
               class="typo-text-bold org"
               style="color: var(--color-foreground-level-6);overflow: ellipsed">
-              {anchor.orgAddress}
+              {anchor.registration?.domain || anchor.orgAddress}
             </p>
           {/if}
         </div>
