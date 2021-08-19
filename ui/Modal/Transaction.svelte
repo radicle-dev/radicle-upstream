@@ -12,8 +12,8 @@
   import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
 
   import { ellipsed } from "ui/src/style";
+  import type { Tx } from "ui/src/transaction";
   import {
-    Tx,
     TxKind,
     TxStatus,
     colorForStatus,
