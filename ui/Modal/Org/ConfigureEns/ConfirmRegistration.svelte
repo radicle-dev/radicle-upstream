@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type * as ethers from "ethers";
   import type * as registerName from "./RegisterName.svelte";
 
   import { Modal } from "ui/DesignSystem";
@@ -40,7 +39,7 @@
       persist: true,
     });
 
-    let registrationTx: ethers.ContractTransaction;
+    let registrationTx: transaction.ContractTransaction;
     try {
       registrationTx = await ensRegistrar.register(name, commitmentSalt);
     } catch (err) {

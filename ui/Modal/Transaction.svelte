@@ -6,23 +6,23 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Copyable, Icon, Identity, Modal } from "ui/DesignSystem";
   import dayjs from "dayjs";
+  import { Copyable, Icon, Identity, Modal } from "ui/DesignSystem";
   import TxSpinner from "ui/DesignSystem/Transaction/Spinner.svelte";
   import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
 
   import { ellipsed } from "ui/src/style";
   import {
+    Tx,
+    TxKind,
+    TxStatus,
+    colorForStatus,
     emoji,
+    isIncoming,
     selectedStore,
     store as txs,
-    colorForStatus,
-    isIncoming,
     transferAmount,
-    TxStatus,
-    TxKind,
   } from "ui/src/transaction";
-  import type { Tx } from "ui/src/transaction";
 
   // In reality, the transaction should never be undefined,
   // but because the only way we currently have use it here
@@ -34,6 +34,17 @@
   $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
   $: transferedAmount = tx ? transferAmount(tx) : undefined;
   $: incoming = tx ? isIncoming(tx) : false;
+
+  function showPoolCard(kind: TxKind): boolean {
+    return !(
+      kind === TxKind.AnchorProject ||
+      kind === TxKind.ClaimRadicleIdentity ||
+      kind === TxKind.CommitEnsName ||
+      kind === TxKind.CreateOrg ||
+      kind === TxKind.RegisterEnsName ||
+      kind === TxKind.UpdateEnsMetadata
+    );
+  }
 </script>
 
 <style>
@@ -114,7 +125,7 @@
   {#if tx}
     <header>
       <Summary {tx} />
-      {#if !(tx.kind === TxKind.ClaimRadicleIdentity || tx.kind === TxKind.CreateOrg || tx.kind === TxKind.AnchorProject || tx.kind === TxKind.CommitEnsName || tx.kind === TxKind.RegisterEnsName)}
+      {#if showPoolCard(tx.kind)}
         <div class="from-to" class:incoming>
           <div>
             <p class="typo-text-bold" style="margin-bottom: 0.5rem">
