@@ -111,7 +111,7 @@
       const accountBalancesStore = wallet.accountBalancesStore;
       const radBalance = svelteStore.get(accountBalancesStore).rad;
 
-      if (radBalance && radBalance < fee) {
+      if (radBalance && radBalance.lt(fee)) {
         return {
           validatedName: name,
           validationState: {
