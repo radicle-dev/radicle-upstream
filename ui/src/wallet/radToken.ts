@@ -9,8 +9,8 @@ import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 
 import {
-  ERC20,
-  ERC20__factory as Erc20Factory,
+  RadicleToken,
+  RadicleToken__factory as RadicleTokenFactory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 const addresses = {
@@ -18,7 +18,7 @@ const addresses = {
   mainnet: "0x31c8EAcBFFdD875c74b94b077895Bd78CF1E64A3",
 };
 
-export function radTokenAddress(environment: ethereum.Environment): string {
+function radTokenAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
       throw new error.Error({
@@ -35,6 +35,9 @@ export function radTokenAddress(environment: ethereum.Environment): string {
 export function connect(
   signerOrProvider: ethers.Signer | ethers.providers.Provider,
   environment: ethereum.Environment
-): ERC20 {
-  return Erc20Factory.connect(radTokenAddress(environment), signerOrProvider);
+): RadicleToken {
+  return RadicleTokenFactory.connect(
+    radTokenAddress(environment),
+    signerOrProvider
+  );
 }

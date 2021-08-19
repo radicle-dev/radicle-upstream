@@ -10,10 +10,7 @@ import * as error from "ui/src/error";
 import * as svelteStore from "ui/src/svelteStore";
 import * as Wallet from "ui/src/wallet";
 
-import {
-  Registrar__factory as RegistrarFactory,
-  RadicleToken__factory as RadicleTokenFactory,
-} from "radicle-contracts/build/contract-bindings/ethers";
+import { Registrar__factory as RegistrarFactory } from "radicle-contracts/build/contract-bindings/ethers";
 
 function registrarAddress(network: ethereum.Environment): string {
   switch (network) {
@@ -127,20 +124,17 @@ export async function permitSignature(
   const spenderAddr = registrarAddress(wallet.environment);
   const owner = wallet.signer;
 
-  const token = RadicleTokenFactory.connect(
-    Wallet.radToken.radTokenAddress(wallet.environment),
-    wallet.signer
-  );
+  const rad = Wallet.radToken.connect(wallet.signer, wallet.environment);
 
   const ownerAddr = (await owner.getAddress()).toLowerCase();
-  const nonce = await token.nonces(ownerAddr);
+  const nonce = await rad.nonces(ownerAddr);
   const chainId = (await wallet.provider.getNetwork()).chainId;
 
   const data = {
     domain: {
-      name: await token.name(),
+      name: await rad.name(),
       chainId,
-      verifyingContract: token.address,
+      verifyingContract: rad.address,
     },
     primaryType: "Permit",
     types: {
