@@ -52,15 +52,20 @@ interface SingleSigLoaded {
 export async function load(params: Params): Promise<LoadedRoute> {
   const owner = await org.getOwner(params.address);
   const projectCount = await org.getProjectCount();
-  const anchors = await org.resolveProjectAnchors(params.address, owner);
-  const ensRecord = (await org.fetchOrgEnsRecord(params.address)) || undefined;
+  const registration =
+    (await org.fetchOrgEnsRecord(params.address)) || undefined;
+  const anchors = await org.resolveProjectAnchors(
+    params.address,
+    owner,
+    registration
+  );
 
   switch (owner.type) {
     case "gnosis-safe": {
       if (params.view === "projects") {
         return {
           type: "multiSigOrg",
-          registration: ensRecord,
+          registration,
           address: params.address,
           gnosisSafeAddress: owner.address,
           members: owner.members,
@@ -75,7 +80,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
       } else if (params.view === "members") {
         return {
           type: "multiSigOrg",
-          registration: ensRecord,
+          registration,
           address: params.address,
           gnosisSafeAddress: owner.address,
           members: owner.members,
@@ -93,7 +98,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
     case "wallet": {
       return {
         type: "singleSigOrg",
-        registration: ensRecord,
+        registration,
         address: params.address,
         owner: owner.address,
         projectCount,

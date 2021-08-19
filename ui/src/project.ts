@@ -6,6 +6,7 @@
 
 import { get, writable } from "svelte/store";
 
+import type * as ensResolver from "./org/ensResolver";
 import * as error from "./error";
 import * as config from "./config";
 import type * as identity from "./identity";
@@ -38,6 +39,7 @@ interface ConfirmedAnchor {
   projectId: string;
   commitHash: string;
   timestamp: number;
+  registration?: ensResolver.Registration;
 }
 
 export interface PendingAnchor {
@@ -48,6 +50,7 @@ export interface PendingAnchor {
   projectId: string;
   commitHash: string;
   timestamp: number;
+  registration?: ensResolver.Registration;
 }
 
 export type Anchor = ConfirmedAnchor | PendingAnchor;

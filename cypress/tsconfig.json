@@ -1,7 +1,6 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom", "es6", "es7"],
     "types": ["cypress", "node"]
   },
   "include": ["**/*.ts"]
