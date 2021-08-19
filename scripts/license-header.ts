@@ -8,7 +8,7 @@
 
 import globby from "globby";
 import yargs from "yargs";
-import { promises as fs } from "fs";
+import * as fs from "fs/promises";
 import * as Path from "path";
 
 // Error that is shown without a stacktrace to the user
