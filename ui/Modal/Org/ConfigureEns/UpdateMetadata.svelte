@@ -8,6 +8,8 @@
 <script lang="typescript">
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
+  import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
 
   import { Modal, TextInput, Tooltip } from "ui/DesignSystem";
@@ -25,7 +27,6 @@
 
   let updated = false;
   let buttonsDisabled = false;
-  let submitButtonCopy = "Update name metadata";
 
   let orgAddressValidationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
@@ -43,54 +44,70 @@
 
   async function setRecords() {
     buttonsDisabled = true;
-    submitButtonCopy = "Waiting for transaction confirmation...";
 
-    try {
-      let records: {
-        name: keyof ensResolver.Registration;
-        value: string | undefined;
-      }[] = [
-        { name: "address", value: orgAddress },
-        { name: "url", value: urlValue },
-        { name: "avatar", value: avatarValue },
-        { name: "twitter", value: twitterValue },
-        { name: "github", value: githubValue },
-      ];
+    let records: {
+      name: keyof ensResolver.Registration;
+      value: string | undefined;
+    }[] = [
+      { name: "address", value: orgAddress },
+      { name: "url", value: urlValue },
+      { name: "avatar", value: avatarValue },
+      { name: "twitter", value: twitterValue },
+      { name: "github", value: githubValue },
+    ];
 
-      // Filter out unchanged records.
-      records = records.filter(r => {
-        const existingValue = registration[r.name];
+    // Filter out unchanged records.
+    records = records.filter(r => {
+      const existingValue = registration[r.name];
 
-        const normalizedExistingValue =
-          typeof existingValue === "string"
-            ? existingValue.toLowerCase()
-            : existingValue;
+      const normalizedExistingValue =
+        typeof existingValue === "string"
+          ? existingValue.toLowerCase()
+          : existingValue;
 
-        if (
-          r.value === undefined ||
-          (normalizedExistingValue === null && r.value === "")
-        ) {
-          false;
-        } else {
-          return normalizedExistingValue !== r.value.toLowerCase();
-        }
+      if (
+        r.value === undefined ||
+        (normalizedExistingValue === null && r.value === "")
+      ) {
+        false;
+      } else {
+        return normalizedExistingValue !== r.value.toLowerCase();
+      }
+    });
+
+    if (records.length > 0) {
+      const updateNotification = notification.info({
+        message:
+          "Waiting for you to confirm the metadata update transaction in your connected wallet",
+        showIcon: true,
+        persist: true,
       });
 
-      if (records.length > 0) {
-        await ensResolver.setRecords(
+      let tx: transaction.ContractTransaction | undefined = undefined;
+      try {
+        tx = await ensResolver.setRecords(
           registration.domain,
           records as ensResolver.EnsRecord[]
         );
+        transaction.add(transaction.updateEnsMetadata(tx));
+        updated = true;
+      } catch (err) {
+        buttonsDisabled = false;
+        error.show(
+          new error.Error({
+            message: err.message,
+            source: err,
+          })
+        );
+        return;
+      } finally {
+        updateNotification.remove();
       }
 
+      await tx.wait(1);
+      // TODO: yank the metadata cache for this org and let the user know.
+    } else {
       updated = true;
-    } catch (err) {
-      buttonsDisabled = false;
-      submitButtonCopy = "Update org metadata";
-      throw new error.Error({
-        message: "Transaction failed",
-        source: err,
-      });
     }
   }
 </script>
@@ -145,7 +162,7 @@
 
     <ButtonRow
       disableButtons={buttonsDisabled}
-      confirmCopy={submitButtonCopy}
+      confirmCopy="Update org metadata"
       onSubmit={setRecords} />
   </Modal>
 {:else}

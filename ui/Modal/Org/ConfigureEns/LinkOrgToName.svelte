@@ -7,7 +7,9 @@
 -->
 <script lang="typescript">
   import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
   import * as org from "ui/src/org";
+  import * as transaction from "ui/src/transaction";
 
   import { Modal, TextInput } from "ui/DesignSystem";
 
@@ -19,30 +21,63 @@
   export let safeAddress: string | undefined = undefined;
 
   let buttonsDisabled = false;
-  let submitButtonCopy = "Link organization to name";
 
   let linked = false;
 
   async function link() {
     buttonsDisabled = true;
-    submitButtonCopy = "Waiting for transaction confirmation...";
 
-    try {
-      if (safeAddress) {
+    if (safeAddress) {
+      const signNotification = notification.info({
+        message:
+          "Waiting for you to sign the proposal in your connected wallet",
+        showIcon: true,
+        persist: true,
+      });
+
+      try {
         await org.proposeSetNameChange(domain, orgAddress, safeAddress);
-      } else {
-        await org.setNameSingleSig(domain, orgAddress);
+        linked = true;
+      } catch (err) {
+        buttonsDisabled = false;
+
+        error.show(
+          new error.Error({
+            message: err.message,
+            source: err,
+          })
+        );
+      } finally {
+        signNotification.remove();
+      }
+    } else {
+      const setNameNotification = notification.info({
+        message:
+          "Waiting for you to confirm the set name transaction in your connected wallet",
+        showIcon: true,
+        persist: true,
+      });
+
+      let tx: transaction.ContractTransaction | undefined = undefined;
+
+      try {
+        tx = await org.setNameSingleSig(domain, orgAddress);
+        transaction.add(transaction.linkEnsNameToOrg(tx));
+        linked = true;
+      } catch (err) {
+        error.show(
+          new error.Error({
+            message: err.message,
+            source: err,
+          })
+        );
+        return;
+      } finally {
+        setNameNotification.remove();
       }
 
-      linked = true;
-    } catch (err) {
-      buttonsDisabled = false;
-      submitButtonCopy = "Link organization to name";
-
-      throw new error.Error({
-        message: "Transaction failed",
-        source: err,
-      });
+      await tx.wait(1);
+      // TODO: yank the cache for this org and let the user know.
     }
   }
 </script>
@@ -76,8 +111,7 @@
     <ButtonRow
       disableButtons={buttonsDisabled}
       onSubmit={link}
-      canCancel={false}
-      confirmCopy={submitButtonCopy} />
+      confirmCopy="Link name to org" />
   </Modal>
 {:else if safeAddress}
   <Modal

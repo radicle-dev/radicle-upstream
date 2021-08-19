@@ -22,6 +22,7 @@ import { Icon } from "ui/DesignSystem";
 export const store = persistentStore<Tx[]>("transactions", []);
 
 export type Tx = TxData & MetaTx;
+export type { ContractTransaction };
 
 // The data shared across all types of transactions
 // that we are to deal with.
@@ -51,9 +52,11 @@ type MetaTx =
   | CommitEnsName
   | CreateOrg
   | Erc20Allowance
+  | LinkEnsNameToOrg
   | RegisterEnsName
   | SupportOnboarding
   | TopUp
+  | UpdateEnsMetadata
   | UpdateSupport
   | Withdraw;
 
@@ -71,6 +74,14 @@ interface RegisterEnsName {
 
 interface CommitEnsName {
   kind: TxKind.CommitEnsName;
+}
+
+interface UpdateEnsMetadata {
+  kind: TxKind.UpdateEnsMetadata;
+}
+
+interface LinkEnsNameToOrg {
+  kind: TxKind.LinkEnsNameToOrg;
 }
 
 interface ClaimRadicleIdentity {
@@ -123,9 +134,11 @@ export enum TxKind {
   CommitEnsName = "Commit ENS name",
   CreateOrg = "Create Org",
   Erc20Allowance = "ERC-20 Allowance",
+  LinkEnsNameToOrg = "Link Ens Name to Org",
   RegisterEnsName = "Register ENS name",
   SupportOnboarding = "Support Onboarding",
   TopUp = "Top Up",
+  UpdateEnsMetadata = "Update ENS metadata",
   UpdateSupport = "Update Support",
   Withdraw = "Withdraw",
 }
@@ -155,6 +168,14 @@ export function registerEnsName(txc: ContractTransaction): Tx {
 
 export function commitEnsName(txc: ContractTransaction): Tx {
   return { ...txData(txc), kind: TxKind.CommitEnsName };
+}
+
+export function linkEnsNameToOrg(txc: ContractTransaction): Tx {
+  return { ...txData(txc), kind: TxKind.LinkEnsNameToOrg };
+}
+
+export function updateEnsMetadata(txc: ContractTransaction): Tx {
+  return { ...txData(txc), kind: TxKind.UpdateEnsMetadata };
 }
 
 export function claimRadicleIdentity(
@@ -395,9 +416,11 @@ function direction(tx: Tx): Direction {
     case TxKind.CommitEnsName:
     case TxKind.CreateOrg:
     case TxKind.Erc20Allowance:
+    case TxKind.LinkEnsNameToOrg:
     case TxKind.RegisterEnsName:
     case TxKind.SupportOnboarding:
     case TxKind.TopUp:
+    case TxKind.UpdateEnsMetadata:
     case TxKind.UpdateSupport:
       return Direction.Outgoing;
   }
@@ -414,6 +437,10 @@ export function emoji(tx: Tx): string {
     case TxKind.CommitEnsName:
     case TxKind.RegisterEnsName:
       return "📇";
+    case TxKind.UpdateEnsMetadata:
+      return "📋";
+    case TxKind.LinkEnsNameToOrg:
+      return "🔗";
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
     case TxKind.Erc20Allowance:
@@ -431,9 +458,11 @@ export function txIcon(tx: Tx): typeof SvelteComponent {
     case TxKind.CollectFunds:
     case TxKind.Withdraw:
       return Icon.Withdraw;
-    case TxKind.Erc20Allowance:
     case TxKind.CommitEnsName:
+    case TxKind.Erc20Allowance:
+    case TxKind.LinkEnsNameToOrg:
     case TxKind.RegisterEnsName:
+    case TxKind.UpdateEnsMetadata:
       return Icon.Ethereum;
     case TxKind.SupportOnboarding:
     case TxKind.UpdateSupport:
