@@ -52,8 +52,13 @@ interface SingleSigLoaded {
 export async function load(params: Params): Promise<LoadedRoute> {
   const owner = await org.getOwner(params.address);
   const projectCount = await org.getProjectCount();
-  const registration = (await org.fetchOrgEnsRecord(params.address)) || undefined;
-  const anchors = await org.resolveProjectAnchors(params.address, owner, registration);
+  const registration =
+    (await org.fetchOrgEnsRecord(params.address)) || undefined;
+  const anchors = await org.resolveProjectAnchors(
+    params.address,
+    owner,
+    registration
+  );
 
   switch (owner.type) {
     case "gnosis-safe": {

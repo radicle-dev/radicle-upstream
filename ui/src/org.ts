@@ -463,7 +463,10 @@ export async function resolveProjectAnchors(
   } else {
     pendingAnchors = unreachable(owner);
   }
-  const confirmedAnchors = await graph.getOrgProjectAnchors(orgAddress, registration);
+  const confirmedAnchors = await graph.getOrgProjectAnchors(
+    orgAddress,
+    registration
+  );
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
 
   const anchoredProjects: project.Project[] = [];
