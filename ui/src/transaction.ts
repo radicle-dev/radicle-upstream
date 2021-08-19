@@ -134,7 +134,7 @@ export enum TxKind {
   CommitEnsName = "Commit ENS name",
   CreateOrg = "Create Org",
   Erc20Allowance = "ERC-20 Allowance",
-  LinkEnsNameToOrg = "LinkEnsNameToOrg",
+  LinkEnsNameToOrg = "Link Ens Name to Org",
   RegisterEnsName = "Register ENS name",
   SupportOnboarding = "Support Onboarding",
   TopUp = "Top Up",
