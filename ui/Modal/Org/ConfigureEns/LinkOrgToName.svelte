@@ -71,14 +71,13 @@
             source: err,
           })
         );
+        return;
       } finally {
         setNameNotification.remove();
       }
 
-      if (tx) {
-        await tx.wait(1);
-        // TODO: yank the cache for this org and let the user know.
-      }
+      await tx.wait(1);
+      // TODO: yank the cache for this org and let the user know.
     }
   }
 </script>

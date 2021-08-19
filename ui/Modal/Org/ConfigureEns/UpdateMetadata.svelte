@@ -99,14 +99,13 @@
             source: err,
           })
         );
+        return;
       } finally {
         updateNotification.remove();
       }
 
-      if (tx) {
-        await tx.wait(1);
-        // TODO: yank the metadata cache for this org and let the user know.
-      }
+      await tx.wait(1);
+      // TODO: yank the metadata cache for this org and let the user know.
     } else {
       updated = true;
     }
