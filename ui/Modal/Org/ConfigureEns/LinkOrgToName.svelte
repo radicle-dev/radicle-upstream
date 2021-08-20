@@ -65,6 +65,8 @@
         transaction.add(transaction.linkEnsNameToOrg(tx));
         linked = true;
       } catch (err) {
+        buttonsDisabled = false;
+
         error.show(
           new error.Error({
             message: err.message,
