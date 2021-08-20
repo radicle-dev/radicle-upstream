@@ -6,13 +6,13 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { onDestroy } from "svelte";
+  import { onMount, onDestroy } from "svelte";
 
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
   export let minimumCommitmentAge: number;
-  export let startBlock: number;
+  export let startBlock: number | undefined = undefined;
   export let onFinish: () => void;
 
   const walletStore = svelteStore.get(wallet.store);
@@ -22,6 +22,10 @@
   let done: boolean = false;
 
   const onBlock = (currentBlock: number) => {
+    if (!startBlock) {
+      startBlock = currentBlock;
+    }
+
     confirmedBlockCount = currentBlock - startBlock;
 
     if (!done && confirmedBlockCount >= requiredBlockCount) {
@@ -34,6 +38,11 @@
 
   onDestroy(() => {
     walletStore.provider.off("block", onBlock);
+  });
+
+  onMount(async () => {
+    const block = await walletStore.provider.getBlockNumber();
+    onBlock(block);
   });
 </script>
 

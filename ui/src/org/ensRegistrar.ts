@@ -4,11 +4,12 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as ethers from "ethers";
-import * as ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
+import * as ethereum from "ui/src/ethereum";
+import * as ethers from "ethers";
 import * as svelteStore from "ui/src/svelteStore";
 import * as Wallet from "ui/src/wallet";
+import * as zod from "zod";
 
 import { Registrar__factory as RegistrarFactory } from "radicle-contracts/build/contract-bindings/ethers";
 
@@ -55,22 +56,75 @@ export function deadline(): ethers.BigNumber {
   return ethers.BigNumber.from(Math.floor(Date.now() / 1000)).add(3600);
 }
 
-export interface CommitResult {
-  tx: ethers.ContractTransaction;
+// Return salt as a hex string.
+export function generateSalt(): string {
+  return ethers.BigNumber.from(ethers.utils.randomBytes(32)).toHexString();
+}
+
+export interface Commitment {
+  name: string;
+  ownerAddress: string;
+  salt: string;
+  // Block number at which the commitment was included.
+  blockNumber?: number;
   // The minimum number of blocks that must have passed between a commitment
   // and name registration.
   minimumCommitmentAge: number;
 }
 
+export const commitmentSchema: zod.Schema<Commitment> = zod.object({
+  name: zod.string(),
+  ownerAddress: zod.string(),
+  salt: zod.string(),
+  blockNumber: zod.number().optional(),
+  minimumCommitmentAge: zod.number()
+});
+
+const COMMITMENT_STORAGE_KEY = "radicle.ens.commitment";
+
+export function persistCommitment(commitment: Commitment): void {
+  window.localStorage.setItem(
+    COMMITMENT_STORAGE_KEY,
+    JSON.stringify(commitment)
+  );
+}
+
+export function clearCommitment(): void {
+  window.localStorage.removeItem(COMMITMENT_STORAGE_KEY)
+}
+
+export function restoreCommitment(): Commitment | null {
+  const commitmentJson = window.localStorage.getItem(COMMITMENT_STORAGE_KEY);
+
+  if (!commitmentJson) {
+    return null;
+  }
+
+  const commitment = JSON.parse(commitmentJson);
+  const result = commitmentSchema.safeParse(commitment);
+
+  if (result.success) {
+    return result.data;
+  } else {
+    error.show(
+      new error.Error({
+        message: "Could not validate persisted commitment",
+        details: { commitment },
+      })
+    );
+    return null;
+  }
+}
+
 export async function commit(
   name: string,
-  salt: Uint8Array,
+  salt: string,
   fee: ethers.BigNumber,
   signature: ethers.Signature,
   deadline: ethers.BigNumber
-): Promise<CommitResult> {
+): Promise<{ tx: ethers.ContractTransaction; commitment: Commitment }> {
   const wallet = svelteStore.get(Wallet.store);
-  const ownerAddr = wallet.getAddress();
+  const ownerAddr = wallet.getAddress()?.toLowerCase();
   if (!ownerAddr) {
     throw new error.Error({
       message: "Wallet not connected",
@@ -85,7 +139,7 @@ export async function commit(
 
   const tx = await registrar().commitWithPermit(
     commitment,
-    ownerAddr.toLowerCase(),
+    ownerAddr,
     fee,
     deadline,
     signature.v,
@@ -95,13 +149,18 @@ export async function commit(
 
   return {
     tx,
-    minimumCommitmentAge,
+    commitment: {
+      name,
+      ownerAddress: ownerAddr,
+      salt,
+      minimumCommitmentAge,
+    },
   };
 }
 
 export async function register(
   name: string,
-  salt: Uint8Array
+  salt: string
 ): Promise<ethers.ContractTransaction> {
   const wallet = svelteStore.get(Wallet.store);
 
@@ -168,12 +227,12 @@ export async function permitSignature(
 function createCommitment(
   name: string,
   ownerAddress: string,
-  salt: Uint8Array
+  salt: string
 ): string {
   const bytes = ethers.utils.concat([
     ethers.utils.toUtf8Bytes(name),
     ownerAddress,
-    ethers.BigNumber.from(salt).toHexString(),
+    salt,
   ]);
 
   return ethers.utils.keccak256(bytes);

@@ -21,11 +21,8 @@
 
   let buttonsDisabled = false;
 
+  export let commitment: ensRegistrar.Commitment;
   export let registrationDone: (result: registerName.Result) => void;
-  export let name: string;
-  export let commitmentSalt: Uint8Array;
-  export let commitmentBlock: number;
-  export let minimumCommitmentAge: number;
 
   let state: "waiting" | "readyToRegister" | "success" = "waiting";
 
@@ -41,7 +38,10 @@
 
     let registrationTx: transaction.ContractTransaction;
     try {
-      registrationTx = await ensRegistrar.register(name, commitmentSalt);
+      registrationTx = await ensRegistrar.register(
+        commitment.name,
+        commitment.salt
+      );
     } catch (err) {
       buttonsDisabled = false;
 
@@ -56,6 +56,7 @@
     } finally {
       registrationNotification.remove();
     }
+    ensRegistrar.clearCommitment();
 
     transaction.add(transaction.registerEnsName(registrationTx));
 
@@ -94,15 +95,15 @@
     <div style="display: flex; justify-content: center;">
       <BlockTimer
         onFinish={() => (state = "readyToRegister")}
-        {minimumCommitmentAge}
-        startBlock={commitmentBlock} />
+        minimumCommitmentAge={commitment.minimumCommitmentAge}
+        startBlock={commitment.blockNumber} />
     </div>
   </Modal>
 {:else if state === "readyToRegister"}
   <Modal
     emoji="📇"
     title="Almost done"
-    desc={`With this last transaction, you’re confirming the registration of your new ENS name ${name}.${ensResolver.DOMAIN}.`}>
+    desc={`With this last transaction, you’re confirming the registration of your new ENS name ${commitment.name}.${ensResolver.DOMAIN}.`}>
     <ButtonRow
       disableButtons={buttonsDisabled}
       onSubmit={register}
@@ -112,10 +113,10 @@
   <Modal
     emoji="🎉"
     title="Registration complete"
-    desc={`Congratulations, ${name}.${ensResolver.DOMAIN} has successfully been registered with your wallet. Next, let's populate your name with organization metadata. You can also do this later by selecting "Register ENS Name" and entering your existing name.`}>
+    desc={`Congratulations, ${commitment.name}.${ensResolver.DOMAIN} has successfully been registered with your wallet. Next, let's populate your name with organization metadata. You can also do this later by selecting "Register ENS Name" and entering your existing name.`}>
     <ButtonRow
       onSubmit={() => {
-        registrationDone({ name, registration: null });
+        registrationDone({ name: commitment.name, registration: null });
       }}
       cancelCopy="Do this later"
       confirmCopy="Set organization metadata" />

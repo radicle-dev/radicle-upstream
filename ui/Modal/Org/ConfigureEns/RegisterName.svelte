@@ -13,7 +13,7 @@
 </script>
 
 <script lang="typescript">
-  import * as ethers from "ethers";
+  import type * as ethers from "ethers";
 
   import { sleep } from "ui/src/sleep";
   import { unreachable } from "ui/src/unreachable";
@@ -42,27 +42,22 @@
       }
     | {
         type: "register";
-        commitmentSalt: Uint8Array;
-        commitmentBlock: number;
-        minimumCommitmentAge: number;
+        commitment: ensRegistrar.Commitment;
       };
 
   let state: State = { type: "validateAndCommit" };
   let nameInputValue: string = currentName || "";
-
   let commitInProgress: boolean = false;
-
   let validatedName: string;
   let validationState: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
   let registration: ensResolver.Registration | null;
-
   let userInputStarted: boolean = nameInputValue !== "";
+  const validateFormExecutor = mutexExecutor.create();
+
   $: (userInputStarted && validateFormAndSetState(nameInputValue)) ||
     (userInputStarted = true);
-
-  const validateFormExecutor = mutexExecutor.create();
 
   async function validateFormAndSetState(
     name: string | undefined
@@ -165,7 +160,21 @@
         registration,
       });
     } else {
-      commit(validatedName);
+      const walletAddress = svelteStore
+        .get(wallet.store)
+        .getAddress()
+        ?.toLowerCase();
+      const commitment = ensRegistrar.restoreCommitment();
+
+      if (
+        commitment &&
+        commitment.name === validatedName &&
+        commitment.ownerAddress === walletAddress
+      ) {
+        state = { type: "register", commitment };
+      } else {
+        commit(validatedName);
+      }
     }
   }
 
@@ -203,17 +212,18 @@
       showIcon: true,
       persist: true,
     });
-    const salt = ethers.utils.randomBytes(32);
+    const salt = ensRegistrar.generateSalt();
 
-    let commitResult: ensRegistrar.CommitResult;
+    let commitment: ensRegistrar.Commitment;
+    let tx: transaction.ContractTransaction;
     try {
-      commitResult = await ensRegistrar.commit(
+      ({ tx, commitment } = await ensRegistrar.commit(
         name,
         salt,
         fee,
         signature,
         deadline
-      );
+      ));
     } catch (err) {
       error.show(
         new error.Error({
@@ -227,7 +237,8 @@
     } finally {
       commitNotification.remove();
     }
-    transaction.add(transaction.commitEnsName(commitResult.tx));
+    ensRegistrar.persistCommitment(commitment);
+    transaction.add(transaction.commitEnsName(tx));
 
     const txNotification = notification.info({
       message: "Waiting for the transaction to be included",
@@ -237,7 +248,7 @@
 
     let receipt;
     try {
-      receipt = await commitResult.tx.wait(1);
+      receipt = await tx.wait(1);
     } catch (err) {
       error.show(
         new error.Error({
@@ -251,12 +262,12 @@
     } finally {
       txNotification.remove();
     }
+    commitment.blockNumber = receipt.blockNumber;
+    ensRegistrar.persistCommitment(commitment);
 
     state = {
       type: "register",
-      minimumCommitmentAge: commitResult.minimumCommitmentAge,
-      commitmentBlock: receipt.blockNumber,
-      commitmentSalt: salt,
+      commitment,
     };
   }
 </script>
@@ -281,12 +292,7 @@
         validation.ValidationStatus.Success || commitInProgress} />
   </Modal>
 {:else if state.type === "register"}
-  <ConfirmRegistration
-    name={validatedName}
-    commitmentSalt={state.commitmentSalt}
-    commitmentBlock={state.commitmentBlock}
-    minimumCommitmentAge={state.minimumCommitmentAge}
-    {registrationDone} />
+  <ConfirmRegistration commitment={state.commitment} {registrationDone} />
 {:else}
   {unreachable(state)}
 {/if}
