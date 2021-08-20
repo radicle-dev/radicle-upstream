@@ -269,6 +269,7 @@
     <TextInput
       bind:value={nameInputValue}
       showSuccessCheck
+      disabled={commitInProgress}
       validation={validationState}
       suffix={`.${ensResolver.DOMAIN}`}
       placeholder="Your organization name"
