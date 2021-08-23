@@ -12,20 +12,17 @@
   import * as wallet from "ui/src/wallet";
 
   export let minimumCommitmentAge: number;
-  export let startBlock: number | undefined = undefined;
+  export let txHash: string;
   export let onFinish: () => void;
 
   const walletStore = svelteStore.get(wallet.store);
 
   const requiredBlockCount = minimumCommitmentAge + 1;
+  let startBlock: number;
   let confirmedBlockCount: number = 0;
   let done: boolean = false;
 
   const onBlock = (currentBlock: number) => {
-    if (!startBlock) {
-      startBlock = currentBlock;
-    }
-
     confirmedBlockCount = currentBlock - startBlock;
 
     if (!done && confirmedBlockCount >= requiredBlockCount) {
@@ -41,7 +38,15 @@
   });
 
   onMount(async () => {
+    const tx = await walletStore.provider.getTransaction(txHash);
     const block = await walletStore.provider.getBlockNumber();
+
+    // If the block has not been mined, `blockNumber` is null.
+    if (tx.blockNumber) {
+      startBlock = tx.blockNumber;
+    } else {
+      startBlock = block;
+    }
     onBlock(block);
   });
 </script>

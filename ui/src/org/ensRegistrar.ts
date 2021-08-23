@@ -65,8 +65,8 @@ export interface Commitment {
   name: string;
   ownerAddress: string;
   salt: string;
-  // Block number at which the commitment was included.
-  blockNumber?: number;
+  // Commitment tx id.
+  txHash: string;
   // The minimum number of blocks that must have passed between a commitment
   // and name registration.
   minimumCommitmentAge: number;
@@ -76,7 +76,7 @@ export const commitmentSchema: zod.Schema<Commitment> = zod.object({
   name: zod.string(),
   ownerAddress: zod.string(),
   salt: zod.string(),
-  blockNumber: zod.number().optional(),
+  txHash: zod.string(),
   minimumCommitmentAge: zod.number()
 });
 
@@ -151,6 +151,7 @@ export async function commit(
     tx,
     commitment: {
       name,
+      txHash: tx.hash,
       ownerAddress: ownerAddr,
       salt,
       minimumCommitmentAge,

@@ -240,31 +240,6 @@
     ensRegistrar.persistCommitment(commitment);
     transaction.add(transaction.commitEnsName(tx));
 
-    const txNotification = notification.info({
-      message: "Waiting for the transaction to be included",
-      showIcon: true,
-      persist: true,
-    });
-
-    let receipt;
-    try {
-      receipt = await tx.wait(1);
-    } catch (err) {
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
-      commitInProgress = false;
-      // Don't advance flow unless we have the tx receipt.
-      return;
-    } finally {
-      txNotification.remove();
-    }
-    commitment.blockNumber = receipt.blockNumber;
-    ensRegistrar.persistCommitment(commitment);
-
     state = {
       type: "register",
       commitment,

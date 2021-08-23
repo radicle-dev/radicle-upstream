@@ -99,7 +99,7 @@
       <BlockTimer
         onFinish={() => (state = "readyToRegister")}
         minimumCommitmentAge={commitment.minimumCommitmentAge}
-        startBlock={commitment.blockNumber} />
+        txHash={commitment.txHash} />
     </div>
   </Modal>
 {:else if state === "readyToRegister"}
