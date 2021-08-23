@@ -70,12 +70,11 @@
       async abortSignal => {
         if (!name) {
           return {
-            registration: null,
             validatedName: "",
             validationState: {
-              status: validation.ValidationStatus.Error,
-              message: "You need to enter a name.",
-            },
+              status: validation.ValidationStatus.NotStarted,
+            } as validation.ValidationState,
+            registration: null,
           };
         }
 
@@ -147,7 +146,7 @@
       validatedName: name,
       validationState: {
         status: validation.ValidationStatus.Error,
-        message: "Sorry, but that name is already taken.",
+        message: "Sorry, that name is already taken.",
       },
       registration: null,
     };
@@ -280,9 +279,10 @@
     <TextInput
       bind:value={nameInputValue}
       showSuccessCheck
+      disabled={commitInProgress}
       validation={validationState}
       suffix={`.${ensResolver.DOMAIN}`}
-      placeholder="Your organization name"
+      placeholder="Your org name"
       style="margin: 16px auto; width: 352px;" />
 
     <ButtonRow

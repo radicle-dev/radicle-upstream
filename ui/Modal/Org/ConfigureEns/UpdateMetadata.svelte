@@ -26,7 +26,7 @@
   let githubValue: string | undefined = registration.github || undefined;
 
   let updated = false;
-  let buttonsDisabled = false;
+  let setRecordsInProgress = false;
 
   let orgAddressValidationStatus: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
@@ -43,7 +43,7 @@
   }
 
   async function setRecords() {
-    buttonsDisabled = true;
+    setRecordsInProgress = true;
 
     let records: {
       name: keyof ensResolver.Registration;
@@ -92,7 +92,7 @@
         transaction.add(transaction.updateEnsMetadata(tx));
         updated = true;
       } catch (err) {
-        buttonsDisabled = false;
+        setRecordsInProgress = false;
         error.show(
           new error.Error({
             message: err.message,
@@ -125,9 +125,9 @@
     emoji="📋"
     title="Set your org’s metadata"
     desc={"This will be shown alongside your ENS name, and appears together with your org across Radicle. You can edit it at any time by clicking “Edit ENS name” on the org page."}>
-    <div class="label typo-text-bold">Organization address</div>
+    <div class="label typo-text-bold">Org address</div>
     <Tooltip
-      value={"This is the address of your organization and is required to link your ENS name to it."}
+      value={"This is the address of your org and is required to link your ENS name to it."}
       position="top">
       <TextInput
         style="margin-bottom: 24px"
@@ -138,30 +138,34 @@
 
     <div class="label typo-text-bold">Website URL</div>
     <TextInput
+      disabled={setRecordsInProgress}
       style="margin-bottom: 24px"
       placeholder="The URL to your org’s website"
       bind:value={urlValue} />
 
     <div class="label typo-text-bold">Avatar URL</div>
     <TextInput
+      disabled={setRecordsInProgress}
       style="margin-bottom: 24px"
       placeholder="A URL that points to the avatar for your org"
       bind:value={avatarValue} />
 
     <div class="label typo-text-bold">Twitter username</div>
     <TextInput
+      disabled={setRecordsInProgress}
       style="margin-bottom: 24px"
       placeholder="Your org’s Twitter handle"
       bind:value={twitterValue} />
 
     <div class="label typo-text-bold">GitHub username</div>
     <TextInput
+      disabled={setRecordsInProgress}
       style="margin-bottom: 24px"
       placeholder="Your org’s GitHub username"
       bind:value={githubValue} />
 
     <ButtonRow
-      disableButtons={buttonsDisabled}
+      disableButtons={setRecordsInProgress}
       confirmCopy="Update org metadata"
       onSubmit={setRecords} />
   </Modal>
