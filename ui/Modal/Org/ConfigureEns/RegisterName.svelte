@@ -20,6 +20,7 @@
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as modal from "ui/src/modal";
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as notification from "ui/src/notification";
   import * as svelteStore from "ui/src/svelteStore";
@@ -27,9 +28,8 @@
   import * as validation from "ui/src/validation";
   import * as wallet from "ui/src/wallet";
 
-  import { Modal, TextInput } from "ui/DesignSystem";
+  import { Button, Modal, TextInput } from "ui/DesignSystem";
 
-  import ButtonRow from "./ButtonRow.svelte";
   import ConfirmRegistration from "./ConfirmRegistration.svelte";
 
   export let registrationDone: (result: Result) => void;
@@ -110,8 +110,9 @@
           validatedName: name,
           validationState: {
             status: validation.ValidationStatus.Error,
-            message:
-              "You don't have enough RAD in your wallet to register this name.",
+            message: `You don't have enough RAD in your wallet to register this name. Name registration costs ${ensRegistrar.formatFee(
+              fee
+            )} RAD.`,
           },
           registration: null,
         };
@@ -272,10 +273,12 @@
 </script>
 
 {#if state.type === "validateAndCommit"}
-  <Modal
-    emoji="📇"
-    title="Let’s name your org"
-    desc="What should your org be called? This name will show up on the top of your profile and anywhere you interact as an org on Radicle.">
+  <Modal emoji="📇" title="Let’s name your org">
+    <svelte:fragment slot="description">
+      What should your org be called? This name will show up on the top of your
+      profile and anywhere you interact as an org on Radicle.
+    </svelte:fragment>
+
     <TextInput
       bind:value={nameInputValue}
       showSuccessCheck
@@ -285,11 +288,18 @@
       placeholder="Your org name"
       style="margin: 16px auto; width: 352px;" />
 
-    <ButtonRow
-      onSubmit={commitOrGoToUpdateMetadata}
-      confirmCopy="Continue"
-      disableButtons={validationState.status !==
-        validation.ValidationStatus.Success || commitInProgress} />
+    <svelte:fragment slot="buttons">
+      <Button
+        variant="transparent"
+        on:click={() => {
+          modal.hide();
+        }}>Cancel</Button>
+      <Button
+        on:click={commitOrGoToUpdateMetadata}
+        disabled={validationState.status !==
+          validation.ValidationStatus.Success || commitInProgress}
+        >Continue</Button>
+    </svelte:fragment>
   </Modal>
 {:else if state.type === "register"}
   <ConfirmRegistration commitment={state.commitment} {registrationDone} />

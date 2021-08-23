@@ -118,7 +118,7 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
         }
       },
       100,
-      50
+      200 // 20 seconds timeout
     );
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
   } catch (err) {

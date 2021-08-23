@@ -8,13 +8,12 @@
 <script lang="typescript">
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
 
-  import { Modal, TextInput, Tooltip } from "ui/DesignSystem";
-
-  import ButtonRow from "./ButtonRow.svelte";
+  import { Button, Modal, TextInput, Tooltip } from "ui/DesignSystem";
 
   export let onSubmit: () => void;
   export let registration: ensResolver.Registration;
@@ -25,7 +24,6 @@
   let twitterValue: string | undefined = registration.twitter || undefined;
   let githubValue: string | undefined = registration.github || undefined;
 
-  let updated = false;
   let setRecordsInProgress = false;
 
   let orgAddressValidationStatus: validation.ValidationState = {
@@ -90,7 +88,7 @@
           records as ensResolver.EnsRecord[]
         );
         transaction.add(transaction.updateEnsMetadata(tx));
-        updated = true;
+        onSetRecordsDone();
       } catch (err) {
         setRecordsInProgress = false;
         error.show(
@@ -107,8 +105,16 @@
       await tx.wait(1);
       // TODO: yank the metadata cache for this org and let the user know.
     } else {
-      updated = true;
+      onSetRecordsDone();
     }
+  }
+
+  function onSetRecordsDone() {
+    notification.info({
+      message: "Org’s metadata has been updated",
+      showIcon: true,
+    });
+    onSubmit();
   }
 </script>
 
@@ -120,60 +126,59 @@
   }
 </style>
 
-{#if !updated}
-  <Modal
-    emoji="📋"
-    title="Set your org’s metadata"
-    desc={"This will be shown alongside your ENS name, and appears together with your org across Radicle. You can edit it at any time by clicking “Edit ENS name” on the org page."}>
-    <div class="label typo-text-bold">Org address</div>
-    <Tooltip
-      value={"This is the address of your org and is required to link your ENS name to it."}
-      position="top">
-      <TextInput
-        style="margin-bottom: 24px"
-        disabled
-        value={orgAddress}
-        validation={orgAddressValidationStatus} />
-    </Tooltip>
+<Modal emoji="📋" title="Set your org’s metadata">
+  <svelte:fragment slot="description">
+    This will be shown alongside your ENS name, and appears together with your
+    org across Radicle. You can edit it at any time by clicking “Edit ENS name”
+    on the org page.
+  </svelte:fragment>
 
-    <div class="label typo-text-bold">Website URL</div>
+  <div class="label typo-text-bold">Org address</div>
+  <Tooltip
+    value={"This is the address of your org and is required to link your ENS name to it."}
+    position="top">
     <TextInput
-      disabled={setRecordsInProgress}
       style="margin-bottom: 24px"
-      placeholder="The URL to your org’s website"
-      bind:value={urlValue} />
+      disabled
+      value={orgAddress}
+      validation={orgAddressValidationStatus} />
+  </Tooltip>
 
-    <div class="label typo-text-bold">Avatar URL</div>
-    <TextInput
-      disabled={setRecordsInProgress}
-      style="margin-bottom: 24px"
-      placeholder="A URL that points to the avatar for your org"
-      bind:value={avatarValue} />
+  <div class="label typo-text-bold">Website URL</div>
+  <TextInput
+    disabled={setRecordsInProgress}
+    style="margin-bottom: 24px"
+    placeholder="The URL to your org’s website"
+    bind:value={urlValue} />
 
-    <div class="label typo-text-bold">Twitter username</div>
-    <TextInput
-      disabled={setRecordsInProgress}
-      style="margin-bottom: 24px"
-      placeholder="Your org’s Twitter handle"
-      bind:value={twitterValue} />
+  <div class="label typo-text-bold">Avatar URL</div>
+  <TextInput
+    disabled={setRecordsInProgress}
+    style="margin-bottom: 24px"
+    placeholder="A URL that points to the avatar for your org"
+    bind:value={avatarValue} />
 
-    <div class="label typo-text-bold">GitHub username</div>
-    <TextInput
-      disabled={setRecordsInProgress}
-      style="margin-bottom: 24px"
-      placeholder="Your org’s GitHub username"
-      bind:value={githubValue} />
+  <div class="label typo-text-bold">Twitter username</div>
+  <TextInput
+    disabled={setRecordsInProgress}
+    style="margin-bottom: 24px"
+    placeholder="Your org’s Twitter handle"
+    bind:value={twitterValue} />
 
-    <ButtonRow
-      disableButtons={setRecordsInProgress}
-      confirmCopy="Update org metadata"
-      onSubmit={setRecords} />
-  </Modal>
-{:else}
-  <Modal
-    emoji="🎉"
-    title="Metadata updated"
-    desc={"Great, your org’s metadata has been successfully updated!"}>
-    <ButtonRow {onSubmit} canCancel={false} confirmCopy="Continue" />
-  </Modal>
-{/if}
+  <div class="label typo-text-bold">GitHub username</div>
+  <TextInput
+    disabled={setRecordsInProgress}
+    style="margin-bottom: 24px"
+    placeholder="Your org’s GitHub username"
+    bind:value={githubValue} />
+
+  <svelte:fragment slot="buttons">
+    <Button
+      variant="transparent"
+      on:click={() => {
+        modal.hide();
+      }}>Cancel</Button>
+    <Button on:click={setRecords} disabled={setRecordsInProgress}
+      >Update org metadata</Button>
+  </svelte:fragment>
+</Modal>

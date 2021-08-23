@@ -175,18 +175,6 @@
     margin-bottom: 2rem;
   }
 
-  .btn-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 1rem;
-  }
-
-  .double-button {
-    display: grid;
-    grid-template-columns: auto auto;
-    grid-column-gap: 1rem;
-  }
-
   .default-branch-row {
     display: flex;
     align-items: center;
@@ -289,23 +277,21 @@
       placeholder="Project description"
       validation={$descriptionValidation}
       bind:value={description} />
-
-    <div class="btn-container">
-      <div class="double-button">
-        <Button
-          dataCy="cancel-button"
-          variant="transparent"
-          on:click={() => modal.hide()}>
-          Cancel
-        </Button>
-        <Button
-          dataCy="create-project-button"
-          disabled={disableSubmit}
-          variant="primary"
-          on:click={createProject}>
-          Create project
-        </Button>
-      </div>
-    </div>
   </div>
+
+  <svelte:fragment slot="buttons">
+    <Button
+      dataCy="cancel-button"
+      variant="transparent"
+      on:click={() => modal.hide()}>
+      Cancel
+    </Button>
+    <Button
+      dataCy="create-project-button"
+      disabled={disableSubmit}
+      variant="primary"
+      on:click={createProject}>
+      Create project
+    </Button>
+  </svelte:fragment>
 </Modal>

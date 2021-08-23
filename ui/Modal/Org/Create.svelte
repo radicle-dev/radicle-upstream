@@ -68,19 +68,14 @@
     border-radius: 0.5rem;
     color: var(--color-foreground-level-6);
   }
-  .actions {
-    display: flex;
-    width: 100%;
-    gap: 1.5rem;
-    justify-content: flex-end;
-  }
 </style>
 
-<Modal
-  emoji="🎪"
-  title="Create a new org"
-  desc="This will create a Gnosis Safe that manages the org contract where the wallet
-you’ve connected to upstream will be the first member.">
+<Modal emoji="🎪" title="Create a new org">
+  <svelte:fragment slot="description">
+    This will create a Gnosis Safe that manages the org contract where the
+    wallet you’ve connected to upstream will be the first member.
+  </svelte:fragment>
+
   <RadioOption
     active={isMultiSig !== undefined && !isMultiSig}
     on:click={ev => {
@@ -155,12 +150,12 @@ you’ve connected to upstream will be the first member.">
     </div>
   </RadioOption>
 
-  <div class="actions">
+  <svelte:fragment slot="buttons">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
     <Button
       disabled={isMultiSig === undefined || (!isMultiSig && !validOwnerAddress)}
       on:click={() => createOrg()}>
       Confirm in your wallet
     </Button>
-  </div>
+  </svelte:fragment>
 </Modal>

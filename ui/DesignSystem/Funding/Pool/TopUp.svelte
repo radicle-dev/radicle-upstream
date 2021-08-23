@@ -8,7 +8,7 @@
 <script lang="typescript">
   import Button from "ui/DesignSystem/Button.svelte";
   import Dai from "ui/DesignSystem/Dai.svelte";
-  import Emoji from "ui/DesignSystem/Emoji.svelte";
+  import Modal from "ui/DesignSystem/Modal.svelte";
   import TextInput from "ui/DesignSystem/TextInput.svelte";
 
   import { amountStore, balanceValidationStore } from "ui/src/funding/pool";
@@ -37,50 +37,37 @@
 </script>
 
 <style>
-  h1,
-  p,
-  .submit {
-    margin-top: 1.5rem;
-  }
-
-  h1,
-  p {
-    padding: 0 2.5rem;
-  }
-
-  .submit {
+  .wrapper {
     display: flex;
-    justify-content: flex-end;
-    width: 100%;
+    justify-content: center;
   }
 </style>
 
-<Emoji emoji="💸" size="huge" />
-<h1>Top up your account</h1>
-<p>
-  You can top up a couple of weeks worth of support or just enough for this
-  week.
-</p>
-<TextInput
-  dataCy="modal-amount-input"
-  bind:value={amount}
-  validation={$validation}
-  showLeftItem
-  autofocus
-  style={"width: 125px; margin-top: 1.5rem"}>
-  <div slot="left" style="position: absolute; top: 1px; left: 12px;">
-    <Dai />
-  </div>
-</TextInput>
-<div class="submit">
-  <Button
-    variant="transparent"
-    dataCy="cancel"
-    on:click={onBack[1]}
-    style="margin-right: 1rem">
-    {onBack[0]}
-  </Button>
+<Modal emoji="💸" title="Top up your account">
+  <svelte:fragment slot="description">
+    You can top up a couple of weeks worth of support or just enough for this
+    week.
+  </svelte:fragment>
 
-  <!-- Continue button provided by the parent view !-->
-  <slot />
-</div>
+  <div class="wrapper">
+    <TextInput
+      dataCy="modal-amount-input"
+      bind:value={amount}
+      validation={$validation}
+      showLeftItem
+      autofocus
+      style={"width: 125px; margin-top: 1.5rem"}>
+      <div slot="left" style="position: absolute; top: 1px; left: 12px;">
+        <Dai />
+      </div>
+    </TextInput>
+  </div>
+  <svelte:fragment slot="buttons">
+    <Button variant="transparent" dataCy="cancel" on:click={onBack[1]}>
+      {onBack[0]}
+    </Button>
+
+    <!-- Continue button provided by the parent view !-->
+    <slot />
+  </svelte:fragment>
+</Modal>

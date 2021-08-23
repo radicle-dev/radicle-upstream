@@ -96,7 +96,7 @@
   {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0}
     <EmptyState
       emoji="🪴"
-      text="Get started by anchoring your organization’s first project."
+      text="Get started by anchoring your org’s first project."
       primaryActionText={isMultiSig
         ? "Anchor with Gnosis Safe"
         : "Anchor Project"}
