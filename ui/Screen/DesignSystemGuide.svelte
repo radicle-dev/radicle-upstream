@@ -201,7 +201,7 @@
         <p>Radicle Upstream</p>
       </TypographySwatch>
 
-      <TypographySwatch title={`<p class="typo-text-bold">`}>
+      <TypographySwatch title={`<strong> or <p class="typo-text-bold">`}>
         <p class="typo-text-bold">Radicle Upstream</p>
       </TypographySwatch>
 

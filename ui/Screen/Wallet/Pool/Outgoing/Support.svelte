@@ -148,11 +148,6 @@
     align-items: center;
   }
 
-  strong {
-    font-weight: bold;
-    margin: 0 0.3125rem;
-  }
-
   .content {
     padding: var(--content-padding);
   }
@@ -261,10 +256,12 @@
           </p>
         {:else}
           <div style="display: flex; align-items: center">
-            <strong style="margin-left: 0">
+            <strong style=" margin: 0 0.3125rem 0 0; ">
               <Dai>{poolData.weeklyBudget}</Dai></strong>
             per week will go to each of the
-            <strong>{poolData.receivers.size} </strong>
+            <strong style="margin: 0 0.3125rem;"
+              >{poolData.receivers.size}
+            </strong>
             receivers you're supporting.
 
             <!-- svelte-ignore a11y-missing-attribute -->

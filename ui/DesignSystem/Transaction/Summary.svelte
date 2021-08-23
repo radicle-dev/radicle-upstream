@@ -23,10 +23,6 @@
     padding: 0 2rem;
   }
 
-  strong {
-    font-weight: bold;
-  }
-
   p {
     padding: 0 4rem;
   }

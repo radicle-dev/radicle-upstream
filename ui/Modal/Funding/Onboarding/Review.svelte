@@ -21,9 +21,6 @@
 </script>
 
 <style>
-  strong {
-    font-weight: bold;
-  }
   .wrapper {
     display: flex;
     justify-content: center;
