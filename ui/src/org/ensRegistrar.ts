@@ -46,7 +46,7 @@ export async function getFee(): Promise<ethers.BigNumber> {
 
 export function formatFee(fee: ethers.BigNumber): string {
   return ethers.utils.commify(
-    parseFloat(ethers.utils.formatUnits(fee)).toFixed(2)
+    parseFloat(ethers.utils.formatUnits(fee))
   );
 }
 
