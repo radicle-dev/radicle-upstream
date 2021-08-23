@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import Modal from "ui/DesignSystem/Modal.svelte";
   import Erc20Allowance from "./Onboarding/Erc20Allowance.svelte";
   import Intro from "./Onboarding/Intro.svelte";
   import SetBudget from "./Onboarding/SetBudget.svelte";
@@ -100,19 +99,16 @@
   let receivers: Receivers = new Map();
 </script>
 
-<Modal
-  style="text-align: center; display: flex; flex-direction: column; align-items: center;">
-  {#if currentStep === Step.Erc20Allowance}
-    <Erc20Allowance {onCancel} onConfirm={approveErc20} />
-  {:else if currentStep === Step.Intro}
-    <Intro {onCancel} {onContinue} />
-  {:else if currentStep === Step.SetBudget}
-    <SetBudget bind:budget {onCancel} {onContinue} />
-  {:else if currentStep === Step.AddReceivers}
-    <AddReceivers bind:receivers {onBack} {onContinue} />
-  {:else if currentStep === Step.TopUp}
-    <TopUp bind:amount={topUp} {onBack} {onContinue} />
-  {:else}
-    <Review {budget} {receivers} {topUp} {onBack} {onConfirmed} />
-  {/if}
-</Modal>
+{#if currentStep === Step.Erc20Allowance}
+  <Erc20Allowance {onCancel} onConfirm={approveErc20} />
+{:else if currentStep === Step.Intro}
+  <Intro {onCancel} {onContinue} />
+{:else if currentStep === Step.SetBudget}
+  <SetBudget bind:budget {onCancel} {onContinue} />
+{:else if currentStep === Step.AddReceivers}
+  <AddReceivers bind:receivers {onBack} {onContinue} />
+{:else if currentStep === Step.TopUp}
+  <TopUp bind:amount={topUp} {onBack} {onContinue} />
+{:else}
+  <Review {budget} {receivers} {topUp} {onBack} {onConfirmed} />
+{/if}

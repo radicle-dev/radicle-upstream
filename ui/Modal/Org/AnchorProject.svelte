@@ -132,13 +132,6 @@
 </script>
 
 <style>
-  .actions {
-    display: flex;
-    width: 100%;
-    gap: 1.5rem;
-    justify-content: flex-end;
-  }
-
   .revision-dropdown-container {
     display: flex;
     width: 100%;
@@ -211,9 +204,9 @@
     <CommitTeaser {commit} style="width: 100%; margin-bottom: 1.5rem" />
   {/if}
 
-  <div class="actions">
+  <svelte:fragment slot="buttons">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
     <Button disabled={!commit} on:click={createAnchor}
       >Confirm in your wallet</Button>
-  </div>
+  </svelte:fragment>
 </Modal>

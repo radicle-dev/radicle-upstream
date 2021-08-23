@@ -7,11 +7,12 @@
 -->
 <script lang="typescript">
   import { Emoji } from "ui/DesignSystem";
+
   export let dataCy: string | undefined = undefined;
   export let style: string | undefined = undefined;
+
   export let emoji: string | undefined = undefined;
   export let title: string | undefined = undefined;
-  export let desc: string | undefined = undefined;
 </script>
 
 <style>
@@ -28,14 +29,25 @@
   .container:focus {
     outline: none;
   }
-  .content {
-    width: 100%;
-    margin-top: 1.5rem;
+  h1 {
+    text-align: center;
+    margin-bottom: 1rem;
   }
-
-  .desc {
+  .description {
     color: var(--color-foreground-level-6);
     text-align: center;
+    margin-bottom: 1rem;
+  }
+  .content {
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+  .buttons {
+    margin-top: 1rem;
+    display: flex;
+    width: 100%;
+    gap: 1.5rem;
+    justify-content: flex-end;
   }
 </style>
 
@@ -43,13 +55,24 @@
   {#if emoji}
     <Emoji {emoji} size="huge" style="margin-bottom: 1rem;" />
   {/if}
+
   {#if title}
-    <h1 style="margin-bottom: 1rem">{title}</h1>
+    <h1>{title}</h1>
   {/if}
-  {#if desc}
-    <p class="desc">{desc}</p>
+
+  {#if $$slots.description}
+    <p class="description">
+      <slot name="description" />
+    </p>
   {/if}
+
   <div class="content" {style}>
     <slot />
   </div>
+
+  {#if $$slots.buttons}
+    <div class="buttons">
+      <slot name="buttons" />
+    </div>
+  {/if}
 </div>

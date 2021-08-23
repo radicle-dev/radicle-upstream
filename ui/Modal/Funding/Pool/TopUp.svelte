@@ -32,27 +32,8 @@
   $: balance = ethereum.toBaseUnit($accountBalancesStore.dai || Big(0));
 </script>
 
-<style>
-  .wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-direction: column;
-
-    text-align: center;
-
-    padding: var(--content-padding);
-    background: var(--color-background);
-    border-radius: 0.5rem;
-
-    width: 37.5rem;
-  }
-</style>
-
-<div class="wrapper" data-cy="top-up-modal">
-  <TopUp bind:amount {balance} onBack={["Cancel", onCancel]} bind:disabled>
-    <TxButton onClick={onConfirmed} {disabled} errorLabel="Failed top up">
-      Confirm in your wallet
-    </TxButton>
-  </TopUp>
-</div>
+<TopUp bind:amount {balance} onBack={["Cancel", onCancel]} bind:disabled>
+  <TxButton onClick={onConfirmed} {disabled} errorLabel="Failed top up">
+    Confirm in your wallet
+  </TxButton>
+</TopUp>

@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Button, Dai, Emoji, TextInput } from "ui/DesignSystem";
+  import { Button, Dai, Modal, TextInput } from "ui/DesignSystem";
 
   import {
     budgetStore,
@@ -41,53 +41,40 @@
 </script>
 
 <style>
-  h1,
-  p,
-  .submit {
-    margin-top: 1.5rem;
-  }
-
-  h1,
-  p {
-    padding: 0 2.5rem;
-  }
-
-  .submit {
+  .wrapper {
     display: flex;
-    justify-content: flex-end;
-    width: 100%;
+    justify-content: center;
   }
 </style>
 
 <svelte:window on:keydown={onKeydown} />
+<Modal emoji="💸" title="Set a weekly budget">
+  <svelte:fragment slot="description">
+    Set your weekly budget for outgoing support. This amount will flow to your
+    receivers in real time.
+  </svelte:fragment>
 
-<Emoji emoji="💸" size="huge" />
-<h1>Set a weekly budget</h1>
-<p>
-  Set your weekly budget for outgoing support. This amount will flow to your
-  receivers in real time.
-</p>
-<TextInput
-  dataCy="modal-amount-input"
-  bind:value={budget}
-  validation={$validation}
-  showLeftItem
-  autofocus
-  style={"width: 125px; padding: 0; margin-top: 1.5rem;"}>
-  <div slot="left" style="position: absolute; top: 1px; left: 12px;">
-    <Dai />
+  <div class="wrapper">
+    <TextInput
+      dataCy="modal-amount-input"
+      bind:value={budget}
+      validation={$validation}
+      showLeftItem
+      autofocus
+      style={"width: 125px; padding: 0; margin-top: 1.5rem;"}>
+      <div slot="left" style="position: absolute; top: 1px; left: 12px;">
+        <Dai />
+      </div>
+    </TextInput>
   </div>
-</TextInput>
-<div class="submit">
-  <Button
-    variant="transparent"
-    dataCy="cancel"
-    on:click={onCancel}
-    style="margin-right: 1rem">
-    Cancel
-  </Button>
 
-  <Button dataCy="confirm-button" {disabled} on:click={onContinue}>
-    Continue
-  </Button>
-</div>
+  <svelte:fragment slot="buttons">
+    <Button variant="transparent" dataCy="cancel" on:click={onCancel}>
+      Cancel
+    </Button>
+
+    <Button dataCy="confirm-button" {disabled} on:click={onContinue}>
+      Continue
+    </Button>
+  </svelte:fragment>
+</Modal>
