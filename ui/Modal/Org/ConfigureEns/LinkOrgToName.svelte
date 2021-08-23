@@ -21,8 +21,6 @@
 
   let continueButtonDisabled = false;
 
-  let linked = false;
-
   async function link() {
     continueButtonDisabled = true;
 
@@ -36,7 +34,26 @@
 
       try {
         await org.proposeSetNameChange(domain, orgAddress, safeAddress);
-        linked = true;
+        notification.info({
+          message:
+            "Your org metadata will be updated once the quorum of members have confirmed the transaction",
+          showIcon: true,
+          persist: true,
+          actions: [
+            {
+              label: "View on Gnosis Safe",
+              handler: () => {
+                safeAddress &&
+                  org.openOnGnosisSafe(safeAddress, "transactions");
+              },
+            },
+            {
+              label: "Dismiss",
+              handler: () => {},
+            },
+          ],
+        });
+        onSubmit();
       } catch (err) {
         continueButtonDisabled = false;
 
@@ -62,7 +79,11 @@
       try {
         tx = await org.setNameSingleSig(domain, orgAddress);
         transaction.add(transaction.linkEnsNameToOrg(tx));
-        linked = true;
+        notification.info({
+          message: `Now your org points to ${domain}`,
+          showIcon: true,
+        });
+        onSubmit();
       } catch (err) {
         continueButtonDisabled = false;
 
@@ -91,62 +112,33 @@
   }
 </style>
 
-{#if !linked}
-  <Modal emoji="🔗" title="Let’s link your name">
-    <svelte:fragment slot="description">
-      In this last step, we’ll update your org to point to your newly created
-      name. Once that’s done, your org will appear with your new name across
-      Radicle!
-    </svelte:fragment>
+<Modal emoji="🔗" title="Let’s link your name">
+  <svelte:fragment slot="description">
+    In this last step, we’ll update your org to point to your newly created
+    name. Once that’s done, your org will appear with your new name across
+    Radicle!
+  </svelte:fragment>
 
-    <div class="label typo-text-bold">Org address</div>
-    <TextInput disabled style="margin-bottom: 24px" value={orgAddress} />
+  <div class="label typo-text-bold">Org address</div>
+  <TextInput disabled style="margin-bottom: 24px" value={orgAddress} />
 
-    <div class="label typo-text-bold">Name</div>
-    <TextInput disabled style="margin-bottom: 24px" value={domain} />
+  <div class="label typo-text-bold">Name</div>
+  <TextInput disabled style="margin-bottom: 24px" value={domain} />
 
-    <p
-      style="color: var(--color-foreground-level-5; margin: 16px 0;"
-      class="typo-text-small">
-      You can also do this later by selecting “Register ENS Name” from the
-      dropdown on your org’s profile and entering your existing name.
-    </p>
+  <p
+    style="color: var(--color-foreground-level-5; margin: 16px 0;"
+    class="typo-text-small">
+    You can also do this later by selecting “Register ENS Name” from the
+    dropdown on your org’s profile and entering your existing name.
+  </p>
 
-    <svelte:fragment slot="buttons">
-      <Button
-        variant="transparent"
-        on:click={() => {
-          modal.hide();
-        }}>Cancel</Button>
-      <Button on:click={link} disabled={continueButtonDisabled}
-        >Link name to org</Button>
-    </svelte:fragment>
-  </Modal>
-{:else if safeAddress}
-  <Modal emoji="🔗" title="Approve on Gnosis Safe">
-    <svelte:fragment slot="description">
-      As a final step your org will have to confirm the transaction on Gnosis
-      Safe. After it's been approved and executed your newly registered name
-      will start appearing across Radicle in place of your org address!
-    </svelte:fragment>
-
-    <svelte:fragment slot="buttons">
-      <Button
-        on:click={() => {
-          safeAddress && org.openOnGnosisSafe(safeAddress, "transactions");
-          onSubmit();
-        }}>View proposal on Gnosis</Button>
-    </svelte:fragment>
-  </Modal>
-{:else}
-  <Modal emoji="🎉" title="That's it!">
-    <svelte:fragment slot="description">
-      Great, your org now points to your new name {domain}. Shortly, your name
-      will start appearing across Radicle in place of your org address!
-    </svelte:fragment>
-
-    <svelte:fragment slot="buttons">
-      <Button on:click={onSubmit}>Amazing, thanks!</Button>
-    </svelte:fragment>
-  </Modal>
-{/if}
+  <svelte:fragment slot="buttons">
+    <Button
+      variant="transparent"
+      on:click={() => {
+        modal.hide();
+      }}>Cancel</Button>
+    <Button on:click={link} disabled={continueButtonDisabled}
+      >Link name to org</Button>
+  </svelte:fragment>
+</Modal>
