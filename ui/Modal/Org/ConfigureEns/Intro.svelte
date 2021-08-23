@@ -24,16 +24,16 @@
   title={`Register your ${ensResolver.DOMAIN} name`}
   desc={`Your ${
     ensResolver.DOMAIN
-  } name allows linking your organization with a name, logo, URL and social media profiles. The registration costs ${ensRegistrar.formatFee(
+  } name allows linking your org with a name, logo, URL and social media profiles. The registration costs ${ensRegistrar.formatFee(
     fee
-  )} RAD, and you'll also need sufficient ETH funds to cover transaction costs.`}>
+  )} RAD, and you'll also need sufficient ETH to cover transaction costs.`}>
   <div style="display:flex; justify-content: center;">
     <p
       class="typo-link"
       on:click={() => {
         ipc.openUrl("http://radicle.xyz/buy-rad.html");
       }}>
-      Buy RADs
+      Buy RAD
     </p>
   </div>
   <ButtonRow {onSubmit} confirmCopy="Let's go" />

@@ -272,7 +272,7 @@
       disabled={commitInProgress}
       validation={validationState}
       suffix={`.${ensResolver.DOMAIN}`}
-      placeholder="Your organization name"
+      placeholder="Your org name"
       style="margin: 16px auto; width: 352px;" />
 
     <ButtonRow
