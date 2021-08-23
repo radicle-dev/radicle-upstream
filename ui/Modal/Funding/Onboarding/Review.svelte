@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Button, Emoji, TxButton } from "ui/DesignSystem";
+  import { Button, Modal, TxButton } from "ui/DesignSystem";
 
   import Receivers from "ui/DesignSystem/Funding/Pool/Receivers.svelte";
 
@@ -21,59 +21,50 @@
 </script>
 
 <style>
-  h1,
-  p,
-  .submit {
-    margin-top: 1.5rem;
-  }
-
-  h1,
-  p {
-    padding: 0 2.5rem;
-  }
-
-  .submit {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-  }
-
   strong {
     font-weight: bold;
   }
+  .wrapper {
+    display: flex;
+    justify-content: center;
+  }
+  p {
+    color: var(--color-foreground-level-6);
+    margin-bottom: 1rem;
+  }
 </style>
 
-<Emoji emoji="💸" size="huge" />
-<h1>Stream digital money</h1>
-<p>
-  {#if receivers.size === 0}
-    Top up
-    <strong>{topUp} DAI</strong>. You haven’t added any receivers yet, but as
-    soon as you do, money will begin streaming to them at a rate of
-    <strong>{budget} DAI</strong>
-    per week.
-  {:else}
-    Top up
-    <strong>{topUp} DAI</strong>
-    and stream
-    <strong>{budget} DAI</strong>
-    per week to these users:
-  {/if}
-</p>
-<Receivers {receivers} style="margin-top: 1.5rem" />
-<div class="submit">
-  <Button
-    variant="transparent"
-    dataCy="back"
-    on:click={onBack}
-    style="margin-right: 1rem">
-    Back
-  </Button>
+<Modal emoji="💸" title="Stream digital money">
+  <div class="wrapper">
+    <p>
+      {#if receivers.size === 0}
+        Top up
+        <strong>{topUp} DAI</strong>. You haven’t added any receivers yet, but
+        as soon as you do, money will begin streaming to them at a rate of
+        <strong>{budget} DAI</strong>
+        per week.
+      {:else}
+        Top up
+        <strong>{topUp} DAI</strong>
+        and stream
+        <strong>{budget} DAI</strong>
+        per week to these users:
+      {/if}
+    </p>
+  </div>
 
-  <TxButton
-    dataCy="confirm-button"
-    onClick={onConfirmed}
-    errorLabel="Failed to onboard your pool">
-    Confirm in your wallet
-  </TxButton>
-</div>
+  <div class="wrapper">
+    <Receivers {receivers} />
+  </div>
+
+  <svelte:fragment slot="buttons">
+    <Button variant="transparent" dataCy="back" on:click={onBack}>Back</Button>
+
+    <TxButton
+      dataCy="confirm-button"
+      onClick={onConfirmed}
+      errorLabel="Failed to onboard your pool">
+      Confirm in your wallet
+    </TxButton>
+  </svelte:fragment>
+</Modal>

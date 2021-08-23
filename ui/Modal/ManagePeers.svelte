@@ -73,11 +73,11 @@
 </style>
 
 <Remote {store} let:data={{ peerSelection, project }}>
-  <Modal
-    dataCy="remotes-modal"
-    emoji="💻"
-    title="Edit remotes"
-    desc="Add a user’s Device ID to collaborate with them on this project.">
+  <Modal dataCy="remotes-modal" emoji="💻" title="Edit remotes">
+    <svelte:fragment slot="description">
+      Add a user’s Device ID to collaborate with them on this project.
+    </svelte:fragment>
+
     <form class="peer-entry-form" on:submit|preventDefault>
       <div class="peer-entry-field">
         <TextInput

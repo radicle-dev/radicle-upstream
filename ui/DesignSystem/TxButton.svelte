@@ -40,16 +40,12 @@
 </script>
 
 <style>
-  .tx-button {
-    margin-left: 0.4375rem;
-  }
-
   .running {
     cursor: wait;
   }
 </style>
 
-<span class="tx-button" class:running data-cy={dataCy} {style}>
+<span class:running data-cy={dataCy} {style}>
   <Button disabled={disabled || running} {variant} on:click={userDidClick}>
     <slot />
   </Button>

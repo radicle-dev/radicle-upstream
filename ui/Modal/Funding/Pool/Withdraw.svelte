@@ -8,7 +8,7 @@
 <script lang="typescript">
   import { get } from "svelte/store";
 
-  import { Button, Dai, Emoji, TextInput, TxButton } from "ui/DesignSystem";
+  import { Button, Dai, Modal, TextInput, TxButton } from "ui/DesignSystem";
 
   import * as modal from "ui/src/modal";
   import {
@@ -71,22 +71,6 @@
 </script>
 
 <style>
-  .wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-direction: column;
-
-    text-align: center;
-
-    padding: var(--content-padding);
-    background: var(--color-background);
-    border-radius: 0.5rem;
-
-    width: 37.5rem;
-  }
-
-  h1,
   p,
   .note,
   .input {
@@ -101,20 +85,10 @@
     text-align: center;
     color: var(--color-foreground-level-5);
   }
-
-  .submit {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-    margin-top: var(--content-padding);
-  }
 </style>
 
-<div class="wrapper" data-cy="pool-withdraw-modal">
-  <Emoji emoji="💸" size="huge" />
-  <h1>Cash out</h1>
-
-  {#if mode === Mode.SpecifyAmount}
+{#if mode === Mode.SpecifyAmount}
+  <Modal emoji="💸" title="Cash out">
     <p>
       Enter the amount you’d like to transfer to your linked Ethereum account
       below.
@@ -136,7 +110,7 @@
         </div>
       </TextInput>
     </div>
-    <div class="submit">
+    <svelte:fragment slot="buttons">
       <Button
         variant="transparent"
         dataCy="cancel"
@@ -151,8 +125,10 @@
         errorLabel="Failed to withdraw funds">
         Confirm in your wallet
       </TxButton>
-    </div>
-  {:else}
+    </svelte:fragment>
+  </Modal>
+{:else}
+  <Modal emoji="💸" title="Cash out">
     <p>Stop support and transfer the entire remaining balance out.</p>
 
     <div class="note">
@@ -160,12 +136,11 @@
       to your linked account will be a bit less than your current balance.
     </div>
 
-    <div class="submit">
+    <svelte:fragment slot="buttons">
       <Button
         variant="transparent"
         dataCy="back"
-        on:click={() => (mode = Mode.SpecifyAmount)}
-        style="margin-right: 1rem">
+        on:click={() => (mode = Mode.SpecifyAmount)}>
         Back
       </Button>
 
@@ -175,6 +150,6 @@
         errorLabel="Failed withdraw">
         Stop support and cash out everything
       </TxButton>
-    </div>
-  {/if}
-</div>
+    </svelte:fragment>
+  </Modal>
+{/if}

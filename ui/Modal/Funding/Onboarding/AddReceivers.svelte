@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Button, Emoji } from "ui/DesignSystem";
+  import { Button, Modal } from "ui/DesignSystem";
 
   import Receivers from "ui/DesignSystem/Funding/Pool/Receivers.svelte";
   import type { Receivers as PoolReceivers } from "ui/src/funding/pool";
@@ -22,50 +22,26 @@
   };
 </script>
 
-<style>
-  h1,
-  p,
-  .submit {
-    margin-top: 1.5rem;
-  }
-
-  h1,
-  p {
-    padding: 0 2.5rem;
-  }
-
-  .submit {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-  }
-</style>
-
 <svelte:window on:keydown={onKeydown} />
 
-<Emoji emoji="💸" size="huge" />
-<h1>Add receivers</h1>
-<p>
-  Add receivers to your outgoing support by clicking the “Support” button on
-  profiles or project pages.
-</p>
-<p class="typo-text-small" style="color: var(--color-foreground-level-5)">
-  Tip: You can also add new receivers later on by clicking on “Support” on their
-  profile.
-</p>
-<Receivers
-  bind:receivers
-  editing={true}
-  style="margin-top: 1.5rem"
-  alignment="center" />
-<div class="submit">
-  <Button
-    variant="transparent"
-    dataCy="cancel"
-    on:click={onBack}
-    style="margin-right: 1rem">
-    Back
-  </Button>
+<Modal emoji="💸" title="Add receivers">
+  <svelte:fragment slot="description">
+    Add receivers to your outgoing support by clicking the “Support” button on
+    profiles or project pages.
+  </svelte:fragment>
 
-  <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
-</div>
+  <Receivers bind:receivers editing={true} alignment="center" />
+  <p
+    class="typo-text-small"
+    style="margin-top: 1.5rem; color: var(--color-foreground-level-5)">
+    Tip: You can also add new receivers later on by clicking on “Support” on
+    their profile.
+  </p>
+  <svelte:fragment slot="buttons">
+    <Button variant="transparent" dataCy="cancel" on:click={onBack}>
+      Back
+    </Button>
+
+    <Button dataCy="confirm-button" on:click={onContinue}>Continue</Button>
+  </svelte:fragment>
+</Modal>

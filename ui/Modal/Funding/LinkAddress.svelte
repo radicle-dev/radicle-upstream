@@ -10,8 +10,8 @@
     Avatar,
     Button,
     Copyable,
-    Emoji,
     Icon,
+    Modal,
     Remote,
     TxButton,
   } from "ui/DesignSystem";
@@ -46,23 +46,6 @@
 </script>
 
 <style>
-  .wrapper {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-direction: column;
-    min-height: 31.25rem;
-    text-align: center;
-    padding: var(--content-padding);
-    width: 37.5rem;
-    background: var(--color-background);
-    border-radius: 0.5rem;
-  }
-
-  header {
-    padding: 0 var(--content-padding);
-  }
-
   .data {
     display: flex;
     flex-direction: column;
@@ -84,26 +67,13 @@
     display: flex;
     align-items: center;
   }
-  .submit {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-    margin-top: 1.5rem;
-  }
 </style>
 
 <Remote store={session} let:data={it}>
-  <div class="wrapper">
-    <Emoji emoji="🧦" size="huge" />
-
-    <header>
-      <h1 style="margin-top: 1.5rem;">
-        Link your Radicle Identity and Ethereum address
-      </h1>
-      <p style="margin-top: 1.5rem; padding: 0 4rem" class="typo-text">
-        An Ethereum transaction will be sent
-      </p>
-    </header>
+  <Modal emoji="🧦" title="Link your Radicle Identity and Ethereum address">
+    <svelte:fragment slot="description">
+      An Ethereum transaction will be sent
+    </svelte:fragment>
 
     <div class="data">
       <p class="radicle-user typo-text-bold">
@@ -126,7 +96,7 @@
       </p>
     </div>
 
-    <div class="submit">
+    <svelte:fragment slot="buttons">
       <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>
         Cancel
       </Button>
@@ -134,10 +104,9 @@
       <TxButton
         dataCy="confirm-button"
         onClick={() => claim(it.identity)}
-        style="margin-left: 14px;"
         errorLabel="Failed to claim your Radicle Identity on Ethereum">
         Link your ID
       </TxButton>
-    </div>
-  </div>
+    </svelte:fragment>
+  </Modal>
 </Remote>
