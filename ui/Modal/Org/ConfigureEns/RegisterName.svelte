@@ -43,6 +43,7 @@
     | {
         type: "register";
         commitment: ensRegistrar.Commitment;
+        commitmentBlock: number;
       };
 
   let state: State = { type: "validateAndCommit" };
@@ -153,34 +154,68 @@
     };
   }
 
-  function commitOrGoToUpdateMetadata(): void {
+  async function commitOrGoToUpdateMetadata(): Promise<void> {
     if (registration) {
       registrationDone({
         name: validatedName,
         registration,
       });
     } else {
-      const walletAddress = svelteStore
-        .get(wallet.store)
-        .getAddress()
-        ?.toLowerCase();
-      const commitment = ensRegistrar.restoreCommitment();
-
-      if (
-        commitment &&
-        commitment.name === validatedName &&
-        commitment.ownerAddress === walletAddress
-      ) {
-        state = { type: "register", commitment };
-      } else {
-        commit(validatedName);
+      try {
+        commitInProgress = true;
+        state = await commit();
+      } catch (err) {
+        error.show(
+          new error.Error({
+            message: err,
+            source: err,
+          })
+        );
+      } finally {
+        commitInProgress = false;
       }
     }
   }
 
-  async function commit(name: string) {
-    commitInProgress = true;
+  async function commit(): Promise<State> {
+    const wallet_ = svelteStore.get(wallet.store);
+    const walletAddress = wallet_.getAddress()?.toLowerCase();
+    const commitment = ensRegistrar.restoreCommitment();
 
+    if (
+      commitment &&
+      commitment.name === validatedName &&
+      commitment.ownerAddress === walletAddress
+    ) {
+      if (commitment.block) {
+        return {
+          type: "register",
+          commitment,
+          commitmentBlock: commitment.block,
+        };
+      } else {
+        const commitNotification = notification.info({
+          message: "Waiting for previous commitment transation to be confirmed",
+          showIcon: true,
+          persist: true,
+        });
+        let commitmentBlock;
+        try {
+          const receipt = await wallet_.provider.waitForTransaction(
+            commitment.txHash
+          );
+          commitmentBlock = receipt.blockNumber;
+        } finally {
+          commitNotification.remove();
+        }
+        return { type: "register", commitment, commitmentBlock };
+      }
+    } else {
+      return submitCommitment(validatedName);
+    }
+  }
+
+  async function submitCommitment(name: string): Promise<State> {
     const signNotification = notification.info({
       message:
         "Waiting for you to sign the commitment permit in your connected wallet",
@@ -192,16 +227,6 @@
     const deadline = ensRegistrar.deadline();
     try {
       signature = await ensRegistrar.permitSignature(fee, deadline);
-    } catch (err) {
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
-      commitInProgress = false;
-      // Don't advance the flow unless the user confirms the signature.
-      return;
     } finally {
       signNotification.remove();
     }
@@ -224,25 +249,29 @@
         signature,
         deadline
       ));
-    } catch (err) {
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
-      commitInProgress = false;
-      // Don't advance flow unless the user confirms the tx.
-      return;
     } finally {
       commitNotification.remove();
     }
     ensRegistrar.persistCommitment(commitment);
     transaction.add(transaction.commitEnsName(tx));
 
-    state = {
+    const txNotification = notification.info({
+      message: "Waiting for the transaction to be included",
+      showIcon: true,
+      persist: true,
+    });
+
+    let receipt;
+    try {
+      receipt = await tx.wait(1);
+    } finally {
+      txNotification.remove();
+    }
+
+    return {
       type: "register",
       commitment,
+      commitmentBlock: receipt.blockNumber,
     };
   }
 </script>
@@ -277,7 +306,10 @@
     </svelte:fragment>
   </Modal>
 {:else if state.type === "register"}
-  <ConfirmRegistration commitment={state.commitment} {registrationDone} />
+  <ConfirmRegistration
+    commitment={state.commitment}
+    commitmentBlock={state.commitmentBlock}
+    {registrationDone} />
 {:else}
   {unreachable(state)}
 {/if}
