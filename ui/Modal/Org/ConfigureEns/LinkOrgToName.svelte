@@ -94,9 +94,9 @@
 {#if !linked}
   <Modal emoji="🔗" title="Let’s link your name">
     <svelte:fragment slot="description">
-      In this last step, we’re updating your org to point towards your newly
-      created name. Once that’s done, your org will appear with your new name
-      across Radicle!
+      In this last step, we’ll update your org to point to your newly created
+      name. Once that’s done, your org will appear with your new name across
+      Radicle!
     </svelte:fragment>
 
     <div class="label typo-text-bold">Org address</div>
@@ -108,8 +108,8 @@
     <p
       style="color: var(--color-foreground-level-5; margin: 16px 0;"
       class="typo-text-small">
-      You can also do this later by selecting "Register ENS Name" and entering
-      your existing name.
+      You can also do this later by selecting “Register ENS Name” from the
+      dropdown on your org’s profile and entering your existing name.
     </p>
 
     <svelte:fragment slot="buttons">
@@ -123,11 +123,11 @@
     </svelte:fragment>
   </Modal>
 {:else if safeAddress}
-  <Modal emoji="🔗" title="Approve on Gnosis">
+  <Modal emoji="🔗" title="Approve on Gnosis Safe">
     <svelte:fragment slot="description">
-      As a final step your org will have to confirm the transaction on Gnosis.
-      After it's been approved and executed your newly registered name will
-      start appearing across Radicle in place of your org address!
+      As a final step your org will have to confirm the transaction on Gnosis
+      Safe. After it's been approved and executed your newly registered name
+      will start appearing across Radicle in place of your org address!
     </svelte:fragment>
 
     <svelte:fragment slot="buttons">
