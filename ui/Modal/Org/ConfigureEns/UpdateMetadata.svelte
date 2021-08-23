@@ -125,9 +125,9 @@
     emoji="📋"
     title="Set your org’s metadata"
     desc={"This will be shown alongside your ENS name, and appears together with your org across Radicle. You can edit it at any time by clicking “Edit ENS name” on the org page."}>
-    <div class="label typo-text-bold">Organization address</div>
+    <div class="label typo-text-bold">Org address</div>
     <Tooltip
-      value={"This is the address of your organization and is required to link your ENS name to it."}
+      value={"This is the address of your org and is required to link your ENS name to it."}
       position="top">
       <TextInput
         style="margin-bottom: 24px"
