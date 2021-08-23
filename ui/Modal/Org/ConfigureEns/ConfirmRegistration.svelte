@@ -105,7 +105,7 @@
   <Modal emoji="📇" title="Almost done">
     <svelte:fragment slot="description">
       With this last transaction, you’re confirming the registration of your new
-      ENS name <strong>{name}.{ensResolver.DOMAIN}</strong>.
+      ENS name <span class="typo-text-bold">{name}.{ensResolver.DOMAIN}</span>.
     </svelte:fragment>
 
     <svelte:fragment slot="buttons">
@@ -121,10 +121,11 @@
 {:else if state === "success"}
   <Modal emoji="🎉" title="Registration complete">
     <svelte:fragment slot="description">
-      Congratulations, <strong>{name}.{ensResolver.DOMAIN}</strong> has been registered
-      with your wallet. Next, let’s populate your name with org metadata. You can
-      also do this later by selecting “Register ENS Name” in the menu on your org’s
-      profile and entering your existing name.
+      Congratulations, <span class="typo-text-bold"
+        >{name}.{ensResolver.DOMAIN}</span> has been registered with your wallet.
+      Next, let’s populate your name with org metadata. You can also do this later
+      by selecting “Register ENS Name” in the menu on your org’s profile and entering
+      your existing name.
     </svelte:fragment>
 
     <svelte:fragment slot="buttons">
