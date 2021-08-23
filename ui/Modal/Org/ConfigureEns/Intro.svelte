@@ -9,7 +9,6 @@
   import type * as ethers from "ethers";
 
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
-  import * as ensResolver from "ui/src/org/ensResolver";
   import * as ipc from "ui/src/ipc";
   import * as modal from "ui/src/modal";
 
@@ -19,10 +18,10 @@
   export let onSubmit: () => void;
 </script>
 
-<Modal emoji="📇" title={`Register your ${ensResolver.DOMAIN} name`}>
+<Modal emoji="📇" title={`Register your ENS name`}>
   <svelte:fragment slot="description">
-    Your {ensResolver.DOMAIN} name allows linking your org with a name, logo, URL
-    and social media profiles. The registration costs
+    Your ENS name allows linking your org with a name, logo, URL and social
+    media profiles. The registration costs
     {ensRegistrar.formatFee(fee)} RAD, and you'll also need sufficient ETH to cover
     transaction costs.
     <!-- svelte-ignore a11y-missing-attribute -->
