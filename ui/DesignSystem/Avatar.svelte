@@ -7,23 +7,21 @@
 -->
 <script lang="typescript">
   import type { Avatar } from "ui/src/proxy/identity";
-
   import Emoji from "./Emoji.svelte";
-
-  export let dataCy: string = "";
-  export let style: string = "";
 
   // the hierarchy of usage for the following avatars is:
   // imageUrl > avatarFallback
-  export let imageUrl: string = "";
+  export let imageUrl: string | undefined = undefined;
   export let avatarFallback: Avatar | undefined = undefined;
-  export let title: string = "";
+  export let title: string | undefined = undefined;
   export let animate = false;
-
   export let variant: "circle" | "square" = "circle";
+  export let size: AvatarSize = "regular";
+
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
 
   type AvatarSize = "small" | "regular" | "medium" | "big" | "huge";
-  export let size: AvatarSize = "regular";
 
   const background = (avatar: Avatar) =>
     `rgb(${avatar.background.r}, ${avatar.background.g}, ${avatar.background.b})`;
