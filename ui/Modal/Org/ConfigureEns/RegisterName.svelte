@@ -75,12 +75,11 @@
       async abortSignal => {
         if (!name) {
           return {
-            registration: null,
             validatedName: "",
             validationState: {
-              status: validation.ValidationStatus.Error,
-              message: "You need to enter a name.",
-            },
+              status: validation.ValidationStatus.NotStarted,
+            } as validation.ValidationState,
+            registration: null,
           };
         }
 
