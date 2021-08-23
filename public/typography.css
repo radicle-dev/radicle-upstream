@@ -123,6 +123,7 @@ p,
   font-weight: 600;
 }
 
+strong,
 .typo-bold {
   font-family: var(--typeface-bold);
   font-weight: bold;
