@@ -152,7 +152,7 @@
       validatedName: name,
       validationState: {
         status: validation.ValidationStatus.Error,
-        message: "Sorry, but that name is already taken.",
+        message: "Sorry, that name is already taken.",
       },
       registration: null,
     };

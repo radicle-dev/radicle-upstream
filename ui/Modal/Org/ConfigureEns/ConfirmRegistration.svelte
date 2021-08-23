@@ -112,7 +112,7 @@
   <Modal
     emoji="🎉"
     title="Registration complete"
-    desc={`Congratulations, ${name}.${ensResolver.DOMAIN} has successfully been registered with your wallet. Next, let's populate your name with org metadata. You can also do this later by selecting "Register ENS Name" and entering your existing name.`}>
+    desc={`Congratulations, ${name}.${ensResolver.DOMAIN} has been registered with your wallet. Next, let’s populate your name with org metadata. You can also do this later by selecting “Register ENS Name” in the menu on your org’s profile and entering your existing name.`}>
     <ButtonRow
       onSubmit={() => {
         registrationDone({ name, registration: null });
