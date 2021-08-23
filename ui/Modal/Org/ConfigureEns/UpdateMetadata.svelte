@@ -8,13 +8,12 @@
 <script lang="typescript">
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
 
-  import { Modal, TextInput, Tooltip } from "ui/DesignSystem";
-
-  import ButtonRow from "./ButtonRow.svelte";
+  import { Button, Modal, TextInput, Tooltip } from "ui/DesignSystem";
 
   export let onSubmit: () => void;
   export let registration: ensResolver.Registration;
@@ -121,10 +120,13 @@
 </style>
 
 {#if !updated}
-  <Modal
-    emoji="📋"
-    title="Set your org’s metadata"
-    desc={"This will be shown alongside your ENS name, and appears together with your org across Radicle. You can edit it at any time by clicking “Edit ENS name” on the org page."}>
+  <Modal emoji="📋" title="Set your org’s metadata">
+    <svelte:fragment slot="description">
+      This will be shown alongside your ENS name, and appears together with your
+      org across Radicle. You can edit it at any time by clicking “Edit ENS
+      name” on the org page.
+    </svelte:fragment>
+
     <div class="label typo-text-bold">Org address</div>
     <Tooltip
       value={"This is the address of your org and is required to link your ENS name to it."}
@@ -164,16 +166,24 @@
       placeholder="Your org’s GitHub username"
       bind:value={githubValue} />
 
-    <ButtonRow
-      disableButtons={setRecordsInProgress}
-      confirmCopy="Update org metadata"
-      onSubmit={setRecords} />
+    <svelte:fragment slot="buttons">
+      <Button
+        variant="transparent"
+        on:click={() => {
+          modal.hide();
+        }}>Cancel</Button>
+      <Button on:click={setRecords} disabled={setRecordsInProgress}
+        >Update org metadata</Button>
+    </svelte:fragment>
   </Modal>
 {:else}
-  <Modal
-    emoji="🎉"
-    title="Metadata updated"
-    desc={"Great, your org’s metadata has been successfully updated!"}>
-    <ButtonRow {onSubmit} canCancel={false} confirmCopy="Continue" />
+  <Modal emoji="🎉" title="Metadata updated">
+    <svelte:fragment slot="description">
+      Great, your org’s metadata has been successfully updated!
+    </svelte:fragment>
+
+    <svelte:fragment slot="buttons">
+      <Button on:click={onSubmit}>Continue</Button>
+    </svelte:fragment>
   </Modal>
 {/if}

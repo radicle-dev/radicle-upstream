@@ -8,18 +8,19 @@
 <script lang="typescript">
   import type * as registerName from "./RegisterName.svelte";
 
-  import { Modal } from "ui/DesignSystem";
   import { unreachable } from "ui/src/unreachable";
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
 
-  import ButtonRow from "./ButtonRow.svelte";
+  import { Button, Modal } from "ui/DesignSystem";
+
   import BlockTimer from "./BlockTimer.svelte";
 
-  let buttonsDisabled = false;
+  let confirmButtonDisabled = false;
 
   export let registrationDone: (result: registerName.Result) => void;
   export let name: string;
@@ -30,7 +31,7 @@
   let state: "waiting" | "readyToRegister" | "success" = "waiting";
 
   async function register() {
-    buttonsDisabled = true;
+    confirmButtonDisabled = true;
 
     const registrationNotification = notification.info({
       message:
@@ -43,7 +44,7 @@
     try {
       registrationTx = await ensRegistrar.register(name, commitmentSalt);
     } catch (err) {
-      buttonsDisabled = false;
+      confirmButtonDisabled = false;
 
       error.show(
         new error.Error({
@@ -68,7 +69,7 @@
     try {
       await registrationTx.wait(1);
     } catch (err) {
-      buttonsDisabled = false;
+      confirmButtonDisabled = false;
 
       error.show(
         new error.Error({
@@ -87,10 +88,12 @@
 </script>
 
 {#if state === "waiting"}
-  <Modal
-    emoji="📇"
-    title="Awaiting registration commitment"
-    desc="This will take about one minute. The waiting period is required to ensure another person hasn’t tried to register the same name.">
+  <Modal emoji="📇" title="Awaiting registration commitment">
+    <svelte:fragment slot="description">
+      This will take about one minute. The waiting period is required to ensure
+      another person hasn’t tried to register the same name.
+    </svelte:fragment>
+
     <div style="display: flex; justify-content: center;">
       <BlockTimer
         onFinish={() => (state = "readyToRegister")}
@@ -99,26 +102,42 @@
     </div>
   </Modal>
 {:else if state === "readyToRegister"}
-  <Modal
-    emoji="📇"
-    title="Almost done"
-    desc={`With this last transaction, you’re confirming the registration of your new ENS name ${name}.${ensResolver.DOMAIN}.`}>
-    <ButtonRow
-      disableButtons={buttonsDisabled}
-      onSubmit={register}
-      confirmCopy="Confirm registration" />
+  <Modal emoji="📇" title="Almost done">
+    <svelte:fragment slot="description">
+      With this last transaction, you’re confirming the registration of your new
+      ENS name {name}.{ensResolver.DOMAIN}.
+    </svelte:fragment>
+
+    <svelte:fragment slot="buttons">
+      <Button
+        variant="transparent"
+        on:click={() => {
+          modal.hide();
+        }}>Cancel</Button>
+      <Button on:click={register} disabled={confirmButtonDisabled}
+        >Confirm registration</Button>
+    </svelte:fragment>
   </Modal>
 {:else if state === "success"}
-  <Modal
-    emoji="🎉"
-    title="Registration complete"
-    desc={`Congratulations, ${name}.${ensResolver.DOMAIN} has been registered with your wallet. Next, let’s populate your name with org metadata. You can also do this later by selecting “Register ENS Name” in the menu on your org’s profile and entering your existing name.`}>
-    <ButtonRow
-      onSubmit={() => {
-        registrationDone({ name, registration: null });
-      }}
-      cancelCopy="Do this later"
-      confirmCopy="Set organization metadata" />
+  <Modal emoji="🎉" title="Registration complete">
+    <svelte:fragment slot="description">
+      Congratulations, {name}.{ensResolver.DOMAIN} has been registered with your
+      wallet. Next, let’s populate your name with org metadata. You can also do this
+      later by selecting “Register ENS Name” in the menu on your org’s profile and
+      entering your existing name.
+    </svelte:fragment>
+
+    <svelte:fragment slot="buttons">
+      <Button
+        variant="transparent"
+        on:click={() => {
+          modal.hide();
+        }}>Do this later</Button>
+      <Button
+        on:click={() => {
+          registrationDone({ name, registration: null });
+        }}>Set org metadata</Button>
+    </svelte:fragment>
   </Modal>
 {:else}
   {unreachable(state)}

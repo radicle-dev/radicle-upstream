@@ -11,30 +11,36 @@
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as ipc from "ui/src/ipc";
+  import * as modal from "ui/src/modal";
 
-  import { Modal } from "ui/DesignSystem";
-  import ButtonRow from "./ButtonRow.svelte";
+  import { Button, Modal } from "ui/DesignSystem";
 
   export let fee: ethers.BigNumber;
   export let onSubmit: () => void;
 </script>
 
-<Modal
-  emoji="📇"
-  title={`Register your ${ensResolver.DOMAIN} name`}
-  desc={`Your ${
-    ensResolver.DOMAIN
-  } name allows linking your org with a name, logo, URL and social media profiles. The registration costs ${ensRegistrar.formatFee(
-    fee
-  )} RAD, and you'll also need sufficient ETH to cover transaction costs.`}>
-  <div style="display:flex; justify-content: center;">
-    <p
+<Modal emoji="📇" title={`Register your ${ensResolver.DOMAIN} name`}>
+  <svelte:fragment slot="description">
+    Your {ensResolver.DOMAIN} name allows linking your org with a name, logo, URL
+    and social media profiles. The registration costs
+    {ensRegistrar.formatFee(fee)} RAD, and you'll also need sufficient ETH to cover
+    transaction costs.
+    <!-- svelte-ignore a11y-missing-attribute -->
+    <a
       class="typo-link"
       on:click={() => {
         ipc.openUrl("http://radicle.xyz/buy-rad.html");
       }}>
       Buy RAD
-    </p>
-  </div>
-  <ButtonRow {onSubmit} confirmCopy="Let's go" />
+    </a>
+  </svelte:fragment>
+
+  <svelte:fragment slot="buttons">
+    <Button
+      variant="transparent"
+      on:click={() => {
+        modal.hide();
+      }}>Cancel</Button>
+    <Button on:click={onSubmit}>Let’s go</Button>
+  </svelte:fragment>
 </Modal>
