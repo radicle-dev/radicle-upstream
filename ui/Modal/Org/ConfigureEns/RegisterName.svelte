@@ -115,8 +115,9 @@
           validatedName: name,
           validationState: {
             status: validation.ValidationStatus.Error,
-            message:
-              "You don't have enough RAD in your wallet to register this name.",
+            message: `You don't have enough RAD in your wallet to register this name. Name registration costs ${ensRegistrar.formatFee(
+              fee
+            )} RAD.`,
           },
           registration: null,
         };
