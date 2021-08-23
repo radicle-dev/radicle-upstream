@@ -182,8 +182,8 @@
   }
 </style>
 
-<Modal dataCy="page" emoji="🌠" title="Start a new project">
-  <div class="create-project" data-cy="create-project">
+<Modal dataCy="create-project" emoji="🌠" title="Start a new project">
+  <div class="create-project">
     <div class="radio-selector">
       <RadioOption
         title="Create a new repository"

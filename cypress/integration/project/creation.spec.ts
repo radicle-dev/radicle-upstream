@@ -97,14 +97,14 @@ context("project creation", () => {
 
       it("can be opened via the profile header action button and closed by pressing cancel", () => {
         commands.pick("new-project-button").click();
-        commands.pick("page", "create-project").should("exist");
-        commands.pick("create-project", "cancel-button").click();
+        commands.pick("create-project").should("exist");
+        commands.pick("cancel-button").click();
         commands.pick("profile-screen").should("exist");
       });
 
       it("can be closed by pressing escape key", () => {
         commands.pick("new-project-button").click();
-        commands.pick("page", "create-project").should("exist");
+        commands.pick("create-project").should("exist");
         cy.get("body").type("{esc}");
         commands.pick("profile-screen").should("exist");
       });
@@ -115,8 +115,8 @@ context("project creation", () => {
         commands.pick("new-project-button").click();
 
         // Set up minimal form input to show validations
-        commands.pick("page", "name").type("this-name-is-valid");
-        commands.pick("page", "new-project").click();
+        commands.pick("name").type("this-name-is-valid");
+        commands.pick("new-project").click();
       });
 
       afterEach(() => {
@@ -126,20 +126,20 @@ context("project creation", () => {
       context("name", () => {
         it("prevents the user from creating a project with an invalid name", () => {
           // the submit button is disabled when name is not present
-          commands.pick("page", "name").clear();
+          commands.pick("name").clear();
           commands.pick("create-project-button").should("be.disabled");
 
           // spaces should be changed into dashes
-          commands.pick("page", "name").type("no spaces");
-          commands.pick("page", "name").should("have.value", "no-spaces");
+          commands.pick("name").type("no spaces");
+          commands.pick("name").should("have.value", "no-spaces");
 
           // shows a validation message when name contains invalid characters
 
           // special characters are disallowed
-          commands.pick("page", "name").clear();
-          commands.pick("page", "name").type("bad$");
+          commands.pick("name").clear();
+          commands.pick("name").type("bad$");
           commands
-            .pick("page")
+            .pick("create-project")
             .should(
               "contain",
               "Your project’s name has some characters that aren’t " +
@@ -148,30 +148,30 @@ context("project creation", () => {
             );
 
           // can't start with a dash
-          commands.pick("page", "name").clear();
-          commands.pick("page", "name").type("-nope");
+          commands.pick("name").clear();
+          commands.pick("name").type("-nope");
           commands
-            .pick("page")
+            .pick("create-project")
             .should(
               "contain",
               "Your project name should start with a letter or a number."
             );
 
           // has to be at least two characters long
-          commands.pick("page", "name").clear();
-          commands.pick("page", "name").type("x");
+          commands.pick("name").clear();
+          commands.pick("name").type("x");
           commands
-            .pick("page")
+            .pick("create-project")
             .should(
               "contain",
               "Oops, your project’s name needs to be at least 2 characters long."
             );
 
           // has to be no more than 64 characters long
-          commands.pick("page", "name").clear();
-          commands.pasteInto(["page", "name"], "x".repeat(257));
+          commands.pick("name").clear();
+          commands.pasteInto(["name"], "x".repeat(257));
           commands
-            .pick("page")
+            .pick("create-project")
             .should(
               "contain",
               "Oh, your project’s name can’t have more than 64 characters."
@@ -186,17 +186,17 @@ context("project creation", () => {
 
             // entering a description is not mandatory and should not block
             // project creation
-            commands.pick("page", "name").type("rx");
-            commands.pick("page", "description").type("xxxx");
+            commands.pick("name").type("rx");
+            commands.pick("description").type("xxxx");
             commands.pick("create-project-button").should("be.enabled");
-            commands.pick("page", "description").clear();
+            commands.pick("description").clear();
             commands.pick("create-project-button").should("be.enabled");
 
             // the project description has to be no more than 256 characters long
-            commands.pick("page", "description").clear();
-            commands.pasteInto(["page", "description"], "x".repeat(257));
+            commands.pick("description").clear();
+            commands.pasteInto(["description"], "x".repeat(257));
             commands
-              .pick("page")
+              .pick("create-project")
               .should(
                 "contain",
                 "Whoa Shakespeare, your project’s description can’t be " +
@@ -211,7 +211,7 @@ context("project creation", () => {
         it("prevents the user from picking an invalid directory", () => {
           // shows a validation message when new project path is empty
           commands
-            .pick("page", "new-project")
+            .pick("new-project")
             .contains("Pick a directory for the new project")
             .should("exist");
 
@@ -219,7 +219,7 @@ context("project creation", () => {
             commands.pick("new-project", "choose-path-button").click();
 
             commands
-              .pick("page", "new-project")
+              .pick("new-project")
               .should(
                 "contain",
                 "Please choose a directory that’s not already a git repository."
@@ -244,7 +244,7 @@ context("project creation", () => {
         it("prevents the user from submitting invalid data", () => {
           // shows a validation message when new project path is empty
           commands
-            .pick("page", "new-project")
+            .pick("new-project")
             .contains("Pick a directory for the new project")
             .should("exist");
         });
