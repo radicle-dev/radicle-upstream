@@ -109,7 +109,7 @@ export function restoreCommitment(): Commitment | null {
     error.show(
       new error.Error({
         message: "Could not validate persisted commitment",
-        details: { commitment },
+        details: { commitment, errors: result.error.errors },
       })
     );
     return null;
