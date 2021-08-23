@@ -42,9 +42,8 @@
 <Overlay {expanded} on:hide={hide} style="position: relative;">
   <div class="modal" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">
-      Organization membership on Radicle is managed by Gnosis Safe, the most
-      trusted platform for managing digital assets and organizations on
-      Ethereum.
+      Org membership on Radicle is managed by Gnosis Safe, the most trusted
+      platform for managing digital assets on Ethereum.
     </p>
 
     <Button
