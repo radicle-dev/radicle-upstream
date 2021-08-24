@@ -6,28 +6,28 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { BigNumber } from "ethers";
+  import type * as ethers from "ethers";
 
   import Icon from "ui/DesignSystem/Icon";
   import Identifier from "ui/DesignSystem/Identifier.svelte";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
+  import Button from "ui/DesignSystem/Button.svelte";
 
   import { config } from "ui/src/config";
   import * as ethereum from "ui/src/ethereum";
-  import { Button } from "ui/DesignSystem";
 
-  export let dai: BigNumber | null;
-  export let eth: BigNumber | null;
-  export let rad: BigNumber | null;
+  export let dai: ethers.BigNumber | null;
+  export let eth: ethers.BigNumber | null;
+  export let rad: ethers.BigNumber | null;
   export let address: string;
   export let onDisconnect: () => void;
   export let style = "";
 
-  function formatBalance(balance: BigNumber | null): string {
+  function formatBalance(balance: ethers.BigNumber | null): string {
     if (balance === null) {
       return "–";
     } else {
-      return ethereum.toBaseUnit(balance).toNumber().toLocaleString("en-US");
+      return ethereum.formatTokenAmount(balance);
     }
   }
 </script>
