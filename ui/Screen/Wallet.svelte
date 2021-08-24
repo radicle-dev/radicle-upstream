@@ -9,6 +9,8 @@
   import { config } from "ui/src/config";
   import * as router from "ui/src/router";
   import { unreachable } from "ui/src/unreachable";
+  import * as modal from "ui/src/modal";
+  import * as error from "ui/src/error";
 
   import {
     selectedEnvironment as ethereumEnvironment,
@@ -24,6 +26,7 @@
   import ConnectWallet from "ui/DesignSystem/Wallet/Connect.svelte";
   import WalletPanel from "ui/DesignSystem/Wallet/Panel.svelte";
   import WrongNetwork from "ui/DesignSystem/Wallet/WrongNetwork.svelte";
+  import ModalWalletQRCode from "ui/Modal/Wallet/QRCode.svelte";
 
   import Pool from "./Wallet/Pool.svelte";
   import Transactions from "./Wallet/Transactions.svelte";
@@ -65,6 +68,32 @@
   // Hack to have Svelte working with checking the $wallet variant
   // and thus be able to access its appropriate fields.
   $: w = $wallet;
+
+  async function connectWallet() {
+    try {
+      await wallet.connect({
+        show(uri: string, onClose: () => void) {
+          modal.toggle(
+            ModalWalletQRCode,
+            () => {
+              onClose();
+            },
+            {
+              uri,
+            }
+          );
+        },
+      });
+      modal.hide();
+    } catch (err) {
+      error.show(
+        new error.Error({
+          message: "Failed to connect to wallet",
+          source: err,
+        })
+      );
+    }
+  }
 </script>
 
 <style>
@@ -130,7 +159,7 @@
       </div>
     {:else}
       <ConnectWallet
-        onConnect={wallet.connect}
+        onConnect={connectWallet}
         connecting={$wallet.status === Status.Connecting} />
     {/if}
   </div>
