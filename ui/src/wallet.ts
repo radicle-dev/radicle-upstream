@@ -21,6 +21,7 @@ import {
 import { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
 import * as ethereumDebug from "ui/src/ethereum/debug";
 import { createWalletConnect } from "ui/src/ethereum/walletConnect";
+import { INFURA_API_KEY_MAINNET, INFURA_API_KEY_RINKEBY } from "ui/src/config";
 
 export { radToken };
 
@@ -94,13 +95,13 @@ function getProvider(environment: Environment): Provider {
       // This account is registered on igor.zuk@protonmail.com.
       return ethers.providers.InfuraProvider.getWebSocketProvider(
         "rinkeby",
-        "de5e2a8780c04964950e73b696d1bfb1"
+        INFURA_API_KEY_RINKEBY
       );
     case Environment.Mainnet:
       // This account is registered on rudolfs@osins.org.
       return ethers.providers.InfuraProvider.getWebSocketProvider(
         "mainnet",
-        "7a19a4bf0af84fcc86ffb693a257fad4"
+        INFURA_API_KEY_MAINNET
       );
   }
 }

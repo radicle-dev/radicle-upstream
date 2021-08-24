@@ -11,10 +11,12 @@ import Connector from "@walletconnect/client";
 import type { ITxData, ISessionStatus } from "@walletconnect/types";
 import * as svelteStore from "svelte/store";
 import { isEqual } from "lodash";
+import * as ethers from "ethers";
 
 import * as Error from "ui/src/error";
 import * as modal from "ui/src/modal";
 import ModalWalletQRCode from "ui/Modal/Wallet/QRCode.svelte";
+import { config, INFURA_API_KEY_RINKEBY } from "ui/src/config";
 
 // Data provided by a connected wallet
 export interface Connection {
@@ -52,8 +54,14 @@ export interface WalletConnect {
   signTransaction(tx: ITxData): Promise<string>;
 }
 
+// Create a `WalletConnect` instance. Creates a test instance when
+// running in Cypress.
 export function createWalletConnect(): WalletConnect {
-  return new WalletConnectClient();
+  if (config.isDev && config.testWalletMnemonic) {
+    return new TestClient(config.testWalletMnemonic);
+  } else {
+    return new WalletConnectClient();
+  }
 }
 
 export class WalletConnectClient implements WalletConnect {
@@ -208,6 +216,84 @@ function createConnector(): Connector {
   connector._clientMeta = clientMeta;
 
   return connector;
+}
+
+// WalletConnect test client that is backed by an in-memory wallet and
+// automatically signs and submits transactions without user
+// interaction.
+export class TestClient implements WalletConnect {
+  private _connection: svelteStore.Writable<Connection | undefined> =
+    svelteStore.writable(undefined);
+  private wallet: ethers.Wallet;
+  private provider: ethers.providers.Provider;
+
+  public connection: svelteStore.Readable<Connection | undefined>;
+
+  constructor(mnemonic: string) {
+    this.connection = svelteStore.derived(this._connection, x => x);
+    this.wallet = ethers.Wallet.fromMnemonic(mnemonic);
+    this.provider = ethers.providers.InfuraProvider.getWebSocketProvider(
+      "rinkeby",
+      INFURA_API_KEY_RINKEBY
+    );
+  }
+
+  async connect(): Promise<boolean> {
+    this._connection.set({
+      accountAddress: this.wallet.address,
+      chainId: 4,
+    });
+    return true;
+  }
+
+  async disconnect(): Promise<void> {
+    this._connection.set(undefined);
+  }
+
+  signMessage(_address: string, _message: string): Promise<string> {
+    throw new Error.Error({
+      message: "TestClient.signMessage is not implemented",
+    });
+  }
+
+  signTypedData(_address: string, _typedData: unknown): Promise<string> {
+    throw new Error.Error({
+      message: "TestClient.signTypedData is not implemented",
+    });
+  }
+
+  async sendTransaction(tx: ITxData): Promise<string> {
+    const signedTx = await this.signTransaction(tx);
+    const response = await this.provider.sendTransaction(signedTx);
+    return response.hash;
+  }
+
+  async signTransaction(tx: ITxData): Promise<string> {
+    if (svelteStore.get(this.connection) === undefined) {
+      throw new Error.Error({
+        message: "Cannot sign transaction. Wallet is not connected",
+      });
+    }
+    const nonce =
+      tx.nonce || (await this.provider.getTransactionCount(tx.from));
+    const gasPrice = tx.gasPrice || (await this.provider.getGasPrice());
+
+    const txRequest = {
+      to: tx.to,
+      from: tx.from,
+      nonce,
+      gasPrice,
+      data: tx.data,
+    };
+
+    const gasLimit =
+      tx.gasLimit || (await this.provider.estimateGas(txRequest));
+
+    return this.wallet.signTransaction({
+      ...txRequest,
+      gasLimit,
+    });
+  }
 }
 
 // Try to run `f` with `mutex.runExclusive()`. Throws an error if
