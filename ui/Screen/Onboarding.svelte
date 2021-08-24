@@ -65,7 +65,7 @@
         );
         peerId = identity.peerId;
         state = State.SuccessView;
-      } catch (err) {
+      } catch (err: unknown) {
         animateBackward();
         state = State.EnterName;
         error.show(

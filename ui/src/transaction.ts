@@ -324,21 +324,20 @@ export const colorForStatus = (status: TxStatus): string => {
 // user in the TransactionCenter.
 export const selectedStore = svelteStore.writable<string>("");
 
-// Convert a transaction-related `globalThis.Error` to `error.Error`.
-export function convertError(e: globalThis.Error, label: string): error.Error {
-  let code: error.Code;
-  let message: string;
+// Convert a transaction-related error to `error.Error`.
+export function convertError(e: unknown, label: string): error.Error {
+  let code = error.Code.UnkownTransactionFailure;
+  let message = "an unkown transaction error occurred";
 
-  if (e.message.includes("gas")) {
-    code = error.Code.InsufficientGas;
-    message = "you seem to have insufficient gas to cover this transaction.";
-  } else if (e.message.toLowerCase().includes("rejected request")) {
-    code = error.Code.FailedOrRejectedTransaction;
-    message =
-      "you have rejected this transaction or it has failed for some unkown reason.";
-  } else {
-    code = error.Code.UnkownTransactionFailure;
-    message = "an unkown transaction error occurred";
+  if (e instanceof globalThis.Error) {
+    if (e.message.includes("gas")) {
+      code = error.Code.InsufficientGas;
+      message = "you seem to have insufficient gas to cover this transaction.";
+    } else if (e.message.toLowerCase().includes("rejected request")) {
+      code = error.Code.FailedOrRejectedTransaction;
+      message =
+        "you have rejected this transaction or it has failed for some unkown reason.";
+    }
   }
 
   return new error.Error({

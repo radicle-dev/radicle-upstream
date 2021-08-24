@@ -65,7 +65,7 @@ export const refreshPeers = async (): Promise<void> => {
         peers,
         peerSelection,
       });
-    } catch (err) {
+    } catch (err: unknown) {
       screenStore.error(error.fromUnknown(err));
     }
   }

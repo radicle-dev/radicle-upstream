@@ -203,7 +203,7 @@ installMainProcessHandler({
         "git config --global --get init.defaultBranch"
       );
       return stderr ? undefined : stdout.trim();
-    } catch (error) {
+    } catch (error: unknown) {
       return undefined;
     }
   },

@@ -92,12 +92,18 @@
         notification.info({
           message: `Project ${response.metadata.name} was created!`,
         });
-      } catch (err) {
+      } catch (err: unknown) {
         router.push({ type: "profile", activeTab: "projects" });
+        let message;
+        if (err instanceof proxy.ResponseError) {
+          message = `Could not create project: ${err.message}`;
+        } else {
+          message = `Could not create project`;
+        }
         error.show(
           new error.Error({
             code: error.Code.ProjectCreationFailure,
-            message: `Could not create project: ${err.message}`,
+            message,
             source: err,
           })
         );

@@ -149,7 +149,7 @@ export const createValidationStore = (
 
             break;
           }
-        } catch (error) {
+        } catch (error: unknown) {
           remoteSuccess = false;
 
           update(store => {
@@ -159,8 +159,9 @@ export const createValidationStore = (
             }
             return {
               status: ValidationStatus.Error,
-              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-member-access
-              message: `Cannot validate "${input}": ${error.message}`,
+              message: `Cannot validate "${input}": ${
+                (error as Error).message
+              }`,
             };
           });
 

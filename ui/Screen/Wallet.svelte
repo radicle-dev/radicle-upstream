@@ -85,7 +85,7 @@
         },
       });
       modal.hide();
-    } catch (err) {
+    } catch (err: unknown) {
       error.show(
         new error.Error({
           message: "Failed to connect to wallet",

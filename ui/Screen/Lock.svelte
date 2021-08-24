@@ -44,8 +44,13 @@
             persist: true,
           });
         }
-      } catch (err) {
-        errorNotificationHandle = error.show(err);
+      } catch (err: unknown) {
+        errorNotificationHandle = error.show(
+          new error.Error({
+            message: "Failed to unseal session",
+            source: err,
+          })
+        );
       } finally {
         unlockInProgress = false;
       }

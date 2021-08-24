@@ -23,9 +23,11 @@ async function main() {
   let devEthAccount;
   try {
     devEthAccount = (await fs.readFile(ethAccountFile, "utf-8")).trim();
-  } catch (err) {
+  } catch (err: unknown) {
     throw new Error(
-      `Failed to read address of development account from ${ethAccountFile}:\n  ${err.message}`
+      `Failed to read address of development account from ${ethAccountFile}:\n  ${
+        (err as Error).message
+      }`
     );
   }
 

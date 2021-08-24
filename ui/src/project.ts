@@ -134,14 +134,12 @@ const fetchBranches = async (path: string) => {
   let state: source.LocalState;
   try {
     state = await source.getLocalState(path);
-  } catch (err) {
-    error.log(
-      new error.Error({
-        code: error.Code.LocalStateFetchFailure,
-        message: err.message,
-        source: err,
-      })
+  } catch (unknownErr: unknown) {
+    const err = error.fromUnknown(
+      unknownErr,
+      error.Code.LocalStateFetchFailure
     );
+    error.log(err);
     localStateError.set(err.message);
     return;
   }

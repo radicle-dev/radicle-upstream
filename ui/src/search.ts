@@ -31,7 +31,7 @@ export const requestProject = async (urn: string): Promise<void> => {
   try {
     const projectRequest = await proxy.client.project.requestSubmit(urn);
     projectRequestStore.success(projectRequest);
-  } catch (err) {
+  } catch (err: unknown) {
     projectRequestStore.error(error.fromUnknown(err));
   }
 };
@@ -41,7 +41,7 @@ export const searchProject = async (urn: string): Promise<void> => {
   try {
     const project = await proxy.client.project.get(urn);
     projectSearchStore.success(project);
-  } catch (err) {
+  } catch (err: unknown) {
     projectSearchStore.error(error.fromUnknown(err));
   }
 };

@@ -165,13 +165,8 @@
       try {
         commitInProgress = true;
         state = await commit();
-      } catch (err) {
-        error.show(
-          new error.Error({
-            message: err,
-            source: err,
-          })
-        );
+      } catch (err: unknown) {
+        error.show(error.fromUnknown(err));
       } finally {
         commitInProgress = false;
       }

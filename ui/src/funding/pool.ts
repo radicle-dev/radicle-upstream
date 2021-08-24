@@ -14,6 +14,7 @@ import * as validation from "../validation";
 import { Wallet, Status as WalletStatus } from "../wallet";
 import * as remote from "../remote";
 import { toBaseUnit } from "../ethereum";
+import * as error from "ui/src/error";
 
 import Big from "big.js";
 import { ContractTransaction, ethers } from "ethers";
@@ -105,8 +106,8 @@ export function make(wallet: Wallet): Pool {
     const ethAddr = storedWallet.connected.address;
     try {
       data.success(await watcher.poolData(ethAddr));
-    } catch (error) {
-      data.error(error);
+    } catch (err: unknown) {
+      data.error(error.fromUnknown(err));
     }
   }
 

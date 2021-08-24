@@ -48,12 +48,12 @@ const updateEthereumClaim = async (
       ...metadata,
       ethereum,
     });
-  } catch (err) {
+  } catch (err: unknown) {
     error.show(
       new error.Error({
         code: error.Code.UpdateEthereumClaimFailure,
-        message: `Failed to update the Ethereum claim in your identity: ${err.message}`,
-        source: error.fromUnknown(err),
+        message: `Failed to update the Ethereum claim in your identity`,
+        source: err,
       })
     );
     return;

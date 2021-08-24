@@ -27,7 +27,7 @@ export function waitUntil<T>(
       let matched;
       try {
         matched = predicate(value);
-      } catch (err) {
+      } catch (err: unknown) {
         reject(err);
         return;
       }

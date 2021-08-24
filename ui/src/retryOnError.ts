@@ -23,7 +23,7 @@ export async function retryOnError<T>(
   for (; ; tryCount--) {
     try {
       return await action();
-    } catch (error) {
+    } catch (error: unknown) {
       if (!retryPredicate(error) || tryCount <= 1) {
         throw error;
       }

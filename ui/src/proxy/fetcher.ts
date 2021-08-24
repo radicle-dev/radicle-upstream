@@ -127,7 +127,7 @@ export class Fetcher {
       let responseBody = await response.text();
       try {
         responseBody = JSON.parse(responseBody);
-      } catch (_e) {
+      } catch (_e: unknown) {
         // We keep the original text response body
       }
       throw new ResponseError(response, responseBody);

@@ -98,12 +98,12 @@ export const showNotificationsForFailedProjects = async (): Promise<void> => {
         })
       );
     });
-  } catch (error) {
+  } catch (err: unknown) {
     error.show(
       new error.Error({
         code: error.Code.ProjectRequestFailure,
         message: "Failed to get failed projects",
-        source: error,
+        source: err,
       })
     );
   }

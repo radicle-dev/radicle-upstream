@@ -121,7 +121,7 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
       200 // 20 seconds timeout
     );
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
-  } catch (err) {
+  } catch (err: unknown) {
     if (err instanceof proxy.ResponseError) {
       if (err.response.status === 404) {
         sessionStore.success({ status: Status.NoSession });
@@ -136,7 +136,7 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
       new error.Error({
         code: error.Code.SessionFetchFailure,
         message: "Failed to load the session",
-        source: error.fromJsError(err),
+        source: err,
       })
     );
   }
@@ -149,7 +149,7 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
 export const unseal = async (passphrase: string): Promise<boolean> => {
   try {
     await proxy.client.keyStoreUnseal({ passphrase });
-  } catch (err) {
+  } catch (err: unknown) {
     if (
       err instanceof proxy.ResponseError &&
       err.variant === "INCORRECT_PASSPHRASE"
@@ -176,12 +176,12 @@ export const fetch = async (): Promise<void> => {
 const setSettings = async (settings: Settings): Promise<void> => {
   try {
     await proxy.client.sessionSettingsSet(settings);
-  } catch (err) {
+  } catch (err: unknown) {
     error.show(
       new error.Error({
         code: error.Code.SessionSettingsUpdateFailure,
-        message: `Failed to update settings: ${err.message}`,
-        source: error.fromJsError(err),
+        message: `Failed to update settings`,
+        source: err,
       })
     );
     return;

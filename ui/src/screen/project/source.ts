@@ -120,7 +120,7 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
       },
       tree: writable<source.Tree>(tree),
     });
-  } catch (err) {
+  } catch (err: unknown) {
     screenStore.error(error.fromUnknown(err));
   }
 };
@@ -263,7 +263,7 @@ export const selectRevision = async (
           selected: revision,
         },
       });
-    } catch (err) {
+    } catch (err: unknown) {
       screenStore.error(error.fromUnknown(err));
     }
   }
@@ -282,7 +282,7 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
 
     try {
       commitStore.success(await source.fetchCommit(project.urn, sha1));
-    } catch (err) {
+    } catch (err: unknown) {
       commitStore.error(error.fromUnknown(err));
       error.show(
         new error.Error({
@@ -358,9 +358,9 @@ const fetchCode = async (
     } else {
       code = await fetchBlob(project, peer, revision, path, request.signal);
     }
-  } catch (err) {
+  } catch (err: unknown) {
     // An in-flight request was aborted, we wait for the next one to arrive.
-    if (err.name === "AbortError") {
+    if (err instanceof globalThis.Error && err.name === "AbortError") {
       code = {
         lastCommit: tree.info.lastCommit,
         path,
@@ -374,7 +374,7 @@ const fetchCode = async (
         path,
         view: {
           kind: ViewKind.Error,
-          error: err,
+          error: error.fromUnknown(err),
         },
       };
     }

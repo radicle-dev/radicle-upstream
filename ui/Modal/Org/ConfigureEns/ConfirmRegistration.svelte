@@ -41,15 +41,10 @@
         commitment.name,
         commitment.salt
       );
-    } catch (err) {
+    } catch (err: unknown) {
       confirmButtonDisabled = false;
 
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
+      error.show(error.fromUnknown(err));
       // Don't advance flow if the user rejected the tx.
       return;
     } finally {
@@ -67,15 +62,10 @@
 
     try {
       await registrationTx.wait(1);
-    } catch (err) {
+    } catch (err: unknown) {
       confirmButtonDisabled = false;
 
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
+      error.show(error.fromUnknown(err));
       // Don't advance flow unless we have the tx receipt.
       return;
     } finally {

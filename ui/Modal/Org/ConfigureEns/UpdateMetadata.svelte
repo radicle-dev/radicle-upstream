@@ -102,15 +102,10 @@
           persist: true,
         });
         onSubmit();
-      } catch (err) {
+      } catch (err: unknown) {
         setRecordsInProgress = false;
 
-        error.show(
-          new error.Error({
-            message: err.message,
-            source: err,
-          })
-        );
+        error.show(error.fromUnknown(err));
         return;
       } finally {
         updateNotification.remove();

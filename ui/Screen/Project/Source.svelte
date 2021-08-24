@@ -118,11 +118,17 @@
             },
           ],
         });
-      } catch (err) {
+      } catch (err: unknown) {
+        let message;
+        if (err instanceof proxy.ResponseError) {
+          message = `Checkout failed: ${err.message}`;
+        } else {
+          message = `Checkout failed`;
+        }
         error.show(
           new error.Error({
             code: error.Code.ProjectCheckoutFailure,
-            message: `Checkout failed: ${err.message}`,
+            message,
             source: err,
           })
         );

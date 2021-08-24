@@ -31,7 +31,7 @@
         showIcon: true,
       });
       await onClick();
-    } catch (e) {
+    } catch (e: unknown) {
       error.show(transaction.convertError(e, errorLabel));
     } finally {
       running = false;

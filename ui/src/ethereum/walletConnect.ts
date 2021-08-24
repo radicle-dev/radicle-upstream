@@ -116,9 +116,9 @@ export class WalletConnectClient implements WalletConnect {
         const sessionStatus = await this.connector.connect();
         this.setConnection(sessionStatus);
         return true;
-      } catch (e) {
+      } catch (e: unknown) {
         this.reinit();
-        if (e.message.includes("User close")) {
+        if (e instanceof globalThis.Error && e.message.includes("User close")) {
           return false;
         } else {
           throw e;

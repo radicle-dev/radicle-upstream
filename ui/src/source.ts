@@ -185,7 +185,7 @@ export const fetchReadme = async (
     } else {
       return null;
     }
-  } catch (err) {
+  } catch (err: unknown) {
     error.log(error.fromUnknown(err));
     return null;
   }

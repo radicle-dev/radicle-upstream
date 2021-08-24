@@ -221,7 +221,7 @@ async function waitSealed() {
     try {
       await proxyClient.sessionGet();
       await sleep(10);
-    } catch (err) {
+    } catch (err: unknown) {
       if (
         err instanceof proxy.ResponseError &&
         [404, 403].includes(err.response.status)
