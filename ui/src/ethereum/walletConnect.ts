@@ -37,9 +37,10 @@ export interface WalletConnect {
 
   disconnect(): Promise<void>;
 
-  // Sign a message with the key for `address`. `message` must be
-  // hex-encoded.
-  signMessage(address: string, message: string): Promise<string>;
+  // Sign a message according to [EIP-191][1] with the key for `address`
+  //
+  // [1]: https://eips.ethereum.org/EIPS/eip-191
+  signMessage(address: string, message: Uint8Array): Promise<string>;
 
   // Sign typed data for the given address as specified in
   // [EIP-712](https://eips.ethereum.org/EIPS/eip-712).
@@ -114,8 +115,9 @@ export class WalletConnectClient implements WalletConnect {
     });
   }
 
-  signMessage(address: string, message: string): Promise<string> {
-    return this.connector.signMessage([address, message]);
+  signMessage(address: string, message: Uint8Array): Promise<string> {
+    const messageDigest = ethers.utils.hashMessage(message);
+    return this.connector.signMessage([address, messageDigest]);
   }
 
   signTypedData(address: string, typedData: unknown): Promise<string> {
@@ -250,10 +252,20 @@ export class TestClient implements WalletConnect {
     this._connection.set(undefined);
   }
 
-  signMessage(_address: string, _message: string): Promise<string> {
-    throw new Error.Error({
-      message: "TestClient.signMessage is not implemented",
-    });
+  async signMessage(address: string, message: Uint8Array): Promise<string> {
+    if (svelteStore.get(this.connection) === undefined) {
+      throw new Error.Error({
+        message: "Cannot sign message. Wallet is not connected",
+      });
+    }
+
+    if (address.toLowerCase() !== this.wallet.address.toLowerCase()) {
+      throw new Error.Error({
+        message: "TestClient.signMessage is not implemented",
+      });
+    }
+
+    return this.wallet.signMessage(message);
   }
 
   signTypedData(_address: string, _typedData: unknown): Promise<string> {
