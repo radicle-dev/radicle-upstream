@@ -11,8 +11,8 @@
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
-  export let minimumCommitmentAge: number;
   export let startBlock: number;
+  export let minimumCommitmentAge: number;
   export let onFinish: () => void;
 
   const walletStore = svelteStore.get(wallet.store);

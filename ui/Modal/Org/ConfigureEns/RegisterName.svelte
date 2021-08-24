@@ -13,7 +13,7 @@
 </script>
 
 <script lang="typescript">
-  import * as ethers from "ethers";
+  import type * as ethers from "ethers";
 
   import { sleep } from "ui/src/sleep";
   import { unreachable } from "ui/src/unreachable";
@@ -42,27 +42,23 @@
       }
     | {
         type: "register";
-        commitmentSalt: Uint8Array;
+        commitment: ensRegistrar.Commitment;
         commitmentBlock: number;
-        minimumCommitmentAge: number;
       };
 
   let state: State = { type: "validateAndCommit" };
   let nameInputValue: string = currentName || "";
-
   let commitInProgress: boolean = false;
-
   let validatedName: string;
   let validationState: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
   let registration: ensResolver.Registration | null;
-
   let userInputStarted: boolean = nameInputValue !== "";
+  const validateFormExecutor = mutexExecutor.create();
+
   $: (userInputStarted && validateFormAndSetState(nameInputValue)) ||
     (userInputStarted = true);
-
-  const validateFormExecutor = mutexExecutor.create();
 
   async function validateFormAndSetState(
     name: string | undefined
@@ -158,20 +154,68 @@
     };
   }
 
-  function commitOrGoToUpdateMetadata(): void {
+  async function commitOrGoToUpdateMetadata(): Promise<void> {
     if (registration) {
       registrationDone({
         name: validatedName,
         registration,
       });
     } else {
-      commit(validatedName);
+      try {
+        commitInProgress = true;
+        state = await commit();
+      } catch (err) {
+        error.show(
+          new error.Error({
+            message: err,
+            source: err,
+          })
+        );
+      } finally {
+        commitInProgress = false;
+      }
     }
   }
 
-  async function commit(name: string) {
-    commitInProgress = true;
+  async function commit(): Promise<State> {
+    const wallet_ = svelteStore.get(wallet.store);
+    const walletAddress = wallet_.getAddress()?.toLowerCase();
+    const commitment = ensRegistrar.restoreCommitment();
 
+    if (
+      commitment &&
+      commitment.name === validatedName &&
+      commitment.ownerAddress === walletAddress
+    ) {
+      if (commitment.block) {
+        return {
+          type: "register",
+          commitment,
+          commitmentBlock: commitment.block,
+        };
+      } else {
+        const commitNotification = notification.info({
+          message: "Waiting for previous commitment transation to be confirmed",
+          showIcon: true,
+          persist: true,
+        });
+        let commitmentBlock;
+        try {
+          const receipt = await wallet_.provider.waitForTransaction(
+            commitment.txHash
+          );
+          commitmentBlock = receipt.blockNumber;
+        } finally {
+          commitNotification.remove();
+        }
+        return { type: "register", commitment, commitmentBlock };
+      }
+    } else {
+      return submitCommitment(validatedName);
+    }
+  }
+
+  async function submitCommitment(name: string): Promise<State> {
     const signNotification = notification.info({
       message:
         "Waiting for you to sign the commitment permit in your connected wallet",
@@ -183,16 +227,6 @@
     const deadline = ensRegistrar.deadline();
     try {
       signature = await ensRegistrar.permitSignature(fee, deadline);
-    } catch (err) {
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
-      commitInProgress = false;
-      // Don't advance the flow unless the user confirms the signature.
-      return;
     } finally {
       signNotification.remove();
     }
@@ -203,31 +237,23 @@
       showIcon: true,
       persist: true,
     });
-    const salt = ethers.utils.randomBytes(32);
+    const salt = ensRegistrar.generateSalt();
 
-    let commitResult: ensRegistrar.CommitResult;
+    let commitment: ensRegistrar.Commitment;
+    let tx: transaction.ContractTransaction;
     try {
-      commitResult = await ensRegistrar.commit(
+      ({ tx, commitment } = await ensRegistrar.commit(
         name,
         salt,
         fee,
         signature,
         deadline
-      );
-    } catch (err) {
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
-      commitInProgress = false;
-      // Don't advance flow unless the user confirms the tx.
-      return;
+      ));
     } finally {
       commitNotification.remove();
     }
-    transaction.add(transaction.commitEnsName(commitResult.tx));
+    ensRegistrar.persistCommitment(commitment);
+    transaction.add(transaction.commitEnsName(tx));
 
     const txNotification = notification.info({
       message: "Waiting for the transaction to be included",
@@ -237,26 +263,15 @@
 
     let receipt;
     try {
-      receipt = await commitResult.tx.wait(1);
-    } catch (err) {
-      error.show(
-        new error.Error({
-          message: err.message,
-          source: err,
-        })
-      );
-      commitInProgress = false;
-      // Don't advance flow unless we have the tx receipt.
-      return;
+      receipt = await tx.wait(1);
     } finally {
       txNotification.remove();
     }
 
-    state = {
+    return {
       type: "register",
-      minimumCommitmentAge: commitResult.minimumCommitmentAge,
+      commitment,
       commitmentBlock: receipt.blockNumber,
-      commitmentSalt: salt,
     };
   }
 </script>
@@ -292,10 +307,8 @@
   </Modal>
 {:else if state.type === "register"}
   <ConfirmRegistration
-    name={validatedName}
-    commitmentSalt={state.commitmentSalt}
+    commitment={state.commitment}
     commitmentBlock={state.commitmentBlock}
-    minimumCommitmentAge={state.minimumCommitmentAge}
     {registrationDone} />
 {:else}
   {unreachable(state)}

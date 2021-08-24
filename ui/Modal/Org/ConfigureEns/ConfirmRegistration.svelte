@@ -22,11 +22,9 @@
 
   let confirmButtonDisabled = false;
 
-  export let registrationDone: (result: registerName.Result) => void;
-  export let name: string;
-  export let commitmentSalt: Uint8Array;
+  export let commitment: ensRegistrar.Commitment;
   export let commitmentBlock: number;
-  export let minimumCommitmentAge: number;
+  export let registrationDone: (result: registerName.Result) => void;
 
   let state: "waiting" | "readyToRegister" | "success" = "waiting";
 
@@ -42,7 +40,10 @@
 
     let registrationTx: transaction.ContractTransaction;
     try {
-      registrationTx = await ensRegistrar.register(name, commitmentSalt);
+      registrationTx = await ensRegistrar.register(
+        commitment.name,
+        commitment.salt
+      );
     } catch (err) {
       confirmButtonDisabled = false;
 
@@ -57,6 +58,7 @@
     } finally {
       registrationNotification.remove();
     }
+    ensRegistrar.clearCommitment();
 
     transaction.add(transaction.registerEnsName(registrationTx));
 
@@ -97,15 +99,17 @@
     <div style="display: flex; justify-content: center;">
       <BlockTimer
         onFinish={() => (state = "readyToRegister")}
-        {minimumCommitmentAge}
-        startBlock={commitmentBlock} />
+        startBlock={commitmentBlock}
+        minimumCommitmentAge={commitment.minimumCommitmentAge} />
     </div>
   </Modal>
 {:else if state === "readyToRegister"}
   <Modal emoji="📇" title="Almost done">
     <svelte:fragment slot="description">
       With this last transaction, you’re confirming the registration of your new
-      ENS name <span class="typo-text-bold">{name}.{ensResolver.DOMAIN}</span>.
+      ENS name <span class="typo-text-bold"
+        >{commitment.name}.{ensResolver.DOMAIN}</span
+      >.
     </svelte:fragment>
 
     <svelte:fragment slot="buttons">
@@ -122,10 +126,10 @@
   <Modal emoji="🎉" title="Registration complete">
     <svelte:fragment slot="description">
       Congratulations, <span class="typo-text-bold"
-        >{name}.{ensResolver.DOMAIN}</span> has been registered with your wallet.
-      Next, let’s populate your name with org metadata. You can also do this later
-      by selecting “Register ENS Name” in the menu on your org’s profile and entering
-      your existing name.
+        >{commitment.name}.{ensResolver.DOMAIN}</span> has been registered with your
+      wallet. Next, let’s populate your name with org metadata. You can also do this
+      later by selecting “Register ENS Name” in the menu on your org’s profile and
+      entering your existing name.
     </svelte:fragment>
 
     <svelte:fragment slot="buttons">
@@ -136,7 +140,7 @@
         }}>Do this later</Button>
       <Button
         on:click={() => {
-          registrationDone({ name, registration: null });
+          registrationDone({ name: commitment.name, registration: null });
         }}>Set org metadata</Button>
     </svelte:fragment>
   </Modal>
