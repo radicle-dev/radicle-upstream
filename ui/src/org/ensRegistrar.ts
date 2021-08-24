@@ -46,9 +46,7 @@ export async function getFee(): Promise<ethers.BigNumber> {
 }
 
 export function formatFee(fee: ethers.BigNumber): string {
-  return ethers.utils.commify(
-    parseFloat(ethers.utils.formatUnits(fee))
-  );
+  return ethers.utils.commify(parseFloat(ethers.utils.formatUnits(fee)));
 }
 
 export function deadline(): ethers.BigNumber {
@@ -67,6 +65,8 @@ export interface Commitment {
   salt: string;
   // Commitment tx id.
   txHash: string;
+  // The number of the block the commitment transaction is included.
+  block?: number;
   // The minimum number of blocks that must have passed between a commitment
   // and name registration.
   minimumCommitmentAge: number;
@@ -77,7 +77,7 @@ export const commitmentSchema: zod.Schema<Commitment> = zod.object({
   ownerAddress: zod.string(),
   salt: zod.string(),
   txHash: zod.string(),
-  minimumCommitmentAge: zod.number()
+  minimumCommitmentAge: zod.number(),
 });
 
 const COMMITMENT_STORAGE_KEY = "radicle.ens.commitment";
@@ -90,7 +90,7 @@ export function persistCommitment(commitment: Commitment): void {
 }
 
 export function clearCommitment(): void {
-  window.localStorage.removeItem(COMMITMENT_STORAGE_KEY)
+  window.localStorage.removeItem(COMMITMENT_STORAGE_KEY);
 }
 
 export function restoreCommitment(): Commitment | null {

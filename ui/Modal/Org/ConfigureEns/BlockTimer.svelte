@@ -6,19 +6,18 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { onMount, onDestroy } from "svelte";
+  import { onDestroy } from "svelte";
 
   import * as svelteStore from "ui/src/svelteStore";
   import * as wallet from "ui/src/wallet";
 
+  export let startBlock: number;
   export let minimumCommitmentAge: number;
-  export let txHash: string;
   export let onFinish: () => void;
 
   const walletStore = svelteStore.get(wallet.store);
 
   const requiredBlockCount = minimumCommitmentAge + 1;
-  let startBlock: number;
   let confirmedBlockCount: number = 0;
   let done: boolean = false;
 
@@ -35,19 +34,6 @@
 
   onDestroy(() => {
     walletStore.provider.off("block", onBlock);
-  });
-
-  onMount(async () => {
-    const tx = await walletStore.provider.getTransaction(txHash);
-    const block = await walletStore.provider.getBlockNumber();
-
-    // If the block has not been mined, `blockNumber` is null.
-    if (tx.blockNumber) {
-      startBlock = tx.blockNumber;
-    } else {
-      startBlock = block;
-    }
-    onBlock(block);
   });
 </script>
 

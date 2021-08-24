@@ -23,6 +23,7 @@
   let confirmButtonDisabled = false;
 
   export let commitment: ensRegistrar.Commitment;
+  export let commitmentBlock: number;
   export let registrationDone: (result: registerName.Result) => void;
 
   let state: "waiting" | "readyToRegister" | "success" = "waiting";
@@ -98,8 +99,8 @@
     <div style="display: flex; justify-content: center;">
       <BlockTimer
         onFinish={() => (state = "readyToRegister")}
-        minimumCommitmentAge={commitment.minimumCommitmentAge}
-        txHash={commitment.txHash} />
+        startBlock={commitmentBlock}
+        minimumCommitmentAge={commitment.minimumCommitmentAge} />
     </div>
   </Modal>
 {:else if state === "readyToRegister"}
