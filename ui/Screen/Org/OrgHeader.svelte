@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
-  import { Avatar, Icon } from "ui/DesignSystem";
+  import { Avatar, Copyable, Icon } from "ui/DesignSystem";
 
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as style from "ui/src/style";
@@ -24,6 +24,17 @@
   $: twitterUrl =
     registration?.twitter &&
     `https://twitter.com/${registration.twitter.replace("@", "")}`;
+  $: seedId = registration?.seedId;
+  $: seedApi = registration?.seedApi;
+
+  function truncateSeedId(id: string): string {
+    const match = id.match(/^([a-zA-Z0-9]{54})@(.*)/);
+    if (match && match[1] && match[2]) {
+      return `${style.ellipsed(match[1], 5, 0)}@${match[2]}`;
+    }
+
+    return id;
+  }
 </script>
 
 <style>
@@ -76,7 +87,13 @@
           {:else}
             <Icon.Ethereum />
           {/if}
-          {style.ellipsed(ownerAddress)}
+          <Copyable
+            notificationText="Org owner address copied to your clipboard"
+            styleContent={false}
+            showIcon={false}
+            copyContent={ownerAddress}>
+            {style.ellipsed(ownerAddress)}
+          </Copyable>
         </div>
         {#if threshold}
           <div class="row">
@@ -86,7 +103,7 @@
           </div>
         {/if}
       </div>
-      {#if websiteUrl || githubUrl || twitterUrl}
+      {#if websiteUrl || githubUrl || twitterUrl || seedId || seedApi}
         <div>
           {#if websiteUrl}
             <div class="row">
@@ -104,6 +121,23 @@
             <div class="row">
               <Icon.Twitter />
               <a href={twitterUrl}>{twitterUrl}</a>
+            </div>
+          {/if}
+        </div>
+        <div>
+          {#if seedId}
+            <div class="row">
+              <Icon.Network /><Copyable
+                notificationText="Seed ID copied to your clipboard"
+                copyContent={seedId}
+                styleContent={false}
+                showIcon={false}>{truncateSeedId(seedId)}</Copyable>
+            </div>
+          {/if}
+          {#if seedApi}
+            <div class="row">
+              <Icon.Server />
+              <a href={seedApi}>{seedApi}</a>
             </div>
           {/if}
         </div>

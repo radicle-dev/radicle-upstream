@@ -6,6 +6,6 @@
 
 // Shared types and functionality related to styling
 
-export function ellipsed(x: string, length: number = 8): string {
-  return `${x.slice(0, length + 2)}…${x.slice(-length)}`;
+export function ellipsed(x: string, length: number = 8, offset: number = 2): string {
+  return `${x.slice(0, length + offset)}…${x.slice(-length)}`;
 }
