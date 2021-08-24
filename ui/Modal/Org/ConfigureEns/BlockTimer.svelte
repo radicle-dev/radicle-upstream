@@ -27,6 +27,7 @@
     if (!done && confirmedBlockCount >= requiredBlockCount) {
       done = true;
       onFinish();
+      walletStore.provider.off("block", onBlock);
     }
   };
 
@@ -44,5 +45,5 @@
 </style>
 
 <p class="typo-text-bold">
-  Confirmed {confirmedBlockCount} out of {requiredBlockCount}.
+  Confirmed {confirmedBlockCount} out of {requiredBlockCount} blocks.
 </p>

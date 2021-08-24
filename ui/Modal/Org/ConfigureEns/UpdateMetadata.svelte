@@ -177,7 +177,7 @@
       variant="transparent"
       on:click={() => {
         modal.hide();
-      }}>Cancel</Button>
+      }}>Do this later</Button>
     <Button on:click={setRecords} disabled={setRecordsInProgress}
       >Update org metadata</Button>
   </svelte:fragment>

@@ -8,7 +8,6 @@
 <script lang="typescript">
   import type * as registerName from "./RegisterName.svelte";
 
-  import { unreachable } from "ui/src/unreachable";
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
@@ -20,13 +19,11 @@
 
   import BlockTimer from "./BlockTimer.svelte";
 
-  let confirmButtonDisabled = false;
+  let confirmButtonDisabled = true;
 
   export let commitment: ensRegistrar.Commitment;
   export let commitmentBlock: number;
   export let registrationDone: (result: registerName.Result) => void;
-
-  let state: "waiting" | "readyToRegister" | "success" = "waiting";
 
   async function register() {
     confirmButtonDisabled = true;
@@ -85,65 +82,36 @@
       txNotification.remove();
     }
 
-    state = "success";
+    notification.info({
+      message: `${commitment.name}.${ensResolver.DOMAIN} has been registered with your wallet`,
+      showIcon: true,
+    });
+    registrationDone({ name: commitment.name, registration: null });
   }
 </script>
 
-{#if state === "waiting"}
-  <Modal emoji="📇" title="Awaiting registration commitment">
-    <svelte:fragment slot="description">
-      This will take about one minute. The waiting period is required to ensure
-      another person hasn’t tried to register the same name.
-    </svelte:fragment>
+<Modal emoji="📇" title="Awaiting registration commitment">
+  <svelte:fragment slot="description">
+    The waiting period is required to ensure another person hasn’t tried to
+    register the same name.
+  </svelte:fragment>
 
-    <div style="display: flex; justify-content: center;">
-      <BlockTimer
-        onFinish={() => (state = "readyToRegister")}
-        startBlock={commitmentBlock}
-        minimumCommitmentAge={commitment.minimumCommitmentAge} />
-    </div>
-  </Modal>
-{:else if state === "readyToRegister"}
-  <Modal emoji="📇" title="Almost done">
-    <svelte:fragment slot="description">
-      With this last transaction, you’re confirming the registration of your new
-      ENS name <span class="typo-text-bold"
-        >{commitment.name}.{ensResolver.DOMAIN}</span
-      >.
-    </svelte:fragment>
+  <div style="display: flex; justify-content: center;">
+    <BlockTimer
+      onFinish={() => {
+        confirmButtonDisabled = false;
+      }}
+      startBlock={commitmentBlock}
+      minimumCommitmentAge={commitment.minimumCommitmentAge} />
+  </div>
 
-    <svelte:fragment slot="buttons">
-      <Button
-        variant="transparent"
-        on:click={() => {
-          modal.hide();
-        }}>Cancel</Button>
-      <Button on:click={register} disabled={confirmButtonDisabled}
-        >Confirm registration</Button>
-    </svelte:fragment>
-  </Modal>
-{:else if state === "success"}
-  <Modal emoji="🎉" title="Registration complete">
-    <svelte:fragment slot="description">
-      Congratulations, <span class="typo-text-bold"
-        >{commitment.name}.{ensResolver.DOMAIN}</span> has been registered with your
-      wallet. Next, let’s populate your name with org metadata. You can also do this
-      later by selecting “Register ENS Name” in the menu on your org’s profile and
-      entering your existing name.
-    </svelte:fragment>
-
-    <svelte:fragment slot="buttons">
-      <Button
-        variant="transparent"
-        on:click={() => {
-          modal.hide();
-        }}>Do this later</Button>
-      <Button
-        on:click={() => {
-          registrationDone({ name: commitment.name, registration: null });
-        }}>Set org metadata</Button>
-    </svelte:fragment>
-  </Modal>
-{:else}
-  {unreachable(state)}
-{/if}
+  <svelte:fragment slot="buttons">
+    <Button
+      variant="transparent"
+      on:click={() => {
+        modal.hide();
+      }}>Cancel</Button>
+    <Button on:click={register} disabled={confirmButtonDisabled}
+      >Confirm registration</Button>
+  </svelte:fragment>
+</Modal>
