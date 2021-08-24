@@ -23,6 +23,8 @@
   let avatarValue: string | undefined = registration.avatar || undefined;
   let twitterValue: string | undefined = registration.twitter || undefined;
   let githubValue: string | undefined = registration.github || undefined;
+  let seedIdValue: string | undefined = registration.seedId || undefined;
+  let seedApiValue: string | undefined = registration.seedApi || undefined;
 
   let setRecordsInProgress = false;
 
@@ -52,6 +54,8 @@
       { name: "avatar", value: avatarValue },
       { name: "twitter", value: twitterValue },
       { name: "github", value: githubValue },
+      { name: "seedId", value: seedIdValue },
+      { name: "seedApi", value: seedApiValue },
     ];
 
     // Filter out unchanged records.
@@ -171,6 +175,20 @@
     style="margin-bottom: 24px"
     placeholder="Your org’s GitHub username"
     bind:value={githubValue} />
+
+  <div class="label typo-text-bold">Seed ID</div>
+  <TextInput
+    disabled={setRecordsInProgress}
+    style="margin-bottom: 24px"
+    placeholder="The Radicle Link node ID that hosts your org’s entities"
+    bind:value={seedIdValue} />
+
+  <div class="label typo-text-bold">Seed API</div>
+  <TextInput
+    disabled={setRecordsInProgress}
+    style="margin-bottom: 24px"
+    placeholder="The HTTP address of a node that serves Radicle entities"
+    bind:value={seedApiValue} />
 
   <svelte:fragment slot="buttons">
     <Button

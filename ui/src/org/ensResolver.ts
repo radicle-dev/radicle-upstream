@@ -34,6 +34,8 @@ export interface Registration {
   avatar: string | null;
   twitter: string | null;
   github: string | null;
+  seedId: string | null;
+  seedApi: string | null;
 }
 
 export async function setRecords(
@@ -86,6 +88,24 @@ export async function setRecords(
           ])
         );
         break;
+      case "seedId":
+        calls.push(
+          iface.encodeFunctionData("setText", [
+            node,
+            "eth.radicle.seed.id",
+            record.value,
+          ])
+        );
+        break;
+      case "seedApi":
+        calls.push(
+          iface.encodeFunctionData("setText", [
+            node,
+            "eth.radicle.seed.api",
+            record.value,
+          ])
+        );
+        break;
       default:
         throw new error.Error({
           message: `Unknown field ${record.name}`,
@@ -118,9 +138,11 @@ export async function getRegistration(
     resolver.getText("url"),
     resolver.getText("com.twitter"),
     resolver.getText("com.github"),
+    resolver.getText("eth.radicle.seed.id"),
+    resolver.getText("eth.radicle.seed.api"),
   ]);
 
-  const [address, avatar, url, twitter, github] = meta.map(
+  const [address, avatar, url, twitter, github, seedId, seedApi] = meta.map(
     (value: PromiseSettledResult<string>) =>
       value.status === "fulfilled" ? value.value : null
   );
@@ -133,6 +155,8 @@ export async function getRegistration(
     address,
     twitter,
     github,
+    seedId,
+    seedApi,
   };
 }
 
