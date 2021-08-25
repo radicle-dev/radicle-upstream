@@ -147,7 +147,20 @@ class Node {
         "--unsafe-fast-keystore",
       ],
       {
-        env: { ...global.process.env, RAD_HOME: this.radHome },
+        env: {
+          ...global.process.env,
+          RAD_HOME: this.radHome,
+          RUST_LOG: [
+            "info",
+            "api=debug",
+            "librad=debug",
+            "radicle_daemon=debug",
+            // The following modules generate a lot of noise at the
+            // info level
+            "librad::net::protocol::io::streams=warn",
+            "librad::git::p2p::server=warn",
+          ].join(","),
+        },
         stdio: ["ignore", "inherit", "pipe"],
       }
     );

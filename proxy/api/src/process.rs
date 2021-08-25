@@ -218,6 +218,22 @@ async fn run_rigging(
                 loop {
                     match peer_events.recv().await {
                         Ok(event) => {
+                            if let radicle_daemon::peer::Event::WaitingRoomTransition(
+                                ref transition,
+                            ) = event
+                            {
+                                tracing::debug!(event = ?transition.event, "waiting room transition")
+                            }
+
+                            if let radicle_daemon::peer::Event::GossipFetched {
+                                gossip,
+                                result,
+                                ..
+                            } = &event
+                            {
+                                tracing::debug!(?gossip, ?result, "gossip received")
+                            }
+
                             if let Some(notification) =
                                 notification::Notification::maybe_from(event)
                             {
