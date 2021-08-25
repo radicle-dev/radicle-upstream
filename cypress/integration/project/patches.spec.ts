@@ -229,8 +229,8 @@ context("patches", () => {
               "contributor-projects"
             );
 
-            commands.pick("project-screen", "header", "urn").then(el => {
-              const urn = el.attr("title");
+            commands.pick("project-screen", "header", "radicleId").then(el => {
+              const urn = el.attr("data");
               if (!urn) {
                 throw new Error("Could not find URN");
               }
@@ -298,8 +298,8 @@ context("patches", () => {
 
             commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
-            commands.pick("project-screen", "header", "urn").then(el => {
-              const urn = el.attr("title");
+            commands.pick("project-screen", "header", "radicleId").then(el => {
+              const urn = el.attr("data");
               if (!urn) {
                 throw new Error("Could not find URN");
               }

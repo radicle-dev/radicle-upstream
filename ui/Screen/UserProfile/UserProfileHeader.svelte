@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import type * as proxyIdentity from "ui/src/proxy/identity";
-  import { Avatar, Icon, StyledCopyable, PeerId } from "ui/DesignSystem";
+  import { Avatar, Identifier } from "ui/DesignSystem";
 
   export let identityMetadata: proxyIdentity.Metadata;
   export let avatarFallback: proxyIdentity.Avatar;
@@ -44,16 +44,14 @@
 
   {#if identityMetadata.ethereum?.address}
     <div class="row" title={identityMetadata.ethereum?.address}>
-      <Icon.Ethereum style="margin-right: 0.25rem;" />
-      <StyledCopyable
-        truncate
-        expandable={false}
-        value={identityMetadata.ethereum?.address} />
+      <Identifier
+        value={identityMetadata.ethereum?.address}
+        kind="ethAddress" />
     </div>
   {/if}
   {#each deviceIds as deviceId}
     <div class="row" title={deviceId}>
-      <PeerId truncate expandable={false} peerId={deviceId} />
+      <Identifier value={deviceId} kind="deviceId" />
     </div>
   {/each}
 </div>

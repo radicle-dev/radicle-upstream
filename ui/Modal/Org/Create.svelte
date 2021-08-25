@@ -11,7 +11,7 @@
   import {
     Avatar,
     Button,
-    Copyable,
+    Identifier,
     Modal,
     RadioOption,
     TextInput,
@@ -20,7 +20,6 @@
   import * as ethereum from "ui/src/ethereum";
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
-  import * as style from "ui/src/style";
   import * as validation from "ui/src/validation";
 
   export let identity: Identity;
@@ -139,13 +138,7 @@
           variant="circle"
           title={identity.metadata.handle}
           avatarFallback={identity.avatarFallback} />
-        <Copyable
-          showIcon={false}
-          styleContent={false}
-          copyContent={walletAddress}
-          notificationText="Address copied to the clipboard">
-          {style.ellipsed(walletAddress)}
-        </Copyable>
+        <Identifier value={walletAddress} kind="ethAddress" />
       </div>
     </div>
   </RadioOption>

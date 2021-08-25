@@ -27,7 +27,7 @@
     Icon,
     List,
     ProjectList,
-    RadicleId,
+    Identifier,
     Remote,
   } from "ui/DesignSystem";
 
@@ -103,7 +103,7 @@
               data-cy="undiscovered-project"
               class="undiscovered-project"
               out:fade|local={{ duration: FADE_DURATION }}>
-              <RadicleId urn={request.urn} />
+              <Identifier value={request.urn} kind="radicleId" />
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
                   <FollowToggle

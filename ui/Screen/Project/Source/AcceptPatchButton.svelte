@@ -63,7 +63,7 @@
     <p style="margin-bottom: 0.5rem;">
       To merge this Patch, run this in your terminal:
     </p>
-    <Copyable bind:this={copyable} showIcon={false}>
+    <Copyable name="command" bind:this={copyable}>
       <p class="typo-text-small-mono instructions">{instructions}</p>
     </Copyable>
     <Button

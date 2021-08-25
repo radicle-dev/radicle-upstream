@@ -10,7 +10,7 @@
   import type * as project from "ui/src/project";
   import * as userProfile from "ui/src/userProfile";
 
-  import { Avatar, List, StyledCopyable } from "ui/DesignSystem";
+  import { Avatar, Identifier, List } from "ui/DesignSystem";
 
   export let members: org.Member[];
 
@@ -64,15 +64,20 @@
             {member.identity.metadata.handle}
           </div>
         </div>
+        <Identifier
+          value={member.ethereumAddress}
+          kind="ethAddress"
+          showIcon={false}
+          tooltipPosition="left" />
       {:else}
-        <div
-          class="member-details"
-          data-cy="entity-name"
-          title="Unknown identity">
-          {member.ethereumAddress}
+        <div style="display: flex; align-items: center;">
+          <Avatar style="margin-right: 10px" size="medium" variant="circle" />
+          <Identifier
+            value={member.ethereumAddress}
+            kind="ethAddress"
+            showIcon={false} />
         </div>
       {/if}
-      <StyledCopyable truncate value={member.ethereumAddress} />
     </div>
   </List>
 </div>

@@ -24,7 +24,7 @@
 
   import {
     Button,
-    PeerId,
+    Identifier,
     SegmentedControl,
     SidebarLayout,
   } from "ui/DesignSystem";
@@ -172,10 +172,7 @@
               >Learn more about managing devices</a>
           </p>
           <div class="action">
-            <PeerId
-              truncate
-              expandable={false}
-              peerId={session.identity.peerId} />
+            <Identifier value={session.identity.peerId} kind="deviceId" />
           </div>
         </div>
       </section>

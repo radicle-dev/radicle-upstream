@@ -13,7 +13,7 @@
   import * as org from "ui/src/org";
   import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
-  import * as style from "ui/src/style";
+  import * as format from "ui/src/format";
 
   import Avatar from "./Avatar.svelte";
   import Hoverable from "./Hoverable.svelte";
@@ -133,7 +133,7 @@
             <p
               class="typo-text-small typo-link"
               on:click={bindOpenEtherscan(anchor.transactionId)}>
-              {style.ellipsed(anchor.transactionId, 6)}↗
+              {format.shortEthTx(anchor.transactionId)}↗
             </p>
           </div>
         {/if}

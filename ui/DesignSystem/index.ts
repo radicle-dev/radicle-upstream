@@ -24,6 +24,7 @@ import Fullscreen from "./Fullscreen.svelte";
 import Header from "./Header.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Icon from "./Icon";
+import Identifier from "./Identifier.svelte";
 import Identity from "./Identity.svelte";
 import KeyHint from "./KeyHint.svelte";
 import Label from "./Label.svelte";
@@ -36,12 +37,10 @@ import Notification from "./Notification.svelte";
 import NotificationFaucet from "./NotificationFaucet.svelte";
 import Overlay from "./Overlay.svelte";
 import PasswordInput from "./PasswordInput.svelte";
-import PeerId from "./PeerId.svelte";
 import PeerSelector from "./PeerSelector.svelte";
 import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
 import ProjectCard from "./ProjectCard.svelte";
 import ProjectList from "./ProjectList.svelte";
-import RadicleId from "./RadicleId.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import Remote from "./Remote.svelte";
@@ -52,7 +51,6 @@ import Sidebar from "./Sidebar.svelte";
 import SidebarLayout from "./SidebarLayout.svelte";
 import Spinner from "./Spinner.svelte";
 import Stats from "./Stats.svelte";
-import StyledCopyable from "./StyledCopyable.svelte";
 import SupportButton from "./SupportButton.svelte";
 import TabBar from "./TabBar.svelte";
 import TextInput from "./TextInput.svelte";
@@ -84,6 +82,7 @@ export {
   Header,
   Hoverable,
   Icon,
+  Identifier,
   Identity,
   KeyHint,
   Label,
@@ -96,12 +95,10 @@ export {
   NotificationFaucet,
   Overlay,
   PasswordInput,
-  PeerId,
   PeerSelector,
   ProjectAnchorPopover,
   ProjectCard,
   ProjectList,
-  RadicleId,
   RadicleLogo,
   RadioOption,
   Remote,
@@ -112,7 +109,6 @@ export {
   SidebarLayout,
   Spinner,
   Stats,
-  StyledCopyable,
   SupportButton,
   TabBar,
   TextInput,

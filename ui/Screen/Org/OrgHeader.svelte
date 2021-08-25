@@ -7,9 +7,9 @@
 -->
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
-  import { Avatar, Icon } from "ui/DesignSystem";
+  import { Avatar, Icon, Identifier } from "ui/DesignSystem";
 
-  import * as style from "ui/src/style";
+  import * as format from "ui/src/format";
 
   export let orgAddress: string;
   export let ownerAddress: string;
@@ -47,7 +47,7 @@
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
-      {style.ellipsed(orgAddress)}
+      {format.shortEthAddress(orgAddress)}
     </h1>
     <div class="row">
       {#if threshold}
@@ -55,7 +55,11 @@
       {:else}
         <Icon.Ethereum />
       {/if}
-      {style.ellipsed(ownerAddress)}
+      <Identifier
+        value={ownerAddress}
+        kind="ethAddress"
+        name="org owner address"
+        showIcon={false} />
     </div>
     {#if threshold}
       <div class="row">

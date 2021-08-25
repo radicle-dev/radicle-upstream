@@ -8,7 +8,7 @@
 <script lang="typescript">
   import type { Avatar as AvatarT } from "ui/src/proxy/identity";
 
-  import { Avatar, PeerId } from "ui/DesignSystem";
+  import { Avatar, Identifier } from "ui/DesignSystem";
 
   export let name: string;
   export let peerId: string;
@@ -37,6 +37,6 @@
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
       {name}
     </h1>
-    <PeerId truncate expandable={false} {peerId} style="margin-top: 0.5rem;" />
+    <Identifier value={peerId} kind="deviceId" style="margin-top: 0.5rem;" />
   </div>
 </div>

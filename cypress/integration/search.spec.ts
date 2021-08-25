@@ -22,7 +22,7 @@ context("search", () => {
       commands.pasteInto(["search-input"], `rad:git:${projectId}`);
       commands.pick("follow-toggle").click();
       commands
-        .pickWithContent(["undiscovered-project"], projectId)
+        .pickWithContent(["undiscovered-project"], projectId.slice(-5))
         .should("exist");
 
       // Make sure the search input is cleared after the search.
@@ -36,7 +36,7 @@ context("search", () => {
       commands.pick("search-modal", "follow-toggle").should("exist");
       cy.get("body").type("{enter}");
       commands
-        .pickWithContent(["undiscovered-project"], projectId)
+        .pickWithContent(["undiscovered-project"], projectId.slice(-5))
         .should("exist");
 
       // Make sure the search input is cleared after the search.
@@ -67,8 +67,8 @@ context("search", () => {
   context("when a project is already followed", () => {
     it("opens the project by clicking the project card", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "urn").then(el => {
-        const urn = el.attr("title");
+      commands.pick("project-screen", "header", "radicleId").then(el => {
+        const urn = el.attr("data");
         if (!urn) {
           throw new Error("Could not find URN");
         }
@@ -89,8 +89,8 @@ context("search", () => {
 
     it("opens the project by pressing the [enter] hotkey", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "urn").then(el => {
-        const urn = el.attr("title");
+      commands.pick("project-screen", "header", "radicleId").then(el => {
+        const urn = el.attr("data");
         if (!urn) {
           throw new Error("Could not find URN");
         }

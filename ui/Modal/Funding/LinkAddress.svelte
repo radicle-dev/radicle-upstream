@@ -9,8 +9,8 @@
   import {
     Avatar,
     Button,
-    Copyable,
     Icon,
+    Identifier,
     Modal,
     Remote,
     TxButton,
@@ -86,13 +86,7 @@
       </p>
       <Icon.ChevronUpDown />
       <p class="address typo-text">
-        <Copyable
-          showIcon={false}
-          styleContent={false}
-          copyContent={address}
-          notificationText="Address copied to the clipboard">
-          {address}
-        </Copyable>
+        <Identifier value={address} kind="ethAddress" />
       </p>
     </div>
 

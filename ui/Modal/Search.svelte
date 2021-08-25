@@ -25,9 +25,13 @@
   import { ValidationStatus } from "ui/src/validation";
   import { urnValidationStore } from "ui/src/urn";
 
-  import { FollowToggle, Icon, Remote, TextInput } from "ui/DesignSystem";
-
-  let id: string;
+  import {
+    FollowToggle,
+    Icon,
+    Identifier,
+    Remote,
+    TextInput,
+  } from "ui/DesignSystem";
 
   let value: string;
   $: value = $inputStore.trim();
@@ -72,7 +76,6 @@
   // Validate input entered, at the moment valid RadUrns are the only acceptable input.
   $: if (value && value.length > 0) {
     urnValidation.validate(value);
-    id = value.replace("rad:git:", "");
   } else {
     urnValidation.reset();
   }
@@ -176,7 +179,7 @@
 
       <div slot="error" style="padding: 1.5rem;">
         <div class="header typo-header-3">
-          <span class="id">{id}</span>
+          <Identifier {value} kind="radicleId" showIcon={false} />
           <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
         </div>
 

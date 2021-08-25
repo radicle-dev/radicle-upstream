@@ -5,7 +5,6 @@
 // LICENSE file.
 
 import * as commands from "../support/commands";
-import { VALID_PEER_MATCH } from "../../ui/src/screen/project";
 
 context("onboarding", () => {
   const validUser = {
@@ -48,7 +47,7 @@ context("onboarding", () => {
       cy.focused().type("{enter}");
 
       // Success screen.
-      commands.pick("peer-id").contains(VALID_PEER_MATCH).should("exist");
+      commands.pick("deviceId").should("exist");
 
       // Land on wallet screen.
       cy.get("body").type("{enter}");
@@ -69,7 +68,7 @@ context("onboarding", () => {
       commands.pick("set-passphrase-button").click();
 
       // Success screen.
-      commands.pick("peer-id").contains(VALID_PEER_MATCH).should("exist");
+      commands.pick("deviceId").should("exist");
 
       // Land on profile screen.
       commands.pick("go-to-profile-button").click();

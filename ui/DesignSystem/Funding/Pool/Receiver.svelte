@@ -6,11 +6,11 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import Copyable from "ui/DesignSystem/Copyable.svelte";
+  import type { Address, ReceiverStatus } from "ui/src/funding/pool";
+
   import Button from "ui/DesignSystem/Button.svelte";
   import Icon from "ui/DesignSystem/Icon";
-  import type { Address, ReceiverStatus } from "ui/src/funding/pool";
-  import { ellipsed } from "ui/src/style";
+  import Identifier from "ui/DesignSystem/Identifier.svelte";
 
   export let address: Address = "";
   export let disabled = false;
@@ -25,7 +25,7 @@
     justify-content: space-around;
 
     height: 2.75rem;
-    padding: 0px 1rem;
+    padding: 0 1rem;
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 0.5rem;
   }
@@ -35,7 +35,6 @@
   }
 
   .content {
-    padding-left: 0.25rem;
     color: var(--color-foreground-level-6);
   }
 
@@ -55,13 +54,6 @@
       style="padding: 0" />
   {/if}
   <p class="content typo-text-bold">
-    <Copyable
-      showIcon={false}
-      styleContent={false}
-      copyContent={address}
-      notificationText="Address copied to the clipboard"
-      style="padding-left: 0rem">
-      {ellipsed(address, 4)}
-    </Copyable>
+    <Identifier value={address} kind="ethAddress" showIcon={false} />
   </p>
 </span>

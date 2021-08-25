@@ -85,8 +85,8 @@ context("p2p networking", () => {
               )
               .should("exist");
 
-            commands.pick("project-screen", "header", "urn").then(el => {
-              const urn = el.attr("title");
+            commands.pick("project-screen", "header", "radicleId").then(el => {
+              const urn = el.attr("data");
               if (!urn) {
                 throw new Error("Could not find URN");
               }
@@ -130,8 +130,8 @@ context("p2p networking", () => {
             commands
               .pickWithContent(["entity-name"], "rudolfs")
               .should("exist");
-            commands.pick("peer-id").then(el => {
-              const peerId = el.attr("title");
+            commands.pick("deviceId").then(el => {
+              const peerId = el.attr("data");
               expect(peerId).equal(maintainerNode.peerId);
             });
             commands
@@ -151,11 +151,10 @@ context("p2p networking", () => {
             commands.pick("follow-button").click();
 
             cy.log("remote shows up in the waiting area");
-            const shortenedPeerId = contributorNode.peerId.slice(0, 7);
             commands
               .pickWithContent(
                 ["followed-peers", "peer-abbey"],
-                shortenedPeerId
+                contributorNode.peerId.slice(-5)
               )
               .should("exist");
             commands
@@ -325,14 +324,14 @@ context("p2p networking", () => {
       cy.get(".seeds")
         .find(".seed")
         .last()
-        .should("contain", `${validSeedAddress}2`);
+        .should("contain", `${validSeedAddress.slice(-20)}2`);
       commands.pasteInto(["seed-input"], `${validSeedAddress}3`);
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 3);
       cy.get(".seeds")
         .find(".seed")
         .last()
-        .should("contain", `${validSeedAddress}3`);
+        .should("contain", `${validSeedAddress.slice(-20)}3`);
 
       cy.log("can delete seeds and persist the lists order");
       cy.get(".seeds")
@@ -345,11 +344,11 @@ context("p2p networking", () => {
       cy.get(".seeds")
         .find(".seed")
         .first()
-        .should("contain", `${validSeedAddress}`);
+        .should("contain", `${validSeedAddress.slice(-20)}`);
       cy.get(".seeds")
         .find(".seed")
         .last()
-        .should("contain", `${validSeedAddress}3`);
+        .should("contain", `${validSeedAddress.slice(-20)}3`);
 
       cy.log("persists the removal across app start");
       commands.restartAndUnlock();

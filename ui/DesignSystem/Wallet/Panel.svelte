@@ -8,13 +8,12 @@
 <script lang="typescript">
   import type { BigNumber } from "ethers";
 
-  import Copyable from "ui/DesignSystem/Copyable.svelte";
   import Icon from "ui/DesignSystem/Icon";
+  import Identifier from "ui/DesignSystem/Identifier.svelte";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
   import { config } from "ui/src/config";
   import * as ethereum from "ui/src/ethereum";
-  import { ellipsed } from "ui/src/style";
   import { Button } from "ui/DesignSystem";
 
   export let dai: BigNumber | null;
@@ -93,14 +92,11 @@
   </div>
 
   <div class="address-box typo-text">
-    <Copyable
-      showIcon={false}
-      styleContent={false}
-      style="padding-left: 0;"
-      copyContent={address}
-      notificationText="Address copied to the clipboard">
-      {ellipsed(address)}
-    </Copyable>
+    <Identifier
+      name="wallet address"
+      value={address}
+      kind="ethAddress"
+      showIcon={false} />
     <Tooltip value="Disconnect">
       <Button
         style="padding:0.5rem;"
