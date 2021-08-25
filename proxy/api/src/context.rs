@@ -12,12 +12,13 @@ use data_encoding::HEXLOWER;
 use rand::Rng as _;
 use tokio::sync::RwLock;
 
-use radicle_daemon::{net, signer::BoxedSigner, PeerControl};
+use link_crypto::BoxedSigner;
+use radicle_daemon::{net, PeerControl};
 
 use crate::{keystore, service};
 
 #[cfg(test)]
-use radicle_daemon::{config, keys, signer, Peer, RunConfig};
+use radicle_daemon::{config, Peer, RunConfig};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -212,8 +213,8 @@ impl Unsealed {
     ) -> Result<(Self, impl std::future::Future<Output = ()>), crate::error::Error> {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
-        let key = keys::SecretKey::new();
-        let signer = signer::BoxedSigner::from(signer::SomeSigner { signer: key });
+        let key = link_crypto::SecretKey::new();
+        let signer = BoxedSigner::from(link_crypto::SomeSigner { signer: key });
 
         let (peer_control, peer, run_handle) = {
             let config = config::default(signer, tmp_dir.path())?;

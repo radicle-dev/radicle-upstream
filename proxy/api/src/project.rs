@@ -11,9 +11,8 @@ use std::{collections::HashSet, convert::TryFrom, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
-use radicle_daemon::{
-    net, project, project::peer, signer::BoxedSigner, state, Person, Project as RadProject, Urn,
-};
+use link_crypto::BoxedSigner;
+use radicle_daemon::{net, project, project::peer, state, Person, Project as RadProject, Urn};
 use radicle_source::surf::vcs::git::Stats;
 
 use crate::{browser, error, identity};

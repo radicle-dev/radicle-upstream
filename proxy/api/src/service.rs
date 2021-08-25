@@ -10,7 +10,7 @@ use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
 
-use radicle_daemon::{keys, profile};
+use radicle_daemon::profile;
 
 use crate::keystore;
 
@@ -19,7 +19,7 @@ pub struct Environment {
     /// Secret key for the coco peer.
     ///
     /// If this is `None` coco is not started.
-    pub key: Option<keys::SecretKey>,
+    pub key: Option<link_crypto::SecretKey>,
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
     /// Paths & profile id for on-disk persistence.
@@ -153,7 +153,7 @@ enum Message {
     /// Reset the service to the initial environment and delete all persisted state
     Reset,
     /// Unseal the key store with the given secret key
-    SetSecretKey(keys::SecretKey),
+    SetSecretKey(link_crypto::SecretKey),
     /// Seal the key store and reload the services
     Seal,
 }
@@ -174,7 +174,7 @@ impl Handle {
     }
 
     /// Unseal the key store with the given secret key
-    pub fn set_secret_key(&mut self, key: keys::SecretKey) {
+    pub fn set_secret_key(&mut self, key: link_crypto::SecretKey) {
         self.send_message(Message::SetSecretKey(key))
     }
 

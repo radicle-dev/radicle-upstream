@@ -12,6 +12,7 @@ use nonempty::NonEmpty;
 
 use radicle_source::surf::vcs::git::git2;
 
+use link_crypto::BoxedSigner;
 use radicle_daemon::{
     librad::{
         git::{
@@ -26,7 +27,6 @@ use radicle_daemon::{
         identities::Project,
         net::peer::Peer,
         refspec_pattern,
-        signer::BoxedSigner,
     },
     project,
     state::{self, Error},
@@ -183,8 +183,8 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
 mod test {
     use radicle_daemon::{
         librad::{
-            git::identities::local::LocalIdentity, git_ext::OneLevel, identities::Project, keys,
-            net::peer::Peer, peer::PeerId, reflike, signer::BoxedSigner,
+            git::identities::local::LocalIdentity, git_ext::OneLevel, identities::Project,
+            net::peer::Peer, reflike, PeerId,
         },
         state::Error,
     };
@@ -192,7 +192,7 @@ mod test {
     /// Generate a fresh `PeerId` for use in tests.
     #[must_use]
     pub fn generate_peer_id() -> PeerId {
-        PeerId::from(keys::SecretKey::new())
+        PeerId::from(link_crypto::SecretKey::new())
     }
 
     /// **Testing Only**
@@ -210,7 +210,7 @@ mod test {
     /// Will error if filesystem access is not granted or broken for the configured
     /// [`librad::paths::Paths`].
     pub async fn setup_fixtures(
-        peer: &Peer<BoxedSigner>,
+        peer: &Peer<link_crypto::BoxedSigner>,
         owner: &LocalIdentity,
     ) -> Result<Vec<Project>, Error> {
         let infos = vec![
