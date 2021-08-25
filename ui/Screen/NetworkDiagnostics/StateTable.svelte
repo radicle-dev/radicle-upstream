@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import type { RoomState } from "ui/src/waitingRoom";
-  import StyledCopyable from "ui/DesignSystem/StyledCopyable.svelte";
+  import { Identifier } from "ui/DesignSystem";
 
   export let state: RoomState;
 </script>
@@ -24,7 +24,7 @@
     {#each Object.keys(state).sort() as urn}
       <tr>
         <td>
-          <StyledCopyable value={urn} truncate={true} expandable={false} />
+          <Identifier value={urn} kind="radicleId" />
         </td>
         <td>{state[urn].state}</td>
         <td>
@@ -33,10 +33,7 @@
               {#each Object.keys(state[urn].peers).sort() as peerId}
                 <tr>
                   <td>
-                    <StyledCopyable
-                      value={peerId}
-                      truncate={true}
-                      expandable={false} />
+                    <Identifier value={peerId} kind="deviceId" />
                   </td>
                   <td>{JSON.stringify(state[urn].peers[peerId])}</td>
                 </tr>

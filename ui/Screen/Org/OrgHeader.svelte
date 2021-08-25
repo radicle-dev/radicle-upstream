@@ -7,10 +7,10 @@
 -->
 <script lang="typescript">
   import * as radicleAvatar from "radicle-avatar";
-  import { Avatar, Copyable, Icon } from "ui/DesignSystem";
+  import { Avatar, Icon, Identifier } from "ui/DesignSystem";
 
   import * as ensResolver from "ui/src/org/ensResolver";
-  import * as style from "ui/src/style";
+  import * as format from "ui/src/format";
 
   export let orgAddress: string;
   export let ownerAddress: string;
@@ -26,15 +26,6 @@
     `https://twitter.com/${registration.twitter.replace("@", "")}`;
   $: seedId = registration?.seedId;
   $: seedApi = registration?.seedApi;
-
-  function truncateSeedId(id: string): string {
-    const match = id.match(/^([a-zA-Z0-9]{54})@(.*)/);
-    if (match && match[1] && match[2]) {
-      return `${style.ellipsed(match[1], 5, 0)}@${match[2]}`;
-    }
-
-    return id;
-  }
 </script>
 
 <style>
@@ -76,7 +67,7 @@
       {#if name}
         {name}.<span class="domain">{ensResolver.DOMAIN}</span>
       {:else}
-        {style.ellipsed(orgAddress)}
+        {format.shortEthAddress(orgAddress)}
       {/if}
     </h1>
     <div style="display: flex; gap: 1rem;">
@@ -87,13 +78,11 @@
           {:else}
             <Icon.Ethereum />
           {/if}
-          <Copyable
-            notificationText="Org owner address copied to your clipboard"
-            styleContent={false}
-            showIcon={false}
-            copyContent={ownerAddress}>
-            {style.ellipsed(ownerAddress)}
-          </Copyable>
+          <Identifier
+            value={ownerAddress}
+            kind="ethAddress"
+            name="org owner address"
+            showIcon={false} />
         </div>
         {#if threshold}
           <div class="row">
@@ -127,11 +116,7 @@
         <div>
           {#if seedId}
             <div class="row">
-              <Icon.Network /><Copyable
-                notificationText="Seed ID copied to your clipboard"
-                copyContent={seedId}
-                styleContent={false}
-                showIcon={false}>{truncateSeedId(seedId)}</Copyable>
+              <Identifier value={seedId} kind="seedAddress" />
             </div>
           {/if}
           {#if seedApi}

@@ -20,8 +20,8 @@
   import {
     Button,
     Icon,
+    Identifier,
     SidebarLayout,
-    StyledCopyable,
     TextInput,
   } from "ui/DesignSystem";
 
@@ -156,7 +156,7 @@
         <div class="seeds">
           {#each $settings.coco.seeds as seed (seed)}
             <div class="seed">
-              <StyledCopyable value={seed} />
+              <Identifier value={seed} kind="seedAddress" />
               <Icon.Cross
                 dataCy="remove-seed"
                 on:click={() => removeSeed(seed)}

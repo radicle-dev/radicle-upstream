@@ -11,8 +11,8 @@
   import TxSpinner from "ui/DesignSystem/Transaction/Spinner.svelte";
   import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
 
-  import { ellipsed } from "ui/src/style";
   import type { Tx } from "ui/src/transaction";
+  import * as format from "ui/src/format";
   import {
     TxKind,
     TxStatus,
@@ -132,11 +132,7 @@
             <p class="typo-text-bold" style="margin-bottom: 0.5rem">
               Radicle Pool
             </p>
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={tx.to}
-              notificationText="Address copied to the clipboard">
+            <Copyable name="pool address" clipboardContent={tx.to}>
               <p class="address typo-text">{tx.to || "n/a"}</p>
             </Copyable>
           </div>
@@ -170,12 +166,8 @@
         <div class="row">
           <p>Transaction ID</p>
           <p class="typo-text-small-mono">
-            <Copyable
-              showIcon={false}
-              styleContent={false}
-              copyContent={tx.hash}
-              notificationText="Transaction ID copied to the clipboard">
-              {ellipsed(tx.hash, 12)}
+            <Copyable name="transaction hash" clipboardContent={tx.hash}>
+              {format.shortEthTx(tx.hash)}
             </Copyable>
           </p>
         </div>

@@ -12,7 +12,7 @@
   import Icon from "./Icon";
   import Overlay from "./Overlay.svelte";
   import Tooltip from "./Tooltip.svelte";
-  import StyledCopyable from "./StyledCopyable.svelte";
+  import Copyable from "./Copyable.svelte";
 
   interface MenuItem {
     title: string;
@@ -140,7 +140,9 @@
       <div out:fade={{ duration: 100 }} class="modal" hidden={!expanded}>
         {#if headerTitle}
           <div class="header">
-            <StyledCopyable value={headerTitle} />
+            <Copyable name={headerTitle}>
+              {headerTitle}
+            </Copyable>
           </div>
         {/if}
 

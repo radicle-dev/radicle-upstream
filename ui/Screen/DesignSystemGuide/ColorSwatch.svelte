@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script>
-  import { Copyable, Tooltip } from "ui/DesignSystem";
+  import { Copyable } from "ui/DesignSystem";
 
   export let style = null;
   export let color = null;
@@ -27,16 +27,10 @@
 </style>
 
 <div class="wrapper" {style}>
-  <Copyable
-    notificationText="The color was copied to your clipboard"
-    iconBeforeCopy={null}
-    styleContent={false}
-    copyContent={`var(${color});`}>
-    <Tooltip value={`var(${color})`} position="top">
-      <div
-        class:border={color === "--color-background"}
-        class="color"
-        style={`background-color: var(${color});`} />
-    </Tooltip>
+  <Copyable title={`var(${color})`} clipboardContent={`var(${color});`}>
+    <div
+      class:border={color === "--color-background"}
+      class="color"
+      style={`background-color: var(${color});`} />
   </Copyable>
 </div>

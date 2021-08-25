@@ -5,7 +5,7 @@
 // LICENSE file.
 
 import * as ethers from "ethers";
-import EthersSafe from "@gnosis.pm/safe-core-sdk";
+import EthersSafe, { EthersAdapter } from "@gnosis.pm/safe-core-sdk";
 import SafeServiceClient, {
   SafeMultisigTransactionResponse,
 } from "@gnosis.pm/safe-service-client";
@@ -50,11 +50,16 @@ export async function signAndProposeTransaction(
     tx
   );
 
-  const safeSdk = await EthersSafe.create({
+  const ethAdapter = new EthersAdapter({
     ethers,
-    safeAddress,
-    providerOrSigner: wallet.signer,
+    signer: wallet.signer,
   });
+
+  const safeSdk = await EthersSafe.create({
+    ethAdapter,
+    safeAddress,
+  });
+
   const transaction = await safeSdk.createTransaction({
     ...tx,
     safeTxGas: Number(estimation.safeTxGas),

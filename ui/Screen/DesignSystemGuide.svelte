@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script>
-  import * as notification from "../src/notification.ts";
-  import { ValidationStatus } from "../src/validation.ts";
+  import * as notification from "ui/src/notification.ts";
+  import { ValidationStatus } from "ui/src/validation.ts";
 
   import {
     Avatar,
@@ -21,14 +21,13 @@
     FollowToggle,
     Fullscreen,
     Icon,
+    Identifier,
     Notification,
     PasswordInput,
     ProjectCard,
-    RadicleId,
     SegmentedControl,
     Spinner,
     Stats,
-    StyledCopyable,
     SupportButton,
     TextInput,
     ThreeDotsMenu,
@@ -241,15 +240,11 @@
     <Section title="Icons" subTitle="Icons at 24px width and height">
       <IconSwatch>
         {#each Object.keys(Icon) as iconName}
-          <Tooltip value={`<Icon.${iconName} />`} position="top">
-            <Copyable
-              notificationText="Icon markup copied to your clipboard"
-              iconBeforeCopy={null}
-              styleContent={false}
-              copyContent={`<Icon.${iconName} />`}>
-              <svelte:component this={Icon[iconName]} />
-            </Copyable>
-          </Tooltip>
+          <Copyable
+            title={`<Icon.${iconName} />`}
+            clipboardContent={`<Icon.${iconName} />`}>
+            <svelte:component this={Icon[iconName]} />
+          </Copyable>
         {/each}
       </IconSwatch>
     </Section>
@@ -796,29 +791,42 @@
       </Swatch>
 
       <Swatch>
-        <StyledCopyable
-          value="hynewpywqj6x4mxgj7sojhue3erucyexiyhobxx4du9w66hxhbfqbw@seedling.radicle.xyz:12345"
-          notificationText="The seed was copied to your clipboard" />
+        <Copyable name="command" clipboardContent="git push rad">
+          <pre style="typo-text-mono">
+            git push rad
+          </pre>
+        </Copyable>
       </Swatch>
 
       <Swatch>
-        <StyledCopyable
-          value="hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
-          notificationText="The hash was copied to your clipboard"
-          truncate
-          expandable={false} />
+        <Identifier
+          kind="radicleId"
+          value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
       </Swatch>
 
       <Swatch>
-        <StyledCopyable
-          value="hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
-          notificationText="The hash was copied to your clipboard"
-          truncate />
+        <Identifier
+          kind="radicleId"
+          value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
+          showIcon={false} />
       </Swatch>
 
       <Swatch>
-        <RadicleId
-          urn="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
+        <Identifier
+          kind="deviceId"
+          value="hyyo6u8rhnuswory4c6symx471yseke74oq1myfesoig7zggcixejy" />
+      </Swatch>
+
+      <Swatch>
+        <Identifier
+          kind="ethAddress"
+          value="0xA66A5686D5c3A42C0b6c76FEd05e58C6bc851E9f" />
+      </Swatch>
+
+      <Swatch>
+        <Identifier
+          kind="seedAddress"
+          value="hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345" />
       </Swatch>
 
       <Swatch>

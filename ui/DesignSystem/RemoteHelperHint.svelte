@@ -59,7 +59,7 @@
     </a>
   </p>
   <Hoverable bind:hovering={hover}>
-    <Copyable showIcon={hover} styleContent={hover}>
+    <Copyable title="shell configuration">
       <p
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6)">

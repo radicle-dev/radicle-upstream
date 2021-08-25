@@ -53,7 +53,7 @@
       2. Create an annotated Git Tag that starts with
       <span class="typo-mono-bold">{patch.TAG_PREFIX}</span>
     </p>
-    <Copyable style="margin-bottom: 1rem;">
+    <Copyable name="command" style="margin-bottom: 1rem;">
       <pre
         class="typo-text-small-mono instruction">
         {`git tag --annotate ${patch.TAG_PREFIX}<name>`}
@@ -68,7 +68,7 @@
       3. In the tag message, add a title and description and save. Then, push
       your changes.
     </p>
-    <Copyable style="margin-bottom: 1rem;">
+    <Copyable name="command" style="margin-bottom: 1rem;">
       <pre
         class="typo-text-small-mono instruction">
         git push --tags rad

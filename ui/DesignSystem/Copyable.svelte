@@ -6,48 +6,45 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
+  import type { Position } from "ui/DesignSystem/Tooltip.svelte";
 
   import { copyToClipboard } from "ui/src/ipc";
   import * as notification from "ui/src/notification";
-  import Icon from "./Icon";
+  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
-  export let style = "";
-  export let copyContent = "";
-  export let notificationText = "Copied to your clipboard";
-  export let iconBeforeCopy: typeof SvelteComponent | undefined =
-    Icon.CopySmall;
-  export let iconAfterCopy: typeof SvelteComponent | undefined =
-    Icon.CheckSmall;
+  export let style: string | undefined = undefined;
 
-  export let styleContent: boolean = true;
-  export let showIcon: boolean = true;
+  // The name of the copyable entity. It will be shown in the tooltip on hover
+  // as well as the notification after it's copied to clipboard.
+  export let name: string | undefined = undefined;
+
+  // The textual value of the contents of the component slot are copied to the
+  // clipboard by default, `clipboardContent` can be used to override that.
+  export let clipboardContent: string | undefined = undefined;
+
+  export let tooltipStyle: string | undefined = undefined;
+  export let tooltipPosition: Position = "top";
 
   let slotContent: HTMLElement;
-  let copyIcon = iconBeforeCopy;
 
-  let copied = false;
+  $: tooltipTitle = name ? `Copy ${name} to clipboard` : "Copy to clipboard";
+  $: tooltipMessage = name
+    ? `${name.replace(/^\w/, c => c.toUpperCase())} copied to your clipboard`
+    : "Copied to your clipboard";
 
-  export const copy = (): void => {
-    if (copied) {
+  export function copy(): void {
+    const content = clipboardContent
+      ? clipboardContent
+      : slotContent.textContent;
+
+    if (!content) {
+      console.warn("Copy to clipboard content is empty");
       return;
     }
 
-    const content = copyContent.length ? copyContent : slotContent.textContent;
-    if (content) {
-      copyToClipboard(content.trim());
-    }
-
-    notification.info({ message: notificationText });
-
-    copied = true;
-
-    copyIcon = Icon.CheckSmall;
-    setTimeout(() => {
-      copyIcon = Icon.CopySmall;
-      copied = false;
-    }, 1000);
-  };
+    copyToClipboard(content.trim());
+    notification.info({ message: tooltipMessage });
+  }
 </script>
 
 <style>
@@ -58,37 +55,17 @@
     max-width: -webkit-fill-available;
   }
 
-  .basic {
+  .copyable {
     display: flex;
     min-height: 24px;
     width: 100%;
-    padding-left: 0.5rem;
-  }
-
-  .pad {
-    padding-right: 0.5rem;
-  }
-
-  .content {
-    align-items: center;
-    background-color: var(--color-foreground-level-2);
-    border-radius: 0.5rem;
-    color: var(--color-foreground-level-6);
   }
 </style>
 
-<div class="wrapper" on:click|stopPropagation={copy}>
-  <span
-    class="basic"
-    class:content={styleContent}
-    class:pad={!showIcon}
-    bind:this={slotContent}
-    {style}>
-    <slot />
-    {#if showIcon && iconBeforeCopy && iconAfterCopy}
-      <svelte:component
-        this={copyIcon}
-        style="display: flex; margin-left: 0.25rem; min-width: 24px; margin-right: .5rem;" />
-    {/if}
-  </span>
-</div>
+<Tooltip value={tooltipTitle} position={tooltipPosition} style={tooltipStyle}>
+  <div class="wrapper" on:click|stopPropagation={copy}>
+    <span class="copyable" bind:this={slotContent} {style}>
+      <slot />
+    </span>
+  </div>
+</Tooltip>

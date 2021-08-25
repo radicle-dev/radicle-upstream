@@ -8,9 +8,8 @@
 <script lang="typescript">
   import { qrcode } from "pure-svg-code";
 
+  import * as format from "ui/src/format";
   import { Copyable, Modal } from "ui/DesignSystem";
-
-  import { ellipsed } from "ui/src/style";
 
   export let uri: string;
 
@@ -46,7 +45,7 @@
   <p style="text-align: center;">
     Scan this code with your wallet. Not working? <br />
     <a href="https://walletconnect.org/wallets" class="typo-link">
-      View compatible wallets.
+      View compatible wallets
     </a>
   </p>
 
@@ -57,8 +56,8 @@
   </div>
 
   <p class="typo-text-bold connector">
-    <Copyable showIcon={true} styleContent={false} copyContent={uri}>
-      <p class="typo-text-small-mono">{ellipsed(uri, 5)}</p>
+    <Copyable name="WalletConnect link" clipboardContent={uri}>
+      <p class="typo-text-small-mono">{format.shorten(uri, 8, 5)}</p>
     </Copyable>
   </p>
 </Modal>

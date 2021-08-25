@@ -11,7 +11,7 @@
   import type { Urn } from "../../src/urn";
   import type { User } from "ui/src/project";
 
-  import { FollowToggle, StyledCopyable } from "ui/DesignSystem";
+  import { FollowToggle, Identifier } from "ui/DesignSystem";
 
   export let peer: User;
   export let projectUrn: Urn;
@@ -33,11 +33,10 @@
 
 <div class="peer-request" data-cy="peer-request">
   <div class="left" style="max-width: 22em">
-    <StyledCopyable
-      style="margin: 0.5rem 0 0 -0.25rem;"
-      truncate
-      expandable={false}
-      value={peer.peerId} />
+    <Identifier
+      value={peer.peerId}
+      kind="deviceId"
+      style="margin-top: 0.5rem" />
   </div>
 
   <FollowToggle

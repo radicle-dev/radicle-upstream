@@ -5,10 +5,14 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="typescript" context="module">
+  export type Position = "top" | "right" | "bottom" | "left";
+</script>
+
 <script lang="typescript">
-  type Position = "top" | "right" | "bottom" | "left";
   type Offset = { top: number; left: number };
 
+  export let style: string | undefined = undefined;
   export let value: string | undefined = undefined;
   export let position: Position = "right";
 
@@ -94,6 +98,7 @@
 
 {#if value}
   <div
+    {style}
     bind:this={container}
     data-cy="tooltip"
     on:mouseenter={show}

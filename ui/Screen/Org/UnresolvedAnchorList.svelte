@@ -18,7 +18,7 @@
     FollowToggle,
     Hoverable,
     List,
-    RadicleId,
+    Identifier,
   } from "ui/DesignSystem";
 
   export let anchors: project.Anchor[];
@@ -60,7 +60,7 @@
   <Hoverable let:hovering={hover} style="flex: 1">
     <div class="list-item" data-cy={`project-list-entry-${anchor.id}`}>
       <div class="typo-text anchor-row">
-        <RadicleId urn={anchor.projectId} showIcon={false} />
+        <Identifier value={anchor.projectId} kind="radicleId" />
         <ProjectAnchorPopover {anchor} />
       </div>
       {#if hover}

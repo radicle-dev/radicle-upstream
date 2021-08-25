@@ -8,7 +8,7 @@
 <script lang="typescript">
   import type { Stats } from "ui/src/project";
 
-  import { Icon, RadicleId } from "ui/DesignSystem";
+  import { Icon, Identifier } from "ui/DesignSystem";
 
   export let name: string;
   export let urn: string;
@@ -68,7 +68,7 @@
     on:click={() => (onClick ? onClick() : {})}>
     {name}
   </h1>
-  <RadicleId truncate {urn} style="margin-top: 0.5rem;" />
+  <Identifier value={urn} kind="radicleId" style="margin-top: 0.5rem;" />
   {#if description.length > 0}
     <p class="description typo-overflow-ellipsis" title={description}>
       {description}

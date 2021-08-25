@@ -52,15 +52,16 @@ export class WalletConnectSigner extends ethers.Signer {
   }
 
   async signMessage(message: ethers.Bytes | string): Promise<string> {
-    const prefix = ethers.utils.toUtf8Bytes(
-      `\x19Ethereum Signed Message:\n${message.length}`
-    );
-    const msg = ethers.utils.concat([prefix, message]);
+    let messageBytes: Uint8Array;
+    if (typeof message === "string") {
+      messageBytes = ethers.utils.toUtf8Bytes(message);
+    } else {
+      messageBytes = ethers.utils.arrayify(message);
+    }
     const address = await this.getAddress();
-    const keccakMessage = ethers.utils.keccak256(msg);
     const signature = await this.walletConnect.signMessage(
-      address.toLowerCase(),
-      keccakMessage
+      address,
+      messageBytes
     );
     return signature;
   }

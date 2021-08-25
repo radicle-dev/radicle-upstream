@@ -17,7 +17,7 @@
     Avatar,
     Badge,
     FollowToggle,
-    PeerId,
+    Identifier,
     Tooltip,
   } from "ui/DesignSystem";
 
@@ -66,11 +66,10 @@
         <Badge style="margin-left: 0.5rem" variant="you" />
       {/if}
     </div>
-    <PeerId
-      style="margin: 0.5rem 0 0 -0.25rem;"
-      truncate
-      expandable={false}
-      peerId={peer.peerId} />
+    <Identifier
+      value={peer.peerId}
+      kind="deviceId"
+      style="margin-top: 0.5rem;" />
   </div>
   {#if peer.type !== PeerType.Local}
     {#if peer.role === PeerRole.Maintainer}
