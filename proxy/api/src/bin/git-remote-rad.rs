@@ -4,11 +4,8 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-use radicle_daemon::{
-    keys::{PublicKey, SecretKey},
-    profile::Profile,
-    signer,
-};
+use link_crypto::{BoxedSigner, PublicKey, SecretKey, SomeSigner};
+use radicle_daemon::profile::Profile;
 use radicle_git_helpers::remote_helper;
 use radicle_keystore::{crypto, pinentry::SecUtf8, FileStorage, Keystore};
 use std::{
@@ -27,7 +24,7 @@ fn main() -> anyhow::Result<()> {
     remote_helper::run(remote_helper::Config { signer })
 }
 
-fn unsafe_fast_keystore_signer() -> anyhow::Result<signer::BoxedSigner> {
+fn unsafe_fast_keystore_signer() -> anyhow::Result<BoxedSigner> {
     let profile = Profile::load()?;
     let paths = profile.paths().to_owned();
     let file = paths.keys_dir().join(SECRET_KEY_FILE);
@@ -53,5 +50,5 @@ fn unsafe_fast_keystore_signer() -> anyhow::Result<signer::BoxedSigner> {
         crypto::Pwhash::new(passphrase, *crypto::KDF_PARAMS_TEST),
     );
     let secret_key = keystore.get_key().map(|keypair| keypair.secret_key)?;
-    Ok(signer::SomeSigner { signer: secret_key }.into())
+    Ok(SomeSigner { signer: secret_key }.into())
 }

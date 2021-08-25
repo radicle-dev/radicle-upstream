@@ -16,7 +16,7 @@
 
 use std::convert::Infallible;
 
-use radicle_daemon::{keys, Paths};
+use radicle_daemon::Paths;
 pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{self, Pwhash, SecretBoxError},
@@ -31,7 +31,7 @@ pub trait Keystore {
     ///
     /// Errors when the storage backend fails to persist the key or a key
     /// already exists.
-    fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error>;
+    fn create_key(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error>;
 
     /// Get the secret from the storage.
     ///
@@ -40,7 +40,7 @@ pub trait Keystore {
     /// * Errors if the passphrase is wrong.
     /// * Errors if backend fails to retrieve the data.
     /// * Errors if there is no key in the storage yet.
-    fn get(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error>;
+    fn get(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error>;
 }
 
 /// File name component of the file path to the key.
@@ -81,9 +81,9 @@ struct FileStore {
 /// Concrete type of the [`FileStorage`] in use.
 type FileStorage = radicle_keystore::FileStorage<
     Pwhash<SecUtf8>,
-    keys::PublicKey,
-    keys::SecretKey,
-    <keys::SecretKey as SecretKeyExt>::Metadata,
+    link_crypto::PublicKey,
+    link_crypto::SecretKey,
+    <link_crypto::SecretKey as SecretKeyExt>::Metadata,
 >;
 
 impl FileStore {
@@ -96,12 +96,12 @@ impl FileStore {
 }
 
 impl Keystore for FileStore {
-    fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+    fn create_key(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
         let mut store = self.store(passphrase);
         match store.get_key() {
             Ok(_keypair) => Err(FileError::KeyExists.into()),
             Err(FileError::NoSuchKey) => {
-                let key = keys::SecretKey::new();
+                let key = link_crypto::SecretKey::new();
                 store.put_key(key.clone())?;
                 Ok(key)
             },
@@ -109,7 +109,7 @@ impl Keystore for FileStore {
         }
     }
 
-    fn get(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+    fn get(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
         let key_pair = self.store(passphrase).get_key()?;
         Ok(key_pair.secret_key)
     }
@@ -128,12 +128,12 @@ pub fn memory() -> impl Keystore + Send + Sync {
 #[cfg(test)]
 struct MemoryStore {
     /// Secret key and passphrase if present
-    key_and_passphrase: std::sync::Mutex<Option<(keys::SecretKey, SecUtf8)>>,
+    key_and_passphrase: std::sync::Mutex<Option<(link_crypto::SecretKey, SecUtf8)>>,
 }
 
 #[cfg(test)]
 impl Keystore for MemoryStore {
-    fn create_key(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+    fn create_key(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
         let mut key_and_passphrase = self
             .key_and_passphrase
             .lock()
@@ -142,12 +142,12 @@ impl Keystore for MemoryStore {
             return Err(FileError::KeyExists.into());
         }
 
-        let key = keys::SecretKey::new();
+        let key = link_crypto::SecretKey::new();
         *key_and_passphrase = Some((key.clone(), passphrase));
         Ok(key)
     }
 
-    fn get(&self, passphrase: SecUtf8) -> Result<keys::SecretKey, Error> {
+    fn get(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
         if let Some((key, stored_passphrase)) = &*self
             .key_and_passphrase
             .lock()
@@ -165,7 +165,7 @@ impl Keystore for MemoryStore {
 }
 
 /// Error type for the [`FileStorage`] backend.
-type FileError = file::Error<SecretBoxError<Infallible>, keys::IntoSecretKeyError>;
+type FileError = file::Error<SecretBoxError<Infallible>, link_crypto::IntoSecretKeyError>;
 
 /// Errors that occur when creating or unsealing keys.
 #[derive(Debug, thiserror::Error)]

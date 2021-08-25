@@ -11,7 +11,8 @@ use std::{fmt, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-use radicle_daemon::{identities::Person, librad::peer::conversion, PeerId};
+use link_crypto::peer::conversion;
+use radicle_daemon::{identities::Person, PeerId};
 
 /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
 #[derive(Debug, thiserror::Error)]

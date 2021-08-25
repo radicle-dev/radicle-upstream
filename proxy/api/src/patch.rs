@@ -11,7 +11,8 @@ use radicle_git_ext::Oid;
 use radicle_source::surf::git::RefScope;
 use serde::Serialize;
 
-use radicle_daemon::{net, signer::BoxedSigner, state, PeerId, Urn};
+use link_crypto::BoxedSigner;
+use radicle_daemon::{net, state, PeerId, Urn};
 
 use crate::project;
 
@@ -118,12 +119,12 @@ pub async fn list(
 
                             let merge_base = browser
                                 .merge_base(target_id, default_branch_head_commit_id)?
-                                .map(Oid);
+                                .map(Oid::from);
                             patches.push(Patch {
                                 id,
                                 peer: project_peer.clone().into(),
                                 message,
-                                commit: Oid(target_id),
+                                commit: Oid::from(target_id),
                                 merge_base,
                             });
                         },

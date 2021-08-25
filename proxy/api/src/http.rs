@@ -9,7 +9,8 @@
 use serde::Deserialize;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
-use radicle_daemon::{net, signer::BoxedSigner, state, LocalIdentity, PeerId};
+use link_crypto::BoxedSigner;
+use radicle_daemon::{net, state, LocalIdentity, PeerId};
 
 use crate::{context, notification::Notification};
 

@@ -6,11 +6,10 @@
 
 use std::convert::TryFrom as _;
 
+use link_crypto::BoxedSigner;
 use radicle_daemon::{
     librad::git::types::{Reference, Single},
-    net,
-    signer::BoxedSigner,
-    state,
+    net, state,
 };
 use radicle_source::{error, surf::vcs::git};
 

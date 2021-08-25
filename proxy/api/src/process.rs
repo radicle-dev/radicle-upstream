@@ -19,7 +19,7 @@ use tokio::{
 };
 
 use radicle_daemon::{
-    convert::MaybeFrom as _, peer::run_config, seed, signer, Peer, PeerStatus, RunConfig,
+    convert::MaybeFrom as _, peer::run_config, seed, Peer, PeerStatus, RunConfig,
 };
 
 use crate::{config, context, git_helper, http, notification, service, session};
@@ -56,7 +56,7 @@ struct Rigging {
     /// The context provided to the API
     ctx: context::Context,
     /// The [`Peer`] to run
-    peer: Option<Peer<signer::BoxedSigner, radicle_daemon::config::StreamDiscovery>>,
+    peer: Option<Peer<link_crypto::BoxedSigner, radicle_daemon::config::StreamDiscovery>>,
     /// Channel to receive updates to the seed nodes from the API
     seeds_sender: Option<watch::Sender<Vec<seed::Seed>>>,
 }
@@ -284,7 +284,7 @@ async fn rig(
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
 
     if let Some(key) = environment.key.clone() {
-        let signer = signer::BoxedSigner::new(signer::SomeSigner { signer: key });
+        let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
 
         let seeds = session_seeds(&store, &args.default_seeds).await?;
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);

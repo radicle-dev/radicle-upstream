@@ -12,11 +12,10 @@ use serde::{Deserialize, Serialize};
 
 use radicle_avatar as avatar;
 
+use link_crypto::BoxedSigner;
 use radicle_daemon::{
     identities::payload::{self, ExtError, PersonPayload},
-    net,
-    signer::BoxedSigner,
-    state, PeerId, Person as DaemonPerson, Urn,
+    net, state, PeerId, Person as DaemonPerson, Urn,
 };
 
 use crate::{
