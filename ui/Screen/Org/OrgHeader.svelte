@@ -121,7 +121,7 @@
           {/if}
           {#if seedApi}
             <div class="row">
-              <Icon.Server />
+              <Icon.Globe />
               <a href={seedApi}>{seedApi}</a>
             </div>
           {/if}
