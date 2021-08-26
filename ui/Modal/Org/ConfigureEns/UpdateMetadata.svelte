@@ -92,7 +92,11 @@
           records as ensResolver.EnsRecord[]
         );
         transaction.add(transaction.updateEnsMetadata(tx));
-        onSetRecordsDone();
+        notification.info({
+          message: "Org’s metadata has been updated",
+          showIcon: true,
+        });
+        onSubmit();
       } catch (err) {
         setRecordsInProgress = false;
         error.show(
@@ -109,16 +113,8 @@
       await tx.wait(1);
       // TODO: yank the metadata cache for this org and let the user know.
     } else {
-      onSetRecordsDone();
+      onSubmit();
     }
-  }
-
-  function onSetRecordsDone() {
-    notification.info({
-      message: "Org’s metadata has been updated",
-      showIcon: true,
-    });
-    onSubmit();
   }
 </script>
 
