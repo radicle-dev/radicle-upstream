@@ -11,3 +11,13 @@ rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
 [patch.crates-io.libgit2-sys]
 git = "https://github.com/radicle-dev/git2-rs.git"
 rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
+
+# Uncomment the following lines to develop against a local copy of
+# `radicle-link`.
+
+# [patch.'https://github.com/radicle-dev/radicle-link']
+# radicle-daemon = { path = "../radicle-link/daemon" }
+# librad = { path = "../radicle-link/librad" }
+# link-crypto = { path = "../radicle-link/link-crypto" }
+# radicle-git-ext = { path = "../radicle-link/git-ext" }
+# radicle-git-helpers = { path = "../radicle-link/git-helpers" }
