@@ -6,6 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
@@ -99,7 +100,7 @@
       }
 
       await tx.wait(1);
-      // TODO: yank the cache for this org and let the user know.
+      ensResolver.getCachedRegistrationByAddress(orgAddress, true);
     }
   }
 </script>

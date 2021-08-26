@@ -93,7 +93,8 @@
         );
         transaction.add(transaction.updateEnsMetadata(tx));
         notification.info({
-          message: "Org’s metadata has been updated",
+          message:
+            "The org’s updated metadata will appear once the transaction has been included",
           showIcon: true,
         });
         onSubmit();
@@ -111,7 +112,7 @@
       }
 
       await tx.wait(1);
-      // TODO: yank the metadata cache for this org and let the user know.
+      ensResolver.getCachedRegistrationByAddress(orgAddress, true);
     } else {
       onSubmit();
     }

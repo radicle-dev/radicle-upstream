@@ -10,17 +10,16 @@ import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 import type { Org, MemberResponse } from "./org/theGraphApi";
 import type * as identity from "ui/src/proxy/identity";
 import type * as project from "ui/src/project";
-import type * as ensResolver from "ui/src/org/ensResolver";
 
 import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
 import { claimsAddress, ClaimsContract } from "./attestation/contract";
-import { getRegistration, Registration } from "./org/ensResolver";
 import { identitySha1Urn } from "ui/src/urn";
 import { memoizeLru } from "ui/src/memoizeLru";
 import { sleep } from "ui/src/sleep";
 import { unreachable } from "ui/src/unreachable";
+import * as ensResolver from "./org/ensResolver";
 import * as ensRegistrar from "./org/ensRegistrar";
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
@@ -302,7 +301,7 @@ async function fetchOrgs(): Promise<void> {
 
   orgs = await Promise.all(
     orgs.map(async org => {
-      const registration = await fetchOrgEnsRecord(org.id);
+      const registration = await ensResolver.getCachedRegistrationByAddress(org.id);
       if (registration) {
         org.registration = registration;
       }
@@ -313,23 +312,6 @@ async function fetchOrgs(): Promise<void> {
   const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
   orgSidebarStore.set(sortedOrgs);
 }
-
-export const fetchOrgEnsRecord = memoizeLru(
-  async (address: string): Promise<Registration | undefined> => {
-    const walletStore = svelteStore.get(wallet.store);
-    const name = await walletStore.provider.lookupAddress(address);
-
-    // The type definitions of `ethers` are not correct. `lookupAddress()`
-    // can return `null`.
-    if (!name) {
-      return;
-    }
-
-    return getRegistration(name);
-  },
-  address => address,
-  { max: 1000 }
-);
 
 // Owner of an org that controlls the interaction with the org
 // contract. Maybe a simple wallet address that is controlled by one

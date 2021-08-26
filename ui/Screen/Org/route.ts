@@ -5,7 +5,7 @@
 // LICENSE file.
 
 import * as org from "ui/src/org";
-import type { Registration } from "ui/src/org/ensResolver";
+import * as ensResolver from "ui/src/org/ensResolver";
 import { unreachable } from "ui/src/unreachable";
 
 export interface Params {
@@ -32,7 +32,7 @@ export type MultiSigView =
 
 interface MultiSigLoaded {
   type: "multiSigOrg";
-  registration?: Registration;
+  registration?: ensResolver.Registration;
   address: string;
   gnosisSafeAddress: string;
   view: MultiSigView;
@@ -42,7 +42,7 @@ interface MultiSigLoaded {
 
 interface SingleSigLoaded {
   type: "singleSigOrg";
-  registration?: Registration;
+  registration?: ensResolver.Registration;
   address: string;
   owner: string;
   projectCount: number;
@@ -52,7 +52,7 @@ interface SingleSigLoaded {
 export async function load(params: Params): Promise<LoadedRoute> {
   const owner = await org.getOwner(params.address);
   const projectCount = await org.getProjectCount();
-  const registration = await org.fetchOrgEnsRecord(params.address);
+  const registration = await ensResolver.getCachedRegistrationByAddress(params.address);
   const anchors = await org.resolveProjectAnchors(
     params.address,
     owner,

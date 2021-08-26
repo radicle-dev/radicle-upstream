@@ -7,6 +7,7 @@
 import type { TransactionResponse } from "./contract";
 
 import { ethers } from "ethers";
+import LruCache from "lru-cache";
 import { ENS__factory as EnsFactory } from "radicle-contracts/build/contract-bindings/ethers";
 
 import * as error from "ui/src/error";
@@ -168,4 +169,41 @@ async function getOwner(name: string): Promise<string> {
   const owner = await registry.owner(ethers.utils.namehash(name));
 
   return owner;
+}
+
+interface RegistrationCacheEntry {
+  value: Registration | undefined;
+}
+
+const registrationCache = new LruCache<string, RegistrationCacheEntry>({
+  max: 1000,
+  maxAge: 10 * 60 * 1000, // TTL 10 minutes
+});
+
+export async function getCachedRegistrationByAddress(
+  address: string,
+  invalidateCache: boolean = false
+): Promise<Registration | undefined> {
+  const normalisedAddress = address.toLowerCase();
+  const cached: RegistrationCacheEntry | undefined =
+    registrationCache.get(normalisedAddress);
+
+  if (!invalidateCache && cached) {
+    return cached.value;
+  } else {
+    const wallet = svelteStore.get(Wallet.store);
+    const name = await wallet.provider.lookupAddress(normalisedAddress);
+
+    // The type definitions of `ethers` are not correct. `lookupAddress()`
+    // can return `null`.
+    if (!name) {
+      registrationCache.set(normalisedAddress, { value: undefined });
+      return;
+    }
+
+    const registration = await getRegistration(name);
+    registrationCache.set(normalisedAddress, { value: registration });
+
+    return registration;
+  }
 }
