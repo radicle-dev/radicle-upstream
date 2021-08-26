@@ -49,7 +49,7 @@
   })();
 
   async function registrationDone(result: registerName.Result) {
-    let registration: ensResolver.Registration | null;
+    let registration: ensResolver.Registration | undefined;
 
     if (result.registration) {
       registration = result.registration;

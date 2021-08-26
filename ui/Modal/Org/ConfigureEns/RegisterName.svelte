@@ -7,7 +7,7 @@
 -->
 <script lang="typescript" context="module">
   export interface Result {
-    registration: ensResolver.Registration | null;
+    registration: ensResolver.Registration | undefined;
     name: string;
   }
 </script>
@@ -53,7 +53,7 @@
   let validationState: validation.ValidationState = {
     status: validation.ValidationStatus.NotStarted,
   };
-  let registration: ensResolver.Registration | null;
+  let registration: ensResolver.Registration | undefined;
   let userInputStarted: boolean = nameInputValue !== "";
   const validateFormExecutor = mutexExecutor.create();
 
@@ -75,7 +75,7 @@
             validationState: {
               status: validation.ValidationStatus.NotStarted,
             } as validation.ValidationState,
-            registration: null,
+            registration: undefined,
           };
         }
 
@@ -98,7 +98,7 @@
   async function runAsyncValidations(name: string): Promise<{
     validatedName: string;
     validationState: validation.ValidationState;
-    registration: ensResolver.Registration | null;
+    registration: ensResolver.Registration | undefined;
   }> {
     const available = await ensRegistrar.isAvailable(name);
 
@@ -115,7 +115,7 @@
               fee
             )} RAD.`,
           },
-          registration: null,
+          registration: undefined,
         };
       }
 
@@ -124,7 +124,7 @@
         validationState: {
           status: validation.ValidationStatus.Success,
         },
-        registration: null,
+        registration: undefined,
       };
     }
 
@@ -150,7 +150,7 @@
         status: validation.ValidationStatus.Error,
         message: "Sorry, that name is already taken.",
       },
-      registration: null,
+      registration: undefined,
     };
   }
 

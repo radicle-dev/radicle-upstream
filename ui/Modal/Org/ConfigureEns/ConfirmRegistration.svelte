@@ -86,7 +86,7 @@
       message: `${commitment.name}.${ensResolver.DOMAIN} has been registered with your wallet`,
       showIcon: true,
     });
-    registrationDone({ name: commitment.name, registration: null });
+    registrationDone({ name: commitment.name, registration: undefined });
   }
 </script>
 

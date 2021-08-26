@@ -118,7 +118,7 @@ export async function setRecords(
 
 export async function getRegistration(
   domain: string
-): Promise<Registration | null> {
+): Promise<Registration | undefined> {
   const wallet = svelteStore.get(Wallet.store);
   const resolver = await wallet.provider.getResolver(domain);
 
@@ -127,7 +127,7 @@ export async function getRegistration(
   //
   // See https://github.com/ethers-io/ethers.js/issues/1850
   if (!resolver) {
-    return null;
+    return;
   }
 
   const owner = await getOwner(domain);

@@ -315,14 +315,14 @@ async function fetchOrgs(): Promise<void> {
 }
 
 export const fetchOrgEnsRecord = memoizeLru(
-  async (address: string): Promise<Registration | null> => {
+  async (address: string): Promise<Registration | undefined> => {
     const walletStore = svelteStore.get(wallet.store);
     const name = await walletStore.provider.lookupAddress(address);
 
     // The type definitions of `ethers` are not correct. `lookupAddress()`
     // can return `null`.
     if (!name) {
-      return null;
+      return;
     }
 
     return getRegistration(name);
