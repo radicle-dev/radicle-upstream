@@ -18,9 +18,7 @@ use tokio::{
     sync::{watch, RwLock},
 };
 
-use radicle_daemon::{
-    convert::MaybeFrom as _, peer::run_config, seed, Peer, PeerStatus, RunConfig,
-};
+use radicle_daemon::{convert::MaybeFrom as _, seed, Peer, PeerStatus, RunConfig};
 
 use crate::{config, context, git_helper, http, notification, service, session};
 
@@ -296,7 +294,7 @@ async fn rig(
         );
         let disco = radicle_daemon::config::StreamDiscovery::new(seeds_receiver);
 
-        let peer = radicle_daemon::Peer::new(config, disco, store.clone(), coco_run_config())?;
+        let peer = radicle_daemon::Peer::new(config, disco, store.clone(), RunConfig::default())?;
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
@@ -345,14 +343,4 @@ async fn session_seeds(
         tracing::error!(?seeds, ?err, "Error parsing seed list");
         vec![]
     }))
-}
-
-/// [`RunConfig`] for the coco peer.
-fn coco_run_config() -> RunConfig {
-    RunConfig {
-        sync: run_config::Sync {
-            interval: Duration::from_secs(5),
-        },
-        ..RunConfig::default()
-    }
 }

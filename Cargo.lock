@@ -72,7 +72,7 @@ dependencies = [
  "anyhow",
  "argh",
  "async-stream",
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "chrono",
  "data-encoding",
  "directories 2.0.2",
@@ -401,9 +401,9 @@ checksum = "0e4cec68f03f32e44924783795810fa50a7035d8c8ebe78580ad7e6c703fba38"
 
 [[package]]
 name = "bytes"
-version = "1.0.1"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b700ce4376041dcd0a327fd0097c41095743c4c8af8887265942faf1100bd040"
+checksum = "c4872d67bab6358e59559027aa3b9157c53d9358c51423c17554809a8858e0f8"
 
 [[package]]
 name = "bytesize"
@@ -567,6 +567,16 @@ checksum = "58bcd97a54c7ca5ce2f6eb16f6bede5b0ab5f0055fedc17d2f0b4466e21671ca"
 dependencies = [
  "generic-array",
  "subtle",
+]
+
+[[package]]
+name = "cryptovec"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccc7fa13a6bbb2322d325292c57f4c8e7291595506f8289968a0eb61c3130bdf"
+dependencies = [
+ "libc",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -1231,7 +1241,7 @@ dependencies = [
 [[package]]
 name = "git-trailers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "nom 5.1.2",
  "thiserror",
@@ -1336,7 +1346,7 @@ version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d7f3675cfef6a30c8031cf9e6493ebdc3bb3272a3fea3923c4210d1830e6a472"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "fnv",
  "futures-core",
  "futures-sink",
@@ -1379,7 +1389,7 @@ checksum = "f0b7591fb62902706ae8e7aaff416b1b0fa2c0fd0878b46dc13baa3712d8a855"
 dependencies = [
  "base64",
  "bitflags",
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "headers-core",
  "http",
  "mime",
@@ -1445,7 +1455,7 @@ version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "527e8c9ac747e28542699a951517aa9a6945af506cd1f2e1b53a576c17b6cc11"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "fnv",
  "itoa",
 ]
@@ -1456,7 +1466,7 @@ version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "399c583b2979440c60be0821a6199eca73bc3c8dcd9d070d75ac726e2c6186e5"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "http",
  "pin-project-lite",
 ]
@@ -1485,7 +1495,7 @@ version = "0.14.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13f67199e765030fa08fe0bd581af683f0d5bc04ea09c2b1102012c5fb90e7fd"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "futures-channel",
  "futures-core",
  "futures-util",
@@ -1694,9 +1704,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.100"
+version = "0.2.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1fa8cddc8fbbee11227ef194b5317ed014b8acbf15139bd716a18ad3fe99ec5"
+checksum = "3cb00336871be5ed2c8ed44b60ae9959dc5b9f08539422ed43f09e34ecaeba21"
 
 [[package]]
 name = "libgit2-sys"
@@ -1712,7 +1722,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -1807,7 +1817,7 @@ dependencies = [
 [[package]]
 name = "link-canonical"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "serde",
  "serde_bytes",
@@ -1819,7 +1829,7 @@ dependencies = [
 [[package]]
 name = "link-crypto"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "async-trait",
  "dyn-clone",
@@ -1841,7 +1851,7 @@ dependencies = [
 [[package]]
 name = "link-git-protocol"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "async-process",
  "async-trait",
@@ -1866,7 +1876,7 @@ dependencies = [
 [[package]]
 name = "link-identities"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "either",
  "futures-lite",
@@ -2552,7 +2562,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c82c0a393b300104f989f3db8b8637c0d11f7a32a9c214560b47849ba8f119aa"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "futures 0.3.16",
  "lazy_static",
  "libc",
@@ -2572,7 +2582,7 @@ version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "047aa96ec7ee6acabad7a1318dff72e9aff8994316bf2166c9b94cbec78ca54c"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "rand 0.8.4",
  "ring",
  "rustls",
@@ -2603,7 +2613,7 @@ dependencies = [
 [[package]]
 name = "radicle-daemon"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -2626,7 +2636,7 @@ dependencies = [
 [[package]]
 name = "radicle-data"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "minicbor",
  "nonempty 0.6.0",
@@ -2637,7 +2647,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "git2",
  "minicbor",
@@ -2651,7 +2661,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "anyhow",
  "git2",
@@ -2662,11 +2672,12 @@ dependencies = [
 [[package]]
 name = "radicle-keystore"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d01a1bd0b81fbec5a3c882dd65d5de631462f615f04a918784decba2b1c2088"
+source = "git+https://github.com/radicle-dev/radicle-keystore?rev=619ca3600be58025f1f2b2fcc59d5ba72f52141f#619ca3600be58025f1f2b2fcc59d5ba72f52141f"
 dependencies = [
  "async-trait",
+ "byteorder",
  "chacha20poly1305",
+ "cryptovec",
  "ed25519-zebra 2.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.3.16",
  "generic-array",
@@ -2678,12 +2689,14 @@ dependencies = [
  "serde",
  "serde_cbor",
  "thiserror",
+ "thrussh-agent",
+ "thrussh-encoding",
 ]
 
 [[package]]
 name = "radicle-macros"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 dependencies = [
  "quote",
  "radicle-git-ext",
@@ -2709,7 +2722,7 @@ dependencies = [
 [[package]]
 name = "radicle-std-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?rev=f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c#f32e4d0372ef0f1cbd11c1ae76756ee5ebf2c22c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=100aea269765f3f4a8536f71561c6848ad6683d3#100aea269765f3f4a8536f71561c6848ad6683d3"
 
 [[package]]
 name = "radicle-surf"
@@ -3487,6 +3500,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "thrussh-agent"
+version = "0.1.0"
+source = "git+https://github.com/FintanH/thrussh.git?branch=generic-agent#d0248b3ba2d885209ebdfc90537967fceb1fd2dc"
+dependencies = [
+ "async-trait",
+ "byteorder",
+ "cryptovec",
+ "data-encoding",
+ "futures 0.3.16",
+ "log",
+ "thiserror",
+ "thrussh-encoding",
+]
+
+[[package]]
+name = "thrussh-encoding"
+version = "0.1.0"
+source = "git+https://github.com/FintanH/thrussh.git?branch=generic-agent#d0248b3ba2d885209ebdfc90537967fceb1fd2dc"
+dependencies = [
+ "byteorder",
+ "cryptovec",
+ "thiserror",
+]
+
+[[package]]
 name = "time"
 version = "0.1.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3557,7 +3595,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "92036be488bb6594459f2e03b60e42df6f937fe6ca5c5ffdcb539c6b84dc40f5"
 dependencies = [
  "autocfg",
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "libc",
  "memchr",
  "mio 0.7.13",
@@ -3597,7 +3635,7 @@ version = "0.6.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1caa0b0c8d94a049db56b5acf8cba99dc0623aab1b26d5b5f5e2d945846b3592"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "futures-core",
  "futures-io",
  "futures-sink",
@@ -3844,7 +3882,7 @@ version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "332d47745e9a0c38636dbd454729b147d16bd1ed08ae67b3ab281c4506771054"
 dependencies = [
- "bytes 1.0.1",
+ "bytes 1.1.0",
  "futures 0.3.16",
  "headers",
  "http",
