@@ -12,6 +12,7 @@
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
+  import * as router from "ui/src/router";
 
   import { Button, Modal, TextInput, Tooltip } from "ui/DesignSystem";
 
@@ -26,6 +27,7 @@
   let seedIdValue: string | undefined = registration.seedId || undefined;
   let seedApiValue: string | undefined = registration.seedApi || undefined;
 
+  const activeRouteStore = router.activeRouteStore;
   let setRecordsInProgress = false;
 
   let orgAddressValidationStatus: validation.ValidationState = {
@@ -86,13 +88,15 @@
       });
 
       let tx: transaction.ContractTransaction | undefined = undefined;
+      let waitingForTxNotification;
+
       try {
         tx = await ensResolver.setRecords(
           registration.domain,
           records as ensResolver.EnsRecord[]
         );
         transaction.add(transaction.updateEnsMetadata(tx));
-        notification.info({
+        waitingForTxNotification = notification.info({
           message:
             "The org’s updated metadata will appear once the transaction has been included",
           showIcon: true,
@@ -112,7 +116,39 @@
       }
 
       await tx.wait(1);
-      ensResolver.getCachedRegistrationByAddress(orgAddress, true);
+      waitingForTxNotification.remove();
+
+      const updatedRegistration =
+        await ensResolver.getCachedRegistrationByAddress(orgAddress, true);
+      if (
+        $activeRouteStore.type === "singleSigOrg" ||
+        $activeRouteStore.type === "multiSigOrg"
+      ) {
+        $activeRouteStore.registration = updatedRegistration;
+        notification.info({
+          message: `Your org’s metadata has been updated`,
+          showIcon: true,
+        });
+      } else {
+        notification.info({
+          message: `Your org’s metadata has been updated`,
+          showIcon: true,
+          actions: [
+            {
+              label: "Go to org",
+              handler: () => {
+                router.push({
+                  type: "org",
+                  params: {
+                    address: orgAddress,
+                    view: "projects",
+                  },
+                });
+              },
+            },
+          ],
+        });
+      }
     } else {
       onSubmit();
     }

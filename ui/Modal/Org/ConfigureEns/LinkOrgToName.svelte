@@ -12,6 +12,7 @@
   import * as notification from "ui/src/notification";
   import * as org from "ui/src/org";
   import * as transaction from "ui/src/transaction";
+  import * as router from "ui/src/router";
 
   import { Button, Modal, TextInput } from "ui/DesignSystem";
 
@@ -20,6 +21,7 @@
   export let orgAddress: string;
   export let safeAddress: string | undefined = undefined;
 
+  const activeRouteStore = router.activeRouteStore;
   let continueButtonDisabled = false;
 
   async function link() {
@@ -76,12 +78,13 @@
       });
 
       let tx: transaction.ContractTransaction | undefined = undefined;
+      let waitingForTxNotification;
 
       try {
         tx = await org.setNameSingleSig(domain, orgAddress);
         transaction.add(transaction.linkEnsNameToOrg(tx));
-        notification.info({
-          message: `Now your org points to ${domain}`,
+        waitingForTxNotification = notification.info({
+          message: `Once the transaction has been included, your org will point to ${domain}`,
           showIcon: true,
         });
         onSubmit();
@@ -100,7 +103,39 @@
       }
 
       await tx.wait(1);
-      ensResolver.getCachedRegistrationByAddress(orgAddress, true);
+      waitingForTxNotification.remove();
+
+      const updatedRegistration =
+        await ensResolver.getCachedRegistrationByAddress(orgAddress, true);
+      if (
+        $activeRouteStore.type === "singleSigOrg" ||
+        $activeRouteStore.type === "multiSigOrg"
+      ) {
+        $activeRouteStore.registration = updatedRegistration;
+        notification.info({
+          message: `Your org now points to ${domain}`,
+          showIcon: true,
+        });
+      } else {
+        notification.info({
+          message: `Your org ${orgAddress} now points to ${domain}`,
+          showIcon: true,
+          actions: [
+            {
+              label: "Go to org",
+              handler: () => {
+                router.push({
+                  type: "org",
+                  params: {
+                    address: orgAddress,
+                    view: "projects",
+                  },
+                });
+              },
+            },
+          ],
+        });
+      }
     }
   }
 </script>
