@@ -13,6 +13,7 @@
   import * as org from "ui/src/org";
   import * as transaction from "ui/src/transaction";
   import * as router from "ui/src/router";
+  import * as svelteStore from "ui/src/svelteStore";
 
   import { Button, Modal, TextInput } from "ui/DesignSystem";
 
@@ -21,7 +22,6 @@
   export let orgAddress: string;
   export let safeAddress: string | undefined = undefined;
 
-  const activeRouteStore = router.activeRouteStore;
   let continueButtonDisabled = false;
 
   async function link() {
@@ -86,6 +86,7 @@
         waitingForTxNotification = notification.info({
           message: `Once the transaction has been included, your org will point to ${domain}`,
           showIcon: true,
+          persist: true,
         });
         onSubmit();
       } catch (err) {
@@ -107,11 +108,16 @@
 
       const updatedRegistration =
         await ensResolver.getCachedRegistrationByAddress(orgAddress, true);
+      const activeRoute = svelteStore.get(router.activeRouteStore);
       if (
-        $activeRouteStore.type === "singleSigOrg" ||
-        $activeRouteStore.type === "multiSigOrg"
+        (activeRoute.type === "singleSigOrg" ||
+          activeRoute.type === "multiSigOrg") &&
+        activeRoute.address === orgAddress
       ) {
-        $activeRouteStore.registration = updatedRegistration;
+        router.activeRouteStore.set({
+          ...activeRoute,
+          registration: updatedRegistration,
+        });
         notification.info({
           message: `Your org now points to ${domain}`,
           showIcon: true,

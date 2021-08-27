@@ -13,6 +13,7 @@
   import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
   import * as router from "ui/src/router";
+  import * as svelteStore from "ui/src/svelteStore";
 
   import { Button, Modal, TextInput, Tooltip } from "ui/DesignSystem";
 
@@ -27,7 +28,6 @@
   let seedIdValue: string | undefined = registration.seedId || undefined;
   let seedApiValue: string | undefined = registration.seedApi || undefined;
 
-  const activeRouteStore = router.activeRouteStore;
   let setRecordsInProgress = false;
 
   let orgAddressValidationStatus: validation.ValidationState = {
@@ -100,6 +100,7 @@
           message:
             "The org’s updated metadata will appear once the transaction has been included",
           showIcon: true,
+          persist: true,
         });
         onSubmit();
       } catch (err) {
@@ -120,11 +121,16 @@
 
       const updatedRegistration =
         await ensResolver.getCachedRegistrationByAddress(orgAddress, true);
+      const activeRoute = svelteStore.get(router.activeRouteStore);
       if (
-        $activeRouteStore.type === "singleSigOrg" ||
-        $activeRouteStore.type === "multiSigOrg"
+        (activeRoute.type === "singleSigOrg" ||
+          activeRoute.type === "multiSigOrg") &&
+        activeRoute.address === orgAddress
       ) {
-        $activeRouteStore.registration = updatedRegistration;
+        router.activeRouteStore.set({
+          ...activeRoute,
+          registration: updatedRegistration,
+        });
         notification.info({
           message: `Your org’s metadata has been updated`,
           showIcon: true,
