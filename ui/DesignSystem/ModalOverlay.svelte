@@ -39,6 +39,7 @@
 
   .content {
     z-index: 200;
+    margin: auto;
   }
 
   .hide {
