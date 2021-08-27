@@ -6,14 +6,13 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import * as configureEns from "ui/src/org/configureEns";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
-  import * as router from "ui/src/router";
-  import * as svelteStore from "ui/src/svelteStore";
 
   import { Button, Modal, TextInput, Tooltip } from "ui/DesignSystem";
 
@@ -119,42 +118,10 @@
       await tx.wait(1);
       waitingForTxNotification.remove();
 
-      const updatedRegistration =
-        await ensResolver.getCachedRegistrationByAddress(orgAddress, true);
-      const activeRoute = svelteStore.get(router.activeRouteStore);
-      if (
-        (activeRoute.type === "singleSigOrg" ||
-          activeRoute.type === "multiSigOrg") &&
-        activeRoute.address === orgAddress
-      ) {
-        router.activeRouteStore.set({
-          ...activeRoute,
-          registration: updatedRegistration,
-        });
-        notification.info({
-          message: `Your org’s metadata has been updated`,
-          showIcon: true,
-        });
-      } else {
-        notification.info({
-          message: `Your org’s metadata has been updated`,
-          showIcon: true,
-          actions: [
-            {
-              label: "Go to org",
-              handler: () => {
-                router.push({
-                  type: "org",
-                  params: {
-                    address: orgAddress,
-                    view: "projects",
-                  },
-                });
-              },
-            },
-          ],
-        });
-      }
+      await configureEns.updateScreenAndNotifyUser(
+        orgAddress,
+        "Your org’s metadata has been updated"
+      );
     } else {
       onSubmit();
     }

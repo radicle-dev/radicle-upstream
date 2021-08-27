@@ -6,14 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as ensResolver from "ui/src/org/ensResolver";
+  import * as configureEns from "ui/src/org/configureEns";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as org from "ui/src/org";
   import * as transaction from "ui/src/transaction";
-  import * as router from "ui/src/router";
-  import * as svelteStore from "ui/src/svelteStore";
 
   import { Button, Modal, TextInput } from "ui/DesignSystem";
 
@@ -106,42 +104,10 @@
       await tx.wait(1);
       waitingForTxNotification.remove();
 
-      const updatedRegistration =
-        await ensResolver.getCachedRegistrationByAddress(orgAddress, true);
-      const activeRoute = svelteStore.get(router.activeRouteStore);
-      if (
-        (activeRoute.type === "singleSigOrg" ||
-          activeRoute.type === "multiSigOrg") &&
-        activeRoute.address === orgAddress
-      ) {
-        router.activeRouteStore.set({
-          ...activeRoute,
-          registration: updatedRegistration,
-        });
-        notification.info({
-          message: `Your org now points to ${domain}`,
-          showIcon: true,
-        });
-      } else {
-        notification.info({
-          message: `Your org ${orgAddress} now points to ${domain}`,
-          showIcon: true,
-          actions: [
-            {
-              label: "Go to org",
-              handler: () => {
-                router.push({
-                  type: "org",
-                  params: {
-                    address: orgAddress,
-                    view: "projects",
-                  },
-                });
-              },
-            },
-          ],
-        });
-      }
+      await configureEns.updateScreenAndNotifyUser(
+        orgAddress,
+        `Your org ${orgAddress} now points to ${domain}`
+      );
     }
   }
 </script>
