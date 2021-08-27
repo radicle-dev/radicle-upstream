@@ -301,7 +301,9 @@ async function fetchOrgs(): Promise<void> {
 
   orgs = await Promise.all(
     orgs.map(async org => {
-      const registration = await ensResolver.getCachedRegistrationByAddress(org.id);
+      const registration = await ensResolver.getCachedRegistrationByAddress(
+        org.id
+      );
       if (registration) {
         org.registration = registration;
       }

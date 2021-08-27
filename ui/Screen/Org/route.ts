@@ -52,7 +52,9 @@ interface SingleSigLoaded {
 export async function load(params: Params): Promise<LoadedRoute> {
   const owner = await org.getOwner(params.address);
   const projectCount = await org.getProjectCount();
-  const registration = await ensResolver.getCachedRegistrationByAddress(params.address);
+  const registration = await ensResolver.getCachedRegistrationByAddress(
+    params.address
+  );
   const anchors = await org.resolveProjectAnchors(
     params.address,
     owner,
