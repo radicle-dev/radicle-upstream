@@ -122,12 +122,14 @@
     <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "singleSigOrg"}
     <SingleSigOrg
+      registration={$activeRouteStore.registration}
       address={$activeRouteStore.address}
       owner={$activeRouteStore.owner}
       projectCount={$activeRouteStore.projectCount}
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "multiSigOrg"}
     <Org
+      registration={$activeRouteStore.registration}
       activeTab={$activeRouteStore.view}
       address={$activeRouteStore.address}
       gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}

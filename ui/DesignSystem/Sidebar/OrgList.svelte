@@ -35,7 +35,7 @@
 
 {#if $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
   {#each $orgSidebarStore as org (org.id)}
-    <Tooltip value={org.id}>
+    <Tooltip value={org.registration?.domain || org.id}>
       <SidebarItem
         indicator={true}
         onClick={() =>
@@ -46,6 +46,7 @@
         <Avatar
           size="regular"
           variant="square"
+          imageUrl={org.registration?.avatar || undefined}
           avatarFallback={radicleAvatar.generate(
             org.id,
             radicleAvatar.Usage.Any

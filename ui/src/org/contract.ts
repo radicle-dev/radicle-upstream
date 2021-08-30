@@ -27,6 +27,7 @@ const orgFactoryAbi = [
 const orgAbi = [
   "function owner() view returns (address)",
   "function anchor(bytes32, uint32, bytes)",
+  "function setName(string, address) returns (bytes32)",
 ];
 
 function orgFactoryAddress(network: ethereum.Environment): string {
@@ -193,4 +194,36 @@ export function parseAnchorTx(data: string): AnchorData | undefined {
 
     return { projectId: projectId, commitHash: decodedCommitHash };
   }
+}
+
+export async function setName(
+  signer: ethers.Signer,
+  orgAddress: string,
+  name: string,
+  ensAddress: string
+): Promise<TransactionResponse> {
+  const org = new ethers.Contract(orgAddress, orgAbi, signer);
+
+  return org.setName(name, ensAddress);
+}
+
+// Returns the hex encoded data for a transaction that will set the
+// org ENS name.
+export async function populateSetNameTransaction(
+  orgAddress: string,
+  name: string,
+  ensAddress: string
+): Promise<string> {
+  const org = new ethers.Contract(orgAddress, orgAbi);
+
+  const unsignedTx = await org.populateTransaction.setName(name, ensAddress);
+  const txData = unsignedTx.data;
+  if (!txData) {
+    throw new error.Error({
+      message: "Could not generate transaction for `setName` call",
+      details: { unsignedTx },
+    });
+  }
+
+  return txData;
 }

@@ -7,13 +7,13 @@
 import * as lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
+import type { Org, MemberResponse } from "./org/theGraphApi";
 import type * as identity from "ui/src/proxy/identity";
 import type * as project from "ui/src/project";
 
 import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
-import type { Org, MemberResponse } from "./org/theGraphApi";
 import { claimsAddress, ClaimsContract } from "./attestation/contract";
 import { identitySha1Urn } from "ui/src/urn";
 import { isCypressTestEnv } from "ui/src/config";
@@ -21,6 +21,8 @@ import { memoizeLru } from "ui/src/memoizeLru";
 import { sleep } from "ui/src/sleep";
 import { unreachable } from "ui/src/unreachable";
 
+import * as ensRegistrar from "./org/ensRegistrar";
+import * as ensResolver from "./org/ensResolver";
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as graph from "./org/theGraphApi";
@@ -35,6 +37,7 @@ import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
+import ConfigureEns from "ui/Modal/Org/ConfigureEns.svelte";
 
 export type { MemberResponse, Org };
 
@@ -315,7 +318,20 @@ async function fetchOrgs(): Promise<void> {
     });
   }
 
-  const orgs = await graph.getOrgs(w.connected.address);
+  let orgs = await graph.getOrgs(w.connected.address);
+
+  orgs = await Promise.all(
+    orgs.map(async org => {
+      const registration = await ensResolver.getCachedRegistrationByAddress(
+        org.id
+      );
+      if (registration) {
+        org.registration = registration;
+      }
+      return org;
+    })
+  );
+
   const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
   orgSidebarStore.set(sortedOrgs);
 }
@@ -388,7 +404,8 @@ export async function fetchMembers(
 // Gnosis safe.
 async function fetchPendingAnchors(
   orgAddress: string,
-  gnosis: GnosisSafeOwner
+  gnosis: GnosisSafeOwner,
+  registration?: ensResolver.Registration
 ): Promise<project.PendingAnchor[]> {
   const walletStore = svelteStore.get(wallet.store);
   const txs = await Safe.getPendingTransactions(
@@ -416,6 +433,7 @@ async function fetchPendingAnchors(
           orgAddress: orgAddress,
           confirmations: tx.confirmations ? tx.confirmations.length : 0,
           timestamp: Date.parse(tx.submissionDate),
+          registration,
         };
         return anchor;
       }
@@ -439,17 +457,21 @@ export interface OrgAnchors {
 // Includes anchors from transactions that have not been confirmed yet.
 export async function resolveProjectAnchors(
   orgAddress: string,
-  owner: Owner
+  owner: Owner,
+  registration?: ensResolver.Registration
 ): Promise<OrgAnchors> {
   let pendingAnchors: project.Anchor[];
   if (owner.type === "wallet") {
     pendingAnchors = [];
   } else if (owner.type === "gnosis-safe") {
-    pendingAnchors = await fetchPendingAnchors(orgAddress, owner);
+    pendingAnchors = await fetchPendingAnchors(orgAddress, owner, registration);
   } else {
     pendingAnchors = unreachable(owner);
   }
-  const confirmedAnchors = await graph.getOrgProjectAnchors(orgAddress);
+  const confirmedAnchors = await graph.getOrgProjectAnchors(
+    orgAddress,
+    registration
+  );
   const anchors: project.Anchor[] = [...pendingAnchors, ...confirmedAnchors];
 
   const anchoredProjects: project.Project[] = [];
@@ -574,3 +596,53 @@ export const isMultiSig = memoizeLru(
   address => address,
   { max: 1000 }
 );
+
+export async function setNameSingleSig(
+  name: string,
+  orgAddress: string
+): Promise<Contract.TransactionResponse> {
+  const walletStore = svelteStore.get(wallet.store);
+
+  const ensAddress = ethereum.ensAddress(walletStore.environment);
+
+  return Contract.setName(walletStore.signer, orgAddress, name, ensAddress);
+}
+
+// Propose a transaction to change the wallet name to the Gnosis safe.
+export async function proposeSetNameChange(
+  name: string,
+  orgAddress: string,
+  ownerAddress: string
+): Promise<void> {
+  const walletStore = svelteStore.get(wallet.store);
+
+  const ensAddress = ethereum.ensAddress(walletStore.environment);
+
+  const data = await Contract.populateSetNameTransaction(
+    orgAddress,
+    name,
+    ensAddress
+  );
+
+  const safeTx = {
+    to: orgAddress,
+    value: "0",
+    data,
+    operation: OperationType.Call,
+  };
+  await Safe.signAndProposeTransaction(walletStore, ownerAddress, safeTx);
+}
+
+export async function openEnsConfiguration(
+  orgAddress: string,
+  registration?: ensResolver.Registration,
+  safeAddress?: string
+): Promise<void> {
+  const fee = await ensRegistrar.getFee();
+  modal.show(ConfigureEns, () => {}, {
+    safeAddress,
+    orgAddress,
+    registration,
+    fee,
+  });
+}

@@ -23,11 +23,15 @@ import * as ethereumDebug from "ui/src/ethereum/debug";
 import { createWalletConnect, QrDisplay } from "ui/src/ethereum/walletConnect";
 import { INFURA_API_KEY_MAINNET, INFURA_API_KEY_RINKEBY } from "ui/src/config";
 
+export { radToken };
+
 export enum Status {
   Connected = "CONNECTED",
   Connecting = "CONNECTING",
   NotConnected = "NOT_CONNECTED",
 }
+
+export type Provider = ethers.providers.Provider & ethers.providers.EnsProvider;
 
 export type State =
   | { status: Status.NotConnected; error?: globalThis.Error }
@@ -43,8 +47,8 @@ export interface Wallet extends svelteStore.Readable<State> {
   environment: Environment;
   connect(qrDisplay: QrDisplay): Promise<void>;
   disconnect(): Promise<void>;
-  provider: ethers.providers.Provider;
-  signer: ethers.Signer;
+  provider: Provider;
+  signer: WalletConnectSigner;
   // Returns the address of the wallet account if the wallet is
   // connected.
   getAddress(): string | undefined;
@@ -88,7 +92,7 @@ async function updateAccountBalances(
   }
 }
 
-function getProvider(environment: Environment): ethers.providers.Provider {
+function getProvider(environment: Environment): Provider {
   switch (environment) {
     case Environment.Local:
       return new ethers.providers.JsonRpcProvider("http://localhost:8545");
@@ -109,10 +113,7 @@ function getProvider(environment: Environment): ethers.providers.Provider {
 
 const walletConnect = createWalletConnect();
 
-function build(
-  environment: Environment,
-  provider: ethers.providers.Provider
-): Wallet {
+function build(environment: Environment, provider: Provider): Wallet {
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
   });

@@ -8,8 +8,8 @@ import type * as ethers from "ethers";
 import * as ethereum from "ui/src/ethereum";
 
 import {
-  ERC20,
-  ERC20__factory as Erc20Factory,
+  RadicleToken,
+  RadicleToken__factory as RadicleTokenFactory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
 const addresses = {
@@ -32,6 +32,9 @@ function radTokenAddress(environment: ethereum.Environment): string {
 export function connect(
   signerOrProvider: ethers.Signer | ethers.providers.Provider,
   environment: ethereum.Environment
-): ERC20 {
-  return Erc20Factory.connect(radTokenAddress(environment), signerOrProvider);
+): RadicleToken {
+  return RadicleTokenFactory.connect(
+    radTokenAddress(environment),
+    signerOrProvider
+  );
 }

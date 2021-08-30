@@ -6,11 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type * as org from "ui/src/org";
+  import type { Registration } from "ui/src/org/ensResolver";
 
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
+  import * as org from "ui/src/org";
 
   import {
     ActionBar,
@@ -30,6 +31,7 @@
   export let address: string;
   export let projectCount: number;
   export let anchors: org.OrgAnchors;
+  export let registration: Registration | undefined = undefined;
 
   const tabs = (address: string) => {
     return [
@@ -65,11 +67,9 @@
         },
       },
       {
-        title: "Register ENS name",
+        title: registration ? "Edit ENS name" : "Register ENS name",
         icon: Icon.Ethereum,
-        disabled: true,
-        event: () => {},
-        tooltip: "Coming soon",
+        event: () => org.openEnsConfiguration(address, registration),
       },
     ];
   };
@@ -77,7 +77,11 @@
 
 <SidebarLayout>
   <Header>
-    <OrgHeader slot="left" orgAddress={address} ownerAddress={owner} />
+    <OrgHeader
+      {registration}
+      slot="left"
+      orgAddress={address}
+      ownerAddress={owner} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
       <ThreeDotsMenu menuItems={menuItems(address)} />

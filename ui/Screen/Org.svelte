@@ -6,6 +6,9 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type * as orgRoute from "./Org/route";
+  import type { Registration } from "ui/src/org/ensResolver";
+
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
@@ -27,13 +30,13 @@
   import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
   import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
   import MembersMenu from "ui/Screen/Org/MembersMenu.svelte";
-  import type * as orgRoute from "./Org/route";
 
   export let activeTab: orgRoute.MultiSigView;
   export let gnosisSafeAddress: string;
   export let address: string;
   export let members: org.Member[];
   export let threshold: number;
+  export let registration: Registration | undefined = undefined;
 
   const tabs = (address: string, active: orgRoute.MultiSigView) => {
     return [
@@ -82,11 +85,10 @@
         },
       },
       {
-        title: "Register ENS name",
+        title: registration ? "Edit ENS name" : "Register ENS name",
         icon: Icon.Ethereum,
-        disabled: true,
-        event: () => {},
-        tooltip: "Coming soon",
+        event: () =>
+          org.openEnsConfiguration(address, registration, gnosisSafeAddress),
       },
     ];
   };
@@ -95,6 +97,7 @@
 <SidebarLayout>
   <Header>
     <OrgHeader
+      {registration}
       slot="left"
       orgAddress={address}
       ownerAddress={gnosisSafeAddress}

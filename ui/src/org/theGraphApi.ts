@@ -10,11 +10,13 @@ import * as multihash from "multihashes";
 import * as svelteStore from "svelte/store";
 
 import type * as project from "ui/src/project";
+import type * as ensResolver from "ui/src/org/ensResolver";
 
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as urn from "ui/src/urn";
 import * as wallet from "ui/src/wallet";
+import type { Registration } from "./ensResolver";
 
 function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
   return new apolloCore.ApolloClient({
@@ -78,6 +80,7 @@ interface GnosisSafeWallet {
 export interface Org {
   id: string;
   owner: string;
+  registration?: Registration;
   creator: string;
   timestamp: number;
 }
@@ -159,7 +162,8 @@ export async function getGnosisSafeMembers(
 }
 
 export async function getOrgProjectAnchors(
-  orgAddress: string
+  orgAddress: string,
+  registration?: ensResolver.Registration
 ): Promise<project.Anchor[]> {
   const response = (
     await orgsSubgraphClient().query({
@@ -205,6 +209,7 @@ export async function getOrgProjectAnchors(
         projectId: decodedProjectId,
         commitHash: decodedCommitHash,
         timestamp: project.anchor.timestamp,
+        registration,
       };
 
       return anchor;

@@ -51,6 +51,9 @@
     gap: 1.5rem;
     justify-content: flex-end;
   }
+  h1 {
+    text-align: center;
+  }
 </style>
 
 <div class="container" data-cy={dataCy}>
