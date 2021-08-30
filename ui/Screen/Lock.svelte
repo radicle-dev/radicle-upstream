@@ -115,7 +115,6 @@
       <Button
         dataCy={`${visible ? "hide" : "show"}-passphrase`}
         variant="transparent"
-        style={passphrase.length === 0 ? "visibility:hidden;" : ""}
         icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
         on:click={() => (visible = !visible)}>
         {visible ? "Hide" : "Show"} Passphrase
