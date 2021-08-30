@@ -13,85 +13,97 @@ import type * as project from "ui/src/project";
 import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
+import type { Org, MemberResponse } from "./org/theGraphApi";
+import { claimsAddress, ClaimsContract } from "./attestation/contract";
+import { identitySha1Urn } from "ui/src/urn";
+import { isCypressTestEnv } from "ui/src/config";
 import { memoizeLru } from "ui/src/memoizeLru";
+import { sleep } from "ui/src/sleep";
+import { unreachable } from "ui/src/unreachable";
+
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
+import * as graph from "./org/theGraphApi";
 import * as ipc from "ui/src/ipc";
 import * as modal from "ui/src/modal";
+import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as notification from "ui/src/notification";
 import * as proxy from "ui/src/proxy";
 import * as router from "ui/src/router";
 import * as svelteStore from "ui/src/svelteStore";
-import { unreachable } from "ui/src/unreachable";
 import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
-import { claimsAddress, ClaimsContract } from "./attestation/contract";
-import type { Org, MemberResponse } from "./org/theGraphApi";
-import * as graph from "./org/theGraphApi";
-import { identitySha1Urn } from "ui/src/urn";
-import { sleep } from "ui/src/sleep";
-import { isCypressTestEnv } from "ui/src/config";
 
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 
 export type { MemberResponse, Org };
 
-const ORG_POLL_INTERVAL_MS = 2000;
+const orgPollExecutor = mutexExecutor.create();
 
-// Update the org data for the sidebar store every
-// `ORG_POLL_INTERVAL_MS` milliseconds.
+// Update the org data for the sidebar store every `pollInterval` milliseconds,
+// defaults to every 5 minutes.
 //
 // When encountering a 502 or 503 response we don’t show an error
 // immediately but retry again.
-const updateOrgsForever = async (): Promise<never> => {
-  let showError = true;
-  let remainingRetriesUnavailable = 20;
+const pollOrgListForever = async (
+  pollInterval: number = 5 * 60 * 1000
+): Promise<void> => {
+  await orgPollExecutor.run(async abortSignal => {
+    let showError = true;
+    let remainingRetriesUnavailable = 20;
 
-  for (;;) {
-    const walletStore = svelteStore.get(wallet.store);
-
-    await svelteStore.waitUntil(
-      walletStore,
-      w => w.status === wallet.Status.Connected
-    );
-
-    await fetchOrgs().then(
-      () => {
-        remainingRetriesUnavailable = 20;
-        showError = true;
-      },
-      err => {
-        if (graph.isUnavailableError(err) && remainingRetriesUnavailable > 0) {
-          remainingRetriesUnavailable -= 1;
-          console.warn(err);
-          return;
-        }
-        // We only show the first error that is thrown by
-        // `fetchOrgs()`. If the function keeps throwing errors we
-        // don’t show them. We reset this behavior after the fetch is
-        // successful.
-        if (showError) {
-          error.show(
-            new error.Error({
-              code: error.Code.OrgFetchFailed,
-              message: `Failed to fetch org data`,
-              source: err,
-            })
-          );
-          showError = false;
-        }
+    for (;;) {
+      if (abortSignal.aborted) {
+        return;
       }
-    );
+      const walletStore = svelteStore.get(wallet.store);
 
-    await sleep(ORG_POLL_INTERVAL_MS);
-  }
+      await svelteStore.waitUntil(
+        walletStore,
+        w => w.status === wallet.Status.Connected
+      );
+
+      await fetchOrgs().then(
+        () => {
+          remainingRetriesUnavailable = 20;
+          showError = true;
+        },
+        err => {
+          if (
+            graph.isUnavailableError(err) &&
+            remainingRetriesUnavailable > 0
+          ) {
+            remainingRetriesUnavailable -= 1;
+            console.warn(err);
+            return;
+          }
+          // We only show the first error that is thrown by
+          // `fetchOrgs()`. If the function keeps throwing errors we
+          // don’t show them. We reset this behavior after the fetch is
+          // successful.
+          if (showError) {
+            error.show(
+              new error.Error({
+                code: error.Code.OrgFetchFailed,
+                message: `Failed to fetch org data`,
+                source: err,
+              })
+            );
+            showError = false;
+          }
+        }
+      );
+
+      await sleep(pollInterval);
+    }
+  });
 };
 
 // Start a background task that continously updates the org data for
 // the sidebar.
 export function initialize(): void {
   if (!isCypressTestEnv) {
-    updateOrgsForever();
+    pollOrgListForever();
   }
 }
 
@@ -248,11 +260,14 @@ export async function createOrg(
     confirmNotification.remove();
   }
   pendingOrgs.update(x => x + 1);
+  // Poll org list every 15 seconds.
+  pollOrgListForever(15 * 1000);
 
   transaction.add(transaction.createOrg(response));
-  notification.info({
+  const creationNotification = notification.info({
     message: "Org creation transaction confirmed, your org will appear shortly",
     showIcon: true,
+    persist: true,
   });
 
   const receipt = await walletStore.provider.waitForTransaction(response.hash);
@@ -261,11 +276,15 @@ export async function createOrg(
   await svelteStore.waitUntil(orgSidebarStore, orgs => {
     return orgs.some(org => org.id === orgAddress);
   });
+  creationNotification.remove();
   pendingOrgs.update(x => x - 1);
+  // Reset org list polling to default interval.
+  pollOrgListForever();
 
   notification.info({
     message: `Org ${orgAddress} has been created`,
     showIcon: true,
+    persist: true,
     actions: [
       {
         label: "Go to org",
@@ -281,7 +300,6 @@ export async function createOrg(
       },
     ],
   });
-  await fetchOrgs();
 }
 
 export const orgSidebarStore = svelteStore.writable<Org[]>([]);
