@@ -38,7 +38,7 @@
 
   <div slot="empty">
     <EmptyState
-      text="You don't have any projects yet."
+      text="You don’t have any projects yet."
       primaryActionText="Start your first project"
       on:primaryAction={create} />
   </div>

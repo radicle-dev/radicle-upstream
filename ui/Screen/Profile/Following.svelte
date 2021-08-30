@@ -133,7 +133,7 @@
 
     <div slot="empty">
       <EmptyState
-        text="You're not following any projects yet."
+        text="You’re not following any projects yet."
         emoji="🐎"
         primaryActionText="Look for a project"
         on:primaryAction={() => {
