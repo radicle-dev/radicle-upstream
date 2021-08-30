@@ -63,7 +63,8 @@ function orgsSubgraphClient() {
         "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs-rinkeby";
       break;
     case ethereum.Environment.Mainnet:
-      uri = "https://api.thegraph.com/subgraphs/name/radicle-dev/radicle-orgs";
+      uri =
+        "https://gateway.thegraph.com/api/1758a78ae257ad4906f9c638e4a68c19/subgraphs/id/0x2f0963e77ca6ac0c2dad1bf4147b6b40e0dd8728-0";
       break;
   }
   return createApolloClient(uri);
