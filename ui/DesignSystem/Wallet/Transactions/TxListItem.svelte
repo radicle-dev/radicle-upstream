@@ -7,9 +7,11 @@
 -->
 <script lang="typescript">
   import type { SvelteComponent } from "svelte";
+  import type { Tx } from "ui/src/transaction";
+
   import { Icon } from "ui/DesignSystem";
   import dayjs from "dayjs";
-  import { Tx, TxKind } from "ui/src/transaction";
+  import { TxKind } from "ui/src/transaction";
 
   export let tx: Tx;
 
