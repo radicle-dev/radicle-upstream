@@ -69,10 +69,11 @@ export const withTempDir = (callback: (tempDirPath: string) => void): void => {
 // contain the given content.
 export const pickWithContent = (
   ids: string[],
-  content: string
+  content: string,
+  options: Partial<Cypress.Timeoutable> = {}
 ): Cypress.Chainable<JQuery> => {
   const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
-  return cy.contains(selectorString, content);
+  return cy.contains(selectorString, content, options);
 };
 
 // Selects the input element with the given `data-cy` ID and pastes

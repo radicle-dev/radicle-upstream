@@ -21,9 +21,16 @@ describe("attestation", () => {
       .should("exist");
     cy.contains("button", "Link your ID").click();
     commands.pickWithContent(["confirm-button"], "Link your ID").click();
-    cy.get('[data-cy="transactions"]', { timeout: 8000 }).should(
-      "contain",
-      "Claim Radicle Identity"
-    );
+    commands
+      .pickWithContent(["transaction"], "Claim Radicle Identity", {
+        timeout: 8000,
+      })
+      .click();
+    commands
+      .pick("transaction-summary")
+      .should("contain", "Claim Radicle Identity");
+    commands
+      .pick("transaction-summary", "transaction-status")
+      .should("contain", "Included");
   });
 });

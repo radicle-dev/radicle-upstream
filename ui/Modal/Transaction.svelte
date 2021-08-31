@@ -181,7 +181,10 @@
   }
 </style>
 
-<Modal emoji={tx && emoji(tx)} title={tx && tx.kind}>
+<Modal
+  emoji={tx && emoji(tx)}
+  title={tx && tx.kind}
+  dataCy="transaction-summary">
   {#if tx}
     <header>
       <Summary {tx} />
@@ -232,7 +235,7 @@
         </div>
         <div class="row">
           <p>Status</p>
-          <div class="row">
+          <div class="row" data-cy="transaction-status">
             <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
             <p style="margin-left: 0.5rem; color: {statusColor}">{tx.status}</p>
           </div>

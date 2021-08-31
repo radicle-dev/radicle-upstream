@@ -77,7 +77,7 @@
   }
 </style>
 
-<div class="container" on:click>
+<div class="container" on:click data-cy="transaction">
   <div class="left">
     <div class="date">
       <h5>{dayjs(tx.date).format("MMM")}</h5>
