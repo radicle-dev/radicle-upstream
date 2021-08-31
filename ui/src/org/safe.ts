@@ -28,6 +28,31 @@ export async function getPendingTransactions(
   return response.results || [];
 }
 
+export async function getMetadata(
+  ethEnv: Ethereum.Environment,
+  safeAddress: string
+): Promise<{ threshold: number; members: string[] }> {
+  safeAddress = ethers.utils.getAddress(safeAddress);
+  const safeServiceClient = createSafeServiceClient(ethEnv);
+  const response = await safeServiceClient.getSafeInfo(safeAddress);
+
+  return {
+    threshold: response.threshold,
+    members: response.owners,
+  };
+}
+
+export async function getSafesByOwner(
+  ethEnv: Ethereum.Environment,
+  ownerAddress: string
+): Promise<string[]> {
+  ownerAddress = ethers.utils.getAddress(ownerAddress);
+  const safeServiceClient = createSafeServiceClient(ethEnv);
+  const response = await safeServiceClient.getSafesByOwner(ownerAddress);
+
+  return response.safes;
+}
+
 export interface TransactionData {
   readonly to: string;
   readonly value: string;

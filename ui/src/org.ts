@@ -7,7 +7,7 @@
 import * as lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
-import type { Org, MemberResponse } from "./org/theGraphApi";
+import type { Org } from "./org/theGraphApi";
 import type * as identity from "ui/src/proxy/identity";
 import type * as project from "ui/src/project";
 
@@ -39,7 +39,7 @@ import * as wallet from "ui/src/wallet";
 import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
 import ConfigureEns from "ui/Modal/Org/ConfigureEns.svelte";
 
-export type { MemberResponse, Org };
+export type { Org };
 
 const orgPollExecutor = mutexExecutor.create();
 
@@ -309,16 +309,22 @@ export const orgSidebarStore = svelteStore.writable<Org[]>([]);
 
 async function fetchOrgs(): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
-  const w = svelteStore.get(walletStore);
+  const wallet_ = svelteStore.get(walletStore);
 
-  if (w.status !== wallet.Status.Connected) {
+  if (wallet_.status !== wallet.Status.Connected) {
     throw new error.Error({
       code: error.Code.OrgFetchOrgsCalledWithNoWallet,
       message: "Tried to call fetchOrgs while the wallet wasn't connected",
     });
   }
 
-  let orgs = await graph.getOrgs(w.connected.address);
+  const walletAddress = wallet_.connected.address;
+
+  const gnosisSafeWallets = await Safe.getSafesByOwner(
+    walletStore.environment,
+    walletAddress
+  );
+  let orgs = await graph.getOrgs(walletAddress, gnosisSafeWallets);
 
   orgs = await Promise.all(
     orgs.map(async org => {
@@ -378,7 +384,8 @@ export async function fetchMembers(
   wallet: wallet.Wallet,
   gnosisSafeAddress: string
 ): Promise<OrgMembers> {
-  const response: MemberResponse = await graph.getGnosisSafeMembers(
+  const response = await Safe.getMetadata(
+    wallet.environment,
     gnosisSafeAddress
   );
 
@@ -387,12 +394,23 @@ export async function fetchMembers(
     claimsAddress(wallet.environment)
   );
 
-  const members = await Promise.all(
-    response.members.map(async ethereumAddress => {
-      const identity = await getClaimedIdentity(contract, ethereumAddress);
-      return { ethereumAddress, identity };
-    })
-  );
+  const members = (
+    await Promise.all(
+      response.members.map(async ethereumAddress => {
+        const identity = await getClaimedIdentity(contract, ethereumAddress);
+        return { ethereumAddress, identity };
+      })
+    )
+  ).sort((a, b) => {
+    // Show members with claimed identities first.
+    if (!a.identity && b.identity) {
+      return 1;
+    }
+    if (a.identity && !b.identity) {
+      return -1;
+    }
+    return 0;
+  });
 
   return {
     threshold: response.threshold,

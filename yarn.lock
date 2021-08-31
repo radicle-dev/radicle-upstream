@@ -1033,13 +1033,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gnosis.pm/safe-service-client@npm:^0.1.0":
-  version: 0.1.0
-  resolution: "@gnosis.pm/safe-service-client@npm:0.1.0"
+"@gnosis.pm/safe-service-client@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@gnosis.pm/safe-service-client@npm:0.1.1"
   dependencies:
     "@gnosis.pm/safe-core-sdk-types": ^0.1.0
     axios: ^0.21.1
-  checksum: 05adbf103987e18682d2153dd45baa8cf5532516a19f7e2671f4262969cba3594ceaec22d49cb27f22e3f77416fcf867bab1468730263468130c1ccf4025cb1c
+  checksum: d20fe5c557035b6783f28e2228f21529ad555750d81ae6561e938faab26e18cf868954401549aaca78bf406d6f84a0107d2d9dcf56455c3863ffa1f1087fed3e
   languageName: node
   linkType: hard
 
@@ -9789,7 +9789,7 @@ __metadata:
     "@ethersproject/properties": ^5.4.1
     "@gnosis.pm/safe-core-sdk": ^0.3.1
     "@gnosis.pm/safe-core-sdk-types": ^0.1.1
-    "@gnosis.pm/safe-service-client": ^0.1.0
+    "@gnosis.pm/safe-service-client": ^0.1.1
     "@tsconfig/svelte": ^2.0.1
     "@types/big.js": ^6.1.1
     "@types/jest": ^27.0.1

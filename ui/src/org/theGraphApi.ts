@@ -30,27 +30,6 @@ function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
   });
 }
 
-function gnosisSubgraphClient(): apolloCore.ApolloClient<unknown> {
-  const walletStore = svelteStore.get(wallet.store);
-  let uri;
-  switch (walletStore.environment) {
-    case ethereum.Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Orgs is not available on the Local testnet.",
-      });
-    case ethereum.Environment.Rinkeby:
-      uri =
-        "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe-rinkeby";
-      break;
-    case ethereum.Environment.Mainnet:
-      uri = "https://api.thegraph.com/subgraphs/name/radicle-dev/gnosis-safe";
-      break;
-  }
-
-  return createApolloClient(uri);
-}
-
 function orgsSubgraphClient() {
   const walletStore = svelteStore.get(wallet.store);
   let uri;
@@ -72,11 +51,6 @@ function orgsSubgraphClient() {
   return createApolloClient(uri);
 }
 
-interface GnosisSafeWallet {
-  id: string;
-  owners: string[];
-}
-
 export interface Org {
   id: string;
   owner: string;
@@ -85,27 +59,10 @@ export interface Org {
   timestamp: number;
 }
 
-async function getGnosisSafeWallets(walletOwnerAddress: string) {
-  return await gnosisSubgraphClient().query({
-    query: apolloCore.gql`
-      query GetGnosisSafeWallets($owners: [String!]!) {
-        wallets(where: { owners_contains: $owners }) {
-          id
-          owners
-        }
-      }
-    `,
-    variables: { owners: [walletOwnerAddress] },
-  });
-}
-
-export async function getOrgs(walletOwnerAddress: string): Promise<Org[]> {
-  const gnosisSafeWallets: [GnosisSafeWallet] = (
-    await getGnosisSafeWallets(walletOwnerAddress)
-  ).data.wallets;
-
-  const multiSigOwners = gnosisSafeWallets.map(owner => owner.id);
-
+export async function getOrgs(
+  walletOwnerAddress: string,
+  multiSigOwners: string[]
+): Promise<Org[]> {
   const orgsResponse = await orgsSubgraphClient().query<{
     orgs: Array<{
       id: string;
@@ -132,33 +89,6 @@ export async function getOrgs(walletOwnerAddress: string): Promise<Org[]> {
     ...org,
     timestamp: Number.parseInt(org.timestamp),
   }));
-}
-
-export interface MemberResponse {
-  threshold: number;
-  members: string[];
-}
-
-export async function getGnosisSafeMembers(
-  walletAddress: string
-): Promise<MemberResponse> {
-  const response = (
-    await gnosisSubgraphClient().query({
-      query: apolloCore.gql`
-        query GetGnosisSafeWallets($id: String!) {
-          wallets(where: { id: $id }) {
-            owners
-            threshold
-          }
-        }
-      `,
-      // The Gnosis index is case-sensitive and normalised to lower-case safe
-      // IDs.
-      variables: { id: walletAddress.toLowerCase() },
-    })
-  ).data.wallets[0];
-
-  return { members: response.owners, threshold: parseInt(response.threshold) };
 }
 
 export async function getOrgProjectAnchors(
