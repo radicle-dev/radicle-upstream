@@ -12,27 +12,30 @@
   import { Copyable, Icon, Identity, Modal } from "ui/DesignSystem";
   import TxSpinner from "ui/DesignSystem/Transaction/Spinner.svelte";
   import Summary from "ui/DesignSystem/Transaction/Summary.svelte";
+  import * as modal from "ui/src/modal";
 
   import type { Tx } from "ui/src/transaction";
   import * as format from "ui/src/format";
-  import {
-    TxKind,
-    TxStatus,
-    colorForStatus,
-    selectedStore,
-    store as txs,
-  } from "ui/src/transaction";
+  import * as error from "ui/src/error";
+  import { TxKind, colorForStatus, store as txs } from "ui/src/transaction";
 
-  // In reality, the transaction should never be undefined,
-  // but because the only way we currently have use it here
-  // is by looking it up, type-wise it can.
-  let tx: Tx | undefined = undefined;
+  export let transactionHash: string;
 
-  $: tx = $txs.find(x => x.hash === $selectedStore);
+  let tx: Tx;
+  $: {
+    const found = $txs.find(tx => tx.hash === transactionHash);
+    if (!found) {
+      modal.hide();
+      throw new error.Error({
+        message: "Failed to find transaction",
+        details: { transactionHash },
+      });
+    }
+    tx = found;
+  }
 
-  $: statusColor = colorForStatus(tx?.status || TxStatus.AwaitingInclusion);
-  $: transferedAmount = tx ? transferAmount(tx) : undefined;
-  $: incoming = tx ? isIncoming(tx) : false;
+  $: transferedAmount = transferAmount(tx);
+  $: incoming = isIncoming(tx);
 
   export function isIncoming(tx: Tx): boolean {
     switch (tx.kind) {
@@ -181,72 +184,69 @@
   }
 </style>
 
-<Modal
-  emoji={tx && emoji(tx)}
-  title={tx && tx.kind}
-  dataCy="transaction-summary">
-  {#if tx}
-    <header>
-      <Summary {tx} />
-      {#if showPoolCard(tx.kind)}
-        <div class="from-to" class:incoming>
-          <div>
-            <p class="typo-text-bold" style="margin-bottom: 0.5rem">
-              Radicle Pool
-            </p>
-            <Copyable name="pool address" clipboardContent={tx.to}>
-              <p class="address typo-text">{tx.to || "n/a"}</p>
-            </Copyable>
-          </div>
-
-          <div class="arrow">
-            <Icon.ArrowDown />
-          </div>
-
-          <Identity address={tx.from} />
+<Modal emoji={emoji(tx)} title={tx.kind} dataCy="transaction-summary">
+  <header>
+    <Summary {tx} />
+    {#if showPoolCard(tx.kind)}
+      <div class="from-to" class:incoming>
+        <div>
+          <p class="typo-text-bold" style="margin-bottom: 0.5rem">
+            Radicle Pool
+          </p>
+          <Copyable name="pool address" clipboardContent={tx.to}>
+            <p class="address typo-text">{tx.to || "n/a"}</p>
+          </Copyable>
         </div>
-      {/if}
-    </header>
 
-    <div class="content">
-      {#if transferedAmount}
-        <div class="section">
-          <div class="row">
-            <p>Amount</p>
-            <p class="typo-semi-bold">
-              {#if incoming}
-                {transferedAmount} DAI
-              {:else}
-                - {transferedAmount} DAI
-              {/if}
-            </p>
-          </div>
+        <div class="arrow">
+          <Icon.ArrowDown />
         </div>
-      {/if}
 
+        <Identity address={tx.from} />
+      </div>
+    {/if}
+  </header>
+
+  <div class="content">
+    {#if transferedAmount}
       <div class="section">
         <div class="row">
-          <p>Transaction ID</p>
-          <p class="typo-text-small-mono">
-            <Copyable name="transaction hash" clipboardContent={tx.hash}>
-              {format.shortEthTx(tx.hash)}
-            </Copyable>
-          </p>
-        </div>
-        <div class="row">
-          <p>Status</p>
-          <div class="row" data-cy="transaction-status">
-            <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
-            <p style="margin-left: 0.5rem; color: {statusColor}">{tx.status}</p>
-          </div>
-        </div>
-        <div class="row">
-          <p>Timestamp</p>
-          <p>
-            {dayjs(tx.date).format("HH:mm:ss [on] D MMMM YYYY")}
+          <p>Amount</p>
+          <p class="typo-semi-bold">
+            {#if incoming}
+              {transferedAmount} DAI
+            {:else}
+              - {transferedAmount} DAI
+            {/if}
           </p>
         </div>
       </div>
+    {/if}
+
+    <div class="section">
+      <div class="row">
+        <p>Transaction ID</p>
+        <p class="typo-text-small-mono">
+          <Copyable name="transaction hash" clipboardContent={tx.hash}>
+            {format.shortEthTx(tx.hash)}
+          </Copyable>
+        </p>
+      </div>
+      <div class="row">
+        <p>Status</p>
+        <div class="row" data-cy="transaction-status">
+          <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
+          <p style="margin-left: 0.5rem; color: {colorForStatus(tx.status)}">
+            {tx.status}
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <p>Timestamp</p>
+        <p>
+          {dayjs(tx.date).format("HH:mm:ss [on] D MMMM YYYY")}
+        </p>
+      </div>
     </div>
-  {/if}
+  </div>
 </Modal>

@@ -320,10 +320,6 @@ export const colorForStatus = (status: TxStatus): string => {
   }
 };
 
-// A store containing the hash of a transaction selected by the
-// user in the TransactionCenter.
-export const selectedStore = svelteStore.writable<string>("");
-
 // Convert a transaction-related error to `error.Error`.
 export function convertError(e: unknown, label: string): error.Error {
   let code = error.Code.UnkownTransactionFailure;

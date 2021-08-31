@@ -7,7 +7,6 @@
 -->
 <script lang="typescript">
   import * as modal from "ui/src/modal";
-  import { selectedStore } from "ui/src/transaction";
   import type { Tx } from "ui/src/transaction";
 
   import ModalTransaction from "ui/Modal/Transaction.svelte";
@@ -17,9 +16,9 @@
   export let txs: Tx[];
 
   const onSelect = (hash: string) => {
-    selectedStore.set(hash);
-    modal.hide();
-    modal.toggle(ModalTransaction);
+    modal.toggle(ModalTransaction, () => {}, {
+      transactionHash: hash,
+    });
   };
 </script>
 
