@@ -339,7 +339,7 @@ context("patches", () => {
     }
   );
 
-  it(
+  it.skip(
     "updates maintainer view when a patch has been received",
     // Project replication may take longer than the default timeout.
     { defaultCommandTimeout: 8000 },
