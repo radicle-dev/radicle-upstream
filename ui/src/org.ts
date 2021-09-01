@@ -347,10 +347,10 @@ async function fetchOrgs(): Promise<void> {
       })
     );
 
-    return lodash.sortBy(orgs, org => org.timestamp)
+    return lodash.sortBy(orgs, org => org.timestamp);
   });
 
-  if(sortedOrgs) {
+  if (sortedOrgs) {
     orgSidebarStore.set(sortedOrgs);
   }
 }
