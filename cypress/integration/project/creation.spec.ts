@@ -6,7 +6,7 @@
 
 import * as ipcStub from "../../support/ipc-stub";
 import * as commands from "../../support/commands";
-import * as config from "../../../ui/src/config";
+import * as project from "../../../ui/src/project";
 
 context("project creation", () => {
   const withEmptyDirectoryStub = (callback: () => void) => {
@@ -341,7 +341,7 @@ context("project creation", () => {
           ipcStub.getStubs().then(stubs => {
             stubs.getGitGlobalDefaultBranch.returns(undefined);
           });
-          go(config.UPSTREAM_DEFAULT_BRANCH);
+          go(project.UPSTREAM_DEFAULT_BRANCH);
         });
       });
 

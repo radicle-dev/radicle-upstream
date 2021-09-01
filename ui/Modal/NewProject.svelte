@@ -8,21 +8,21 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
 
-  import { UPSTREAM_DEFAULT_BRANCH } from "ui/src/config";
   import * as notification from "ui/src/notification";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
   import {
+    UPSTREAM_DEFAULT_BRANCH,
     clearLocalState,
     defaultBranch,
     defaultBranchForNewRepository,
+    descriptionValidationStore,
+    extractName,
+    formatNameInput,
     localState,
     nameValidationStore,
-    descriptionValidationStore,
-    formatNameInput,
-    extractName,
     repositoryPathValidationStore,
   } from "ui/src/project";
   import * as proxy from "ui/src/proxy";

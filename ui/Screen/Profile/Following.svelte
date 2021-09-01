@@ -10,7 +10,6 @@
 
   import ModalSearch from "../../Modal/Search.svelte";
 
-  import { FADE_DURATION } from "ui/src/config";
   import * as modal from "ui/src/modal";
   import { following as store, fetchFollowing } from "../../src/profile";
   import * as proxy from "../../src/proxy";
@@ -31,6 +30,7 @@
     Remote,
   } from "ui/DesignSystem";
 
+  const FADE_DURATION = 200;
   const session = Session.unsealed();
   const onCancel = (urn: Urn): void => {
     proxy.client.project.requestCancel(urn).then(fetchFollowing);

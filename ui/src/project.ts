@@ -8,7 +8,6 @@ import { get, writable } from "svelte/store";
 
 import type * as ensResolver from "./org/ensResolver";
 import * as error from "./error";
-import * as config from "./config";
 import type * as identity from "./identity";
 import * as ipc from "./ipc";
 import * as remote from "./remote";
@@ -96,9 +95,12 @@ const fetchLocalState = (path: string): void => {
     .catch(err => localStateStore.error(error.fromUnknown(err)));
 };
 
+export const UPSTREAM_DEFAULT_BRANCH = "main";
+const GIT_DEFAULT_BRANCH = "master";
+
 // NEW PROJECT
 export const localStateError = writable<string>("");
-export const defaultBranch = writable<string>(config.UPSTREAM_DEFAULT_BRANCH);
+export const defaultBranch = writable<string>(UPSTREAM_DEFAULT_BRANCH);
 
 const projectNameMatch = "^[a-z0-9][a-z0-9._-]+$";
 
@@ -109,15 +111,10 @@ export const extractName = (repoPath: string): string =>
 
 // The default branches supported for preselection when importing
 // a new project. Sorted by preference of preselection.
-const DEFAULT_BRANCHES = [
-  config.UPSTREAM_DEFAULT_BRANCH,
-  config.GIT_DEFAULT_BRANCH,
-];
+const DEFAULT_BRANCHES = [UPSTREAM_DEFAULT_BRANCH, GIT_DEFAULT_BRANCH];
 
 export const defaultBranchForNewRepository = async (): Promise<string> => {
-  return (
-    (await ipc.getGitGlobalDefaultBranch()) || config.UPSTREAM_DEFAULT_BRANCH
-  );
+  return (await ipc.getGitGlobalDefaultBranch()) || UPSTREAM_DEFAULT_BRANCH;
 };
 
 const fetchBranches = async (path: string) => {

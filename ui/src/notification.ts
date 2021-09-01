@@ -5,7 +5,6 @@
 // LICENSE file.
 
 import { Readable, derived, writable } from "svelte/store";
-import * as config from "./config";
 
 export enum Variant {
   Error = "ERROR",
@@ -117,7 +116,7 @@ const show = (variant: Variant, params: NotificationParams): Handle => {
   if (params.persist !== true) {
     setTimeout(() => {
       remove(notification.id);
-    }, config.NOTIFICATION_TIMEOUT);
+    }, 8000);
   }
 
   return {

@@ -8,7 +8,6 @@ import { get } from "svelte/store";
 
 import * as project from "./project";
 import * as remote from "./remote";
-import { UPSTREAM_DEFAULT_BRANCH } from "./config";
 
 import { localStateMock } from "./__mocks__/api";
 
@@ -63,7 +62,9 @@ describe("creating a project", () => {
       validation.validate("/repository/path");
 
       process.nextTick(() => {
-        expect(get(project.defaultBranch)).toEqual(UPSTREAM_DEFAULT_BRANCH);
+        expect(get(project.defaultBranch)).toEqual(
+          project.UPSTREAM_DEFAULT_BRANCH
+        );
       });
     });
   });
