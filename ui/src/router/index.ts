@@ -6,9 +6,12 @@
 
 import * as svelteStore from "svelte/store";
 
+import { sleep } from "ui/src/sleep";
+import * as config from "ui/src/config";
 import * as error from "ui/src/error";
-import * as screen from "ui/src/screen";
 import * as mutexExecutor from "ui/src/mutexExecutor";
+import * as notification from "ui/src/notification";
+import * as screen from "ui/src/screen";
 
 import { Route, LoadedRoute, loadRoute, routeToPath } from "./definition";
 export * from "./definition";
@@ -36,8 +39,37 @@ const setHistory = async (history: Route[]) => {
   const targetRoute = history.slice(-1)[0];
 
   const loadedRoute = await historyExecutor.run(() =>
-    screen.withLock(() => loadRoute(targetRoute))
+    screen.withLock(async () => {
+      const result = await Promise.race([
+        loadRoute(targetRoute),
+        sleep(config.ROUTE_LOADING_TIMEOUT),
+      ]);
+
+      if (result) {
+        return result;
+      } else {
+        notification.error({
+          message: `Request took longer than ${
+            config.ROUTE_LOADING_TIMEOUT / 1000
+          } seconds`,
+          actions: [
+            {
+              label: "Retry",
+              handler: () => {
+                setHistory(history);
+              },
+            },
+            {
+              label: "Dismiss",
+              handler: () => {},
+            },
+          ],
+        });
+        return;
+      }
+    })
   );
+
   if (loadedRoute === undefined) {
     return;
   }

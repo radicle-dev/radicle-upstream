@@ -13,6 +13,7 @@ export const UPSTREAM_DEFAULT_BRANCH = "main";
 export const GIT_DEFAULT_BRANCH = "master";
 export const NOTIFICATION_TIMEOUT = 8000; // ms
 export const FADE_DURATION = 200;
+export const ROUTE_LOADING_TIMEOUT = 10_000; // ms
 export const INFURA_API_KEY_RINKEBY = "de5e2a8780c04964950e73b696d1bfb1";
 export const INFURA_API_KEY_MAINNET = "7a19a4bf0af84fcc86ffb693a257fad4";
 
