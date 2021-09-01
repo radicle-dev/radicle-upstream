@@ -51,16 +51,14 @@ possible in other wallet.
 7. Select Mainnet as the network in the wallet.
 8. The screen showing 🥀 should have vanished.
 
-## Reject connection (fails)
-
-This test case fails at the moment because of [a bug][reject-bug] in
-WalletConnect.
+## Reject connection
 
 1. Ensure you are disconnected.
 2. Click on “Connect your wallet”.
 3. Scan the QR code or paste the link into the wallet.
 4. Reject the connection in the wallet.
-5. In the app, you should see the screen that asks you to connect to a wallet.
+5. In the app, you should an error notification and the screen that asks you to
+   connect to a wallet.
 
 [reject-bug]: https://github.com/WalletConnect/walletconnect-monorepo/issues/512
 [test-wallet]: https://test.walletconnect.org/

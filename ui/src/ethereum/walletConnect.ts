@@ -90,6 +90,7 @@ export class WalletConnectClient implements WalletConnect {
     uri: string;
     onClose: () => void;
   }>();
+  private sessionRejected = new bacon.Bus<void>();
 
   public connection: svelteStore.Readable<Connection | undefined>;
 
@@ -113,7 +114,15 @@ export class WalletConnectClient implements WalletConnect {
         qrDisplay.show(uri, onClose);
       });
       try {
-        const sessionStatus = await this.connector.connect();
+        const sessionStatus = await Promise.race([
+          this.connector.connect(),
+          this.sessionRejected.firstToPromise(),
+        ]);
+        if (!sessionStatus) {
+          throw new Error.Error({
+            message: "Wallet connection rejected",
+          });
+        }
         this.setConnection(sessionStatus);
         return true;
       } catch (e: unknown) {
@@ -189,15 +198,19 @@ export class WalletConnectClient implements WalletConnect {
     // instance but WalletConnect does not yet support this.
     //
     // https://github.com/WalletConnect/walletconnect-monorepo/issues/340
-    this.connector.on("disconnect", () => {
-      // WalletConnect only clears the local storage _after_ the
-      // "disconnect" event is fired. If we call `reinit()`
-      // immediately, the new instance will use the state in local
-      // storage which is still connected.
-      setTimeout(() => {
-        this.reinit();
-        this.setConnection(undefined);
-      });
+    this.connector.on("disconnect", (_, payload) => {
+      if (payload?.params[0]?.message === "Session Rejected") {
+        this.sessionRejected.push();
+      } else {
+        // WalletConnect only clears the local storage _after_ the
+        // "disconnect" event is fired. If we call `reinit()`
+        // immediately, the new instance will use the state in local
+        // storage which is still connected.
+        setTimeout(() => {
+          this.reinit();
+          this.setConnection(undefined);
+        });
+      }
     });
 
     this.connector.on("session_update", (_error, { params }) => {
