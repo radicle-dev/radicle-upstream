@@ -8,8 +8,10 @@ import execa from "execa";
 import * as radicleContracts from "radicle-contracts";
 import * as ethers from "ethers";
 import waitOn from "wait-on";
+import assert from "assert";
 
 import type { Plugin } from "./api";
+import * as contractAddresses from "ui/src/ethereum/contractAddresses";
 
 let ganacheProcess: execa.ExecaChildProcess;
 
@@ -43,8 +45,21 @@ export const ethereumDevNodePlugin: Plugin = {
     const signer = provider.getSigner(0);
 
     const address = await signer.getAddress();
-    await radicleContracts.deployClaims(signer);
-    await radicleContracts.deployRadicleToken(signer, address);
+    const claimsContract = await radicleContracts.deployClaims(signer);
+    assert.strictEqual(
+      claimsContract.address.toLowerCase(),
+      contractAddresses.claims.local.toLowerCase(),
+      "Locally deployed contract address does not match configured contract address. Please update `ui/src/ethereum/contractAddresses`"
+    );
+    const radTokenContract = await radicleContracts.deployRadicleToken(
+      signer,
+      address
+    );
+    assert.strictEqual(
+      radTokenContract.address.toLowerCase(),
+      contractAddresses.radToken.local.toLowerCase(),
+      "Locally deployed contract address does not match configured contract address. Please update `ui/src/ethereum/contractAddresses`"
+    );
 
     return null;
   },

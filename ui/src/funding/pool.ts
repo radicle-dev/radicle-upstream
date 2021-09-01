@@ -83,8 +83,7 @@ export enum ReceiverStatus {
 
 export function make(wallet: Wallet): Pool {
   const data = remote.createStore<PoolData>();
-  const poolAddress = contract.poolAddress(wallet.environment);
-  const poolContract = contract.pool(wallet.signer, poolAddress);
+  const poolContract = contract.pool(wallet.signer, wallet.environment);
   const daiTokenContract = daiToken.connect(wallet.signer, wallet.environment);
   const watcher = new PoolWatcher(poolContract, daiTokenContract);
 
@@ -183,7 +182,7 @@ export function make(wallet: Wallet): Pool {
   async function approveErc20(): Promise<void> {
     const unlimited = ethers.BigNumber.from(1).shl(256).sub(1);
     return daiTokenContract
-      .approve(poolAddress, unlimited)
+      .approve(poolContract.contractAddr(), unlimited)
       .then((tx: ContractTransaction) => {
         transaction.add(transaction.erc20Allowance(tx));
       })

@@ -11,6 +11,9 @@ import execa from "execa";
 import * as radicleContracts from "radicle-contracts";
 import * as ethers from "ethers";
 import waitOn from "wait-on";
+import assert from "assert";
+
+import * as contractAddresses from "../ui/src/ethereum/contractAddresses";
 
 const ethAccountFile = "sandbox/.local-eth-account";
 
@@ -56,15 +59,31 @@ async function main() {
   const address = await signer.getAddress();
 
   const claimsContract = await radicleContracts.deployClaims(signer);
+  assert.strictEqual(
+    claimsContract.address.toLowerCase(),
+    contractAddresses.claims.local.toLowerCase(),
+    "Locally deployed contract address does not match configured contract address. Please update `ui/src/ethereum/contractAddresses`"
+  );
+
   const radContract = await radicleContracts.deployRadicleToken(
     signer,
     address
+  );
+  assert.strictEqual(
+    radContract.address.toLowerCase(),
+    contractAddresses.radToken.local.toLowerCase(),
+    "Locally deployed contract address does not match configured contract address. Please update `ui/src/ethereum/contractAddresses`"
   );
 
   const poolContract = await radicleContracts.deployErc20Pool(
     signer,
     10,
     radContract.address
+  );
+  assert.strictEqual(
+    poolContract.address.toLowerCase(),
+    contractAddresses.fundingPool.local.toLowerCase(),
+    "Locally deployed contract address does not match configured contract address. Please update `ui/src/ethereum/contractAddresses`"
   );
 
   // Set the initial balance of the used erc20 token for the development account.

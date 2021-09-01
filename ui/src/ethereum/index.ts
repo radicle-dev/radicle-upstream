@@ -12,8 +12,9 @@ import { config, isCypressTestEnv } from "ui/src/config";
 import * as error from "ui/src/error";
 
 import { Environment, Network, supportedNetwork } from "./environment";
+import * as contractAddresses from "./contractAddresses";
 
-export { Environment, supportedNetwork, Network };
+export { Environment, supportedNetwork, Network, contractAddresses };
 
 // The store where the selected Ethereum environment is persisted.
 export const selectedEnvironment = persistentStore.local.writable<Environment>(

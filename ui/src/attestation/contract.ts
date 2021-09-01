@@ -18,23 +18,15 @@ import { parseIdentitySha1 } from "ui/src/urn";
 import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as error from "ui/src/error";
 
-const addresses = {
-  claims: {
-    local: "0xff1d4d289bf0aaaf918964c57ac30481a67728ef",
-    rinkeby: "0x6c7b50EA0AFB02d73AE3846B3B9EBC31808300a6",
-    mainnet: "0x4a7DFda4F2e9F062965cC87f775841fB58AEA83e",
-  },
-};
-
 // Get the address of the Claims Contract for the given environment
 export function claimsAddress(environment: ethereum.Environment): string {
   switch (environment) {
     case ethereum.Environment.Local:
-      return addresses.claims.local;
+      return ethereum.contractAddresses.claims.local;
     case ethereum.Environment.Rinkeby:
-      return addresses.claims.rinkeby;
+      return ethereum.contractAddresses.claims.rinkeby;
     case ethereum.Environment.Mainnet:
-      return addresses.claims.mainnet;
+      return ethereum.contractAddresses.claims.mainnet;
   }
 }
 

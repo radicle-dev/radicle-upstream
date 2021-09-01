@@ -21,9 +21,9 @@ function registrarAddress(network: ethereum.Environment): string {
         message: "ENS Registrar not available on the Local testnet",
       });
     case ethereum.Environment.Rinkeby:
-      return "0x80b68878442b6510D768Be1bd88712710B86eAcD";
+      return ethereum.contractAddresses.radicleEnsRegistrar.rinkeby;
     case ethereum.Environment.Mainnet:
-      return "0x37723287Ae6F34866d82EE623401f92Ec9013154";
+      return ethereum.contractAddresses.radicleEnsRegistrar.mainnet;
   }
 }
 

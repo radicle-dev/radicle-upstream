@@ -18,11 +18,6 @@ import type { TypedEvent } from "radicle-contracts/build/contract-bindings/ether
 
 import * as ethereum from "../ethereum";
 
-const addresses = {
-  local: "0x801Db725a6B32DC3C9917CDB4CD0138F0C5907E7",
-  rinkeby: "0x8c6E1E293346cc4cD31A1972D94DaDcecEd98997",
-};
-
 interface SenderUpdatedArgs {
   sender: string;
   balance: BigNumber;
@@ -46,22 +41,25 @@ type SenderToReceiverUpdatedEvent = TypedEvent<
   SenderToReceiverUpdatedArgs & Array<unknown>
 >;
 
-// Get the address of the Pool Contract for the given environment
-export function poolAddress(environment: ethereum.Environment): string {
+export function pool(
+  signer: Signer,
+  environment: ethereum.Environment
+): PoolContract {
+  let address;
   switch (environment) {
     case ethereum.Environment.Local:
-      return addresses.local;
+      address = ethereum.contractAddresses.fundingPool.local;
+      break;
     case ethereum.Environment.Rinkeby:
-      return addresses.rinkeby;
+      address = ethereum.contractAddresses.fundingPool.rinkeby;
+      break;
     case ethereum.Environment.Mainnet:
       throw new error.Error({
         code: error.Code.FeatureNotAvailableForGivenNetwork,
         message: "Token streaming contracts are not yet deployed on mainnet",
       });
   }
-}
 
-export function pool(signer: Signer, address: string): PoolContract {
   return new PoolContract(signer, address);
 }
 
