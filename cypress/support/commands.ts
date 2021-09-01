@@ -4,6 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import * as path from "path";
 import * as proxy from "ui/src/proxy";
 import { sleep } from "ui/src/sleep";
 import { createPlugin } from "cypress/support/plugin";
@@ -40,30 +41,28 @@ export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
 const TMP_DIR_ROOT = "./cypress/workspace/test-tmp";
 
 // Create a temporary directory in TMP_DIR_ROOT and pass it to the
-// callback. The name of the temporary directory is based on the
-// current test name
-export const withTempDir = (callback: (tempDirPath: string) => void): void => {
+// callback. The name of the temporary directory is the name of the current
+// test. The directory is removed if the test passes succesfully.
+export function withTempDir(callback: (tempDirPath: string) => void): void {
   const testName = getCurrentTestName();
+  const tempDir = path.join(TMP_DIR_ROOT, testName);
   cy.exec(
     `set -euo pipefail
-    mkdir -p "${TMP_DIR_ROOT}"
-    temp_dir=$(mktemp -d "${TMP_DIR_ROOT}/${testName}.XXXX")
-    chmod a+rx "$temp_dir"
-    echo "$temp_dir"`,
+    rm -rf "${tempDir}"
+    mkdir -p "${tempDir}"
+    chmod a+rx "${tempDir}"`,
     { log: false }
-  ).then(({ stdout }) => {
-    const path = stdout.trim();
-    Cypress.log({
-      name: "tmp",
-      message: "using temporary directory",
-      consoleProps: () => ({
-        path,
-      }),
-    });
-    callback(path);
-    cy.exec(`rm -r "${path}"`);
+  );
+  Cypress.log({
+    name: "tmp",
+    message: "using temporary directory",
+    consoleProps: () => ({
+      tempDir,
+    }),
   });
-};
+  callback(tempDir);
+  cy.exec(`rm -r "${tempDir}"`);
+}
 
 // Selects one or more elements with the given `data-cy` ID that
 // contain the given content.
