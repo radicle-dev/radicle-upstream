@@ -107,6 +107,13 @@ const pollOrgListForever = async (
 export function initialize(): void {
   if (!isCypressTestEnv) {
     pollOrgListForever();
+    const walletStore = svelteStore.get(wallet.store);
+    walletStore.subscribe(state => {
+      if (state.status === wallet.Status.Connected) {
+        orgSidebarStore.set([]);
+        fetchOrgs();
+      }
+    });
   }
 }
 
@@ -306,40 +313,46 @@ export async function createOrg(
 }
 
 export const orgSidebarStore = svelteStore.writable<Org[]>([]);
+const fetchOrgsExecutor = mutexExecutor.create();
 
 async function fetchOrgs(): Promise<void> {
-  const walletStore = svelteStore.get(wallet.store);
-  const wallet_ = svelteStore.get(walletStore);
+  const sortedOrgs = await fetchOrgsExecutor.run(async () => {
+    const walletStore = svelteStore.get(wallet.store);
+    const wallet_ = svelteStore.get(walletStore);
 
-  if (wallet_.status !== wallet.Status.Connected) {
-    throw new error.Error({
-      code: error.Code.OrgFetchOrgsCalledWithNoWallet,
-      message: "Tried to call fetchOrgs while the wallet wasn't connected",
-    });
+    if (wallet_.status !== wallet.Status.Connected) {
+      throw new error.Error({
+        code: error.Code.OrgFetchOrgsCalledWithNoWallet,
+        message: "Tried to call fetchOrgs while the wallet wasn't connected",
+      });
+    }
+
+    const walletAddress = wallet_.connected.address;
+
+    const gnosisSafeWallets = await Safe.getSafesByOwner(
+      walletStore.environment,
+      walletAddress
+    );
+    let orgs = await graph.getOrgs(walletAddress, gnosisSafeWallets);
+
+    orgs = await Promise.all(
+      orgs.map(async org => {
+        const registration = await ensResolver.getCachedRegistrationByAddress(
+          org.id
+        );
+        if (registration) {
+          org.registration = registration;
+        }
+        return org;
+      })
+    );
+
+    return lodash.sortBy(orgs, org => org.timestamp)
+  });
+
+  if(sortedOrgs) {
+    orgSidebarStore.set(sortedOrgs);
   }
-
-  const walletAddress = wallet_.connected.address;
-
-  const gnosisSafeWallets = await Safe.getSafesByOwner(
-    walletStore.environment,
-    walletAddress
-  );
-  let orgs = await graph.getOrgs(walletAddress, gnosisSafeWallets);
-
-  orgs = await Promise.all(
-    orgs.map(async org => {
-      const registration = await ensResolver.getCachedRegistrationByAddress(
-        org.id
-      );
-      if (registration) {
-        org.registration = registration;
-      }
-      return org;
-    })
-  );
-
-  const sortedOrgs = lodash.sortBy(orgs, org => org.timestamp);
-  orgSidebarStore.set(sortedOrgs);
 }
 
 // Owner of an org that controlls the interaction with the org
