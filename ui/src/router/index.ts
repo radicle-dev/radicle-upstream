@@ -9,6 +9,8 @@ import * as svelteStore from "svelte/store";
 import * as error from "ui/src/error";
 import * as screen from "ui/src/screen";
 import * as mutexExecutor from "ui/src/mutexExecutor";
+import * as notification from "ui/src/notification";
+import * as bacon from "ui/src/bacon";
 
 import { Route, LoadedRoute, loadRoute, routeToPath } from "./definition";
 export * from "./definition";
@@ -35,9 +37,49 @@ const setHistory = async (history: Route[]) => {
   }
   const targetRoute = history.slice(-1)[0];
 
-  const loadedRoute = await historyExecutor.run(() =>
-    screen.withLock(() => loadRoute(targetRoute))
-  );
+  const loadedRoute = await historyExecutor.run(async () => {
+    let notificationHandle: notification.Handle | undefined;
+    let notificationTimeout;
+
+    const abort = new bacon.Bus<void>();
+
+    function scheduleNotification() {
+      notificationTimeout = setTimeout(() => {
+        notificationHandle = notification.info({
+          persist: true,
+          bypassLockedScreen: true,
+          message: "This seems to be taking a while",
+          actions: [
+            {
+              label: "Keep waiting",
+              handler: () => {
+                scheduleNotification();
+              },
+            },
+            {
+              label: "Stop loading",
+              handler: () => {
+                abort.push();
+              },
+            },
+          ],
+        });
+      }, 10_000);
+    }
+
+    scheduleNotification();
+
+    try {
+      return await screen.withLock(() => {
+        return Promise.race([abort.firstToPromise(), loadRoute(targetRoute)]);
+      });
+    } finally {
+      clearTimeout(notificationTimeout);
+      if (notificationHandle) {
+        notificationHandle.remove();
+      }
+    }
+  });
   if (loadedRoute === undefined) {
     return;
   }

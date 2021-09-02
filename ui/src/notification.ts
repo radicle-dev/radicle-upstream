@@ -25,6 +25,10 @@ export interface NotificationParams {
   // If `true`, the notification does not automatically disappear after
   // a certain time. Defaults to `false`.
   persist?: boolean;
+  // If `true`, the user is allowed to interact with the notification even when
+  // the screen is in a waiting waiting state, i.e. cursor is a spinner and mouse
+  // clicks are disabled.
+  bypassLockedScreen?: boolean;
 }
 
 export interface Notification {
@@ -34,6 +38,7 @@ export interface Notification {
   readonly message: string;
   readonly actions: readonly Action[];
   readonly icon: Icon | null;
+  readonly bypassLockedScreen?: boolean;
 }
 
 // We can’t use `DesignSystem/Primitives/Icon` directly because this
@@ -105,6 +110,7 @@ export const create = (
     message: params.message,
     showIcon,
     actions,
+    bypassLockedScreen: params.bypassLockedScreen,
     icon,
   };
 };

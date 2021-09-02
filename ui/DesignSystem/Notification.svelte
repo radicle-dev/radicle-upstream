@@ -40,8 +40,12 @@
     margin-top: 8px;
     user-select: none;
     white-space: nowrap;
-
     color: var(--color-background);
+  }
+
+  .bypassLockedScreen {
+    pointer-events: auto;
+    cursor: pointer;
   }
 
   .notification :global(svg) {
@@ -92,7 +96,10 @@
   }
 </style>
 
-<div class={`notification ${variantClass}`} {style}>
+<div
+  class={`notification ${variantClass}`}
+  class:bypassLockedScreen={notification.bypassLockedScreen}
+  {style}>
   {#if icon}
     <svelte:component this={icon} style="margin-left: 8px; height: 24px" />
   {/if}
