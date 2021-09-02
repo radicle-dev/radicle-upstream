@@ -64,11 +64,6 @@ if (process.env.RAD_HOME) {
   app.setPath("appData", electronPath);
 }
 
-// The default value of app.allowRendererProcessReuse is deprecated, it is
-// currently "false".  It will change to be "true" in Electron 9.  For more
-// information please check https://github.com/electron/electron/issues/18397
-app.allowRendererProcessReuse = true;
-
 class WindowManager {
   public window: BrowserWindow | null;
   private messages: MainMessage[];
