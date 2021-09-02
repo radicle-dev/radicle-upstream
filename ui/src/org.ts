@@ -315,7 +315,7 @@ export async function createOrg(
 export const orgSidebarStore = svelteStore.writable<Org[]>([]);
 const fetchOrgsExecutor = mutexExecutor.create();
 
-async function fetchOrgs(): Promise<void> {
+export async function fetchOrgs(): Promise<void> {
   const sortedOrgs = await fetchOrgsExecutor.run(async () => {
     const walletStore = svelteStore.get(wallet.store);
     const wallet_ = svelteStore.get(walletStore);

@@ -8,6 +8,7 @@ import * as ensResolver from "ui/src/org/ensResolver";
 import * as notification from "ui/src/notification";
 import * as router from "ui/src/router";
 import * as svelteStore from "ui/src/svelteStore";
+import * as org from "ui/src/org";
 
 // If the user is on the screen of `orgAddress`, populate the screen with the
 // updated registration metadata and show a notification.
@@ -15,6 +16,8 @@ import * as svelteStore from "ui/src/svelteStore";
 // If the user has navigated away to another screen, show a notification about
 // the updated registration metadata and a button to navigate back to the org
 // screen of `orgAddress`.
+//
+// In both cases also update the org list in the sidebar.
 export async function updateScreenAndNotifyUser(
   orgAddress: string,
   message: string
@@ -23,8 +26,9 @@ export async function updateScreenAndNotifyUser(
     orgAddress,
     true
   );
-  const activeRoute = svelteStore.get(router.activeRouteStore);
+  org.fetchOrgs();
 
+  const activeRoute = svelteStore.get(router.activeRouteStore);
   let actions;
 
   if (
