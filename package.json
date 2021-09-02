@@ -124,7 +124,7 @@
     "twemoji": "13.1.0",
     "uuid": "^8.3.2",
     "validate.js": "^0.13.1",
-    "zod": "=3.2.0"
+    "zod": "^3.8.1"
   },
   "devDependencies": {
     "@ethersproject/cli": "^5.4.0",

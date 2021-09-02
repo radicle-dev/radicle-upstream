@@ -75,10 +75,10 @@ const blobContentSchema: zod.Schema<BlobContent> = zod.union([
   zod.object({ binary: zod.literal(true) }),
 ]);
 
-const blobSchema: zod.Schema<Blob> = zod.intersection(
-  sourceObjectSchema,
-  blobContentSchema
-);
+// We can’t explicitly annotate this with the schema type.
+//
+// See https://github.com/colinhacks/zod/issues/541
+const blobSchema = zod.intersection(sourceObjectSchema, blobContentSchema);
 
 export enum RevisionType {
   Branch = "branch",

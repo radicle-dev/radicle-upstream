@@ -9880,7 +9880,7 @@ __metadata:
     wait-on: ^6.0.0
     webpack: 5.46.x
     webpack-cli: ^4.8.0
-    zod: =3.2.0
+    zod: ^3.8.1
   languageName: unknown
   linkType: soft
 
@@ -12666,9 +12666,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:=3.2.0":
-  version: 3.2.0
-  resolution: "zod@npm:3.2.0"
-  checksum: 6a1bd281ddf19fa73c8a578672c9300d2702f7cee63ddb5f855f776e3ae64ba5250925fb04a008245fa18c06248521bc613f9c280ba393bf286bf4d64c6550dc
+"zod@npm:^3.8.1":
+  version: 3.8.1
+  resolution: "zod@npm:3.8.1"
+  checksum: 99256c8853eb7ff386be4babb8dd0603a932cfd3e29233cd9f6d43eb6a7788b282b99d9254b16d652c410169d92bd976ad1d22e075275d563f4d0fda931df415
   languageName: node
   linkType: hard

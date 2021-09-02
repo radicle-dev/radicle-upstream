@@ -95,7 +95,11 @@ export class Fetcher {
   // Return the parsed payload.
   //
   // Throws `ResponseError` if the response status code is not `200`.
-  async fetchOk<T>(params: FetchParams, schema: zod.Schema<T>): Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async fetchOk<T extends zod.ZodType<any>>(
+    params: FetchParams,
+    schema: T
+  ): Promise<zod.infer<T>> {
     const response = await this.fetch(params);
 
     const responseBody = await response.json();
