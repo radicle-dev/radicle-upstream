@@ -116,7 +116,7 @@ const createQaIssues: yargs.CommandModule<unknown, unknown> = {
     const version = await getReleaseCandidateVersion();
 
     const qaTemplate = await fs.readFile(
-      path.resolve(__dirname, "..", "QA.md"),
+      path.resolve(__dirname, "..", "docs", "qa.md"),
       "utf8"
     );
     const qaIssueBody = qaTemplate.replace(/X\.X\.X/g, version);

@@ -528,7 +528,7 @@ All Github access tokens _must_ have the `public_repo` scope.
 [merging-prs]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
-[qa]: QA.md
+[qa]: qa.md
 [rd]: https://github.com/radicle-dev/radicle.xyz/blob/master/pages/downloads.html.mustache
 [rl]: https://github.com/radicle-dev/radicle-link
 [rs]: https://github.com/radicle-dev/radicle-surf/

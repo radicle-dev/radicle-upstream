@@ -105,8 +105,6 @@ In the local environment, we set up these three pieces as follows:
   networks such as mainnet or testnet. Therefore, no real assets used ever.
   Feel free to play around!
 
-![Radicle Funding Development Set up][dev-setup]
-
 **Getting started**
 
 - Install [walletconnect-test-wallet][wctw]
@@ -144,7 +142,6 @@ tabs:
 [wcw]:https://walletconnect.org/wallets/
 [wctw]:https://github.com/radicle-dev/walletconnect-test-wallet
 [rc]:https://github.com/radicle-dev/radicle-contracts
-[dev-setup]:./funding-dev-setup.svg "Radicle Funding Development Set up"
 [org]: https://radicle.community/t/feature-update-orgs/2132
 [fauc]: https://faucet.rinkeby.io
 [loc]: #local-environment
