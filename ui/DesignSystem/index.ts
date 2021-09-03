@@ -10,7 +10,6 @@ import Badge from "./Badge.svelte";
 import BranchBox from "./BranchBox.svelte";
 import Button from "./Button.svelte";
 import Checkbox from "./Checkbox.svelte";
-import Comment from "./Comment.svelte";
 import CompareBranches from "./CompareBranches.svelte";
 import Copyable from "./Copyable.svelte";
 import Dai from "./Dai.svelte";
@@ -27,7 +26,6 @@ import Icon from "./Icon";
 import Identifier from "./Identifier.svelte";
 import Identity from "./Identity.svelte";
 import KeyHint from "./KeyHint.svelte";
-import Label from "./Label.svelte";
 import List from "./List.svelte";
 import Markdown from "./Markdown.svelte";
 import Modal from "./Modal.svelte";
@@ -54,9 +52,7 @@ import Stats from "./Stats.svelte";
 import SupportButton from "./SupportButton.svelte";
 import TabBar from "./TabBar.svelte";
 import TextInput from "./TextInput.svelte";
-import Textarea from "./Textarea.svelte";
 import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
-import Timeline from "./Timeline.svelte";
 import Tooltip from "./Tooltip.svelte";
 import Topbar from "./Topbar.svelte";
 import TxButton from "./TxButton.svelte";
@@ -68,7 +64,6 @@ export {
   BranchBox,
   Button,
   Checkbox,
-  Comment,
   CompareBranches,
   Copyable,
   Dai,
@@ -85,7 +80,6 @@ export {
   Identifier,
   Identity,
   KeyHint,
-  Label,
   List,
   Markdown,
   Modal,
@@ -112,9 +106,7 @@ export {
   SupportButton,
   TabBar,
   TextInput,
-  Textarea,
   ThreeDotsMenu,
-  Timeline,
   Tooltip,
   Topbar,
   TxButton,

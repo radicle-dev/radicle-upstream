@@ -88,8 +88,4 @@
     <svelte:component this={txIcon(tx)} />
     <p class="typo-text-bold" style="margin-left: 0.5rem">{tx.kind}</p>
   </div>
-  <!-- <Label
-    title={`-${price} ETH`}
-    color="var(--color-negative-level-1)"
-    style="color: var(--color-negative)" /> -->
 </div>
