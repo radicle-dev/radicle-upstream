@@ -10,7 +10,7 @@
 
   import Outgoing from "./Pool/Outgoing.svelte";
   import Incoming from "./Pool/Incoming.svelte";
-  import ModalCollect from "ui/Modal/Funding/Pool/Collect.svelte";
+  import CollectModal from "./Pool/CollectModal.svelte";
 
   import * as modal from "ui/src/modal";
   import * as fundingPool from "ui/src/funding/pool";
@@ -19,7 +19,7 @@
 
   function onCollect() {
     fundingPool.store.set(pool);
-    modal.toggle(ModalCollect);
+    modal.toggle(CollectModal);
   }
 
   let ongoingCollect = false;

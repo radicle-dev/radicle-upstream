@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import { Button, Emoji, Spinner } from "ui/DesignSystem";
-  import ModalLinkAddress from "../../Modal/Funding/LinkAddress.svelte";
+  import LinkAddressModal from "./LinkAddressModal.svelte";
 
   import * as modal from "ui/src/modal";
   import { lastClaimed } from "../../src/attestation/lastClaimed";
@@ -16,7 +16,7 @@
   $: address = $walletStore.getAddress()?.toLowerCase();
 
   function onLink() {
-    modal.toggle(ModalLinkAddress);
+    modal.toggle(LinkAddressModal);
   }
 </script>
 

@@ -8,7 +8,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { Urn } from "../../src/urn";
+  import type { Urn } from "ui/src/urn";
   import type { User } from "ui/src/project";
 
   import { PeerType, PeerRole } from "ui/src/project";

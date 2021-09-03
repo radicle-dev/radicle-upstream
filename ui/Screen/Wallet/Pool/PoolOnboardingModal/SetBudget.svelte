@@ -12,7 +12,7 @@
     budgetStore,
     weeklyBudgetValidationStore,
   } from "ui/src/funding/pool";
-  import { ValidationStatus } from "../../../src/validation";
+  import { ValidationStatus } from "ui/src/validation";
 
   export let budget = "";
   export let onCancel: () => void;

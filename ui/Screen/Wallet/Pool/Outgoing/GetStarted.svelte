@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import { Button, Emoji } from "ui/DesignSystem";
-  import ModalPoolOnboarding from "../../../../Modal/Funding/Onboarding.svelte";
+  import PoolOnboardingModal from "../PoolOnboardingModal.svelte";
 
   import * as modal from "ui/src/modal";
   import * as fundingPool from "ui/src/funding/pool";
@@ -19,7 +19,7 @@
 
   function getStarted() {
     fundingPool.store.set(pool);
-    modal.toggle(ModalPoolOnboarding);
+    modal.toggle(PoolOnboardingModal);
   }
 </script>
 

@@ -36,8 +36,8 @@ import * as svelteStore from "ui/src/svelteStore";
 import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
 
-import ModalAnchorProject from "ui/Modal/Org/AnchorProject.svelte";
-import ConfigureEns from "ui/Modal/Org/ConfigureEns.svelte";
+import AnchorProjectModal from "ui/Screen/Org/AnchorProjectModal.svelte";
+import ConfigureEnsModal from "ui/Screen/Org/ConfigureEnsModal.svelte";
 
 export type { Org };
 
@@ -572,7 +572,7 @@ export async function openAnchorProjectModal(
     return { title: project.metadata.name, value: project.urn };
   });
 
-  modal.toggle(ModalAnchorProject, () => {}, {
+  modal.toggle(AnchorProjectModal, () => {}, {
     projects,
     orgAddress,
     ownerAddress,
@@ -670,7 +670,7 @@ export async function openEnsConfiguration(
   safeAddress?: string
 ): Promise<void> {
   const fee = await ensRegistrar.getFee();
-  modal.show(ConfigureEns, () => {}, {
+  modal.show(ConfigureEnsModal, () => {}, {
     safeAddress,
     orgAddress,
     registration,

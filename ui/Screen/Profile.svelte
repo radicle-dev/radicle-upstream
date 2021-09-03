@@ -24,7 +24,7 @@
   import ProfileHeader from "./Profile/ProfileHeader.svelte";
   import ProjectsTab from "./Profile/Projects.svelte";
 
-  import ModalNewProject from "ui/Modal/NewProject.svelte";
+  import CreateProjectModal from "ui/Screen/Project/CreateProjectModal.svelte";
 
   export let activeTab: router.ProfileTab;
 
@@ -66,7 +66,7 @@
       variant="outline"
       icon={Icon.Plus}
       on:click={() => {
-        modal.toggle(ModalNewProject);
+        modal.toggle(CreateProjectModal);
       }}>
       New project
     </Button>

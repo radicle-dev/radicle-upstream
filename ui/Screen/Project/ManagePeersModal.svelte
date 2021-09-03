@@ -6,17 +6,17 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { PeerId } from "../src/identity";
-  import { PeerType, PeerRole } from "../src/project";
-  import type { User } from "../src/project";
+  import type { PeerId } from "ui/src/identity";
+  import { PeerType, PeerRole } from "ui/src/project";
+  import type { User } from "ui/src/project";
   import {
     addPeer,
     pendingPeers,
     peerValidation,
     removePeer,
     store,
-  } from "../src/screen/project";
-  import type { Urn } from "../src/urn";
+  } from "ui/src/screen/project";
+  import type { Urn } from "ui/src/urn";
 
   import { Button, List, Modal, Remote, TextInput } from "ui/DesignSystem";
 

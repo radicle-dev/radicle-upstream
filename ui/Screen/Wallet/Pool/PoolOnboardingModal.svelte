@@ -6,12 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import Erc20Allowance from "./Onboarding/Erc20Allowance.svelte";
-  import Intro from "./Onboarding/Intro.svelte";
-  import SetBudget from "./Onboarding/SetBudget.svelte";
-  import TopUp from "./Onboarding/TopUp.svelte";
-  import AddReceivers from "./Onboarding/AddReceivers.svelte";
-  import Review from "./Onboarding/Review.svelte";
+  import Erc20Allowance from "./PoolOnboardingModal/Erc20Allowance.svelte";
+  import Intro from "./PoolOnboardingModal/Intro.svelte";
+  import SetBudget from "./PoolOnboardingModal/SetBudget.svelte";
+  import TopUp from "./PoolOnboardingModal/TopUp.svelte";
+  import AddReceivers from "./PoolOnboardingModal/AddReceivers.svelte";
+  import Review from "./PoolOnboardingModal/Review.svelte";
 
   import * as modal from "ui/src/modal";
   import { store } from "ui/src/funding/pool";

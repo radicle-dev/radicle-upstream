@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import ModalNewProject from "../../Modal/NewProject.svelte";
+  import CreateProjectModal from "ui/Screen/Project/CreateProjectModal.svelte";
 
   import * as modal from "ui/src/modal";
   import { fetchList, projects as store } from "ui/src/project";
@@ -20,7 +20,7 @@
   const session = Session.unsealed();
 
   const create = () => {
-    modal.toggle(ModalNewProject);
+    modal.toggle(CreateProjectModal);
   };
   const select = ({ detail: project }: { detail: Project }) =>
     router.push({

@@ -23,7 +23,7 @@
   import Avatar from "ui/DesignSystem/Avatar.svelte";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
-  import ModalCreateOrg from "ui/Modal/Org/Create.svelte";
+  import CreateOrgModal from "ui/Screen/Org/CreateOrgModal.svelte";
   import SidebarItem from "./SidebarItem.svelte";
 
   import Icon from "ui/DesignSystem/Icon";
@@ -76,7 +76,7 @@
     <SidebarItem
       indicator
       onClick={() =>
-        modal.toggle(ModalCreateOrg, () => {}, {
+        modal.toggle(CreateOrgModal, () => {}, {
           identity,
           walletAddress:
             $wallet.status === Wallet.Status.Connected

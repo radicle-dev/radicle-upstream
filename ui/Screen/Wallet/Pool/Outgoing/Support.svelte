@@ -17,8 +17,8 @@
   } from "ui/DesignSystem";
 
   import Receivers from "ui/DesignSystem/Funding/Pool/Receivers.svelte";
-  import ModalTopUp from "../../../../Modal/Funding/Pool/TopUp.svelte";
-  import ModalWithdraw from "../../../../Modal/Funding/Pool/Withdraw.svelte";
+  import TopUpModal from "../TopUpModal.svelte";
+  import WithdrawModal from "../WithdrawModal.svelte";
 
   import * as modal from "ui/src/modal";
   import * as remote from "ui/src/remote";
@@ -115,12 +115,12 @@
 
   const openTopUp = () => {
     fundingPool.store.set(pool);
-    modal.toggle(ModalTopUp);
+    modal.toggle(TopUpModal);
   };
 
   const openWithdrawModal = () => {
     fundingPool.store.set(pool);
-    modal.toggle(ModalWithdraw);
+    modal.toggle(WithdrawModal);
   };
 </script>
 

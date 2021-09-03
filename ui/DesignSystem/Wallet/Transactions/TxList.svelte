@@ -9,14 +9,14 @@
   import * as modal from "ui/src/modal";
   import type { Tx } from "ui/src/transaction";
 
-  import ModalTransaction from "ui/Modal/Transaction.svelte";
+  import TransactionModal from "ui/Screen/Wallet/TransactionModal.svelte";
   import TxListItem from "./TxListItem.svelte";
 
   export let title: string;
   export let txs: Tx[];
 
   const onSelect = (hash: string) => {
-    modal.toggle(ModalTransaction, () => {}, {
+    modal.toggle(TransactionModal, () => {}, {
       transactionHash: hash,
     });
   };

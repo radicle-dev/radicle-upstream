@@ -8,7 +8,7 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
 
-  import ModalSearch from "../../Modal/Search.svelte";
+  import SearchModal from "ui/Screen/SearchModal.svelte";
 
   import * as modal from "ui/src/modal";
   import { following as store, fetchFollowing } from "../../src/profile";
@@ -123,7 +123,7 @@
       </p>
       <Button
         on:click={() => {
-          modal.toggle(ModalSearch);
+          modal.toggle(SearchModal);
         }}
         icon={Icon.MagnifyingGlass}
         variant="outline">
@@ -137,7 +137,7 @@
         emoji="🐎"
         primaryActionText="Look for a project"
         on:primaryAction={() => {
-          modal.toggle(ModalSearch);
+          modal.toggle(SearchModal);
         }} />
     </div>
   </Remote>

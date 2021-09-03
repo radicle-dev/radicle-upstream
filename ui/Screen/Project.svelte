@@ -34,7 +34,7 @@
     ThreeDotsMenu,
   } from "ui/DesignSystem";
   import ProjectHeader from "./Project/ProjectHeader.svelte";
-  import ModalManagePeers from "ui/Modal/ManagePeers.svelte";
+  import ManagePeersModal from "./Project/ManagePeersModal.svelte";
 
   import Source from "./Project/Source.svelte";
 
@@ -84,7 +84,7 @@
     userProfile.openUserProfile(peer.identity.urn);
   };
   const onPeerModal = () => {
-    modal.toggle(ModalManagePeers);
+    modal.toggle(ManagePeersModal);
   };
 
   const onSelectPeer = ({ detail: peer }: { detail: User }) => {

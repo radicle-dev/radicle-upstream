@@ -16,13 +16,10 @@
     TxButton,
   } from "ui/DesignSystem";
 
-  import {
-    ClaimsContract,
-    claimsAddress,
-  } from "../../src/attestation/contract";
-  import { lastClaimed } from "../../src/attestation/lastClaimed";
-  import * as identity from "../../src/identity";
-  import { store as walletStore } from "../../src/wallet";
+  import { ClaimsContract, claimsAddress } from "ui/src/attestation/contract";
+  import { lastClaimed } from "ui/src/attestation/lastClaimed";
+  import * as identity from "ui/src/identity";
+  import { store as walletStore } from "ui/src/wallet";
   import { session } from "ui/src/session";
 
   import * as modal from "ui/src/modal";

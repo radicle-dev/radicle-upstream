@@ -26,7 +26,7 @@
   import ConnectWallet from "ui/DesignSystem/Wallet/Connect.svelte";
   import WalletPanel from "ui/DesignSystem/Wallet/Panel.svelte";
   import WrongNetwork from "ui/DesignSystem/Wallet/WrongNetwork.svelte";
-  import ModalWalletQRCode from "ui/Modal/Wallet/QRCode.svelte";
+  import QrCodeModal from "ui/Screen/Wallet/QrCodeModal.svelte";
 
   import Pool from "./Wallet/Pool.svelte";
   import Transactions from "./Wallet/Transactions.svelte";
@@ -74,7 +74,7 @@
       await wallet.connect({
         show(uri: string, onClose: () => void) {
           modal.toggle(
-            ModalWalletQRCode,
+            QrCodeModal,
             () => {
               onClose();
             },

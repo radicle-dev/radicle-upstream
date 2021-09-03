@@ -28,7 +28,7 @@
     SegmentedControl,
     SidebarLayout,
   } from "ui/DesignSystem";
-  import ModalShortcuts from "../Modal/Shortcuts.svelte";
+  import ShortcutsModal from "ui/Screen/ShortcutsModal.svelte";
 
   const updateTheme = (event: CustomEvent) =>
     Session.updateAppearance({
@@ -153,7 +153,7 @@
       <h1>Settings</h1>
       <span
         class="typo-link"
-        on:click|stopPropagation={() => modal.toggle(ModalShortcuts)}>
+        on:click|stopPropagation={() => modal.toggle(ShortcutsModal)}>
         Keyboard shortcuts
       </span>
     </div>

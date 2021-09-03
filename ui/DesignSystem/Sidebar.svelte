@@ -20,7 +20,7 @@
   import WalletStatusIndicator from "./Sidebar/WalletStatusIndicator.svelte";
   import OrgList from "./Sidebar/OrgList.svelte";
 
-  import ModalSearch from "ui/Modal/Search.svelte";
+  import SearchModal from "ui/Screen/SearchModal.svelte";
 
   export let identity: Identity;
 </script>
@@ -89,7 +89,7 @@
       <SidebarItem
         dataCy="search"
         indicator
-        onClick={() => modal.toggle(ModalSearch)}>
+        onClick={() => modal.toggle(SearchModal)}>
         <Icon.MagnifyingGlass />
       </SidebarItem>
     </Tooltip>
