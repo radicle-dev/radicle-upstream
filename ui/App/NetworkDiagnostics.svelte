@@ -18,8 +18,8 @@
     TabBar,
   } from "ui/DesignSystem";
 
-  import ConnectedPeersTab from "ui/Screen/NetworkDiagnostics/ConnectedPeers.svelte";
-  import WaitingRoomTab from "ui/Screen/NetworkDiagnostics/WaitingRoom.svelte";
+  import ConnectedPeersTab from "ui/App/NetworkDiagnostics/ConnectedPeers.svelte";
+  import WaitingRoomTab from "ui/App/NetworkDiagnostics/WaitingRoom.svelte";
 
   export let activeTab: router.NetworkDiagnosticsTab;
 

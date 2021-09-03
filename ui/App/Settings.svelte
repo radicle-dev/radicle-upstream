@@ -28,7 +28,7 @@
     SegmentedControl,
     SidebarLayout,
   } from "ui/DesignSystem";
-  import ShortcutsModal from "ui/Screen/ShortcutsModal.svelte";
+  import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
 
   const updateTheme = (event: CustomEvent) =>
     Session.updateAppearance({

@@ -25,11 +25,11 @@
     TabBar,
   } from "ui/DesignSystem";
 
-  import ProjectsTab from "ui/Screen/Org/Projects.svelte";
-  import MembersTab from "ui/Screen/Org/Members.svelte";
-  import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
-  import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
-  import MembersMenu from "ui/Screen/Org/MembersMenu.svelte";
+  import ProjectsTab from "ui/App/Org/Projects.svelte";
+  import MembersTab from "ui/App/Org/Members.svelte";
+  import OrgHeader from "ui/App/Org/OrgHeader.svelte";
+  import ProjectsMenu from "ui/App/Org/ProjectsMenu.svelte";
+  import MembersMenu from "ui/App/Org/MembersMenu.svelte";
 
   export let activeTab: orgRoute.MultiSigView;
   export let gnosisSafeAddress: string;

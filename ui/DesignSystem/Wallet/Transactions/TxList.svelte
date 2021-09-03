@@ -9,7 +9,7 @@
   import * as modal from "ui/src/modal";
   import type { Tx } from "ui/src/transaction";
 
-  import TransactionModal from "ui/Screen/Wallet/TransactionModal.svelte";
+  import TransactionModal from "ui/App/Wallet/TransactionModal.svelte";
   import TxListItem from "./TxListItem.svelte";
 
   export let title: string;

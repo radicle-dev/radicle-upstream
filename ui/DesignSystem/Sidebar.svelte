@@ -20,7 +20,7 @@
   import WalletStatusIndicator from "./Sidebar/WalletStatusIndicator.svelte";
   import OrgList from "./Sidebar/OrgList.svelte";
 
-  import SearchModal from "ui/Screen/SearchModal.svelte";
+  import SearchModal from "ui/App/SearchModal.svelte";
 
   export let identity: Identity;
 </script>

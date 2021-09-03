@@ -24,7 +24,7 @@
   import ProfileHeader from "./Profile/ProfileHeader.svelte";
   import ProjectsTab from "./Profile/Projects.svelte";
 
-  import CreateProjectModal from "ui/Screen/Project/CreateProjectModal.svelte";
+  import CreateProjectModal from "ui/App/Project/CreateProjectModal.svelte";
 
   export let activeTab: router.ProfileTab;
 

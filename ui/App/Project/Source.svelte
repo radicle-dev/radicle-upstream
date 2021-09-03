@@ -33,9 +33,9 @@
   import CheckoutButton from "./Source/CheckoutButton.svelte";
   import PatchButton from "./Source/PatchButton.svelte";
 
-  import FilesTab from "ui/Screen/Project/Source/Code.svelte";
-  import CommitsTab from "ui/Screen/Project/Source/Commits.svelte";
-  import CommitTab from "ui/Screen/Project/Source/Commit.svelte";
+  import FilesTab from "ui/App/Project/Source/Code.svelte";
+  import CommitsTab from "ui/App/Project/Source/Commits.svelte";
+  import CommitTab from "ui/App/Project/Source/Commit.svelte";
   import PatchList from "./Source/PatchList.svelte";
   import Patch from "./Source/Patch.svelte";
 

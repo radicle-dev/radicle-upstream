@@ -22,23 +22,22 @@
 
   import { NotificationFaucet, ModalOverlay } from "ui/DesignSystem";
 
-  import Hotkeys from "ui/Hotkeys.svelte";
-  import Theme from "ui/Theme.svelte";
-
-  import Bsod from "ui/Screen/Bsod.svelte";
-  import DesignSystemGuide from "ui/Screen/DesignSystemGuide.svelte";
-  import Loading from "ui/Screen/Loading.svelte";
-  import Lock from "ui/Screen/Lock.svelte";
-  import Network from "ui/Screen/Network.svelte";
-  import NetworkDiagnostics from "ui/Screen/NetworkDiagnostics.svelte";
-  import Onboarding from "ui/Screen/Onboarding.svelte";
-  import Org from "ui/Screen/Org.svelte";
-  import Profile from "ui/Screen/Profile.svelte";
-  import Project from "ui/Screen/Project.svelte";
-  import Settings from "ui/Screen/Settings.svelte";
-  import SingleSigOrg from "ui/Screen/SingleSigOrg.svelte";
-  import UserProfile from "ui/Screen/UserProfile.svelte";
-  import Wallet from "ui/Screen/Wallet.svelte";
+  import Bsod from "ui/App/Bsod.svelte";
+  import DesignSystemGuide from "ui/App/DesignSystemGuide.svelte";
+  import Hotkeys from "ui/App/Hotkeys.svelte";
+  import Loading from "ui/App/Loading.svelte";
+  import Lock from "ui/App/Lock.svelte";
+  import Network from "ui/App/Network.svelte";
+  import NetworkDiagnostics from "ui/App/NetworkDiagnostics.svelte";
+  import Onboarding from "ui/App/Onboarding.svelte";
+  import Org from "ui/App/Org.svelte";
+  import Profile from "ui/App/Profile.svelte";
+  import Project from "ui/App/Project.svelte";
+  import Settings from "ui/App/Settings.svelte";
+  import SingleSigOrg from "ui/App/SingleSigOrg.svelte";
+  import Theme from "ui/App/Theme.svelte";
+  import UserProfile from "ui/App/UserProfile.svelte";
+  import Wallet from "ui/App/Wallet.svelte";
 
   router.initialize();
   customProtocolHandler.register();

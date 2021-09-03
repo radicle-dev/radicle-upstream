@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script>
-  import { settings } from "./src/session.ts";
-  import { Theme, UIFont, CodeFont } from "./src/settings.ts";
+  import { settings } from "ui/src/session.ts";
+  import { Theme, UIFont, CodeFont } from "ui/src/settings.ts";
 
   $: {
     const theme = $settings ? $settings.appearance.theme : Theme.Dark;

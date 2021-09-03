@@ -8,7 +8,7 @@
 <script lang="typescript">
   import type { Project } from "ui/src/project";
 
-  import UnresolvedAnchorList from "ui/Screen/Org/UnresolvedAnchorList.svelte";
+  import UnresolvedAnchorList from "ui/App/Org/UnresolvedAnchorList.svelte";
 
   import * as router from "ui/src/router";
   import * as Session from "ui/src/session";

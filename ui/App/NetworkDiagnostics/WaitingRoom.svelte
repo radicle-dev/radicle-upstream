@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import StateTable from "ui/Screen/NetworkDiagnostics/StateTable.svelte";
+  import StateTable from "ui/App/NetworkDiagnostics/StateTable.svelte";
   import { waitingRoomEventLog, waitingRoomState } from "ui/src/localPeer";
 </script>
 

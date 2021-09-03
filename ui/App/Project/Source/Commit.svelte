@@ -13,7 +13,7 @@
   import * as router from "ui/src/router";
 
   import { Icon } from "ui/DesignSystem";
-  import BackButton from "ui/Screen/Project/BackButton.svelte";
+  import BackButton from "ui/App/Project/BackButton.svelte";
 
   import Changeset from "ui/DesignSystem/SourceBrowser/Changeset.svelte";
 

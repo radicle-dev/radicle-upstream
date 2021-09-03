@@ -10,7 +10,7 @@ import * as modal from "./modal";
 import * as error from "./error";
 import { inputStore } from "./search";
 
-import SearchModal from "ui/Screen/SearchModal.svelte";
+import SearchModal from "ui/App/SearchModal.svelte";
 
 export const register = (): void => {
   ipc.listenCustomProtocolInvocation(async message => {

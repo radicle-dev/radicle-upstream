@@ -8,7 +8,7 @@
 <script lang="typescript">
   import { fade } from "svelte/transition";
 
-  import SearchModal from "ui/Screen/SearchModal.svelte";
+  import SearchModal from "ui/App/SearchModal.svelte";
 
   import * as modal from "ui/src/modal";
   import { following as store, fetchFollowing } from "../../src/profile";

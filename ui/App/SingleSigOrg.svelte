@@ -23,9 +23,9 @@
     TabBar,
   } from "ui/DesignSystem";
 
-  import ProjectsTab from "ui/Screen/Org/Projects.svelte";
-  import OrgHeader from "ui/Screen/Org/OrgHeader.svelte";
-  import ProjectsMenu from "ui/Screen/Org/ProjectsMenu.svelte";
+  import ProjectsTab from "ui/App/Org/Projects.svelte";
+  import OrgHeader from "ui/App/Org/OrgHeader.svelte";
+  import ProjectsMenu from "ui/App/Org/ProjectsMenu.svelte";
 
   export let owner: string;
   export let address: string;

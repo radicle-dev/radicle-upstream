@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import CreateProjectModal from "ui/Screen/Project/CreateProjectModal.svelte";
+  import CreateProjectModal from "ui/App/Project/CreateProjectModal.svelte";
 
   import * as modal from "ui/src/modal";
   import { fetchList, projects as store } from "ui/src/project";

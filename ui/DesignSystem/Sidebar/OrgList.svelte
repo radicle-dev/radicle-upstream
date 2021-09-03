@@ -23,7 +23,7 @@
   import Avatar from "ui/DesignSystem/Avatar.svelte";
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
-  import CreateOrgModal from "ui/Screen/Org/CreateOrgModal.svelte";
+  import CreateOrgModal from "ui/App/Org/CreateOrgModal.svelte";
   import SidebarItem from "./SidebarItem.svelte";
 
   import Icon from "ui/DesignSystem/Icon";

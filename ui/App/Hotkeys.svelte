@@ -9,15 +9,15 @@
   import { pop, push, activeRouteStore } from "ui/src/router";
   import type { SvelteComponent } from "svelte";
 
-  import CreateProjectModal from "ui/Screen/Project/CreateProjectModal.svelte";
-  import SearchModal from "ui/Screen/SearchModal.svelte";
-  import ShortcutsModal from "ui/Screen/ShortcutsModal.svelte";
+  import CreateProjectModal from "ui/App/Project/CreateProjectModal.svelte";
+  import SearchModal from "ui/App/SearchModal.svelte";
+  import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
 
-  import * as modal from "./src/modal";
-  import * as screen from "./src/screen";
-  import { isMac } from "./src/settings";
-  import * as hotkeys from "./src/hotkeys";
-  import { config } from "./src/config";
+  import * as modal from "ui/src/modal";
+  import * as screen from "ui/src/screen";
+  import { isMac } from "ui/src/settings";
+  import * as hotkeys from "ui/src/hotkeys";
+  import { config } from "ui/src/config";
 
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
     if ($activeRouteStore.type === "designSystemGuide") {
