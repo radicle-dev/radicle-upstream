@@ -5,15 +5,26 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
-  // Wrapper for expanding/dismissing overlays
+<script lang="typescript" context="module">
+  import { derived, writable } from "svelte/store";
 
+  const currentStore = writable<HTMLDivElement | undefined>(undefined);
+  const current = derived(currentStore, store => store);
+
+  const open = (component: HTMLDivElement): void => {
+    currentStore.set(component);
+  };
+
+  const close = (): void => {
+    currentStore.set(undefined);
+  };
+</script>
+
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { close, current, open } from "ui/src/overlay";
-
   export let expanded: boolean;
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 
   let container: HTMLDivElement;
 
