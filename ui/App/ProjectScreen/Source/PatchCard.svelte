@@ -72,12 +72,16 @@
         <div class="desc-row">
           <p style="color: var(--color-foreground-level-5);">Opened by</p>
           {#if patch.identity}
-            <Avatar
-              avatarFallback={patch.identity.avatarFallback}
-              size="small"
-              style="display: flex; justify-content: flex-start; margin-left: 0.5rem;"
-              title={patch.identity.metadata.handle}
-              variant="circle" />
+            <div style="display: flex;">
+              <Avatar
+                kind={{
+                  type: "userEmoji",
+                  uniqueIdentifier: patch.identity.urn,
+                }}
+                size="small"
+                style="display: flex; justify-content: flex-start; margin-left: 0.5rem; margin-right: 0.625rem;" />
+              <p class="typo-text">{patch.identity.metadata.handle}</p>
+            </div>
           {:else}
             <p style="margin-left: 0.5rem;">{patch.peerId}</p>
           {/if}

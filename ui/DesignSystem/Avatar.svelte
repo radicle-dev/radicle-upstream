@@ -6,41 +6,64 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Avatar } from "ui/src/proxy/identity";
+  import { unreachable } from "ui/src/unreachable";
+  import * as radicleAvatar from "radicle-avatar";
   import Emoji from "./Emoji.svelte";
-
-  // the hierarchy of usage for the following avatars is:
-  // imageUrl > avatarFallback
-  export let imageUrl: string | undefined = undefined;
-  export let avatarFallback: Avatar | undefined = undefined;
-  export let title: string | undefined = undefined;
-  export let animate = false;
-  export let variant: "circle" | "square" = "circle";
-  export let size: AvatarSize = "regular";
 
   export let dataCy: string | undefined = undefined;
   export let style: string | undefined = undefined;
 
-  type AvatarSize = "small" | "regular" | "medium" | "big" | "huge";
+  type EmojiKind =
+    | { type: "userEmoji"; uniqueIdentifier: string }
+    | { type: "orgEmoji"; uniqueIdentifier: string };
 
-  const background = (avatar: Avatar) =>
-    `rgb(${avatar.background.r}, ${avatar.background.g}, ${avatar.background.b})`;
+  type Kind =
+    | EmojiKind
+    | { type: "userImage"; url: string }
+    | { type: "orgImage"; url: string }
+    | { type: "pendingOrg" }
+    | { type: "unknownUser" };
 
-  let avatarClass: string;
-  $: avatarClass = [variant, size].join(" ");
+  export let kind: Kind;
+
+  export let size: "small" | "regular" | "huge" = "regular";
+
+  // TODO: memoize this because we call it twice for each emoji component.
+  function emojiAvatar(kind: EmojiKind): {
+    emoji: string;
+    backgroundColor: string;
+  } {
+    switch (kind.type) {
+      case "userEmoji": {
+        const avatar = radicleAvatar.generate(
+          kind.uniqueIdentifier,
+          radicleAvatar.Usage.Identity
+        );
+        return {
+          emoji: avatar.emoji,
+          backgroundColor: `rgb(${avatar.background.r}, ${avatar.background.g}, ${avatar.background.b});`,
+        };
+      }
+      case "orgEmoji": {
+        const avatar = radicleAvatar.generate(
+          kind.uniqueIdentifier,
+          radicleAvatar.Usage.Any
+        );
+        return {
+          emoji: avatar.emoji,
+          backgroundColor: `rgb(${avatar.background.r}, ${avatar.background.g}, ${avatar.background.b});`,
+        };
+      }
+    }
+  }
 </script>
 
 <style>
-  .circle.small {
-    width: 24px;
-    height: 24px;
-    border-radius: 16px;
-  }
-
-  .circle.regular {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
+  .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-foreground-level-6);
   }
 
   .circle.small {
@@ -49,30 +72,16 @@
     border-radius: 12px;
   }
 
-  .circle.medium {
-    width: 36px;
-    height: 36px;
-    border-radius: 18px;
-  }
-
-  .circle.big {
-    width: 72px;
-    height: 72px;
-    border-radius: 36px;
+  .circle.regular {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
   }
 
   .circle.huge {
     width: 120px;
     height: 120px;
     border-radius: 60px;
-  }
-
-  .avatar.circle.big {
-    line-height: 68px;
-  }
-
-  .square {
-    border-radius: 0.5rem;
   }
 
   .square.small {
@@ -84,30 +93,13 @@
   .square.regular {
     width: 32px;
     height: 32px;
-  }
-
-  .square.medium {
-    width: 36px;
-    height: 36px;
-  }
-
-  .square.big {
-    width: 72px;
-    height: 72px;
-    border-radius: 1rem;
+    border-radius: 0.5rem;
   }
 
   .square.huge {
     width: 120px;
     height: 120px;
     border-radius: 1.5rem;
-  }
-
-  .container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-foreground-level-6);
   }
 
   .avatar {
@@ -134,40 +126,65 @@
   }
 </style>
 
-<div data-cy={dataCy} class={`container ${size}`} {style}>
-  {#if imageUrl}
-    <img class={`avatar ${avatarClass}`} src={imageUrl} alt="user-avatar" />
-  {:else if avatarFallback}
+<div
+  data-cy={dataCy}
+  class="container"
+  class:small={size === "small"}
+  class:regular={size === "regular"}
+  class:huge={size === "huge"}
+  {style}>
+  {#if kind.type === "userImage"}
+    <img
+      class="avatar circle"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:huge={size === "huge"}
+      src={kind.url}
+      alt="user-avatar" />
+  {:else if kind.type === "orgImage"}
+    <img
+      class="avatar square"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:huge={size === "huge"}
+      src={kind.url}
+      alt="user-avatar" />
+  {:else if kind.type === "userEmoji"}
     <div
-      class={`avatar ${avatarClass}`}
-      class:pulsate={animate}
-      style="background: {background(avatarFallback)}"
+      class="avatar circle"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:huge={size === "huge"}
+      style={`background-color: ${emojiAvatar(kind).backgroundColor}`}
       data-cy="emoji">
-      <Emoji {size} emoji={avatarFallback.emoji} />
+      <Emoji {size} emoji={emojiAvatar(kind).emoji} />
     </div>
-  {:else}
+  {:else if kind.type === "orgEmoji"}
     <div
-      class={`avatar ${avatarClass}`}
+      class="avatar square"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:huge={size === "huge"}
+      style={`background-color: ${emojiAvatar(kind).backgroundColor}`}
+      data-cy="emoji">
+      <Emoji {size} emoji={emojiAvatar(kind).emoji} />
+    </div>
+  {:else if kind.type === "pendingOrg"}
+    <div
+      class="avatar pulsate square"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:huge={size === "huge"}
+      style="background-color: var(--color-foreground-level-3);"
+      data-cy="emoji" />
+  {:else if kind.type === "unknownUser"}
+    <div
+      class="avatar circle"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:huge={size === "huge"}
       style="background: var(--color-foreground-level-3)" />
-  {/if}
-
-  {#if title}
-    {#if size === "big" || size === "huge"}
-      <h2 style="white-space: nowrap; margin-left: 12px">{title}</h2>
-    {:else if size === "small"}
-      <p
-        class="typo-text-bold"
-        style="white-space: nowrap; margin-left: 0.5rem; color:
-        var(--title-color, var(--color-foreground))">
-        {title}
-      </p>
-    {:else}
-      <p
-        class="typo-text-bold"
-        style="white-space: nowrap; margin-left: 12px; color: var(--title-color,
-        var(--color-foreground))">
-        {title}
-      </p>
-    {/if}
+  {:else}
+    {unreachable(kind)}
   {/if}
 </div>

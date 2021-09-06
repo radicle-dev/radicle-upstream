@@ -11,7 +11,6 @@
   import type * as project from "ui/src/project";
 
   import * as org from "ui/src/org";
-  import * as radicleAvatar from "radicle-avatar";
   import * as router from "ui/src/router";
   import * as format from "ui/src/format";
 
@@ -101,12 +100,9 @@
             <Avatar
               size="small"
               style="margin: 0 0.5rem 0 0.5rem;"
-              variant="square"
-              imageUrl={anchor.registration?.avatar || undefined}
-              avatarFallback={radicleAvatar.generate(
-                anchor.orgAddress,
-                radicleAvatar.Usage.Any
-              )} />
+              kind={anchor.registration?.avatar
+                ? { type: "orgImage", url: anchor.registration.avatar }
+                : { type: "orgEmoji", uniqueIdentifier: anchor.orgAddress }} />
             <p
               class="typo-text-bold org"
               style="color: var(--color-foreground-level-6);overflow: ellipsed">

@@ -76,8 +76,10 @@
         onClick={() => push({ type: "profile", activeTab: "projects" })}>
         <Avatar
           size="regular"
-          avatarFallback={identity.avatarFallback}
-          variant="circle" />
+          kind={{
+            type: "userEmoji",
+            uniqueIdentifier: identity.urn,
+          }} />
       </SidebarItem>
     </Tooltip>
     <OrgList {identity} />

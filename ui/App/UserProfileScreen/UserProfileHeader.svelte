@@ -10,7 +10,7 @@
   import { Avatar, Identifier } from "ui/DesignSystem";
 
   export let identityMetadata: proxyIdentity.Metadata;
-  export let avatarFallback: proxyIdentity.Avatar;
+  export let urn: string;
   export let deviceIds: string[];
 </script>
 
@@ -31,8 +31,7 @@
 <Avatar
   style="margin-right: 32px"
   size="huge"
-  variant="circle"
-  {avatarFallback} />
+  kind={{ type: "userEmoji", uniqueIdentifier: urn }} />
 
 <div class="metadata">
   <h1

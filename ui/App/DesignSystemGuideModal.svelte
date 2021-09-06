@@ -70,24 +70,6 @@
     ),
   ];
 
-  const avatarFallback1 = {
-    emoji: "📐",
-    background: {
-      r: 24,
-      g: 105,
-      b: 216,
-    },
-  };
-
-  const avatarFallback2 = {
-    background: {
-      r: 122,
-      g: 112,
-      b: 90,
-    },
-    emoji: "💡",
-  };
-
   const threeDotsMenuItems = [
     {
       title: "Add something",
@@ -458,127 +440,110 @@
 
     <h1 style="margin-bottom: 92px">Components</h1>
 
-    <Section
-      title="Avatars"
-      subTitle="User, project, etc avatars in various sizes and shapes.">
+    <Section title="Avatars" subTitle="User and Org avatars in various sizes.">
       <Swatch>
         <Avatar
           style="margin-right: 16px"
           size="small"
-          variant="circle"
-          avatarFallback={avatarFallback1} />
+          kind={{
+            type: "userImage",
+            url: "https://avatars.githubusercontent.com/u/4406983",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="small"
-          variant="square"
-          avatarFallback={avatarFallback2} />
+          kind={{
+            type: "userEmoji",
+            uniqueIdentifier: "rad:git:hnrk8cgbe4mgkubojmkdt6enka84ryfkdxhcy",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="small"
-          variant="circle"
-          imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+          kind={{
+            type: "orgImage",
+            url: "https://app.radicle.network/images/alt-clients.png",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="small"
-          variant="circle"
-          avatarFallback={avatarFallback1}
-          title="cloudhead" />
+          kind={{
+            type: "orgEmoji",
+            uniqueIdentifier: "0x8152237402E0f194176154c3a6eA1eB99b611482",
+          }} />
+        <Avatar
+          style="margin-right: 16px"
+          size="small"
+          kind={{ type: "pendingOrg" }} />
       </Swatch>
 
       <Swatch>
         <Avatar
           style="margin-right: 16px"
           size="regular"
-          variant="circle"
-          avatarFallback={avatarFallback1} />
+          kind={{
+            type: "userImage",
+            url: "https://avatars.githubusercontent.com/u/4406983",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="regular"
-          variant="square"
-          avatarFallback={avatarFallback2} />
+          kind={{
+            type: "userEmoji",
+            uniqueIdentifier: "rad:git:hnrk8cgbe4mgkubojmkdt6enka84ryfkdxhcy",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="regular"
-          variant="circle"
-          imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+          kind={{
+            type: "orgImage",
+            url: "https://app.radicle.network/images/alt-clients.png",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="regular"
-          variant="circle"
-          avatarFallback={avatarFallback1}
-          title="cloudhead" />
-      </Swatch>
-
-      <Swatch>
+          kind={{
+            type: "orgEmoji",
+            uniqueIdentifier: "0x8152237402E0f194176154c3a6eA1eB99b611482",
+          }} />
         <Avatar
           style="margin-right: 16px"
-          size="medium"
-          variant="circle"
-          avatarFallback={avatarFallback1} />
-        <Avatar
-          style="margin-right: 16px"
-          size="medium"
-          variant="square"
-          avatarFallback={avatarFallback2} />
-        <Avatar
-          style="margin-right: 16px"
-          size="medium"
-          variant="circle"
-          imageUrl="https://avatars1.githubusercontent.com/u/40774" />
-        <Avatar
-          style="margin-right: 16px"
-          size="medium"
-          variant="circle"
-          avatarFallback={avatarFallback1}
-          title="cloudhead" />
-      </Swatch>
-
-      <Swatch>
-        <Avatar
-          style="margin-right: 16px"
-          size="big"
-          variant="circle"
-          avatarFallback={avatarFallback1} />
-        <Avatar
-          style="margin-right: 16px"
-          size="big"
-          variant="square"
-          avatarFallback={avatarFallback2} />
-        <Avatar
-          style="margin-right: 16px"
-          size="big"
-          variant="circle"
-          imageUrl="https://avatars1.githubusercontent.com/u/40774" />
-        <Avatar
-          style="margin-right: 16px"
-          size="big"
-          variant="circle"
-          avatarFallback={avatarFallback1}
-          title="cloudhead" />
+          size="regular"
+          kind={{ type: "pendingOrg" }} />
       </Swatch>
 
       <Swatch>
         <Avatar
           style="margin-right: 16px"
           size="huge"
-          variant="circle"
-          avatarFallback={avatarFallback1} />
+          kind={{
+            type: "userImage",
+            url: "https://avatars.githubusercontent.com/u/4406983",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="huge"
-          variant="square"
-          avatarFallback={avatarFallback2} />
+          kind={{
+            type: "userEmoji",
+            uniqueIdentifier: "rad:git:hnrk8cgbe4mgkubojmkdt6enka84ryfkdxhcy",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="huge"
-          variant="circle"
-          imageUrl="https://avatars1.githubusercontent.com/u/40774" />
+          kind={{
+            type: "orgImage",
+            url: "https://app.radicle.network/images/alt-clients.png",
+          }} />
         <Avatar
           style="margin-right: 16px"
           size="huge"
-          variant="circle"
-          avatarFallback={avatarFallback1}
-          title="cloudhead" />
+          kind={{
+            type: "orgEmoji",
+            uniqueIdentifier: "0x8152237402E0f194176154c3a6eA1eB99b611482",
+          }} />
+        <Avatar
+          style="margin-right: 16px"
+          size="huge"
+          kind={{ type: "pendingOrg" }} />
       </Swatch>
     </Section>
 

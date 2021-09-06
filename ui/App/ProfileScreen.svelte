@@ -54,7 +54,7 @@
   <Header>
     <ProfileHeader
       slot="left"
-      avatarFallback={session.identity.avatarFallback}
+      urn={session.identity.urn}
       name={session.identity.metadata.handle}
       peerId={session.identity.peerId} />
 
