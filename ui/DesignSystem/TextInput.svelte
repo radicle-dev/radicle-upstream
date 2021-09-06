@@ -164,7 +164,7 @@
 
   {#if showHint && !validation}
     <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
-      <KeyHint {hint} />
+      <KeyHint>{hint}</KeyHint>
     </div>
   {/if}
 
@@ -198,7 +198,7 @@
       </div>
     {:else if showHint}
       <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
-        <KeyHint {hint} />
+        <KeyHint>{hint}</KeyHint>
       </div>
     {/if}
   {/if}

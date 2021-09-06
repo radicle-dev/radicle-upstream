@@ -44,9 +44,13 @@
   <div class="shortcuts">
     {#each shortcuts as shortcut}
       <div class="shortcut">
-        <KeyHint
-          noModifier={!shortcut.modifierKey}
-          hint={shortcut.displayKey || shortcut.key} />
+        {#if shortcut.modifierKey}
+          <KeyHint style="margin-right: 0.25rem;"
+            >{hotkeys.osModifierKey}</KeyHint>
+        {/if}
+        <KeyHint>
+          {shortcut.displayKey || shortcut.key}
+        </KeyHint>
         <p class="description">{shortcut.description}</p>
       </div>
     {/each}

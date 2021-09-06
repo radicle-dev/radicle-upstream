@@ -6,13 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { osModifierKey } from "ui/src/hotkeys";
-
-  export let hint = "";
-  export let noModifier: boolean = false;
-  export let style = "";
-
-  const addModifier = hint.length === 1 && !noModifier && hint !== "↵";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>
@@ -25,16 +19,11 @@
     color: var(--color-foreground-level-6);
     padding: 0.125rem 0.375rem;
     border-radius: 0.5rem;
-  }
-
-  .hint:first-child {
-    margin-right: 0.25rem;
+    min-width: 1.75rem;
+    text-align: center;
   }
 </style>
 
 <div class="hint-container" {style}>
-  {#if addModifier}
-    <p class="typo-text hint">{osModifierKey}</p>
-  {/if}
-  <p class="typo-text hint">{hint}</p>
+  <p class="typo-text hint"><slot /></p>
 </div>
