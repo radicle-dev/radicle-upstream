@@ -7,6 +7,7 @@
 -->
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
+  export let style: string | undefined = undefined;
   const dispatch = createEventDispatcher();
 
   interface Option<T> {
@@ -64,7 +65,7 @@
   }
 </style>
 
-<div class="segmented-control">
+<div class="segmented-control" {style}>
   {#each options as option}
     <button
       class="typo-semi-bold button-transition"
