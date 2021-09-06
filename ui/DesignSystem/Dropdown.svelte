@@ -6,32 +6,20 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Avatar } from "ui/src/proxy/identity";
-
   import Option from "./Dropdown/Option.svelte";
   import Overlay from "./Overlay.svelte";
   import Icon from "./Icon";
 
-  type OptionT =
-    | { value: string; title: string }
-    | {
-        value: string;
-        title: string;
-        avatarProps: {
-          avatarFallback: Avatar;
-          title: string;
-          variant?: "circle" | "square";
-        };
-      };
+  type OptionT = { value: string; title: string };
 
   export let options: OptionT[];
 
   export let placeholder = "";
 
-  export let dataCy = "";
-  export let style = "";
-  export let optionStyle = "";
-  export let menuStyle = "";
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
+  export let optionStyle: string | undefined = undefined;
+  export let menuStyle: string | undefined = undefined;
 
   export let valid: boolean = true;
   export let validationMessage = "";
