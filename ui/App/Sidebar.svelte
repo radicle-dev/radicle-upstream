@@ -21,7 +21,6 @@
   import WalletStatusIndicator from "./Sidebar/WalletStatusIndicator.svelte";
 
   export let identity: Identity;
-  console.log(identity);
 </script>
 
 <style>
