@@ -8,27 +8,12 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { Avatar as AvatarT } from "ui/src/proxy/identity";
-  import Avatar from "../Avatar.svelte";
-
   const dispatch = createEventDispatcher();
 
   export let title: string;
-
-  // Only allow parents to modify avatar props that make sense in this context --
-  // e.g. the `size` should only ever be `small` until this component can accommodate
-  // dynamic sizing
-  export let avatarProps:
-    | {
-        avatarFallback: AvatarT;
-        title?: string;
-        variant?: "circle" | "square";
-      }
-    | undefined = undefined;
   export let selected: boolean = false;
-
   export let value: string;
-  export let style = "";
+  export let style: string | undefined = undefined;
   export let disabled: boolean = false;
 
   const disabledColor = disabled
@@ -60,17 +45,9 @@
 </style>
 
 <div class="option" on:click={clickHandler} class:selected {style}>
-  {#if avatarProps}
-    <Avatar
-      size="small"
-      style="overflow:hidden; text-overflow: ellipsis; margin: 0 42px 0 8px;
-      --title-color: var(--color-foreground-level-6);"
-      {...avatarProps} />
-  {:else}
-    <p
-      class="typo-overflow-ellipsis"
-      style={`margin: 0 42px  0 12px; color: ${disabledColor}`}>
-      {title}
-    </p>
-  {/if}
+  <p
+    class="typo-overflow-ellipsis"
+    style={`margin: 0 42px  0 12px; color: ${disabledColor}`}>
+    {title}
+  </p>
 </div>
