@@ -20,24 +20,26 @@
   import { unreachable } from "ui/src/unreachable";
   import "ui/src/localPeer";
 
-  import { NotificationFaucet, ModalOverlay } from "ui/DesignSystem";
-
-  import Bsod from "ui/App/Bsod.svelte";
-  import DesignSystemGuide from "ui/App/DesignSystemGuide.svelte";
   import Hotkeys from "ui/App/Hotkeys.svelte";
-  import Loading from "ui/App/Loading.svelte";
-  import Lock from "ui/App/Lock.svelte";
-  import Network from "ui/App/Network.svelte";
-  import NetworkDiagnostics from "ui/App/NetworkDiagnostics.svelte";
-  import Onboarding from "ui/App/Onboarding.svelte";
-  import Org from "ui/App/Org.svelte";
-  import Profile from "ui/App/Profile.svelte";
-  import Project from "ui/App/Project.svelte";
-  import Settings from "ui/App/Settings.svelte";
-  import SingleSigOrg from "ui/App/SingleSigOrg.svelte";
+  import ModalLayout from "ui/App/ModalLayout.svelte";
+  import NotificationFaucet from "ui/App/NotificationFaucet.svelte";
   import Theme from "ui/App/Theme.svelte";
-  import UserProfile from "ui/App/UserProfile.svelte";
-  import Wallet from "ui/App/Wallet.svelte";
+
+  import DesignSystemGuideModal from "ui/App/DesignSystemGuideModal.svelte";
+  import OnboardingModal from "ui/App/OnboardingModal.svelte";
+
+  import LoadingScreen from "ui/App/LoadingScreen.svelte";
+  import LockScreen from "ui/App/LockScreen.svelte";
+  import NetworkDiagnosticsScreen from "ui/App/NetworkDiagnosticsScreen.svelte";
+  import NetworkScreen from "ui/App/NetworkScreen.svelte";
+  import OrgScreen from "ui/App/OrgScreen.svelte";
+  import ProfileScreen from "ui/App/ProfileScreen.svelte";
+  import ProjectScreen from "ui/App/ProjectScreen.svelte";
+  import SettingsScreen from "ui/App/SettingsScreen.svelte";
+  import SingleSigOrgScreen from "ui/App/SingleSigOrgScreen.svelte";
+  import UnrecoverableErrorScreen from "ui/App/UnrecoverableErrorScreen.svelte";
+  import UserProfileScreen from "ui/App/UserProfileScreen.svelte";
+  import WalletScreen from "ui/App/WalletScreen.svelte";
 
   router.initialize();
   customProtocolHandler.register();
@@ -100,34 +102,34 @@
   }
 </script>
 
-<Bsod />
+<UnrecoverableErrorScreen />
 <Hotkeys />
-<ModalOverlay />
+<ModalLayout />
 <NotificationFaucet />
 <Theme />
 
 {#if $sessionStore.status === remote.Status.Success}
   {#if $activeRouteStore.type === "designSystemGuide"}
-    <DesignSystemGuide />
+    <DesignSystemGuideModal />
   {:else if $activeRouteStore.type === "lock"}
-    <Lock />
+    <LockScreen />
   {:else if $activeRouteStore.type === "onboarding"}
-    <Onboarding />
+    <OnboardingModal />
   {:else if $activeRouteStore.type === "profile"}
-    <Profile activeTab={$activeRouteStore.activeTab} />
+    <ProfileScreen activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "userProfile"}
-    <UserProfile urn={$activeRouteStore.urn} />
+    <UserProfileScreen urn={$activeRouteStore.urn} />
   {:else if $activeRouteStore.type === "networkDiagnostics"}
-    <NetworkDiagnostics activeTab={$activeRouteStore.activeTab} />
+    <NetworkDiagnosticsScreen activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "singleSigOrg"}
-    <SingleSigOrg
+    <SingleSigOrgScreen
       registration={$activeRouteStore.registration}
       address={$activeRouteStore.address}
       owner={$activeRouteStore.owner}
       projectCount={$activeRouteStore.projectCount}
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "multiSigOrg"}
-    <Org
+    <OrgScreen
       registration={$activeRouteStore.registration}
       activeTab={$activeRouteStore.view}
       address={$activeRouteStore.address}
@@ -135,20 +137,20 @@
       threshold={$activeRouteStore.threshold}
       members={$activeRouteStore.members} />
   {:else if $activeRouteStore.type === "project"}
-    <Project
+    <ProjectScreen
       activeView={$activeRouteStore.activeView}
       urn={$activeRouteStore.urn} />
   {:else if $activeRouteStore.type === "network"}
-    <Network />
+    <NetworkScreen />
   {:else if $activeRouteStore.type === "settings"}
-    <Settings />
+    <SettingsScreen />
   {:else if $activeRouteStore.type === "wallet"}
-    <Wallet activeTab={$activeRouteStore.activeTab} />
+    <WalletScreen activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "boot"}
-    <Loading />
+    <LoadingScreen />
   {:else}
     {unreachable($activeRouteStore)}
   {/if}
 {:else}
-  <Loading />
+  <LoadingScreen />
 {/if}

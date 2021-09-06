@@ -25,13 +25,8 @@
   import { ValidationStatus } from "ui/src/validation";
   import { urnValidationStore } from "ui/src/urn";
 
-  import {
-    FollowToggle,
-    Icon,
-    Identifier,
-    Remote,
-    TextInput,
-  } from "ui/DesignSystem";
+  import { FollowToggle, Icon, Identifier, TextInput } from "ui/DesignSystem";
+  import Remote from "ui/App/Remote.svelte";
 
   let value: string;
   $: value = $inputStore.trim();

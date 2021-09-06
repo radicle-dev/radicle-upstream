@@ -97,14 +97,14 @@ context("project creation", () => {
 
       it("can be opened via the profile header action button and closed by pressing cancel", () => {
         commands.pick("new-project-button").click();
-        commands.pick("create-project").should("exist");
+        commands.pick("create-project-modal").should("exist");
         commands.pick("cancel-button").click();
         commands.pick("profile-screen").should("exist");
       });
 
       it("can be closed by pressing escape key", () => {
         commands.pick("new-project-button").click();
-        commands.pick("create-project").should("exist");
+        commands.pick("create-project-modal").should("exist");
         cy.get("body").type("{esc}");
         commands.pick("profile-screen").should("exist");
       });
@@ -139,7 +139,7 @@ context("project creation", () => {
           commands.pick("name").clear();
           commands.pick("name").type("bad$");
           commands
-            .pick("create-project")
+            .pick("create-project-modal")
             .should(
               "contain",
               "Your project’s name has some characters that aren’t " +
@@ -151,7 +151,7 @@ context("project creation", () => {
           commands.pick("name").clear();
           commands.pick("name").type("-nope");
           commands
-            .pick("create-project")
+            .pick("create-project-modal")
             .should(
               "contain",
               "Your project name should start with a letter or a number."
@@ -161,7 +161,7 @@ context("project creation", () => {
           commands.pick("name").clear();
           commands.pick("name").type("x");
           commands
-            .pick("create-project")
+            .pick("create-project-modal")
             .should(
               "contain",
               "Oops, your project’s name needs to be at least 2 characters long."
@@ -171,7 +171,7 @@ context("project creation", () => {
           commands.pick("name").clear();
           commands.pasteInto(["name"], "x".repeat(257));
           commands
-            .pick("create-project")
+            .pick("create-project-modal")
             .should(
               "contain",
               "Oh, your project’s name can’t have more than 64 characters."
@@ -196,7 +196,7 @@ context("project creation", () => {
             commands.pick("description").clear();
             commands.pasteInto(["description"], "x".repeat(257));
             commands
-              .pick("create-project")
+              .pick("create-project-modal")
               .should(
                 "contain",
                 "Whoa Shakespeare, your project’s description can’t be " +

@@ -9,7 +9,8 @@
   import { config } from "ui/src/config";
   import * as hotkeys from "ui/src/hotkeys";
 
-  import { KeyHint, Modal } from "ui/DesignSystem";
+  import { KeyHint } from "ui/DesignSystem";
+  import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   const shortcuts = [
     ...hotkeys.shortcuts,

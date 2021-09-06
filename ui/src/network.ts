@@ -8,9 +8,9 @@ import type { SvelteComponent } from "svelte";
 import { Status, StatusType } from "ui/src/localPeer";
 import { unreachable } from "ui/src/unreachable";
 
-import Icon from "ui/DesignSystem/Icon";
-import SyncingIcon from "ui/DesignSystem/Sidebar/ConnectionStatusIndicator/Syncing.svelte";
-import OfflineIcon from "ui/DesignSystem/Sidebar/ConnectionStatusIndicator/Offline.svelte";
+import { Icon } from "ui/DesignSystem";
+import SyncingIcon from "ui/App/Sidebar/ConnectionStatusIndicator/Syncing.svelte";
+import OfflineIcon from "ui/App/Sidebar/ConnectionStatusIndicator/Offline.svelte";
 
 const connectedPeerCount = (peers: { [peerId: string]: string[] }): string => {
   const count = Object.keys(peers).length;

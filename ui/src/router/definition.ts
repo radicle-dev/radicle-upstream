@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as org from "ui/App/Org/route";
+import * as org from "ui/App/OrgScreen/route";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type ProfileTab = "projects" | "following";

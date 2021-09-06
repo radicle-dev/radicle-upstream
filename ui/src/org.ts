@@ -36,8 +36,8 @@ import * as svelteStore from "ui/src/svelteStore";
 import * as transaction from "./transaction";
 import * as wallet from "ui/src/wallet";
 
-import AnchorProjectModal from "ui/App/Org/AnchorProjectModal.svelte";
-import ConfigureEnsModal from "ui/App/Org/ConfigureEnsModal.svelte";
+import AnchorProjectModal from "ui/App/OrgScreen/AnchorProjectModal.svelte";
+import ConfigureEnsModal from "ui/App/OrgScreen/ConfigureEnsModal.svelte";
 
 export type { Org };
 

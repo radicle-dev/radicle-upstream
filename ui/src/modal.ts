@@ -10,13 +10,13 @@ import type { SvelteComponent } from "svelte";
 type OnHide = () => void;
 const doNothing = () => {};
 
-type ModalOverlay = {
+type ModalLayout = {
   modalComponent: typeof SvelteComponent;
   onHide: OnHide;
   modalComponentProps: unknown;
 };
 
-const overlayStore = writable<ModalOverlay | null>(null);
+const overlayStore = writable<ModalLayout | null>(null);
 export const store = derived(overlayStore, $store => $store);
 
 export const hide = (): void => {

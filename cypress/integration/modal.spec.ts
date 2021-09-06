@@ -18,14 +18,14 @@ context("modal", () => {
       "click the New Project button and check the corresponding modal is opened."
     );
     commands.pick("new-project-button").click();
-    commands.pick("modal", "create-project").should("exist");
+    commands.pick("create-project-modal").should("exist");
 
     cy.log(
       "now open the shortcuts modal and verify that it is the only modal open"
     );
     cy.get("body").type("?");
-    commands.pick("modal", "hotkey-modal").should("exist");
-    commands.pick("modal", "create-project").should("not.exist");
+    commands.pick("hotkey-modal").should("exist");
+    commands.pick("create-project-modal").should("not.exist");
   });
 
   context("when navigating to the settings screen", () => {
@@ -34,14 +34,14 @@ context("modal", () => {
         "click the New Project button and check the corresponding modal is opened."
       );
       commands.pick("new-project-button").click();
-      commands.pick("modal", "create-project").should("exist");
+      commands.pick("create-project-modal").should("exist");
 
       cy.log(
         "now go to the Settings screen and verify the New Project modal is closed"
       );
       cy.get("body").type(`{${commands.metaKey()}+,}`);
       commands.pick("settings-page").should("exist");
-      commands.pick("modal", "create-project").should("not.exist");
+      commands.pick("create-project-modal").should("not.exist");
     });
   });
 });
