@@ -10,8 +10,6 @@ use chrono::{DateTime, Utc};
 
 use serde::{Deserialize, Serialize};
 
-use radicle_avatar as avatar;
-
 use link_crypto::BoxedSigner;
 use radicle_daemon::{
     identities::payload::{self, ExtError, PersonPayload},
@@ -35,8 +33,6 @@ pub struct Identity {
     pub urn: Urn,
     /// Bundle of user provided data.
     pub metadata: Metadata,
-    /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
-    pub avatar_fallback: avatar::Avatar,
 }
 
 impl From<(PeerId, DaemonPerson)> for Identity {
@@ -46,7 +42,6 @@ impl From<(PeerId, DaemonPerson)> for Identity {
             peer_id,
             urn: identity.urn,
             metadata: identity.metadata,
-            avatar_fallback: identity.avatar_fallback,
         }
     }
 }
@@ -59,8 +54,6 @@ pub struct Person {
     pub urn: Urn,
     /// Bundle of user provided data.
     pub metadata: Metadata,
-    /// Generated fallback avatar to be used if actual avatar url is missing or can't be loaded.
-    pub avatar_fallback: avatar::Avatar,
     /// The user's PeerIds.
     pub peer_ids: Vec<PeerId>,
 }
@@ -83,7 +76,6 @@ impl From<DaemonPerson> for Person {
             },
         };
         Self {
-            avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
             urn,
             peer_ids,
             metadata: Metadata { handle, ethereum },

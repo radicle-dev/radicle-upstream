@@ -75,14 +75,6 @@ export const fetch = (urn: string): Promise<Identity> => {
 
 // MOCK
 export const fallback: Identity = {
-  avatarFallback: {
-    background: {
-      r: 122,
-      g: 112,
-      b: 90,
-    },
-    emoji: "💡",
-  },
   metadata: {
     handle: "cloudhead",
     ethereum: null,

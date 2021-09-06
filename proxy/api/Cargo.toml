@@ -60,10 +60,6 @@ rev = "c4704a998d1909548d8d5064790522b3b3a4d673"
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "c4704a998d1909548d8d5064790522b3b3a4d673"
 
-[dependencies.radicle-avatar]
-git = "https://github.com/radicle-dev/radicle-avatar.git"
-rev = "4e34e6b992fd9f465b0547a5693b47b0d41dea01"
-
 [dependencies.radicle-source]
 version = "^0.2.0"
 features = ["syntax"]

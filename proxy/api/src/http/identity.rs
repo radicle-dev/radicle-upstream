@@ -127,7 +127,6 @@ mod test {
     use std::convert::TryInto;
     use warp::{http::StatusCode, test::request};
 
-    use radicle_avatar as avatar;
     use radicle_daemon::state;
 
     use crate::{context, error, http, identity, session};
@@ -178,12 +177,10 @@ mod test {
         }
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
-            let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
             assert_eq!(
                 have,
                 json!({
                     "peerId": peer_id,
-                    "avatarFallback": avatar,
                     "urn": urn,
                     "metadata": {
                         "handle": "cloudhead",
@@ -256,12 +253,10 @@ mod test {
         }
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
             assert_eq!(
                 have,
                 json!({
                     "peerId": peer_id,
-                    "avatarFallback": avatar,
                     "urn": urn,
                     "metadata": {
                         "handle": "cloudhead_next",
@@ -334,12 +329,10 @@ mod test {
         }
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
-            let avatar = avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity);
             assert_eq!(
                 have,
                 json!({
                     "peerId": peer_id,
-                    "avatarFallback": avatar,
                     "urn": urn,
                     "metadata": {
                         "handle": "cloudhead",
@@ -376,12 +369,11 @@ mod test {
             have,
             json!(identity::Identity {
                 peer_id,
-                urn: urn.clone(),
+                urn,
                 metadata: identity::Metadata {
                     handle,
                     ethereum: None
                 },
-                avatar_fallback: avatar::Avatar::from(&urn.to_string(), avatar::Usage::Identity),
             })
         );
 

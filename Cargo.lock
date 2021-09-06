@@ -86,7 +86,6 @@ dependencies = [
  "nonempty 0.6.0",
  "percent-encoding",
  "pretty_assertions",
- "radicle-avatar",
  "radicle-daemon",
  "radicle-git-ext",
  "radicle-git-helpers",
@@ -2579,14 +2578,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d0b9745dc2debf507c8422de05d7226cc1f0644216dfdfead988f9b1ab32a7"
 dependencies = [
  "proc-macro2",
-]
-
-[[package]]
-name = "radicle-avatar"
-version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-avatar.git?rev=4e34e6b992fd9f465b0547a5693b47b0d41dea01#4e34e6b992fd9f465b0547a5693b47b0d41dea01"
-dependencies = [
- "serde",
 ]
 
 [[package]]
