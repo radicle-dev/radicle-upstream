@@ -29,9 +29,8 @@
 
 <div class="peer" data-peer-handle={peer.identity.metadata.handle}>
   <Avatar
-    avatarFallback={peer.identity.avatarFallback}
-    size="small"
-    variant="circle" />
+    kind={{ type: "userEmoji", uniqueIdentifier: peer.identity.urn }}
+    size="small" />
   <p class="name typo-text-bold typo-overflow-ellipsis">
     {peer.identity.metadata.handle}
   </p>

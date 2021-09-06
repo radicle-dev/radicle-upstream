@@ -55,11 +55,6 @@
     padding: calc(var(--content-padding) / 2);
     border-radius: 1rem;
   }
-
-  .radicle-user {
-    display: flex;
-    align-items: center;
-  }
 </style>
 
 <Remote store={session} let:data={it}>
@@ -69,14 +64,13 @@
     </svelte:fragment>
 
     <div class="data">
-      <p class="radicle-user typo-text-bold">
+      <div style="display: flex;">
         <Avatar
           size="small"
-          avatarFallback={it.identity.avatarFallback}
-          variant="circle"
-          style="margin-right: 10px" />
-        {it.identity.metadata.handle}
-      </p>
+          kind={{ type: "userEmoji", uniqueIdentifier: it.identity.urn }}
+          style="margin-right: 0.625rem;" />
+        <p class="typo-text">{it.identity.metadata.handle}</p>
+      </div>
       <Icon.ChevronUpDown />
       <p class="address typo-text">
         <Identifier value={address} kind="ethAddress" />

@@ -132,12 +132,13 @@
         First member
       </p>
       <div class="member-box">
-        <Avatar
-          style="margin-right: 1rem;"
-          size="small"
-          variant="circle"
-          title={identity.metadata.handle}
-          avatarFallback={identity.avatarFallback} />
+        <div style="display: flex;">
+          <Avatar
+            style="margin-right: 0.625rem;"
+            size="small"
+            kind={{ type: "userEmoji", uniqueIdentifier: identity.urn }} />
+          <p class="typo-text">{identity.metadata.handle}</p>
+        </div>
         <Identifier value={walletAddress} kind="ethAddress" />
       </div>
     </div>

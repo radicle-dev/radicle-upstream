@@ -42,7 +42,7 @@
         slot="left"
         identityMetadata={$userProfileStore.data.metadata}
         deviceIds={$userProfileStore.data.peerIds}
-        avatarFallback={$userProfileStore.data.avatarFallback} />
+        {urn} />
     </Header>
 
     <ActionBar>

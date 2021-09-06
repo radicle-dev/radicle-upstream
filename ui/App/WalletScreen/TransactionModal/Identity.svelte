@@ -33,8 +33,7 @@
     <div class="display">
       <Avatar
         size="small"
-        avatarFallback={it.identity.avatarFallback}
-        variant="circle"
+        kind={{ type: "userEmoji", uniqueIdentifier: it.identity.urn }}
         style="margin-right: 10px" />
       <p class="typo-text-bold">{it.identity.metadata.handle}</p>
     </div>

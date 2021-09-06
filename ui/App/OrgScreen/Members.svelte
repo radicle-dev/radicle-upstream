@@ -31,18 +31,10 @@
   .list-item {
     display: flex;
     width: 100%;
-    height: 70px;
+    height: 56px;
     justify-content: space-between;
     padding: 1rem;
     align-items: center;
-    min-width: 0;
-  }
-
-  .member-details {
-    display: flex;
-    flex-direction: column;
-    align-self: center;
-    width: -webkit-fill-available;
     min-width: 0;
   }
 </style>
@@ -52,16 +44,15 @@
     <div class="list-item">
       {#if member.identity}
         <div style="display: flex">
-          <Avatar
-            style="margin-right: 10px"
-            size="medium"
-            variant="circle"
-            avatarFallback={member.identity.avatarFallback} />
-          <div
-            class="member-details"
-            data-cy="entity-name"
-            title={member.identity.metadata.handle}>
-            {member.identity.metadata.handle}
+          <div style="display: flex;">
+            <Avatar
+              style="margin-right: 0.625rem;"
+              size="small"
+              kind={{
+                type: "userEmoji",
+                uniqueIdentifier: member.identity.urn,
+              }} />
+            <p class="typo-text">{member.identity.metadata.handle}</p>
           </div>
         </div>
         <Identifier
@@ -71,7 +62,10 @@
           tooltipPosition="left" />
       {:else}
         <div style="display: flex; align-items: center;">
-          <Avatar style="margin-right: 10px" size="medium" variant="circle" />
+          <Avatar
+            style="margin-right: 10px"
+            size="small"
+            kind={{ type: "unknownUser" }} />
           <Identifier
             value={member.ethereumAddress}
             kind="ethAddress"

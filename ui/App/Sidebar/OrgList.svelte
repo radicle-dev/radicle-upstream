@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as radicleAvatar from "radicle-avatar";
   import type { Identity } from "ui/src/identity";
   import { range } from "lodash";
 
@@ -42,30 +41,16 @@
           $activeRouteStore.address === org.id}>
         <Avatar
           size="regular"
-          variant="square"
-          imageUrl={org.registration?.avatar || undefined}
-          avatarFallback={radicleAvatar.generate(
-            org.id,
-            radicleAvatar.Usage.Any
-          )} />
+          kind={org.registration?.avatar
+            ? { type: "orgImage", url: org.registration.avatar }
+            : { type: "orgEmoji", uniqueIdentifier: org.id }} />
       </SidebarItem>
     </Tooltip>
   {/each}
   {#each range($pendingOrgs) as i (i)}
     <Tooltip value="Your org is being created">
       <SidebarItem>
-        <Avatar
-          size="regular"
-          variant="square"
-          animate={true}
-          avatarFallback={{
-            background: {
-              r: 51,
-              g: 62,
-              b: 71,
-            },
-            emoji: "",
-          }} />
+        <Avatar size="regular" kind={{ type: "pendingOrg" }} />
       </SidebarItem>
     </Tooltip>
   {/each}

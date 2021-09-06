@@ -53,10 +53,9 @@
         dispatch("userProfileClick", { urn: peer.identity.urn });
       }}>
       <Avatar
-        avatarFallback={peer.identity.avatarFallback}
+        kind={{ type: "userEmoji", uniqueIdentifier: peer.identity.urn }}
         size="small"
-        style="display: flex; justify-content: flex-start; margin-right: 0.5rem;"
-        variant="circle" />
+        style="display: flex; justify-content: flex-start; margin-right: 0.5rem;" />
       <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
         {peer.identity.metadata.handle}
       </p>

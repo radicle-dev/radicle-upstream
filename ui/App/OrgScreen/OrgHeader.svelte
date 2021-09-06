@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as radicleAvatar from "radicle-avatar";
   import { Avatar, Icon, Identifier } from "ui/DesignSystem";
 
   import * as ensResolver from "ui/src/org/ensResolver";
@@ -55,12 +54,9 @@
   <Avatar
     style="margin-right: 2rem;"
     size="huge"
-    variant="square"
-    imageUrl={registration?.avatar || undefined}
-    avatarFallback={radicleAvatar.generate(
-      orgAddress,
-      radicleAvatar.Usage.Any
-    )} />
+    kind={registration?.avatar
+      ? { type: "orgImage", url: registration.avatar }
+      : { type: "orgEmoji", uniqueIdentifier: orgAddress }} />
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">

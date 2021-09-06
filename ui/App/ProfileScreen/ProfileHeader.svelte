@@ -6,14 +6,11 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Avatar as AvatarT } from "ui/src/proxy/identity";
-
   import { Avatar, Identifier } from "ui/DesignSystem";
 
   export let name: string;
   export let peerId: string;
-
-  export let avatarFallback: AvatarT;
+  export let urn: string;
 </script>
 
 <style>
@@ -30,8 +27,7 @@
   <Avatar
     style="margin-right: 32px"
     size="huge"
-    variant="circle"
-    {avatarFallback} />
+    kind={{ type: "userEmoji", uniqueIdentifier: urn }} />
 
   <div class="metadata">
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
