@@ -28,7 +28,9 @@
     <a
       class="typo-link"
       on:click={() => {
-        ipc.openUrl("http://radicle.xyz/buy-rad.html");
+        ipc.openUrl(
+          "https://docs.radicle.xyz/docs/connecting-to-ethereum/obtaining-rad"
+        );
       }}>
       Buy RAD
     </a>
