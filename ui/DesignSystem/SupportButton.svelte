@@ -5,9 +5,9 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
-  export let style = null;
-  export let dataCy = null;
+<script lang="typescript">
+  export let style: string | undefined = undefined;
+  export let dataCy: string | undefined = undefined;
 </script>
 
 <style>

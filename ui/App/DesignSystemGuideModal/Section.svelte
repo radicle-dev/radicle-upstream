@@ -5,9 +5,9 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
-  export let title = null;
-  export let subTitle = null;
+<script lang="typescript">
+  export let title: string;
+  export let subTitle: string;
 </script>
 
 <style>

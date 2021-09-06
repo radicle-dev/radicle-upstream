@@ -5,11 +5,11 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
+<script lang="typescript">
   import { Copyable } from "ui/DesignSystem";
 
-  export let style = null;
-  export let color = null;
+  export let style: string | undefined = undefined;
+  export let color: string;
 </script>
 
 <style>
@@ -27,7 +27,7 @@
 </style>
 
 <div class="wrapper" {style}>
-  <Copyable title={`var(${color})`} clipboardContent={`var(${color});`}>
+  <Copyable name={`"var(${color})"`} clipboardContent={`var(${color});`}>
     <div
       class:border={color === "--color-background"}
       class="color"
