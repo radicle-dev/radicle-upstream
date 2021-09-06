@@ -382,6 +382,17 @@
 
       <Swatch>
         <TextInput
+          style="flex: 1;"
+          value="I have a slot on the left side"
+          showLeftItem={true}>
+          <svelte:fragment slot="left">
+            <Icon.MagnifyingGlass />
+          </svelte:fragment>
+        </TextInput>
+      </Swatch>
+
+      <Swatch>
+        <TextInput
           placeholder="And I'm an input with a validation error."
           style="flex: 1"
           validation={{
@@ -405,44 +416,8 @@
         <TextInput
           placeholder="Enter user name"
           style="width: 100%"
-          showSuccessCheck
-          validation={{ status: ValidationStatus.Success }}
-          value="user123">
-          <div slot="left">
-            <Avatar
-              size="small"
-              imageUrl="https://avatars1.githubusercontent.com/u/40774" />
-          </div>
-        </TextInput>
-      </Swatch>
-
-      <Swatch>
-        <TextInput
-          placeholder="Enter user name"
-          style="width: 100%"
-          showLeftItem={true}
           validation={{ status: ValidationStatus.Loading }}
-          value="user123">
-          <div slot="left">
-            <Avatar size="small" avatarFallback={avatarFallback1} />
-          </div>
-        </TextInput>
-      </Swatch>
-
-      <Swatch>
-        <TextInput
-          placeholder="Enter user name."
-          style="width: 100%"
-          showLeftItem={true}
-          validation={{
-            status: ValidationStatus.Error,
-            message: "Id already taken",
-          }}
-          value="myUser">
-          <div slot="left">
-            <Avatar size="small" avatarFallback={avatarFallback2} />
-          </div>
-        </TextInput>
+          value="user123" />
       </Swatch>
 
       <Swatch>
