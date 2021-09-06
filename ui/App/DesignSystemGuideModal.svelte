@@ -438,7 +438,7 @@
         <div class="swatch">
           <TextInput
             placeholder="Hey, I'm a full-width input with a hint"
-            hint="I'm a hint"
+            hint="↵"
             style="flex: 1" />
         </div>
 
