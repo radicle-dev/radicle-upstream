@@ -6,17 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { config } from "ui/src/config";
   import * as hotkeys from "ui/src/hotkeys";
 
   import { KeyHint } from "ui/DesignSystem";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
-  const shortcuts = [
-    ...hotkeys.shortcuts,
-    ...(config.isDev ? hotkeys.devShortcuts : []),
-    hotkeys.escape,
-  ];
+  const shortcuts = [...hotkeys.shortcuts, hotkeys.escape];
 </script>
 
 <style>
@@ -43,16 +38,18 @@
 <Modal dataCy="hotkey-modal" emoji="⌨️" title="Keyboard shortcuts">
   <div class="shortcuts">
     {#each shortcuts as shortcut}
-      <div class="shortcut">
-        {#if shortcut.modifierKey}
-          <KeyHint style="margin-right: 0.25rem;"
-            >{hotkeys.osModifierKey}</KeyHint>
-        {/if}
-        <KeyHint>
-          {shortcut.displayKey || shortcut.key}
-        </KeyHint>
-        <p class="description">{shortcut.description}</p>
-      </div>
+      {#if !shortcut.hide}
+        <div class="shortcut">
+          {#if shortcut.modifierKey}
+            <KeyHint style="margin-right: 0.25rem;"
+              >{hotkeys.osModifierKey}</KeyHint>
+          {/if}
+          <KeyHint>
+            {shortcut.displayKey || shortcut.key}
+          </KeyHint>
+          <p class="description">{shortcut.description}</p>
+        </div>
+      {/if}
     {/each}
   </div>
 </Modal>
