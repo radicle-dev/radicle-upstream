@@ -5,9 +5,9 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
-  import { settings } from "ui/src/session.ts";
-  import { Theme, UIFont, CodeFont } from "ui/src/settings.ts";
+<script lang="typescript">
+  import { settings } from "ui/src/session";
+  import { Theme, UIFont, CodeFont } from "ui/src/settings";
 
   $: {
     const theme = $settings ? $settings.appearance.theme : Theme.Dark;

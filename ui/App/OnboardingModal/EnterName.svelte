@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="ts">
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
   import { ValidationStatus } from "../../src/validation";

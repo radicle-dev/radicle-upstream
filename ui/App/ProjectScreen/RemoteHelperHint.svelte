@@ -5,14 +5,13 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
-
   import { Copyable, Hoverable, Icon } from "ui/DesignSystem";
 
   const dispatch = createEventDispatcher();
 
-  export let style = null;
+  export let style: string | undefined = undefined;
   let hover = false;
 </script>
 
@@ -57,7 +56,7 @@
     </a>
   </p>
   <Hoverable bind:hovering={hover}>
-    <Copyable title="shell configuration">
+    <Copyable name="shell configuration">
       <p
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6)">

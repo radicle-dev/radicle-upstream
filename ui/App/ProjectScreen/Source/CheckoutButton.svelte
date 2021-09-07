@@ -5,8 +5,9 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
+<script lang="typescript">
   import { createEventDispatcher } from "svelte";
+  import { dismissRemoteHelperHint, settings } from "ui/src/session";
 
   import {
     Button,
@@ -17,12 +18,10 @@
   } from "ui/DesignSystem";
   import RemoteHelperHint from "../RemoteHelperHint.svelte";
 
-  import { dismissRemoteHelperHint, settings } from "ui/src/session.ts";
-
   // Whether this button should be displayed as a "Fork" button.
-  export let fork = false;
+  export let fork: boolean = false;
 
-  let checkoutPath;
+  let checkoutPath: string;
   let expanded = false;
 
   const caption = fork ? "Fork" : "Checkout";
@@ -62,7 +61,6 @@
     <DirectoryInput
       style="margin-bottom: 0.5rem;"
       placeholder="~/path/to/directory"
-      buttonVariant="outline"
       bind:path={checkoutPath} />
 
     {#if fork}

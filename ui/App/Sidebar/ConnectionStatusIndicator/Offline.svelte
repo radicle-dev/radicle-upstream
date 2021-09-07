@@ -5,8 +5,8 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
-  export let style = "";
+<script lang="typescript">
+  export let style: string | undefined = undefined;
 </script>
 
 <svg

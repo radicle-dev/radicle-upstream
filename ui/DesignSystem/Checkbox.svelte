@@ -5,8 +5,8 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
-  export let checked = null;
+<script lang="typescript">
+  export let checked: boolean = false;
 </script>
 
 <style>

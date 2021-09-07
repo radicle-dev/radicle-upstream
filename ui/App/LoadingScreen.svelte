@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
+<script lang="typescript">
   import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
 </script>
 

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="ts">
+<script lang="typescript">
   import Remote from "ui/App/Remote.svelte";
 
   import Outgoing from "./Pool/Outgoing.svelte";

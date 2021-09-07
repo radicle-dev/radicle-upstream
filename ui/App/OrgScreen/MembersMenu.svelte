@@ -5,19 +5,17 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script>
+<script lang="typescript">
   import * as org from "ui/src/org";
-
   import { Button, Icon, Overlay } from "ui/DesignSystem";
 
-  let expanded = false;
+  export let gnosisSafeAddress: string;
 
+  let expanded = false;
   const hide = () => (expanded = false);
   const toggleModal = () => {
     expanded = !expanded;
   };
-
-  export let gnosisSafeAddress;
 </script>
 
 <style>
