@@ -24,7 +24,7 @@
   export let receivers: pool.Receivers = new Map();
   export let updating = false;
   export let editing = false;
-  export let style = "";
+  export let style: string | undefined = undefined;
   export let alignment = "left"; // "center";
 
   function toggleReceiver(address: pool.Address) {

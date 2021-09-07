@@ -10,7 +10,7 @@
   import Spinner from "ui/DesignSystem/Spinner.svelte";
 
   export let active: boolean;
-  export let dataCy: string = "";
+  export let dataCy: string | undefined = undefined;
   export let loading: boolean;
   export let name: string;
 </script>

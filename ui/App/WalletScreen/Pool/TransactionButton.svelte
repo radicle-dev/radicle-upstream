@@ -12,8 +12,8 @@
   import * as error from "ui/src/error";
   import * as transaction from "ui/src/transaction";
 
-  export let style = "";
-  export let dataCy = "";
+  export let style: string | undefined = undefined;
+  export let dataCy: string | undefined = undefined;
   export let onClick: () => Promise<void>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let errorLabel: string;

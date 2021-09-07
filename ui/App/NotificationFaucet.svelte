@@ -12,7 +12,7 @@
 
   import { Notification } from "ui/DesignSystem";
 
-  export let style = "";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>

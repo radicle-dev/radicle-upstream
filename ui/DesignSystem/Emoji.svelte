@@ -13,7 +13,7 @@
   type EmojiSize = "small" | "regular" | "medium" | "big" | "huge";
   export let size: EmojiSize = "regular";
 
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>

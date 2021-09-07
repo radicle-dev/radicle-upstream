@@ -6,9 +6,9 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  export let dataCy: string = "";
+  export let dataCy: string | undefined = undefined;
   export let height: number = 24;
-  export let style: string = "";
+  export let style: string | undefined = undefined;
   export let width: number = 24;
 </script>
 

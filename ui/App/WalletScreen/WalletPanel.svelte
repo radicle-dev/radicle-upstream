@@ -21,7 +21,7 @@
   export let rad: ethers.BigNumber | null;
   export let address: string;
   export let onDisconnect: () => void;
-  export let style = "";
+  export let style: string | undefined = undefined;
 
   function formatBalance(balance: ethers.BigNumber | null): string {
     if (balance === null) {

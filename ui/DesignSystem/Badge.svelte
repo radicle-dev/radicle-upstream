@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   export let variant: "maintainer" | "you" | "default" = "maintainer";
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 
   const caption = String(variant);
 </script>

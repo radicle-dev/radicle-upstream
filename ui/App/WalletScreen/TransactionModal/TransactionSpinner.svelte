@@ -9,7 +9,7 @@
   import { TxStatus, colorForStatus } from "ui/src/transaction";
 
   export let status: TxStatus = TxStatus.AwaitingInclusion;
-  export let style: string = "";
+  export let style: string | undefined = undefined;
   export let size = 32;
   export let strokeWidth = 4;
 

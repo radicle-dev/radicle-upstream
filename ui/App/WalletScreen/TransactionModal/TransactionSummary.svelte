@@ -12,7 +12,7 @@
   import Receivers from "../Pool/Receivers.svelte";
 
   export let tx: Tx;
-  export let style = "";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>

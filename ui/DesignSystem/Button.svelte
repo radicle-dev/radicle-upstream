@@ -19,9 +19,9 @@
   export let disabled: boolean = false;
   export let transition: boolean = true;
   export let icon: typeof SvelteComponent | undefined = undefined;
-  export let style = "";
-  export let dataCy = "";
-  export let title = "";
+  export let style: string | undefined = undefined;
+  export let dataCy: string | undefined = undefined;
+  export let title: string | undefined = undefined;
 
   $: buttonClass = [
     variant,

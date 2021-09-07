@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   export let hovering: boolean = false;
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 
   const enter = () => (hovering = true);
   const leave = () => (hovering = false);

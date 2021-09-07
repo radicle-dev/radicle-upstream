@@ -12,7 +12,7 @@
 
   export let name: string;
   export let urn: string;
-  export let description: string = "";
+  export let description: string | undefined = undefined;
   export let stats: Stats;
   export let onClick: (() => void) | undefined = undefined;
 </script>
@@ -69,7 +69,7 @@
     {name}
   </h1>
   <Identifier value={urn} kind="radicleId" style="margin-top: 0.5rem;" />
-  {#if description.length > 0}
+  {#if description}
     <p class="description typo-overflow-ellipsis" title={description}>
       {description}
     </p>

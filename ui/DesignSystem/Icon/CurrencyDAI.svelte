@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  export let dataCy = "";
-  export let style = "";
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
 </script>
 
 <svg

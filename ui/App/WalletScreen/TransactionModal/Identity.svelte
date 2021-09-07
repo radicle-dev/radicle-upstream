@@ -11,7 +11,7 @@
 
   import { session } from "ui/src/session";
 
-  export let address = "";
+  export let address: string | undefined = undefined;
 </script>
 
 <style>
@@ -37,6 +37,8 @@
         style="margin-right: 10px" />
       <p class="typo-text-bold">{it.identity.metadata.handle}</p>
     </div>
-    <p>{address}</p>
+    {#if address}
+      <p>{address}</p>
+    {/if}
   </div>
 </Remote>

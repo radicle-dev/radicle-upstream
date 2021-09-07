@@ -13,17 +13,17 @@
   import type { ValidationState } from "ui/src/validation";
   import { ValidationStatus as Status } from "ui/src/validation";
 
-  export let style = "";
-  export let inputStyle = "";
-  export let placeholder = "";
+  export let style: string | undefined = undefined;
+  export let inputStyle: string | undefined = undefined;
+  export let placeholder: string | undefined = undefined;
   export let value = "";
-  export let dataCy = "";
+  export let dataCy: string | undefined = undefined;
   export let disabled: boolean = false;
-  export let suffix: string = "";
+  export let suffix: string | undefined = undefined;
   export let inputElement: HTMLInputElement | undefined = undefined;
 
   export let validation: ValidationState | undefined = undefined;
-  export let validationStyle = "";
+  export let validationStyle: string | undefined = undefined;
   export let hint = "";
   export let showLeftItem: boolean = false;
   export let showSuccessCheck: boolean = false;

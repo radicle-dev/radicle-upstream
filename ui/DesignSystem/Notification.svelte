@@ -12,7 +12,7 @@
   import Icon from "./Icon";
 
   export let notification: Notification;
-  export let style = "";
+  export let style: string | undefined = undefined;
 
   const variantClass = `variant-${notification.variant.toLowerCase()}`;
 

@@ -15,7 +15,7 @@
     dispatch("arrowClick");
   };
 
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>

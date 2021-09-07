@@ -13,7 +13,7 @@
 
   export let title: string;
 
-  export let description = "";
+  export let description: string | undefined = undefined;
 
   export let showMaintainerBadge: boolean = false;
   export let anchor: project.Anchor | undefined;
@@ -56,7 +56,7 @@
       <ProjectAnchorPopover {anchor} replicated={true} />
     {/if}
   </div>
-  {#if description.length > 0}
+  {#if description}
     <p class="desc typo-overflow-ellipsis" title={description}>{description}</p>
   {/if}
 </div>

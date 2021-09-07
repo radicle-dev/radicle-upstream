@@ -8,8 +8,8 @@
 <script lang="typescript">
   import IconWrapper from "./IconWrapper.svelte";
 
-  export let dataCy: string = "";
-  export let style: string = "";
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
 </script>
 
 <IconWrapper on:click {dataCy} {style}>

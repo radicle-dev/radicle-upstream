@@ -9,7 +9,7 @@
   import { Icon } from "ui/DesignSystem";
 
   export let name: string;
-  export let style: string = "";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>

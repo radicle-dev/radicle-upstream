@@ -8,7 +8,7 @@
 <script lang="typescript">
   import { Icon } from "ui/DesignSystem";
 
-  export let style = "";
+  export let style: string | undefined = undefined;
   export let color = "var(--color-foreground-level-6)";
   export let size = "p"; // h1
 

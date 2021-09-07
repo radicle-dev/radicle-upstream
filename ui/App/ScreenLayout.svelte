@@ -10,8 +10,8 @@
 
   import Sidebar from "./Sidebar.svelte";
 
-  export let dataCy: string = "";
-  export let style: string = "";
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
 
   const session = Session.unsealed();
 </script>

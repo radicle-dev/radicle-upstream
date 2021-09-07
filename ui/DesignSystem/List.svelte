@@ -13,11 +13,10 @@
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   export let items: any[];
 
+  export let dataCy: string | undefined = undefined;
+  export let style: string | undefined = undefined;
   export let styleHoverState: boolean = true;
-
-  export let dataCy = "";
-  export let style = "";
-  export let key: string | null = null;
+  export let key: string | undefined = undefined;
 </script>
 
 <style>

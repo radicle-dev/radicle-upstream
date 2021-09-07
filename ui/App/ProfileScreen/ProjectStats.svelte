@@ -12,7 +12,7 @@
   export let branches: number;
   export let commits: number;
 
-  export let style = "";
+  export let style: string | undefined = undefined;
 
   $: formattedStats = [
     { icon: Icon.Branch, count: branches },

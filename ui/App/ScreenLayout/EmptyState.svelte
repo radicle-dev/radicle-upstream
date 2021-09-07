@@ -12,12 +12,12 @@
 
   const dispatch = createEventDispatcher();
 
-  export let style: string = "";
+  export let style: string | undefined = undefined;
   export let emoji: string = "🪴";
   export let text: string = "Nothing to see here";
-  export let headerText: string = "";
-  export let primaryActionText: string = "";
-  export let secondaryActionText: string = "";
+  export let headerText: string | undefined = undefined;
+  export let primaryActionText: string | undefined = undefined;
+  export let secondaryActionText: string | undefined = undefined;
   export let primaryActionDisabled = false;
   export let primaryActionTooltipMessage: string | undefined = undefined;
 
@@ -72,13 +72,13 @@
   {#if emoji.length}
     <Emoji {emoji} size="huge" />
   {/if}
-  {#if headerText.length}
+  {#if headerText}
     <h3>{headerText}</h3>
   {/if}
   {#if text.length}
     <p class="text">{text}</p>
   {/if}
-  {#if primaryActionText.length}
+  {#if primaryActionText}
     <Tooltip value={tooltipMessage} position="bottom">
       <Button
         disabled={primaryActionDisabled}
@@ -88,7 +88,7 @@
       </Button>
     </Tooltip>
   {/if}
-  {#if secondaryActionText.length}
+  {#if secondaryActionText}
     <button data-cy="secondary-action" on:click={() => onSecondaryAction()}>
       <p>{secondaryActionText}</p>
     </button>

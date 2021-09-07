@@ -14,8 +14,8 @@
   import Button from "./Button.svelte";
   import TextInput from "./TextInput.svelte";
 
-  export let placeholder = "";
-  export let style = "";
+  export let placeholder: string | undefined = undefined;
+  export let style: string | undefined = undefined;
   export let path = "";
   export let validation: ValidationState | undefined = undefined;
 

@@ -12,7 +12,7 @@
   export let amount: string = "0";
   export let onCollect: () => void;
   export let ongoingCollect = false;
-  export let style = "";
+  export let style: string | undefined = undefined;
 </script>
 
 <style>
