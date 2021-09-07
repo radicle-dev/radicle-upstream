@@ -4,19 +4,20 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as ethers from "ethers";
 import type { Signer } from "ethers";
+import LruCache from "lru-cache";
+import * as ethers from "ethers";
 
 import {
   Claims,
   Claims__factory as ClaimsFactory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
-import * as ethereum from "ui/src/ethereum";
-import * as transaction from "ui/src/transaction";
 import { parseIdentitySha1 } from "ui/src/urn";
-import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as error from "ui/src/error";
+import * as ethereum from "ui/src/ethereum";
+import * as mutexExecutor from "ui/src/mutexExecutor";
+import * as transaction from "ui/src/transaction";
 
 // Get the address of the Claims Contract for the given environment
 export function claimsAddress(environment: ethereum.Environment): string {
@@ -37,6 +38,15 @@ export function claims(signer: Signer, address: string): ClaimsContract {
   return new ClaimsContract(signer, address);
 }
 
+interface ClaimsContractCacheEntry {
+  value: Uint8Array | undefined;
+}
+
+const claimsContractCache = new LruCache<string, ClaimsContractCacheEntry>({
+  max: 1000,
+  maxAge: 60 * 1000, // TTL 1 minute
+});
+
 export class ClaimsContract {
   contract: Claims;
 
@@ -53,22 +63,34 @@ export class ClaimsContract {
   // Fetches the identity claimed by the given Ethereum address.
   // Returns `undefined` if currently there's no valid claim.
   async getClaimed(address: string): Promise<Uint8Array | undefined> {
+    const normalisedAddress = address.toLowerCase();
+    const cached: ClaimsContractCacheEntry | undefined =
+      claimsContractCache.get(normalisedAddress);
+
+    if (cached) {
+      return cached.value;
+    }
+
     const filter = this.contract.filters.Claimed(address);
     const lastEvent = (await this.contract.queryFilter(filter)).pop();
     if (!lastEvent) {
+      claimsContractCache.set(normalisedAddress, { value: undefined });
       return undefined;
     }
     let claimed;
     try {
       claimed = await this.getClaimedByTx(lastEvent.transactionHash, address);
     } catch {
+      claimsContractCache.set(normalisedAddress, { value: undefined });
       // Lack of a valid claim on the Ethereum side, the whole claim is invalid
       return undefined;
     }
     // Claim of hash `0`, the identity has been explicitly unclaimed
     if (claimed.every(hashByte => hashByte === 0)) {
+      claimsContractCache.set(normalisedAddress, { value: undefined });
       return undefined;
     }
+    claimsContractCache.set(normalisedAddress, { value: claimed });
     return claimed;
   }
 
