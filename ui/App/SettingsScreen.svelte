@@ -128,6 +128,7 @@
     display: flex;
     justify-content: flex-end;
     margin-left: 1rem;
+    align-items: center;
   }
 
   .title {
