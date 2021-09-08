@@ -137,7 +137,7 @@
 </style>
 
 <div {style} class="wrapper">
-  <div bind:clientHeight={inputHeight}>
+  <div bind:clientHeight={inputHeight} on:click>
     <input
       data-cy={dataCy}
       class:invalid={validation && validation.status === Status.Error}

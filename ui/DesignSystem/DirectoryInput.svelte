@@ -38,6 +38,7 @@
 
 <div class="wrapper" {style}>
   <TextInput
+    on:click={openFileDialog}
     {placeholder}
     {validation}
     value={path}
