@@ -245,17 +245,18 @@
           <h3>Feedback</h3>
         </header>
         <div class="section-item">
-          <p class="typo-text-bold">Get in touch directly</p>
+          <p class="typo-text-bold">View community forum</p>
           <div class="action">
             <ExternalLink url="https://radicle.community/c/site-feedback/2"
               >radicle.community</ExternalLink>
           </div>
         </div>
         <div class="section-item">
-          <p class="typo-text-bold">Join the community chat</p>
+          <p class="typo-text-bold">Get in touch directly</p>
           <div class="action">
-            <ExternalLink url="https://matrix.radicle.community"
-              >matrix.radicle.community</ExternalLink>
+            <ExternalLink
+              url="https://discord.com/channels/841318878125490186/841318878650302488"
+              >Radicle Community Discord</ExternalLink>
           </div>
         </div>
       </section>
