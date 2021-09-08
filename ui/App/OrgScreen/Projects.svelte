@@ -13,6 +13,7 @@
   import * as org from "ui/src/org";
 
   import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import ExternalLink from "ui/App/ExternalLink.svelte";
   import ProjectList from "ui/App/ProfileScreen/ProjectList.svelte";
   import UnresolvedAnchorList from "./UnresolvedAnchorList.svelte";
 
@@ -83,17 +84,15 @@
         <p class="typo-text-bold">Pending</p>
         <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
           {#if isWaitingForExecution(anchors)}
-            Waiting for a member to execute this anchor transaction. <span
-              class="typo-link"
-              on:click={() =>
-                org.openOnGnosisSafe(ownerAddress, "transactions")}>
-              Execute transaction</span>
+            Waiting for a member to execute this anchor transaction.
+            <ExternalLink
+              url={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+              >Execute transaction</ExternalLink>
           {:else}
-            Not enough members have confirmed this anchor transaction. <span
-              class="typo-link"
-              on:click={() =>
-                org.openOnGnosisSafe(ownerAddress, "transactions")}>
-              Confirm transaction</span>
+            Not enough members have confirmed this anchor transaction.
+            <ExternalLink
+              url={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+              >Confirm transaction</ExternalLink>
           {/if}
         </p>
       </div>

@@ -9,10 +9,10 @@
   import type * as ethers from "ethers";
 
   import * as ethereum from "ui/src/ethereum";
-  import * as ipc from "ui/src/ipc";
   import * as modal from "ui/src/modal";
 
   import { Button } from "ui/DesignSystem";
+  import ExternalLink from "ui/App/ExternalLink.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let fee: ethers.BigNumber;
@@ -24,16 +24,9 @@
     Your ENS name allows linking your org with a name, logo, URL and social
     media profiles. The registration costs {ethereum.formatTokenAmount(fee)}
     RAD, and you'll also need sufficient ETH to cover transaction costs.
-    <!-- svelte-ignore a11y-missing-attribute -->
-    <a
-      class="typo-link"
-      on:click={() => {
-        ipc.openUrl(
-          "https://docs.radicle.xyz/docs/connecting-to-ethereum/obtaining-rad"
-        );
-      }}>
-      Buy RAD
-    </a>
+    <ExternalLink
+      url="https://docs.radicle.xyz/docs/connecting-to-ethereum/obtaining-rad"
+      >Buy RAD</ExternalLink>
   </svelte:fragment>
 
   <svelte:fragment slot="buttons">

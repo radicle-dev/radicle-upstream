@@ -25,6 +25,7 @@
   import { Button, Identifier, SegmentedControl } from "ui/DesignSystem";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import ExternalLink from "ui/App/ExternalLink.svelte";
 
   const updateTheme = (event: CustomEvent) =>
     Session.updateAppearance({
@@ -162,11 +163,10 @@
         <div class="section-item">
           <p>
             Share your Device ID with others to be added as a remote.
-            <br /><a
-              style="color: var(--color-foreground-level-5);"
-              class="typo-link"
-              href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
-              >Learn more about managing devices</a>
+            <br />
+            <ExternalLink
+              url="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
+              >Learn more about managing devices</ExternalLink>
           </p>
           <div class="action">
             <Identifier value={session.identity.peerId} kind="deviceId" />
@@ -247,19 +247,15 @@
         <div class="section-item">
           <p class="typo-text-bold">Get in touch directly</p>
           <div class="action">
-            <a
-              class="typo-link"
-              href="https://radicle.community/c/site-feedback/2">
-              radicle.community
-            </a>
+            <ExternalLink url="https://radicle.community/c/site-feedback/2"
+              >radicle.community</ExternalLink>
           </div>
         </div>
         <div class="section-item">
           <p class="typo-text-bold">Join the community chat</p>
           <div class="action">
-            <a class="typo-link" href="https://matrix.radicle.community">
-              matrix.radicle.community
-            </a>
+            <ExternalLink url="https://matrix.radicle.community"
+              >matrix.radicle.community</ExternalLink>
           </div>
         </div>
       </section>

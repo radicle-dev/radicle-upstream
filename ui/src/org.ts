@@ -121,12 +121,17 @@ export function openOnGnosisSafe(
   gnosisSafeAddress: string,
   view: "transactions" | "settings"
 ): void {
-  ipc.openUrl(
-    Safe.appUrl(
-      svelteStore.get(wallet.store).environment,
-      gnosisSafeAddress,
-      view
-    )
+  ipc.openUrl(gnosisSafeWebAppUrl(gnosisSafeAddress, view));
+}
+
+export function gnosisSafeWebAppUrl(
+  gnosisSafeAddress: string,
+  view: "transactions" | "settings"
+): string {
+  return Safe.appUrl(
+    svelteStore.get(wallet.store).environment,
+    gnosisSafeAddress,
+    view
   );
 }
 

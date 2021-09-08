@@ -169,6 +169,7 @@ p,
   color: var(--color-primary);
   cursor: pointer;
   text-decoration: underline;
+  text-underline-offset: 0.25rem;
 }
 
 .typo-link:hover,

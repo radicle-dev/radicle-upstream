@@ -8,6 +8,7 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
   import { Copyable, Hoverable, Icon } from "ui/DesignSystem";
+  import ExternalLink from "ui/App/ExternalLink.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -48,12 +49,10 @@
   <p class="description">
     To publish code to Radicle, you need to add this to your shell configuration
     file. Not sure how?
-    <a
-      style="color: var(--color-foreground-level-5);"
-      class="typo-link"
-      href="https://docs.radicle.xyz/docs/getting-started#configuring-your-system">
+    <ExternalLink
+      url="https://docs.radicle.xyz/docs/getting-started#configuring-your-system">
       Read more
-    </a>
+    </ExternalLink>
   </p>
   <Hoverable bind:hovering={hover}>
     <Copyable name="shell configuration">
