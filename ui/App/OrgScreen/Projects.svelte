@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Project } from "ui/src/project";
+  import type * as Project from "ui/src/project";
 
   import * as router from "ui/src/router";
   import * as Session from "ui/src/session";
@@ -24,7 +24,32 @@
   export let disableAnchorCreation = false;
   export let isMultiSig: boolean;
 
-  const select = ({ detail: project }: { detail: Project }) => {
+  function isWaitingForExecution(anchors: org.OrgAnchors): boolean {
+    if (anchors.pendingResolved.length > 0) {
+      const anchor = anchors.pendingResolved[0].anchor;
+      if (
+        anchor &&
+        anchor.type === "pending" &&
+        anchor.confirmations === anchor.threshold
+      ) {
+        return true;
+      }
+    }
+
+    if (anchors.pendingUnresolved.length > 0) {
+      const anchor = anchors.pendingUnresolved[0];
+      if (
+        anchor.type === "pending" &&
+        anchor.confirmations === anchor.threshold
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  const select = ({ detail: project }: { detail: Project.Project }) => {
     router.push({
       type: "project",
       activeView: { type: "files" },
@@ -57,7 +82,19 @@
       <div class="header">
         <p class="typo-text-bold">Pending</p>
         <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
-          Not enough of the members have signed this anchor.
+          {#if isWaitingForExecution(anchors)}
+            Waiting for a member to execute this anchor transaction. <span
+              class="typo-link"
+              on:click={() =>
+                org.openOnGnosisSafe(ownerAddress, "transactions")}>
+              Execute transaction</span>
+          {:else}
+            Not enough members have confirmed this anchor transaction. <span
+              class="typo-link"
+              on:click={() =>
+                org.openOnGnosisSafe(ownerAddress, "transactions")}>
+              Confirm transaction</span>
+          {/if}
         </p>
       </div>
       <ProjectList
@@ -73,7 +110,7 @@
       <div class="header">
         <p class="typo-text-bold">Confirmed</p>
         <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
-          These projects have been anchored and signed by the org.
+          These projects have been anchored in this org.
         </p>
       </div>
     {/if}
