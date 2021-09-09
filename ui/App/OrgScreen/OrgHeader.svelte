@@ -66,7 +66,7 @@
     <Copyable
       name="org address"
       clipboardContent={orgAddress}
-      tooltipStyle="width: fit-content">
+      tooltipStyle="width: fit-content;">
       <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
         {#if name}
           {name}<span class="domain">.{ensResolver.DOMAIN}</span>

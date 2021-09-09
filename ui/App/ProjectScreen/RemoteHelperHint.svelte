@@ -55,7 +55,7 @@
     </ExternalLink>
   </p>
   <Hoverable bind:hovering={hover}>
-    <Copyable name="shell configuration">
+    <Copyable name="shell configuration" tooltipStyle="width: fit-content;">
       <p
         class="typo-text-small-mono"
         style="color: var(--color-foreground-level-6)">

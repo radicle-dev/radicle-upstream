@@ -6,24 +6,27 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { User, Project } from "ui/src/project";
+  import type { Urn } from "ui/src/urn";
+
   import { onDestroy } from "svelte";
 
   import { copyToClipboard } from "ui/src/ipc";
-  import * as notification from "ui/src/notification";
+  import { isMaintainer, isContributor } from "ui/src/project";
+
+  import * as format from "ui/src/format";
   import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
-  import { isMaintainer, isContributor } from "ui/src/project";
-  import type { User, Project } from "ui/src/project";
+  import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
+  import * as userProfile from "ui/src/userProfile";
+  import * as Session from "ui/src/session";
   import {
     fetch,
     selectPeer,
     refreshPeers,
     store,
   } from "ui/src/screen/project";
-  import * as Session from "ui/src/session";
-  import * as userProfile from "ui/src/userProfile";
-  import type { Urn } from "ui/src/urn";
 
   import { Button, Icon, ThreeDotsMenu } from "ui/DesignSystem";
   import Remote from "ui/App/Remote.svelte";
@@ -51,20 +54,16 @@
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
-  export const copy = (content: string): void => {
-    if (content) {
-      copyToClipboard(content.trim());
-    }
-    notification.info({ message: "Copied to your clipboard" });
-  };
-
   const menuItems = (project: Project) => {
     return [
       {
         title: "Copy Radicle ID",
         icon: Icon.At,
-        event: () => copy(project.urn),
-        tooltip: project.urn,
+        event: () => {
+          copyToClipboard(project.urn);
+          notification.info({ message: "Radicle ID copied to your clipboard" });
+        },
+        tooltip: format.shortUrn(project.urn),
       },
       {
         title: "Unfollow",
