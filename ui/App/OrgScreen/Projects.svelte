@@ -135,7 +135,7 @@
       text="Get started by anchoring your org’s first project."
       primaryActionText={isMultiSig
         ? "Anchor with Gnosis Safe"
-        : "Anchor Project"}
+        : "Anchor project"}
       primaryActionDisabled={disableAnchorCreation}
       primaryActionTooltipMessage="Create or follow a project first"
       on:primaryAction={() => {
