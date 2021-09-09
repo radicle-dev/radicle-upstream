@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Avatar } from "ui/DesignSystem";
+  import { Avatar, Identifier } from "ui/DesignSystem";
   import Remote from "ui/App/Remote.svelte";
 
   import { session } from "ui/src/session";
@@ -38,7 +38,7 @@
       <p class="typo-text-bold">{it.identity.metadata.handle}</p>
     </div>
     {#if address}
-      <p>{address}</p>
+      <Identifier kind="ethAddress" value={address} />
     {/if}
   </div>
 </Remote>

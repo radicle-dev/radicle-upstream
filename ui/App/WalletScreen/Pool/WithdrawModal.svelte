@@ -95,9 +95,8 @@
     <p>
       Enter the amount you’d like to transfer to your linked Ethereum account
       below.
-      <!-- svelte-ignore a11y-missing-attribute -->
-      <a class="typo-link" on:click={() => (mode = Mode.CashoutAll)}
-        >Want to stop support completely</a
+      <span class="typo-link" on:click={() => (mode = Mode.CashoutAll)}
+        >Want to stop support completely</span
       >?
     </p>
     <div class="input">

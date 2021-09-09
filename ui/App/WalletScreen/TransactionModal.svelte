@@ -11,15 +11,15 @@
 
   import * as modal from "ui/src/modal";
 
-  import { Copyable, Icon } from "ui/DesignSystem";
+  import { Icon, Identifier } from "ui/DesignSystem";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import Identity from "./TransactionModal/Identity.svelte";
   import TxSpinner from "./TransactionModal/TransactionSpinner.svelte";
   import Summary from "./TransactionModal/TransactionSummary.svelte";
+  import TransactionHash from "ui/App/TransactionHash.svelte";
 
   import type { Tx } from "ui/src/transaction";
-  import * as format from "ui/src/format";
   import * as error from "ui/src/error";
   import { TxKind, colorForStatus, store as txs } from "ui/src/transaction";
 
@@ -70,6 +70,7 @@
       kind === TxKind.CreateOrg ||
       kind === TxKind.LinkEnsNameToOrg ||
       kind === TxKind.RegisterEnsName ||
+      kind === TxKind.TopUp ||
       kind === TxKind.UpdateEnsMetadata
     );
   }
@@ -153,10 +154,6 @@
     padding: 0.5rem 0;
   }
 
-  .from-to .address {
-    color: var(--color-foreground-level-6);
-  }
-
   .section {
     display: flex;
     flex-direction: column;
@@ -197,9 +194,9 @@
           <p class="typo-text-bold" style="margin-bottom: 0.5rem">
             Radicle Pool
           </p>
-          <Copyable name="pool address" clipboardContent={tx.to}>
-            <p class="address typo-text">{tx.to || "n/a"}</p>
-          </Copyable>
+          {#if tx.to}
+            <Identifier kind="ethAddress" value={tx.to} />
+          {/if}
         </div>
 
         <div class="arrow">
@@ -230,11 +227,7 @@
     <div class="section">
       <div class="row">
         <p>Transaction ID</p>
-        <p class="typo-text-small-mono">
-          <Copyable name="transaction hash" clipboardContent={tx.hash}>
-            {format.shortEthTx(tx.hash)}
-          </Copyable>
-        </p>
+        <TransactionHash hash={tx.hash} />
       </div>
       <div class="row">
         <p>Status</p>

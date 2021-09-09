@@ -204,15 +204,14 @@
           {/if}
           <span style="margin-left: 0.4375rem;"> per week</span>
         </span>
-        <!-- svelte-ignore a11y-missing-attribute -->
-        <a
+        <span
           hidden={editing}
           class="typo-link"
           disabled={ongoingSupportUpdate}
           on:click={enterEditMode}
           style="margin-left: 0.75rem;">
           Edit
-        </a>
+        </span>
       </div>
       <div class="row">
         <p>Remaining</p>
@@ -245,15 +244,14 @@
             Add receivers to your outgoing support by clicking the “Support”
             button on someone’s profile. You can also add any Ethereum address
             to your Stream.
-            <!-- svelte-ignore a11y-missing-attribute -->
-            <a
+            <span
               hidden={editing}
               class="typo-link"
               disabled={ongoingSupportUpdate}
               style="margin-left: 0.3125rem;"
               on:click={enterEditMode}>
               Edit
-            </a>
+            </span>
           </p>
         {:else}
           <div style="display: flex; align-items: center">
@@ -263,15 +261,14 @@
             <strong>{poolData.receivers.size} </strong>
             receivers you're supporting.
 
-            <!-- svelte-ignore a11y-missing-attribute -->
-            <a
+            <span
               hidden={editing}
               class="typo-link"
               disabled={ongoingSupportUpdate}
               style="margin-left: 0.3125rem;"
               on:click={enterEditMode}>
               Edit
-            </a>
+            </span>
           </div>
         {/if}
       </div>

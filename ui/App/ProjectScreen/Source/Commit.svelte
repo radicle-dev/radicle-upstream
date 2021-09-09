@@ -6,13 +6,13 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as error from "ui/src/error";
-  import { formatCommitTime } from "ui/src/source";
   import { commit, fetchCommit } from "ui/src/screen/project/source";
+  import { formatCommitTime } from "ui/src/source";
+  import * as error from "ui/src/error";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
 
-  import { Icon } from "ui/DesignSystem";
+  import { Icon, Identifier } from "ui/DesignSystem";
 
   import BackButton from "../BackButton.svelte";
   import Changeset from "./SourceBrowser/Changeset.svelte";
@@ -87,8 +87,10 @@
             it differently. -->
           <span>{$commit.data.header.author.name}</span>
           <span>committed</span>
-          <span class="typo-mono"
-            >{$commit.data.header.sha1.substring(0, 7)}</span>
+          <Identifier
+            style="display: inline-block;"
+            kind="commitHash"
+            value={$commit.data.header.sha1} />
           {#if $commit.data.branches.length > 0}
             <span style="margin-right: -1ch">to</span>
             <span class="branch typo-semi-bold">
@@ -142,7 +144,11 @@
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
           Commit
-          <span class="hash">{$commit.data.header.sha1}</span>
+          <Identifier
+            tooltipPosition="left"
+            style="display: inline-block;"
+            kind="commitHash"
+            value={$commit.data.header.sha1} />
         </p>
       </div>
     </div>

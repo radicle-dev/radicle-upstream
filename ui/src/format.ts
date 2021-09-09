@@ -45,3 +45,9 @@ export function shortSeedAddress(value: string): string {
 
   return value;
 }
+
+// 07e57974a3b0aa77a92c2a605c72523c6f996215 ->
+// 07e5797
+export function shortCommitHash(value: string): string {
+  return value.slice(0, 7);
+}

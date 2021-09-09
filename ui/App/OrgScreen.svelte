@@ -11,7 +11,6 @@
 
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
-  import * as notification from "ui/src/notification";
   import * as org from "ui/src/org";
   import { unreachable } from "ui/src/unreachable";
 
@@ -60,11 +59,10 @@
   const menuItems = (address: string, gnosisSafeAddress: string) => {
     return [
       {
-        title: "Copy Org ID",
+        title: "View on Etherscan",
         icon: Icon.At,
         event: () => {
-          ipc.copyToClipboard(address.trim());
-          notification.info({ message: "Copied to your clipboard" });
+          org.openOnEtherscan(address);
         },
       },
       {

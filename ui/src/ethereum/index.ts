@@ -84,10 +84,10 @@ export const VALID_ADDRESS_MATCH = /^0x[a-fA-F0-9]{40}$/;
 export function etherscanUrl(ethEnv: Environment, query: string): string {
   switch (ethEnv) {
     case Environment.Local:
-      throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Etherscan links are not supported on the Local environment",
-      });
+      console.error(
+        "Etherscan links are not supported on the Local environment"
+      );
+      return "";
     case Environment.Rinkeby:
       return `https://rinkeby.etherscan.io/search?f=0&q=${query}`;
     case Environment.Mainnet:

@@ -9,7 +9,6 @@
   import type { Registration } from "ui/src/org/ensResolver";
 
   import * as ipc from "ui/src/ipc";
-  import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
   import * as org from "ui/src/org";
 
@@ -49,11 +48,10 @@
   const menuItems = (address: string) => {
     return [
       {
-        title: "Copy Org ID",
+        title: "View on Etherscan",
         icon: Icon.At,
         event: () => {
-          ipc.copyToClipboard(address.trim());
-          notification.info({ message: "Copied to your clipboard" });
+          org.openOnEtherscan(address);
         },
       },
       {

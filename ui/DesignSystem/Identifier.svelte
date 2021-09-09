@@ -6,7 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  type Kind = "radicleId" | "deviceId" | "seedAddress" | "ethAddress";
+  type Kind =
+    | "radicleId"
+    | "deviceId"
+    | "seedAddress"
+    | "ethAddress"
+    | "commitHash";
 
   import type { SvelteComponent } from "svelte";
   import type { Position } from "./Tooltip.svelte";
@@ -32,10 +37,12 @@
         return "Seed address";
       case "ethAddress":
         return "Ethereum address";
+      case "commitHash":
+        return "commit hash";
     }
   }
 
-  function kindToIcon(kind: Kind): typeof SvelteComponent {
+  function kindToIcon(kind: Kind): typeof SvelteComponent | undefined {
     switch (kind) {
       case "radicleId":
         return Icon.At;
@@ -45,6 +52,8 @@
         return Icon.Server;
       case "ethAddress":
         return Icon.Ethereum;
+      case "commitHash":
+        return undefined;
     }
   }
 
@@ -58,6 +67,8 @@
         return format.shortSeedAddress(value);
       case "ethAddress":
         return format.shortEthAddress(value);
+      case "commitHash":
+        return format.shortCommitHash(value);
     }
   }
 
@@ -83,7 +94,7 @@
     {tooltipPosition}
     clipboardContent={value}
     style="color: var(--color-foreground-level-6)">
-    {#if showIcon}
+    {#if showIcon && kindToIcon(kind)}
       <div class="icon">
         <svelte:component this={kindToIcon(kind)} />
       </div>

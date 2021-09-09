@@ -51,7 +51,7 @@ context("project source browsing", () => {
         commands.pick("commit-page").should("exist");
         commands
           .pick("commit-header")
-          .contains("Commit 223aaf87d6ea62eef0014857640fd7c8dd0f80b5")
+          .contains("Commit 223aaf8")
           .should("exist");
         commands.pick("commit-branch").should("contain", "master");
       });
@@ -76,10 +76,7 @@ context("project source browsing", () => {
           .pickWithContent(["commit-teaser"], "Commit on the dev branch")
           .click();
         commands
-          .pickWithContent(
-            ["commit-header"],
-            "Commit 27acd68c7504755aa11023300890bb85bbd69d45"
-          )
+          .pickWithContent(["commit-header"], "Commit 27acd68")
           .should("exist");
 
         commands.pick("commit-branch").should("contain", "dev");

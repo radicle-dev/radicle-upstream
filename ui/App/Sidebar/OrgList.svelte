@@ -12,9 +12,10 @@
   import { activeRouteStore, push } from "ui/src/router";
 
   import { orgSidebarStore, pendingOrgs } from "ui/src/org";
+  import * as ethereum from "ui/src/ethereum";
+  import * as format from "ui/src/format";
   import * as modal from "ui/src/modal";
   import * as Wallet from "ui/src/wallet";
-  import * as ethereum from "ui/src/ethereum";
 
   const ethereumEnvironment = ethereum.selectedEnvironment;
   const walletStore = Wallet.store;
@@ -31,7 +32,7 @@
 
 {#if $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
   {#each $orgSidebarStore as org (org.id)}
-    <Tooltip value={org.registration?.domain || org.id}>
+    <Tooltip value={org.registration?.domain || format.shortEthAddress(org.id)}>
       <SidebarItem
         indicator={true}
         onClick={() =>

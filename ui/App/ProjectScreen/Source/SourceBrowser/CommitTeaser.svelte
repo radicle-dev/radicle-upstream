@@ -10,6 +10,7 @@
 
   import { formatCommitTime } from "ui/src/source";
   import type { CommitHeader } from "ui/src/source";
+  import * as format from "ui/src/format";
 
   import Icon from "ui/DesignSystem/Icon";
 
@@ -56,16 +57,16 @@
   .commit-sha {
     padding: 0 8px 0 4px;
     color: var(--commit-sha-color, var(--color-primary));
+    cursor: pointer;
   }
 </style>
 
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
     <Icon.Commit style="fill: var(--color-primary)" />
-    <!-- svelte-ignore a11y-missing-attribute -->
-    <a class="commit-sha typo-text-small-mono" on:click={onSelect}>
-      {commit.sha1.substring(0, 7)}
-    </a>
+    <span class="commit-sha typo-text-small-mono" on:click={onSelect}>
+      {format.shortCommitHash(commit.sha1)}
+    </span>
     <p class="commit-message typo-text-small">{commit.summary}</p>
   </div>
 

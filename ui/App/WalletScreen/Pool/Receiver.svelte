@@ -51,9 +51,9 @@
       {disabled}
       variant="embedded"
       icon={Icon.Cross}
-      style="padding: 0" />
+      style="padding: 0; margin-right: 0.5rem;" />
   {/if}
-  <p class="content typo-text-bold">
+  <p class="content">
     <Identifier value={address} kind="ethAddress" showIcon={false} />
   </p>
 </span>

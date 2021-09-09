@@ -141,6 +141,13 @@ export const openOnEtherscan = (query: string): void => {
   );
 };
 
+export const etherscanUrl = (query: string): string => {
+  return ethereum.etherscanUrl(
+    svelteStore.get(wallet.store).environment,
+    query
+  );
+};
+
 export async function anchorProjectWithGnosis(
   orgAddress: string,
   safeAddress: string,

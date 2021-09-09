@@ -6,10 +6,11 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Avatar, Icon, Identifier } from "ui/DesignSystem";
+  import { Avatar, Copyable, Icon, Identifier } from "ui/DesignSystem";
 
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as format from "ui/src/format";
+  import * as ipc from "ui/src/ipc";
 
   export let orgAddress: string;
   export let ownerAddress: string;
@@ -48,6 +49,9 @@
   .domain {
     color: var(--color-foreground-level-4);
   }
+  .url {
+    cursor: pointer;
+  }
 </style>
 
 <div style="display: flex">
@@ -59,13 +63,18 @@
       : { type: "orgEmoji", uniqueIdentifier: orgAddress }} />
 
   <div class="metadata">
-    <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
-      {#if name}
-        {name}.<span class="domain">{ensResolver.DOMAIN}</span>
-      {:else}
-        {format.shortEthAddress(orgAddress)}
-      {/if}
-    </h1>
+    <Copyable
+      name="org address"
+      clipboardContent={orgAddress}
+      tooltipStyle="width: fit-content">
+      <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
+        {#if name}
+          {name}<span class="domain">.{ensResolver.DOMAIN}</span>
+        {:else}
+          {format.shortEthAddress(orgAddress)}
+        {/if}
+      </h1>
+    </Copyable>
     <div style="display: flex; gap: 1rem;">
       <div>
         <div class="row">
@@ -77,7 +86,7 @@
           <Identifier
             value={ownerAddress}
             kind="ethAddress"
-            name="org owner address"
+            name="owner address"
             showIcon={false} />
         </div>
         {#if threshold}
@@ -93,19 +102,34 @@
           {#if websiteUrl}
             <div class="row">
               <Icon.Globe />
-              <a href={websiteUrl}>{websiteUrl}</a>
+              <div class="url">
+                <span
+                  on:click={() => {
+                    websiteUrl && ipc.openUrl(websiteUrl);
+                  }}>{websiteUrl}</span>
+              </div>
             </div>
           {/if}
           {#if githubUrl}
             <div class="row">
               <Icon.Github />
-              <a href={githubUrl}>{githubUrl}</a>
+              <div class="url">
+                <span
+                  on:click={() => {
+                    githubUrl && ipc.openUrl(githubUrl);
+                  }}>{githubUrl}</span>
+              </div>
             </div>
           {/if}
           {#if twitterUrl}
             <div class="row">
               <Icon.Twitter />
-              <a href={twitterUrl}>{twitterUrl}</a>
+              <div class="url">
+                <span
+                  on:click={() => {
+                    twitterUrl && ipc.openUrl(twitterUrl);
+                  }}>{twitterUrl}</span>
+              </div>
             </div>
           {/if}
         </div>
@@ -118,7 +142,12 @@
           {#if seedApi}
             <div class="row">
               <Icon.Globe />
-              <a href={seedApi}>{seedApi}</a>
+              <div class="url">
+                <span
+                  on:click={() => {
+                    seedApi && ipc.openUrl(seedApi);
+                  }}>{seedApi}</span>
+              </div>
             </div>
           {/if}
         </div>
