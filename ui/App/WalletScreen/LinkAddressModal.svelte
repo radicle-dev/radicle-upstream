@@ -10,7 +10,7 @@
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import Remote from "ui/App/Remote.svelte";
-  import TransactionButton from "./Pool/TransactionButton.svelte";
+  import TransactionButton from "./LinkAddressModal/TransactionButton.svelte";
 
   import { ClaimsContract, claimsAddress } from "ui/src/attestation/contract";
   import { lastClaimed } from "ui/src/attestation/lastClaimed";

@@ -7,13 +7,11 @@
 import * as svelteStore from "svelte/store";
 import { writable as persistentStore } from "svelte-persistent-store/dist/local";
 
-import type Big from "big.js";
 import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
 import { store as walletStore } from "./wallet";
-import type { Address, Receivers, ReceiverStatus } from "./funding/pool";
 
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
@@ -45,17 +43,11 @@ export interface TxData {
 type MetaTx =
   | AnchorProject
   | ClaimRadicleIdentity
-  | CollectFunds
   | CommitEnsName
   | CreateOrg
-  | Erc20Allowance
   | LinkEnsNameToOrg
   | RegisterEnsName
-  | SupportOnboarding
-  | TopUp
-  | UpdateEnsMetadata
-  | UpdateSupport
-  | Withdraw;
+  | UpdateEnsMetadata;
 
 interface AnchorProject {
   kind: TxKind.AnchorProject;
@@ -87,57 +79,14 @@ interface ClaimRadicleIdentity {
   root: string;
 }
 
-interface Erc20Allowance {
-  kind: TxKind.Erc20Allowance;
-}
-
-interface SupportOnboarding {
-  kind: TxKind.SupportOnboarding;
-  // The amount defined as the initial balance
-  topUp: string;
-  // The amount to be disbursed weekly to the `receivers`.
-  budget: string;
-  // The receivers of this support.
-  receivers: [Address, ReceiverStatus][];
-}
-
-interface TopUp {
-  kind: TxKind.TopUp;
-  amount: string;
-}
-
-interface Withdraw {
-  kind: TxKind.Withdraw;
-  amount: string;
-}
-
-interface CollectFunds {
-  kind: TxKind.CollectFunds;
-  amount: string;
-}
-
-interface UpdateSupport {
-  kind: TxKind.UpdateSupport;
-  // The amount to be disbursed weekly to the `receivers`.
-  amount: string;
-  // The changes made to the list of receivers.
-  receivers: [Address, ReceiverStatus][];
-}
-
 export enum TxKind {
   AnchorProject = "Anchor Project",
   ClaimRadicleIdentity = "Claim Radicle Identity",
-  CollectFunds = "Collect Funds",
   CommitEnsName = "Commit ENS name",
   CreateOrg = "Create Org",
-  Erc20Allowance = "ERC-20 Allowance",
   LinkEnsNameToOrg = "Link Ens Name to Org",
   RegisterEnsName = "Register ENS name",
-  SupportOnboarding = "Support Onboarding",
-  TopUp = "Top Up",
   UpdateEnsMetadata = "Update ENS metadata",
-  UpdateSupport = "Update Support",
-  Withdraw = "Withdraw",
 }
 
 export enum TxStatus {
@@ -180,56 +129,6 @@ export function claimRadicleIdentity(
   root: string
 ): Tx {
   return { ...txData(txc), kind: TxKind.ClaimRadicleIdentity, root };
-}
-
-export function erc20Allowance(txc: ContractTransaction): Tx {
-  return { ...txData(txc), kind: TxKind.Erc20Allowance };
-}
-
-export function supportOnboarding(
-  txc: ContractTransaction,
-  topUp: Big,
-  budget: Big,
-  receivers: Receivers
-): Tx {
-  const meta: SupportOnboarding = {
-    kind: TxKind.SupportOnboarding,
-    topUp: topUp.toString(),
-    budget: budget.toString(),
-    receivers: [...receivers.entries()],
-  };
-  return { ...txData(txc), ...meta };
-}
-
-export function collect(txc: ContractTransaction, amount: Big): Tx {
-  const meta: CollectFunds = {
-    kind: TxKind.CollectFunds,
-    amount: amount.toString(),
-  };
-  return { ...txData(txc), ...meta };
-}
-
-export function topUp(txc: ContractTransaction, amount: Big): Tx {
-  const meta: TopUp = { kind: TxKind.TopUp, amount: amount.toString() };
-  return { ...txData(txc), ...meta };
-}
-
-export function withdraw(txc: ContractTransaction, amount: Big): Tx {
-  const meta: Withdraw = { kind: TxKind.Withdraw, amount: amount.toString() };
-  return { ...txData(txc), ...meta };
-}
-
-export function updateSupport(
-  txc: ContractTransaction,
-  amount: Big,
-  receivers: Receivers
-): Tx {
-  const meta: UpdateSupport = {
-    kind: TxKind.UpdateSupport,
-    amount: amount.toString(),
-    receivers: [...receivers.entries()],
-  };
-  return { ...txData(txc), ...meta };
 }
 
 function txData(txc: ContractTransaction, date: number = Date.now()): TxData {

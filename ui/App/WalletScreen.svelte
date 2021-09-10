@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { config } from "ui/src/config";
   import * as router from "ui/src/router";
   import { unreachable } from "ui/src/unreachable";
   import * as modal from "ui/src/modal";
@@ -25,7 +24,6 @@
 
   import ConnectWallet from "./WalletScreen/ConnectWallet.svelte";
   import LinkAddress from "./WalletScreen/LinkAddress.svelte";
-  import Pool from "./WalletScreen/Pool.svelte";
   import QrCodeModal from "./WalletScreen/QrCodeModal.svelte";
   import Transactions from "./WalletScreen/Transactions.svelte";
   import WalletPanel from "./WalletScreen/WalletPanel.svelte";
@@ -50,17 +48,6 @@
         },
       },
     ];
-
-    if (config.isDev) {
-      items.push({
-        title: "Token Streams",
-        icon: Icon.TokenStreams,
-        active: active === "tokenStreams",
-        onClick: () => {
-          router.push({ type: "wallet", activeTab: "tokenStreams" });
-        },
-      });
-    }
 
     return items;
   };
@@ -126,7 +113,6 @@
           <h1 class="title">Wallet</h1>
           <WalletPanel
             onDisconnect={wallet.disconnect}
-            dai={$accountBalancesStore.dai}
             eth={$accountBalancesStore.eth}
             rad={$accountBalancesStore.rad}
             address={w.connected.address} />
@@ -145,8 +131,6 @@
                 style="padding: 0.5rem 0; margin-bottom: 1rem;" />
               {#if activeTab === "transactions"}
                 <Transactions />
-              {:else if activeTab === "tokenStreams"}
-                <Pool />
               {:else}
                 {unreachable(activeTab)}
               {/if}

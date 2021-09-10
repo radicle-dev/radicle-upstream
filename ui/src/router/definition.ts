@@ -14,7 +14,7 @@ export type ProjectView =
   | { type: "commit"; commitHash: string }
   | { type: "patches"; filter: "open" | "closed" | "all" }
   | { type: "patch"; id: string; peerId: string };
-export type WalletTab = "transactions" | "tokenStreams";
+export type WalletTab = "transactions";
 
 export type Route =
   | { type: "boot" }

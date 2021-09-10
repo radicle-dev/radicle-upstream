@@ -7,7 +7,6 @@
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
 
-import * as daiToken from "./wallet/daiToken";
 import * as radToken from "./wallet/radToken";
 import * as error from "ui/src/error";
 import * as mutexExecutor from "ui/src/mutexExecutor";
@@ -56,10 +55,9 @@ export interface Wallet extends svelteStore.Readable<State> {
 }
 
 export const accountBalancesStore = svelteStore.writable<{
-  dai: ethers.BigNumber | null;
   eth: ethers.BigNumber | null;
   rad: ethers.BigNumber | null;
-}>({ dai: null, eth: null, rad: null });
+}>({ eth: null, rad: null });
 
 const accountBalanceFetch = mutexExecutor.create();
 
@@ -69,14 +67,12 @@ async function updateAccountBalances(
   provider: ethers.providers.Provider
 ) {
   try {
-    const daiTokenContract = daiToken.connect(provider, environment);
     const radTokenContract = radToken.connect(provider, environment);
 
     const result = await accountBalanceFetch.run(async () => {
-      const dai = await daiTokenContract.balanceOf(address);
       const eth = await provider.getBalance(address);
       const rad = await radTokenContract.balanceOf(address);
-      return { eth, dai, rad };
+      return { eth, rad };
     });
 
     if (result) {

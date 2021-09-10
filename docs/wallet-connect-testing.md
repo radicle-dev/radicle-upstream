@@ -41,8 +41,7 @@ possible in other wallet.
 
 ## Switch network
 
-1. Go to the settings page in the app and select Mainnet as the funding
-   environment.
+1. Go to the settings page in the app and select Mainnet.
 2. Select Mainnet as the network in your wallet.
 3. Connect with a wallet.
 4. Select the Rinkeby network in the wallet.

@@ -8,13 +8,12 @@ import {
   Appearance,
   CoCo,
   CodeFont,
-  FeatureFlags,
   Settings,
   Theme,
   UIFont,
 } from "./proxy/settings";
 
-export type { Settings, Appearance, CoCo, FeatureFlags };
+export type { Settings, Appearance, CoCo };
 export { CodeFont, Theme, UIFont };
 
 export const defaultSetttings = (): Settings => ({
@@ -28,9 +27,6 @@ export const defaultSetttings = (): Settings => ({
   },
   coco: {
     seeds: [],
-  },
-  featureFlags: {
-    funding: false,
   },
 });
 

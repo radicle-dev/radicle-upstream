@@ -14,31 +14,6 @@ The value of the variable is the mnemonic phrase used to derive your private
 key.
 
 ## Features based on Ethereum
-### Funding
-
-Three moving pieces back the Radicle Funding experiences:
-
-- An Ethereum wallet, owned by the user
-- A connection between the Radicle Upstream (the app) and said Ethereum wallet
-- The Radicle Contracts (Ethereum smart-contracts)
-
-The funding experiences provided in the Radicle Upstream are Ethereum-based,
-meaning that actions such as adding users to the list of receivers, collect
-incoming support funds, and others, translate into ethereum transactions.
-
-For users to approve those transactions originated in the app, they need to
-establish a connection between an Ethereum wallet and the app. We provide this
-capability through a WalletConnect integration. A substantial number of
-Ethereum wallets support WalletConnect. You can find the complete list
-[here][wcw].
-
-Once a wallet is connected to the app, the funding experiences become available
-to the user. The user can now set up and edit their support, receive funds,
-etc.  All of these actions translate into transactions the user must review,
-(i.e., approve or reject) on their connected wallet.
-
-These same transactions are provided and ran by the [Radicle Contracts][rc],
-our custom Ethereum smart-contracts.
 
 ### Orgs
 
@@ -58,8 +33,7 @@ Read more about Orgs [here][org].
 
   In this environment Radicle Contracts are deployed to a development Ethereum
   node running locally and we use a local test wallet that can communicate with
-  it. The "DAI" token used in this environment is our custom Radicle Token.
-  See the [local environment][loc] section to learn how to get set up.
+  it. See the [local environment][loc] section to learn how to get set up.
 
 2. `Rinkeby`
 
@@ -71,16 +45,10 @@ Read more about Orgs [here][org].
   You will need [Rinkeby Eth] to pay the incurring transactions fees. No real
   money will be used.
 
-  We're using the official Rinkeby DAI contract:
-    0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea
-
-  Faucet: https://app.compound.finance/ -> DAI -> Withdraw -> Faucet
-
 3. `Mainnet`
 
-  Production environment where everything costs real money. So far only the Org
-  and Attestation features is available on `Mainnet`, the contracts for the
-  funding (aka token streams) feature are not yet deployed.
+  Production environment where everything costs real money. So far the Org and
+  Attestation features are available on `Mainnet`.
 
 ### Local environment
 
@@ -135,7 +103,6 @@ tabs:
 - `npm run start` within `walletconnect-test-wallet`
 - `./scripts/ethereum-dev-node.ts` in `radicle-upstream`
 - `RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start` within `radicle-upstream`
-- Once the app is running, enable the funding feature in the Upstream settings
 
 
 

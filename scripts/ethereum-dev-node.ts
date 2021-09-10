@@ -75,17 +75,6 @@ async function main() {
     "Locally deployed contract address does not match configured contract address. Please update `ui/src/ethereum/contractAddresses`"
   );
 
-  const poolContract = await radicleContracts.deployErc20Pool(
-    signer,
-    10,
-    radContract.address
-  );
-  assert.strictEqual(
-    poolContract.address.toLowerCase(),
-    contractAddresses.fundingPool.local.toLowerCase(),
-    "Locally deployed contract address does not match configured contract address. Please update `ui/src/ethereum/contractAddresses`"
-  );
-
   // Set the initial balance of the used erc20 token for the development account.
   const tokenDecimals = await radContract.decimals();
   await (
@@ -100,7 +89,6 @@ async function main() {
   console.log();
   console.log(`Rad token deployed at ${radContract.address}`);
   console.log(`Claims contract deployed at ${claimsContract.address}`);
-  console.log(`Erc20 Pool deployed at ${poolContract.address}`);
 
   await ganache;
 }

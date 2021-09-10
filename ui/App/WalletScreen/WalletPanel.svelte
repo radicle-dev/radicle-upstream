@@ -13,10 +13,8 @@
   import Tooltip from "ui/DesignSystem/Tooltip.svelte";
   import Button from "ui/DesignSystem/Button.svelte";
 
-  import { config } from "ui/src/config";
   import * as ethereum from "ui/src/ethereum";
 
-  export let dai: ethers.BigNumber | null;
   export let eth: ethers.BigNumber | null;
   export let rad: ethers.BigNumber | null;
   export let address: string;
@@ -83,11 +81,6 @@
       <h3>
         {formatBalance(rad)} RAD
       </h3>
-      {#if config.isDev}
-        <h3>
-          {formatBalance(dai)} DAI
-        </h3>
-      {/if}
     </div>
   </div>
 

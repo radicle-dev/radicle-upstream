@@ -9,9 +9,10 @@
   import type { SvelteComponent } from "svelte";
   import type { Tx } from "ui/src/transaction";
 
-  import { Icon } from "ui/DesignSystem";
   import dayjs from "dayjs";
+
   import { TxKind } from "ui/src/transaction";
+  import { Icon } from "ui/DesignSystem";
 
   export let tx: Tx;
 
@@ -19,20 +20,11 @@
     switch (tx.kind) {
       case TxKind.ClaimRadicleIdentity:
         return Icon.Registered;
-      case TxKind.CollectFunds:
-      case TxKind.Withdraw:
-        return Icon.Withdraw;
       case TxKind.CommitEnsName:
-      case TxKind.Erc20Allowance:
       case TxKind.LinkEnsNameToOrg:
       case TxKind.RegisterEnsName:
       case TxKind.UpdateEnsMetadata:
         return Icon.Ethereum;
-      case TxKind.SupportOnboarding:
-      case TxKind.UpdateSupport:
-        return Icon.TokenStreams;
-      case TxKind.TopUp:
-        return Icon.Topup;
       case TxKind.CreateOrg:
         return Icon.Orgs;
       case TxKind.AnchorProject:

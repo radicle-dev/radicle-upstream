@@ -9,11 +9,6 @@ import * as zod from "zod";
 export interface Settings {
   appearance: Appearance;
   coco: CoCo;
-  featureFlags: FeatureFlags;
-}
-
-export interface FeatureFlags {
-  funding: boolean;
 }
 
 export interface Appearance {
@@ -56,8 +51,5 @@ export const settingsSchema: zod.ZodSchema<Settings> = zod.object({
   }),
   coco: zod.object({
     seeds: zod.array(zod.string()),
-  }),
-  featureFlags: zod.object({
-    funding: zod.boolean(),
   }),
 });
