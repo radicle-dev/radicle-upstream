@@ -16,7 +16,11 @@
   import Peer from "./PeerSelector/Peer.svelte";
 
   export let expanded: boolean = false;
-  export let rounded: boolean = false;
+  // If `true`,  this component is used in a stand-alone context. This means it
+  // has all corners rounded and it acts like a push button.
+  // If `false`, this component is used together with the "Edit Remotes" button
+  // on the right-hand side and doesn't animate when clicked.
+  export let standalone: boolean = false;
   export let peers: User[];
   export let selected: User;
   export let showProfile: boolean = true;
@@ -148,7 +152,8 @@
   style="position: relative; user-select: none;">
   <div
     class="peer-selector typo-overflow-ellipsis"
-    class:rounded
+    class:button-transition={standalone}
+    class:rounded={standalone}
     data-cy="peer-selector"
     hidden={expanded}
     on:click|stopPropagation={show}>
@@ -163,7 +168,7 @@
       bind:clientHeight={dropdownHeight}
       class="peer-dropdown"
       hidden={!expanded}
-      class:rounded
+      class:rounded={standalone}
       style={`border-bottom-right-radius: ${
         dropdownHeight > 40 ? "0.5rem" : "0"
       }`}>
