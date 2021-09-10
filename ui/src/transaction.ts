@@ -208,17 +208,6 @@ export function ongoing(txKind: TxKind): (tx: Tx) => boolean {
     tx.status === TxStatus.AwaitingInclusion && tx.kind === txKind;
 }
 
-export const colorForStatus = (status: TxStatus): string => {
-  switch (status) {
-    case TxStatus.AwaitingInclusion:
-      return "var(--color-caution)";
-    case TxStatus.Rejected:
-      return "var(--color-negative)";
-    case TxStatus.Included:
-      return "var(--color-positive)";
-  }
-};
-
 // Convert a transaction-related error to `error.Error`.
 export function convertError(e: unknown, label: string): error.Error {
   let code = error.Code.UnkownTransactionFailure;

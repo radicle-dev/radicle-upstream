@@ -10,13 +10,12 @@
 
   import dayjs from "dayjs";
 
-  import { TxKind, colorForStatus, store as txs } from "ui/src/transaction";
+  import { TxKind, store as txs } from "ui/src/transaction";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import TransactionHash from "ui/App/TransactionHash.svelte";
-  import TxSpinner from "./TransactionModal/TransactionSpinner.svelte";
 
   export let transactionHash: string;
 
@@ -94,10 +93,7 @@
       <div class="row">
         <p>Status</p>
         <div class="row" data-cy="transaction-status">
-          <TxSpinner style="width: 14px; height: 14px;" status={tx.status} />
-          <p style="margin-left: 0.5rem; color: {colorForStatus(tx.status)}">
-            {tx.status}
-          </p>
+          <p>{tx.status}</p>
         </div>
       </div>
       <div class="row">
