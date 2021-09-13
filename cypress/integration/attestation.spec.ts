@@ -19,8 +19,8 @@ describe("attestation", () => {
       .pick("eth-balance")
       .contains(/\d+(.\d+)? ETH/)
       .should("exist");
-    cy.contains("button", "Link your ID").click();
-    commands.pickWithContent(["confirm-button"], "Link your ID").click();
+    commands.pick("link-button").click();
+    commands.pick("confirm-button").click();
     commands
       .pickWithContent(["transaction"], "Claim Radicle Identity", {
         timeout: 8000,

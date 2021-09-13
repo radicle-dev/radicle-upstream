@@ -37,7 +37,7 @@
   const tabs = (address: string, active: orgRoute.MultiSigView) => {
     return [
       {
-        title: "Anchored Projects",
+        title: "Anchored projects",
         icon: Icon.ChevronLeftRight,
         active: active.type === "projects",
         onClick: () => {

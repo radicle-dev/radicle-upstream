@@ -58,7 +58,7 @@
 </style>
 
 <Remote store={session} let:data={it}>
-  <Modal emoji="🧦" title="Link your Radicle Identity and Ethereum address">
+  <Modal emoji="🧦" title="Link your Radicle ID and Ethereum address">
     <svelte:fragment slot="description">
       An Ethereum transaction will be sent
     </svelte:fragment>
@@ -78,15 +78,13 @@
     </div>
 
     <svelte:fragment slot="buttons">
-      <Button variant="transparent" dataCy="cancel-topup" on:click={onCancel}>
-        Cancel
-      </Button>
+      <Button variant="transparent" on:click={onCancel}>Cancel</Button>
 
       <TransactionButton
         dataCy="confirm-button"
         onClick={() => claim(it.identity)}
-        errorLabel="Failed to claim your Radicle Identity on Ethereum">
-        Link your ID
+        errorLabel="Failed to claim your Radicle ID on Ethereum">
+        Link your Radicle ID
       </TransactionButton>
     </svelte:fragment>
   </Modal>

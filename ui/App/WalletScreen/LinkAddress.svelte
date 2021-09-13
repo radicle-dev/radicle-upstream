@@ -10,7 +10,7 @@
   import { store as walletStore } from "ui/src/wallet";
   import * as modal from "ui/src/modal";
 
-  import { Button, Emoji, Spinner } from "ui/DesignSystem";
+  import { Button, Emoji } from "ui/DesignSystem";
   import LinkAddressModal from "./LinkAddressModal.svelte";
 
   $: address = $walletStore.getAddress()?.toLowerCase();
@@ -63,15 +63,15 @@
   <div class="inner">
     <Emoji emoji="👛" size="huge" />
     <p class="typo-text">
-      In order to give and receive funds, you need to link your Radicle Identity
-      to Ethereum.
+      In order to use Ethereum features, you need to link your Radicle ID and
+      Ethereum address.
     </p>
     {#if !$lastClaimed || $lastClaimed !== address}
-      <Button on:click={onLink}>Link your ID</Button>
+      <Button on:click={onLink} dataCy="link-button"
+        >Link your Radicle ID</Button>
     {:else}
       <div class="spinner-wrapper">
-        <Spinner height={24} width={24} />
-        Linking your ID…
+        Linking your Radicle ID…
         <Button variant="transparent" on:click={onLink}>Retry</Button>
       </div>
     {/if}

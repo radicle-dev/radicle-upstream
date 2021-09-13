@@ -120,7 +120,7 @@
         {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
           {#if $attestationStatus === AttestationStatus.Fetching}
             <EmptyState
-              text="Checking whether you have attested your Ethereum address..."
+              text="Checking whether you have attested your Ethereum address…"
               style="height: 30rem; margin-top: 3.75rem;"
               emoji="🧦" />
           {:else if $attestationStatus === AttestationStatus.Valid}

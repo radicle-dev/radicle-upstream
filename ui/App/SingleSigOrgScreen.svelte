@@ -32,7 +32,7 @@
   const tabs = (address: string) => {
     return [
       {
-        title: "Anchored Projects",
+        title: "Anchored projects",
         icon: Icon.ChevronLeftRight,
         active: true,
         onClick: () => {

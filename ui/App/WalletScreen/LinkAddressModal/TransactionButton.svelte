@@ -27,7 +27,7 @@
       running = true;
       notification.info({
         message:
-          "Waiting for you to confirm the transaction in your connected wallet.",
+          "Waiting for you to confirm the transaction in your connected wallet",
         showIcon: true,
       });
       await onClick();
