@@ -110,7 +110,7 @@ export function initialize(): void {
     const walletStore = svelteStore.get(wallet.store);
     walletStore.subscribe(state => {
       if (state.status === wallet.Status.Connected) {
-        orgSidebarStore.set([]);
+        orgSidebarStore.set({ type: "initial" });
         fetchOrgs();
       }
     });
@@ -295,8 +295,12 @@ export async function createOrg(
   const receipt = await walletStore.provider.waitForTransaction(response.hash);
   const orgAddress = Contract.parseOrgCreatedReceipt(receipt);
 
-  await svelteStore.waitUntil(orgSidebarStore, orgs => {
-    return orgs.some(org => org.id === orgAddress);
+  await svelteStore.waitUntil(orgSidebarStore, store => {
+    if (store.type === "initial") {
+      return false;
+    } else {
+      return store.orgs.some(org => org.id === orgAddress);
+    }
   });
   creationNotification.remove();
   pendingOrgs.update(x => x - 1);
@@ -324,8 +328,16 @@ export async function createOrg(
   });
 }
 
-export const orgSidebarStore = svelteStore.writable<Org[]>([]);
+type OrgSidebarStore =
+  | { type: "initial" }
+  | { type: "fetched"; orgs: Org[] }
+  | { type: "resolved"; orgs: Org[] };
+
+export const orgSidebarStore = svelteStore.writable<OrgSidebarStore>({
+  type: "initial",
+});
 const fetchOrgsExecutor = mutexExecutor.create();
+const resolveOrgsExecutor = mutexExecutor.create();
 
 export async function fetchOrgs(): Promise<void> {
   const sortedOrgs = await fetchOrgsExecutor.run(async () => {
@@ -345,25 +357,32 @@ export async function fetchOrgs(): Promise<void> {
       walletStore.environment,
       walletAddress
     );
-    let orgs = await graph.getOrgs(walletAddress, gnosisSafeWallets);
-
-    orgs = await Promise.all(
-      orgs.map(async org => {
-        const registration = await ensResolver.getCachedRegistrationByAddress(
-          org.id
-        );
-        if (registration) {
-          org.registration = registration;
-        }
-        return org;
-      })
+    return lodash.sortBy(
+      await graph.getOrgs(walletAddress, gnosisSafeWallets),
+      org => org.timestamp
     );
-
-    return lodash.sortBy(orgs, org => org.timestamp);
   });
 
   if (sortedOrgs) {
-    orgSidebarStore.set(sortedOrgs);
+    orgSidebarStore.set({ type: "fetched", orgs: sortedOrgs });
+
+    const resolvedOrgs = await resolveOrgsExecutor.run(async () => {
+      return await Promise.all(
+        sortedOrgs.map(async org => {
+          const registration = await ensResolver.getCachedRegistrationByAddress(
+            org.id
+          );
+          if (registration) {
+            org.registration = registration;
+          }
+          return org;
+        })
+      );
+    });
+
+    if (resolvedOrgs) {
+      orgSidebarStore.set({ type: "resolved", orgs: resolvedOrgs });
+    }
   }
 }
 

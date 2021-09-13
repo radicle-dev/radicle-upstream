@@ -31,23 +31,35 @@
 </script>
 
 {#if $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
-  {#each $orgSidebarStore as org (org.id)}
-    <Tooltip value={org.registration?.domain || format.shortEthAddress(org.id)}>
-      <SidebarItem
-        indicator={true}
-        onClick={() =>
-          push({ type: "org", params: { address: org.id, view: "projects" } })}
-        active={($activeRouteStore.type === "singleSigOrg" ||
-          $activeRouteStore.type === "multiSigOrg") &&
-          $activeRouteStore.address === org.id}>
-        <Avatar
-          size="regular"
-          kind={org.registration?.avatar
-            ? { type: "orgImage", url: org.registration.avatar }
-            : { type: "orgEmoji", uniqueIdentifier: org.id }} />
+  {#if $orgSidebarStore.type === "fetched" && $orgSidebarStore.orgs.length > 0}
+    <Tooltip value="Loading orgs…">
+      <SidebarItem>
+        <Avatar size="regular" kind={{ type: "pendingOrg" }} />
       </SidebarItem>
     </Tooltip>
-  {/each}
+  {:else if $orgSidebarStore.type === "resolved"}
+    {#each $orgSidebarStore.orgs as org (org.id)}
+      <Tooltip
+        value={org.registration?.domain || format.shortEthAddress(org.id)}>
+        <SidebarItem
+          indicator={true}
+          onClick={() =>
+            push({
+              type: "org",
+              params: { address: org.id, view: "projects" },
+            })}
+          active={($activeRouteStore.type === "singleSigOrg" ||
+            $activeRouteStore.type === "multiSigOrg") &&
+            $activeRouteStore.address === org.id}>
+          <Avatar
+            size="regular"
+            kind={org.registration?.avatar
+              ? { type: "orgImage", url: org.registration.avatar }
+              : { type: "orgEmoji", uniqueIdentifier: org.id }} />
+        </SidebarItem>
+      </Tooltip>
+    {/each}
+  {/if}
   {#each range($pendingOrgs) as i (i)}
     <Tooltip value="Your org is being created">
       <SidebarItem>
@@ -66,6 +78,16 @@
               ? $wallet.connected.address
               : null,
         })}>
+      <Icon.Plus />
+    </SidebarItem>
+  </Tooltip>
+{:else}
+  <Tooltip value="Create an org">
+    <SidebarItem
+      indicator
+      onClick={() => {
+        push({ type: "wallet", activeTab: "transactions" });
+      }}>
       <Icon.Plus />
     </SidebarItem>
   </Tooltip>
