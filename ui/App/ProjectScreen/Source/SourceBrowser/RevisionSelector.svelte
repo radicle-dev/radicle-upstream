@@ -9,7 +9,7 @@
   import { createEventDispatcher } from "svelte";
 
   import type { Branch, Tag } from "ui/src/source";
-  import { config } from "ui/src/config";
+  import * as config from "ui/src/config";
 
   import Icon from "ui/DesignSystem/Icon";
   import Overlay from "ui/DesignSystem/Overlay.svelte";
@@ -30,8 +30,11 @@
         // Don’t show the selected revision again
         return false;
       } else if (rev.type === "tag") {
-        // Show tags only if in experimental mode
-        return config.experimentalFeaturesEnabled;
+        // Tags behave differently in radicle-link than people are used to in
+        // normal git workflows, hence we're not showing them in the UI.
+        // Because some old integration test cases still depend on tags, we
+        // only show them when run in Cypress.
+        return config.isCypressTestEnv;
       } else {
         return true;
       }

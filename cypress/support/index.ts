@@ -13,7 +13,7 @@ Cypress.on("window:before:load", appWindow => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (appWindow as any).isCypressTestEnv = true;
 
-  // Stub electron preloader to always enable `isDev` and `isExperimental` before executing tests.
+  // Stub electron preloader to always enable `isDev` before executing tests.
   ipcStub.setup(appWindow);
 });
 

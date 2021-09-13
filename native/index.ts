@@ -352,9 +352,6 @@ function buildConfig(): Partial<Config> {
   if (process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS) {
     config.proxyAddress = process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS;
   }
-  if (["1", "true"].includes(process.env.RADICLE_UPSTREAM_EXPERIMENTAL || "")) {
-    config.experimentalFeaturesEnabled = true;
-  }
   if (process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC) {
     config.testWalletMnemonic =
       process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC;

@@ -102,7 +102,7 @@ tabs:
 
 - `npm run start` within `walletconnect-test-wallet`
 - `./scripts/ethereum-dev-node.ts` in `radicle-upstream`
-- `RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start` within `radicle-upstream`
+- `yarn start` within `radicle-upstream`
 
 
 

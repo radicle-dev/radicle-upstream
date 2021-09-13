@@ -86,25 +86,6 @@ linting and formatting are enforced locally on a pre-commit basis with
 Additionally we run the same checks as separate build steps on our CI, just to
 make sure only properly formatted and lint-free code lands into master.
 
-### Feature flagging
-
-UI features that are experimental or under construction that find their way
-into the main branch must be placed behind the feature flag, to make them
-inaccessible for the general public.
-
-We do that by using `native > ipc.ts > isExperimental` as a feature flag to
-enable or disable said features accordingly to the mode in which we are running
-the app.
-
-To start the app with experimental features enabled run:
-
-    RADICLE_UPSTREAM_EXPERIMENTAL=true yarn start
-
-The feature flag is only available in development mode. It is always disabled
-in production.
-
-
-
 ### Running tests
 
 Before running UI end-to-end tests locally you'll need to check out the latest

@@ -15,10 +15,6 @@ export const INFURA_API_KEY_MAINNET = "7a19a4bf0af84fcc86ffb693a257fad4";
 export interface Config {
   // The address of the proxy in `host:port` format.
   proxyAddress: string;
-  // `true` if experimental features should be enabled.
-  //
-  // This is `true` in the cypress and node test environments.
-  experimentalFeaturesEnabled: boolean;
   // If set, a test wallet is used to automatically sign Ethereum
   // transactions. The value is the mnemonic from which the private key
   // is derived.
@@ -28,7 +24,6 @@ export interface Config {
 
 const partialConfigSchema: zod.Schema<Partial<Config>> = zod.object({
   proxyAddress: zod.string().optional(),
-  experimentalFeaturesEnabled: zod.boolean().optional(),
   testWalletMnemonic: zod.string().optional(),
   isDev: zod.boolean().optional(),
 });
@@ -53,7 +48,6 @@ export const config = getConfig();
 function getConfig(): Config {
   const config = loadPartialConfig();
   return {
-    experimentalFeaturesEnabled: isNodeTestEnv || isCypressTestEnv,
     isDev: isNodeTestEnv || isCypressTestEnv,
     proxyAddress: "127.0.0.1:17246",
     ...config,
