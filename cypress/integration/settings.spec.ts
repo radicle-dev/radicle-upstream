@@ -4,9 +4,9 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as commands from "../support/commands";
-import * as ipcStub from "../support/ipc-stub";
 import type { CyHttpMessages } from "cypress/types/net-stubbing";
+import * as commands from "cypress/support/commands";
+import * as ipcStub from "cypress/support/ipc-stub";
 
 context("settings", () => {
   beforeEach(() => {

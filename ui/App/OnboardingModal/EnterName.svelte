@@ -8,8 +8,8 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import { ValidationStatus } from "../../src/validation";
-  import * as onboarding from "../../src/onboarding";
+  import { ValidationStatus } from "ui/src/validation";
+  import * as onboarding from "ui/src/onboarding";
 
   import { Button, Emoji, TextInput } from "ui/DesignSystem";
 

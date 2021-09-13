@@ -9,15 +9,14 @@
   import type { Project } from "ui/src/project";
 
   import { fetchList, projects as store } from "ui/src/project";
-  import { showNotificationsForFailedProjects } from "../../src/profile";
+  import { showNotificationsForFailedProjects } from "ui/src/profile";
   import * as Session from "ui/src/session";
   import * as modal from "ui/src/modal";
   import * as router from "ui/src/router";
 
+  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
   import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
   import Error from "./Error.svelte";
-
-  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
   import ProjectList from "./ProjectList.svelte";
   import Remote from "ui/App/Remote.svelte";
 

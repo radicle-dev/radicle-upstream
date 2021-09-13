@@ -4,10 +4,11 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as commands from "../support/commands";
 import * as path from "path";
-import * as ipcStub from "../support/ipc-stub";
-import * as nodeManager from "../support/nodeManager";
+
+import * as commands from "cypress/support/commands";
+import * as ipcStub from "cypress/support/ipc-stub";
+import * as nodeManager from "cypress/support/nodeManager";
 
 const validSeedAddress =
   "hyy5s7ysg96fqa91gbe7h38yddh4mkokft7y4htt8szt9e17sxoe3h@seed.my.org:123";

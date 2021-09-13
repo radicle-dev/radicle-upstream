@@ -8,24 +8,25 @@
 <script lang="typescript">
   import * as svelteStore from "svelte/store";
 
-  import { selectedEnvironment as ethereumEnvironment } from "../src/ethereum";
-  import * as ethereum from "../src/ethereum";
-  import * as ipc from "../src/ipc";
-  import * as Session from "ui/src/session";
+  import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import {
     themeOptions,
     uiFontOptions,
     codeFontOptions,
-  } from "../src/settings";
-  import { updateChecker } from "../src/updateChecker";
-  import * as modal from "../src/modal";
-
-  const settingsStore = Session.settings;
+  } from "ui/src/settings";
+  import { updateChecker } from "ui/src/updateChecker";
+  import * as ethereum from "ui/src/ethereum";
+  import * as ipc from "ui/src/ipc";
+  import * as modal from "ui/src/modal";
+  import * as Session from "ui/src/session";
 
   import { Button, Identifier, SegmentedControl } from "ui/DesignSystem";
-  import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+
   import ExternalLink from "ui/App/ExternalLink.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
+
+  const settingsStore = Session.settings;
 
   const updateTheme = (event: CustomEvent) =>
     Session.updateAppearance({

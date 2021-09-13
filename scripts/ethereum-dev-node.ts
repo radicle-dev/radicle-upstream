@@ -13,7 +13,7 @@ import * as ethers from "ethers";
 import waitOn from "wait-on";
 import assert from "assert";
 
-import * as contractAddresses from "../ui/src/ethereum/contractAddresses";
+import * as contractAddresses from "ui/src/ethereum/contractAddresses";
 
 const ethAccountFile = "sandbox/.local-eth-account";
 

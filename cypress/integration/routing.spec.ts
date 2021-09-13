@@ -4,9 +4,9 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as ipcTypes from "../../native/ipc-types";
-import * as ipcStub from "../support/ipc-stub";
-import * as commands from "../support/commands";
+import * as ipcTypes from "native/ipc-types";
+import * as ipcStub from "cypress/support/ipc-stub";
+import * as commands from "cypress/support/commands";
 
 context("routing", () => {
   beforeEach(() => {

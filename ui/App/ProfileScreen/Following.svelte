@@ -6,17 +6,16 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { Urn } from "ui/src/urn";
+  import type { Project } from "ui/src/project";
+
   import { fade } from "svelte/transition";
 
-  import SearchModal from "ui/App/SearchModal.svelte";
-
-  import * as modal from "ui/src/modal";
-  import { following as store, fetchFollowing } from "../../src/profile";
-  import * as proxy from "../../src/proxy";
-  import * as router from "ui/src/router";
-  import type { Project } from "ui/src/project";
+  import { following as store, fetchFollowing } from "ui/src/profile";
   import * as Session from "ui/src/session";
-  import type { Urn } from "../../src/urn";
+  import * as modal from "ui/src/modal";
+  import * as proxy from "ui/src/proxy";
+  import * as router from "ui/src/router";
 
   import {
     Button,
@@ -26,9 +25,10 @@
     Identifier,
     List,
   } from "ui/DesignSystem";
-  import Remote from "ui/App/Remote.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
 
+  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import Remote from "ui/App/Remote.svelte";
+  import SearchModal from "ui/App/SearchModal.svelte";
   import ProjectList from "./ProjectList.svelte";
 
   const FADE_DURATION = 200;

@@ -6,12 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import { lastClaimed } from "ui/src/attestation/lastClaimed";
+  import { store as walletStore } from "ui/src/wallet";
+  import * as modal from "ui/src/modal";
+
   import { Button, Emoji, Spinner } from "ui/DesignSystem";
   import LinkAddressModal from "./LinkAddressModal.svelte";
-
-  import * as modal from "ui/src/modal";
-  import { lastClaimed } from "../../src/attestation/lastClaimed";
-  import { store as walletStore } from "../../src/wallet";
 
   $: address = $walletStore.getAddress()?.toLowerCase();
 

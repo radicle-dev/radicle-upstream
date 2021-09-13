@@ -14,7 +14,7 @@
 
   import { Icon, Identifier } from "ui/DesignSystem";
 
-  import BackButton from "../BackButton.svelte";
+  import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
   import Changeset from "./SourceBrowser/Changeset.svelte";
 
   export let commitHash: string;

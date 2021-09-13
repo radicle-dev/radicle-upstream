@@ -6,8 +6,8 @@
 
 import * as path from "path";
 
-import * as commands from "../../support/commands";
-import * as nodeManager from "../../support/nodeManager";
+import * as commands from "cypress/support/commands";
+import * as nodeManager from "cypress/support/nodeManager";
 
 const commitMessage = "Adding something new";
 const patchId = "my-patch/fix";

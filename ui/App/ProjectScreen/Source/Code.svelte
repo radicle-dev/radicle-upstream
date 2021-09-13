@@ -6,15 +6,15 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as router from "ui/src/router";
-  import { selectPath, store } from "ui/src/screen/project/source";
-  import { fetchTree } from "ui/src/source";
   import type { Sha1 } from "ui/src/source";
-  import type { Urn } from "../../../src/urn";
+  import type { Urn } from "ui/src/urn";
+  import * as router from "ui/src/router";
 
-  import Remote from "ui/App/Remote.svelte";
+  import { fetchTree } from "ui/src/source";
+  import { selectPath, store } from "ui/src/screen/project/source";
 
   import FileView from "./SourceBrowser/FileView.svelte";
+  import Remote from "ui/App/Remote.svelte";
   import Tree from "./SourceBrowser/Tree.svelte";
 
   const onSelectCommit = (projectUrn: Urn, sha1: Sha1) => {

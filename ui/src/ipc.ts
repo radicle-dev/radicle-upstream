@@ -4,14 +4,14 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type {} from "../../native/preload";
-import * as ipcTypes from "../../native/ipc-types";
-import * as config from "./config";
-
+import type {} from "native/preload";
 export type {
   ProxyError,
   CustomProtocolInvocation,
 } from "../../native/ipc-types";
+
+import * as config from "ui/src/config";
+import * as ipcTypes from "../../native/ipc-types";
 
 function makeMainProcessClient(): ipcTypes.MainProcess {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

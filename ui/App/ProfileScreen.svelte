@@ -6,16 +6,16 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as modal from "../src/modal";
-  import * as Session from "ui/src/session";
   import { unreachable } from "ui/src/unreachable";
+  import * as Session from "ui/src/session";
+  import * as modal from "ui/src/modal";
   import * as router from "ui/src/router";
 
   import { Button, Icon } from "ui/DesignSystem";
 
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import Header from "ui/App/ScreenLayout/Header.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import FollowingTab from "./ProfileScreen/Following.svelte";

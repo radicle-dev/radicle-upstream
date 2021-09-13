@@ -4,16 +4,17 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type { Urn } from "ui/src/urn";
+import type { PeerId } from "ui/src/identity";
+
 import { get, derived, Readable } from "svelte/store";
 
+import * as error from "ui/src/error";
 import * as mutexExecutor from "ui/src/mutexExecutor";
-import * as error from "../error";
-import type { PeerId } from "../identity";
-import * as project from "../project";
-import * as remote from "../remote";
-import type { Urn } from "../urn";
-import * as validation from "../validation";
-import * as proxy from "../proxy";
+import * as project from "ui/src/project";
+import * as proxy from "ui/src/proxy";
+import * as remote from "ui/src/remote";
+import * as validation from "ui/src/validation";
 
 interface Screen {
   peers: project.Peer[];

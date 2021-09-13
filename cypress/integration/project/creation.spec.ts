@@ -4,9 +4,9 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as ipcStub from "../../support/ipc-stub";
-import * as commands from "../../support/commands";
-import * as project from "../../../ui/src/project";
+import * as ipcStub from "cypress/support/ipc-stub";
+import * as commands from "cypress/support/commands";
+import * as project from "ui/src/project";
 
 context("project creation", () => {
   const withEmptyDirectoryStub = (callback: () => void) => {

@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as commands from "../support/commands";
+import * as commands from "cypress/support/commands";
 
 context("search", () => {
   const projectId = "hnrkfr9g6gxymefc3hto37bgmq3eo86sfckky";

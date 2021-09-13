@@ -4,11 +4,12 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type * as project from "../project";
-import type * as session from "../session";
-import * as settings from "../settings";
-import type * as source from "../source";
-import * as identity from "../identity";
+import type * as project from "ui/src/project";
+import type * as session from "ui/src/session";
+import type * as source from "ui/src/source";
+
+import * as identity from "ui/src/identity";
+import * as settings from "ui/src/settings";
 
 type MockedResponse =
   | project.Project

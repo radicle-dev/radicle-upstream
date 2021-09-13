@@ -6,10 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { ValidationState } from "ui/src/validation";
+
   import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
-  import { ValidationStatus, getValidationState } from "../../src/validation";
-  import type { ValidationState } from "../../src/validation";
+
+  import { ValidationStatus, getValidationState } from "ui/src/validation";
 
   import { Button, Icon, PasswordInput } from "ui/DesignSystem";
 

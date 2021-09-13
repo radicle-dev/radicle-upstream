@@ -6,14 +6,14 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { SvelteComponent } from "svelte";
   import type * as svelteStore from "svelte/store";
+  import type { SvelteComponent } from "svelte";
 
   import { Button, Emoji, Icon } from "ui/DesignSystem";
 
-  import * as notification from "../src/notification";
-  import * as ipc from "../src/ipc";
-  import * as error from "../src/error";
+  import * as error from "ui/src/error";
+  import * as ipc from "ui/src/ipc";
+  import * as notification from "ui/src/notification";
 
   // We have to circumvent the type checker because svelte cannot
   // narrow types using `if` statements.

@@ -6,14 +6,14 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { Project } from "ui/src/project";
+
+  import { fetchProjects, projects as store } from "ui/src/userProfile";
   import * as router from "ui/src/router";
 
-  import type { Project } from "ui/src/project";
-  import { fetchProjects, projects as store } from "../../src/userProfile";
-
   import Error from "ui/App/ProfileScreen/Error.svelte";
-  import Remote from "ui/App/Remote.svelte";
   import ProjectList from "ui/App/ProfileScreen/ProjectList.svelte";
+  import Remote from "ui/App/Remote.svelte";
 
   export let urn: string;
 

@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as commands from "../support/commands";
+import * as commands from "cypress/support/commands";
 const metaKey = commands.metaKey();
 
 context("documented shortcuts", () => {

@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type {} from "../../native/preload";
+import type {} from "native/preload";
 import qs from "qs";
 import * as zod from "zod";
 

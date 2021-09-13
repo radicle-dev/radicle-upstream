@@ -6,40 +6,42 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { Project, User } from "ui/src/project";
+  import type { Screen } from "ui/src/screen/project/source";
+  import type { Branch, Tag } from "ui/src/source";
+
   import { onDestroy } from "svelte";
 
-  import * as error from "ui/src/error";
   import { openPath } from "ui/src/ipc";
-  import * as notification from "ui/src/notification";
-  import * as proxy from "../../src/proxy";
   import { unreachable } from "ui/src/unreachable";
-  import * as router from "ui/src/router";
-  import * as remote from "ui/src/remote";
-  import type { Project, User } from "ui/src/project";
   import {
     fetch,
     watchPatchUpdates,
     selectPath,
     selectRevision,
     store,
-  } from "../../src/screen/project/source";
-  import type { Screen } from "ui/src/screen/project/source";
-  import type { Branch, Tag } from "../../src/source";
-  import * as screen from "../../src/screen";
+  } from "ui/src/screen/project/source";
+  import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
+  import * as proxy from "ui/src/proxy";
+  import * as remote from "ui/src/remote";
+  import * as router from "ui/src/router";
+  import * as screen from "ui/src/screen";
 
   import { Icon } from "ui/DesignSystem";
-  import RevisionSelector from "./Source/SourceBrowser/RevisionSelector.svelte";
+
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
   import PatchButton from "./Source/PatchButton.svelte";
+  import RevisionSelector from "./Source/SourceBrowser/RevisionSelector.svelte";
 
-  import FilesTab from "./Source/Code.svelte";
-  import CommitsTab from "./Source/Commits.svelte";
   import CommitTab from "./Source/Commit.svelte";
-  import PatchList from "./Source/PatchList.svelte";
+  import CommitsTab from "./Source/Commits.svelte";
+  import FilesTab from "./Source/Code.svelte";
   import Patch from "./Source/Patch.svelte";
+  import PatchList from "./Source/PatchList.svelte";
 
   export let project: Project;
   export let selectedPeer: User;

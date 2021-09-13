@@ -4,8 +4,8 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type {} from "../../native/preload";
-import type { MainMessage, MainProcess } from "../../native/ipc-types";
+import type {} from "native/preload";
+import type { MainMessage, MainProcess } from "native/ipc-types";
 import { EventEmitter } from "events";
 import * as sinon from "sinon";
 

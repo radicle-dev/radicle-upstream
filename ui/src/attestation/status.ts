@@ -4,16 +4,15 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type { Identity } from "ui/src/identity";
+import type { UnsealedSession } from "ui/src/session";
+import type { Wallet } from "ui/src/wallet";
+
 import { Signer, ethers } from "ethers";
-import * as svelteStore from "svelte/store";
-import type { Identity } from "../identity";
-import * as session from "../session";
-import { parseIdentitySha1 } from "../urn";
-
-import type { UnsealedSession } from "../session";
-
-import type { Wallet } from "../wallet";
 import { claimsAddress, ClaimsContract } from "./contract";
+import { parseIdentitySha1 } from "ui/src/urn";
+import * as session from "ui/src/session";
+import * as svelteStore from "svelte/store";
 
 export enum AttestationStatus {
   Fetching = "Fetching",
