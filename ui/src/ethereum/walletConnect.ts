@@ -173,7 +173,7 @@ export class WalletConnectClient implements WalletConnect {
   // https://github.com/WalletConnect/walletconnect-monorepo/pull/370#issuecomment-776038638
   private reinit() {
     this.connector = new Connector({
-      bridge: "https://radicle.bridge.walletconnect.org",
+      bridge: "https://bridge.walletconnect.org",
       qrcodeModal: {
         open: (uri: string, onClose, _opts?: unknown) => {
           this.qrDisplayRequest.push({ uri, onClose });
