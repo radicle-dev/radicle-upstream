@@ -191,7 +191,7 @@ context("project source browsing", () => {
             commands
               .pickWithContent(
                 ["project-screen", "file-view"],
-                "This repository is a data source for the Upstream front-end tests and the radicle-surf unit tests."
+                "This repository is a data source for the Upstream front-end tests"
               )
               .should("exist");
 

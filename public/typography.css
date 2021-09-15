@@ -181,17 +181,6 @@ p,
   opacity: 0.5;
 }
 
-a {
-  visibility: hidden;
-}
-
-a:after {
-  background-color: red;
-  color: white;
-  visibility: visible;
-  content: 'Don\'t use the <a> tag. Use <span class="typo-link"> for internal links or the <ExternalLink> component for extenal links.';
-}
-
 /* Modifiers */
 
 .typo-regular {
