@@ -9,7 +9,6 @@ import { derived, Readable } from "svelte/store";
 import * as error from "./error";
 import * as localPeer from "./localPeer";
 import * as project from "./project";
-import { Status } from "./remote";
 import * as remote from "./remote";
 import * as proxy from "./proxy";
 
@@ -35,24 +34,24 @@ export const following: Readable<remote.Data<Following | null>> = derived(
   ([follows, requests]): remote.Data<Following | null> => {
     // Transition to loading.
     if (
-      follows.status === Status.Loading ||
-      requests.status === Status.Loading
+      follows.status === remote.Status.Loading ||
+      requests.status === remote.Status.Loading
     ) {
-      return { status: Status.Loading as const };
+      return { status: remote.Status.Loading };
     }
 
     // Return errors.
-    if (follows.status === Status.Error) {
+    if (follows.status === remote.Status.Error) {
       return follows;
     }
-    if (requests.status === Status.Error) {
+    if (requests.status === remote.Status.Error) {
       return requests;
     }
 
     // Data loaded.
     if (
-      follows.status === Status.Success &&
-      requests.status === Status.Success
+      follows.status === remote.Status.Success &&
+      requests.status === remote.Status.Success
     ) {
       let data = null;
       const reqs = requests.data.filter(
@@ -67,10 +66,10 @@ export const following: Readable<remote.Data<Following | null>> = derived(
           requests: reqs,
         };
       }
-      return { status: Status.Success as const, data };
+      return { status: remote.Status.Success, data };
     }
 
-    return { status: Status.NotAsked as const };
+    return { status: remote.Status.NotAsked };
   }
 );
 

@@ -53,10 +53,15 @@ pub fn store_dir(profile_id: &ProfileId) -> path::PathBuf {
 ///
 ///   * Could not get the user home path from the HOME env variable
 pub fn bin_dir() -> Result<path::PathBuf, Error> {
-    let home_dir = std::env::var("HOME").or_else(|_| {
-        // Windows don't have HOME by default
-        std::env::var("USERPROFILE")
-    })?;
+    let home_dir;
+    #[cfg(windows)]
+    {
+        home_dir = std::env::var("USERPROFILE")?;
+    }
+    #[cfg(unix)]
+    {
+        home_dir = std::env::var("HOME")?;
+    }
 
     Ok(path::Path::new(&home_dir).join(".radicle/bin"))
 }

@@ -66,12 +66,17 @@ mod test {
     async fn ensure_setup_sets_up_remote_helper() -> Result<(), Error> {
         let tmp_src_dir = tempfile::tempdir().expect("failed to create source tempdir");
         let src_git_helper_bin_path = tmp_src_dir.path().join(super::GIT_REMOTE_RAD);
-        let _file = fs::File::create(src_git_helper_bin_path.clone())
-            .expect("failed to create mock binary");
+        #[cfg(windows)]
+        {
+            fs::File::create(src_git_helper_bin_path.clone())
+                .expect("failed to create mock binary");
+        }
 
         #[cfg(unix)]
         {
-            let mut src_permissions = _file.metadata()?.permissions();
+            let file = fs::File::create(src_git_helper_bin_path.clone())
+                .expect("failed to create mock binary");
+            let mut src_permissions = file.metadata()?.permissions();
             src_permissions.set_mode(0o644);
             fs::set_permissions(src_git_helper_bin_path, src_permissions)?;
         }
