@@ -140,7 +140,7 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
       }),
     ],
     optimization: {
-      minimize: true,
+      minimize: isProduction,
       minimizer: [
         new TerserWebpackPlugin({
           extractComments: false, // prevents TerserPlugin from extracting a [chunkName].js.LICENSE.txt file
