@@ -11,7 +11,6 @@
   import * as format from "ui/src/format";
   import { Copyable } from "ui/DesignSystem";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
-  import ExternalLink from "ui/App/ExternalLink.svelte";
 
   export let uri: string;
 
@@ -46,8 +45,8 @@
 <Modal emoji="👛" title="Connect your wallet">
   <p style="text-align: center;">
     Scan this code with your wallet. Not working? <br />
-    <ExternalLink url="https://walletconnect.org/wallets"
-      >View compatible wallets</ExternalLink>
+    <a class="typo-link" href="https://walletconnect.org/wallets"
+      >View compatible wallets</a>
   </p>
 
   <div class="qrcode-wrapper">

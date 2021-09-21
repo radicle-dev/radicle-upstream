@@ -10,10 +10,6 @@
   import * as format from "ui/src/format";
 
   export let hash: string;
-
-  import ExternalLink from "ui/App/ExternalLink.svelte";
 </script>
 
-<ExternalLink url={org.etherscanUrl(hash)}>
-  {format.shortEthTx(hash)}
-</ExternalLink>
+<a class="typo-link" href={org.etherscanUrl(hash)}>{format.shortEthTx(hash)}</a>

@@ -163,7 +163,7 @@ p,
   font-size: 14px;
 }
 
-/* Links */
+/* Relative links */
 
 .typo-link {
   color: var(--color-primary);
@@ -179,6 +179,18 @@ p,
 
 .typo-link:active {
   opacity: 0.5;
+}
+
+/* External links */
+.typo-link[href^="http://"]:after,
+.typo-link[href^="https://"]:after
+{
+  content: "↗";
+  margin-left: 0.1rem;
+  text-decoration: none;
+  /* disables text decoration from containing a element */
+  display: inline-block;
+  vertical-align: text-top;
 }
 
 /* Modifiers */

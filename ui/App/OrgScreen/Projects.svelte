@@ -13,7 +13,6 @@
   import * as org from "ui/src/org";
 
   import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
-  import ExternalLink from "ui/App/ExternalLink.svelte";
   import ProjectList from "ui/App/ProfileScreen/ProjectList.svelte";
   import UnresolvedAnchorList from "./UnresolvedAnchorList.svelte";
 
@@ -85,14 +84,16 @@
         <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
           {#if isWaitingForExecution(anchors)}
             Waiting for a member to execute this anchor transaction.
-            <ExternalLink
-              url={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
-              >Execute transaction</ExternalLink>
+            <a
+              class="typo-link"
+              href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+              >Execute transaction</a>
           {:else}
             Not enough members have confirmed this anchor transaction.
-            <ExternalLink
-              url={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
-              >Confirm transaction</ExternalLink>
+            <a
+              class="typo-link"
+              href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+              >Confirm transaction</a>
           {/if}
         </p>
       </div>
