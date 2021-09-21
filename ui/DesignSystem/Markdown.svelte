@@ -157,20 +157,33 @@
     padding-left: 1.25rem;
     margin-bottom: 1rem;
   }
-  /* Disable all links by default. This way we disable relative links,
-     which don't work at the moment and selectively enable external links and
-     anchors which do work. */
   .markdown :global(a) {
-    color: var(--color-foreground);
+    text-decoration: underline;
+    text-underline-offset: 0.25rem;
+
+    /* Disable all links by default. This way we disable relative links,
+       which don't work at the moment and selectively enable external links and
+       anchors which do work. */
     cursor: default;
     pointer-events: none;
   }
+
   /* Enable relative anchors. */
   .markdown :global(a[href^="#"]) {
     color: var(--color-primary);
     cursor: pointer;
     pointer-events: inherit;
   }
+
+  .markdown :global(a[href^="#"]:hover),
+  .markdown :global(a[href^="#"]:focus) {
+    opacity: 0.75;
+  }
+
+  .markdown :global(a[href^="#"]:active) {
+    opacity: 0.5;
+  }
+
   /* Enable external links. */
   .markdown :global(a[href^="http://"]),
   .markdown :global(a[href^="https://"])
@@ -178,6 +191,31 @@
     color: var(--color-primary);
     cursor: pointer;
     pointer-events: inherit;
+  }
+
+  .markdown :global(a[href^="http://"]:hover),
+  .markdown :global(a[href^="https://"]:hover),
+  .markdown :global(a[href^="http://"]:focus),
+  .markdown :global(a[href^="https://"]:focus)
+  {
+    opacity: 0.75;
+  }
+
+  .markdown :global(a[href^="http://"]:active),
+  .markdown :global(a[href^="https://"]:active)
+  {
+    opacity: 0.5;
+  }
+
+  .markdown :global(a[href^="http://"]:after),
+  .markdown :global(a[href^="https://"]:after)
+  {
+    content: "↗";
+    margin-left: 0.1rem;
+    text-decoration: none;
+    /* disables text decoration from containing a element */
+    display: inline-block;
+    vertical-align: text-top;
   }
 </style>
 

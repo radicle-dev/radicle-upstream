@@ -123,6 +123,7 @@
         <p style="color: var(--color-foreground-level-6);">
           Enter seed addresses that you’d like to connect to here.
           <a
+            class="typo-link"
             href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
             >Learn more</a>
         </p>

@@ -165,6 +165,7 @@
             Share your Device ID with others to be added as a remote.
             <br />
             <a
+              class="typo-link"
               href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
               >Learn more about managing devices</a>
           </p>
@@ -247,7 +248,9 @@
         <div class="section-item">
           <p class="typo-text-bold">View community forum</p>
           <div class="action">
-            <a href="https://radicle.community/c/site-feedback/2"
+            <a
+              class="typo-link"
+              href="https://radicle.community/c/site-feedback/2"
               >radicle.community</a>
           </div>
         </div>
@@ -255,6 +258,7 @@
           <p class="typo-text-bold">Get in touch directly</p>
           <div class="action">
             <a
+              class="typo-link"
               href="https://discord.com/channels/841318878125490186/841318878650302488"
               >Radicle Community Discord</a>
           </div>

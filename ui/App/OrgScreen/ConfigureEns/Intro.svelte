@@ -23,7 +23,9 @@
     Your ENS name allows linking your org with a name, logo, URL and social
     media profiles. The registration costs {ethereum.formatTokenAmount(fee)}
     RAD, and you'll also need sufficient ETH to cover transaction costs.
-    <a href="https://docs.radicle.xyz/docs/connecting-to-ethereum/obtaining-rad"
+    <a
+      class="typo-link"
+      href="https://docs.radicle.xyz/docs/connecting-to-ethereum/obtaining-rad"
       >Buy RAD</a>
   </svelte:fragment>
 

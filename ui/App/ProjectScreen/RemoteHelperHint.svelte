@@ -49,6 +49,7 @@
     To publish code to Radicle, you need to add this to your shell configuration
     file. Not sure how?
     <a
+      class="typo-link"
       href="https://docs.radicle.xyz/docs/getting-started#configuring-your-system">
       Read more
     </a>

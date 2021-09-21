@@ -84,11 +84,15 @@
         <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
           {#if isWaitingForExecution(anchors)}
             Waiting for a member to execute this anchor transaction.
-            <a href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+            <a
+              class="typo-link"
+              href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
               >Execute transaction</a>
           {:else}
             Not enough members have confirmed this anchor transaction.
-            <a href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+            <a
+              class="typo-link"
+              href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
               >Confirm transaction</a>
           {/if}
         </p>

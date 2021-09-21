@@ -12,4 +12,4 @@
   export let hash: string;
 </script>
 
-<a href={org.etherscanUrl(hash)}>{format.shortEthTx(hash)}</a>
+<a class="typo-link" href={org.etherscanUrl(hash)}>{format.shortEthTx(hash)}</a>

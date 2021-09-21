@@ -165,7 +165,6 @@ p,
 
 /* Relative links */
 
-a,
 .typo-link {
   color: var(--color-primary);
   cursor: pointer;
@@ -173,20 +172,18 @@ a,
   text-underline-offset: 0.25rem;
 }
 
-a:hover,
 .typo-link:hover,
 .typo-link:focus {
   opacity: 0.75;
 }
 
-a:active,
 .typo-link:active {
   opacity: 0.5;
 }
 
 /* External links */
-a[href^="http://"]:after,
-a[href^="https://"]:after
+.typo-link[href^="http://"]:after,
+.typo-link[href^="https://"]:after
 {
   content: "↗";
   margin-left: 0.1rem;

@@ -45,7 +45,8 @@
 <Modal emoji="👛" title="Connect your wallet">
   <p style="text-align: center;">
     Scan this code with your wallet. Not working? <br />
-    <a href="https://walletconnect.org/wallets">View compatible wallets</a>
+    <a class="typo-link" href="https://walletconnect.org/wallets"
+      >View compatible wallets</a>
   </p>
 
   <div class="qrcode-wrapper">
