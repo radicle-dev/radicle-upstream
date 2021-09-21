@@ -140,10 +140,25 @@ then you can use `RAD_PROFILE` instead of `RAD_HOME`, but be aware that
 Electron state will be shared by all instances.
 
 
+### Running on Windows (experimental)
+
+There might be [issues due to long file paths on windows][lf]. A workaround
+for this is to set `RAD_HOME` to a root folder, for example:
+
+`$env:RAD_HOME="C:\rad"`.
+
+To try out Upstream on Windows, you can use a [free VM][fv] provided by
+Microsoft.
+
+
 ### Building an Upstream package for your platform
 
 You can build and package Upstream with: `yarn dist`. The generated package
-will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage}`.
+will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|exe}`.
+
+On Windows you can do `yarn run dist:win:static` to [pre-compile][pc]
+`vcruntime140.dll` to avoid the need to install Visual C++ Redistributable on
+the target computer.
 
 
 #### Apple notarization
@@ -496,6 +511,7 @@ All Github access tokens _must_ have the `public_repo` scope.
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
 [es]: https://eslint.org
+[fv]: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines
 [ga]: https://docs.github.com/en/actions
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
 [gg]: https://cloud.google.com/storage/docs/gsutil_install
@@ -504,10 +520,12 @@ All Github access tokens _must_ have the `public_repo` scope.
 [hb]: https://github.com/github/hub
 [hub-config]: https://hub.github.com/hub.1.html#configuration
 [hu]: https://github.com/typicode/husky
+[lf]: https://github.com/libgit2/libgit2/issues/3053
 [ls]: https://github.com/okonet/lint-staged
 [ma]: https://appleid.apple.com/account/manage
 [merging-prs]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
+[pc]: https://github.com/libgit2/libgit2/issues/3053
 [pr]: https://prettier.io
 [qa]: qa.md
 [rd]: https://github.com/radicle-dev/radicle.xyz/blob/master/pages/downloads.html.mustache

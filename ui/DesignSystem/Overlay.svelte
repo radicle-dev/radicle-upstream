@@ -6,17 +6,16 @@
  LICENSE file.
 -->
 <script lang="typescript" context="module">
-  import { derived, writable } from "svelte/store";
+  import { writable } from "svelte/store";
 
-  const currentStore = writable<HTMLDivElement | undefined>(undefined);
-  const current = derived(currentStore, store => store);
+  const current = writable<HTMLDivElement | undefined>(undefined);
 
   const open = (component: HTMLDivElement): void => {
-    currentStore.set(component);
+    current.set(component);
   };
 
   const close = (): void => {
-    currentStore.set(undefined);
+    current.set(undefined);
   };
 </script>
 

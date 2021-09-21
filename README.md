@@ -5,9 +5,11 @@
 Upstream is a cross-platform desktop client for the radicle code collaboration
 protocol.
 
-At the moment we support Linux and macOS. Later on we'll provide ready-made
-packages for both platforms, however for now a good way to explore the project
-is to read the documentation and have a go at building it locally.
+At the moment we support Linux and macOS. Latest packages for these platforms
+are available on the [Radicle website][rw].
+
+Windows support is considered experimental at this stage -- we don't provide
+packages for this platform, so you'll have to build it from source.
 
 The [UI][ui] is written in JavaScript using [Svelte][sv] and Electron and the
 node [proxy][pr] logic is implemented in [Rust][ru].
@@ -53,6 +55,7 @@ Upstream uses:
 [ra]: https://rsms.me/inter
 [rc]: https://radicle.community
 [ru]: https://www.rust-lang.org
+[rw]: https://radicle.xyz/downloads.html
 [so]: https://adobe-fonts.github.io/source-code-pro
 [st]: https://buildkite.com/monadic/radicle-upstream
 [sv]: https://svelte.dev
