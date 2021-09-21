@@ -5,9 +5,28 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="typescript" context="module">
   import * as svelteStore from "svelte/store";
+  import persistentStore from "svelte-persistent-store/dist";
 
+  export type PrimaryColor = "blue" | "pink" | "orange";
+  export const primaryColorStore = persistentStore.local.writable<PrimaryColor>(
+    "radicle.settings.primaryColor",
+    "blue"
+  );
+
+  export const updatePrimaryColor = (event: CustomEvent): void => {
+    primaryColorStore.set(event.detail);
+  };
+
+  export const primaryColorOptions: { title: string; value: PrimaryColor }[] = [
+    { title: "Blue", value: "blue" },
+    { title: "Pink", value: "pink" },
+    { title: "Orange", value: "orange" },
+  ];
+</script>
+
+<script lang="typescript">
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import {
     themeOptions,
@@ -222,6 +241,20 @@
               active={$settingsStore.appearance.codeFont}
               options={codeFontOptions}
               on:select={updateCodeFont} />
+          </div>
+        </div>
+        <div class="section-item">
+          <div>
+            <p class="typo-text-bold">Color</p>
+            <p style="color: var(--color-foreground-level-6);">
+              This is the primary color you'll see through the app.
+            </p>
+          </div>
+          <div class="action">
+            <SegmentedControl
+              active={$primaryColorStore}
+              options={primaryColorOptions}
+              on:select={updatePrimaryColor} />
           </div>
         </div>
       </section>
