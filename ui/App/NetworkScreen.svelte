@@ -18,7 +18,6 @@
   } from "../src/session";
 
   import { Button, Icon, Identifier, TextInput } from "ui/DesignSystem";
-  import ExternalLink from "ui/App/ExternalLink.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
@@ -123,9 +122,9 @@
         </p>
         <p style="color: var(--color-foreground-level-6);">
           Enter seed addresses that you’d like to connect to here.
-          <ExternalLink
-            url="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
-            >Learn more</ExternalLink>
+          <a
+            href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
+            >Learn more</a>
         </p>
       </div>
       <form

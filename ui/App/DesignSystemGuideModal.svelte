@@ -290,8 +290,12 @@
           <p class="typo-text-small-bold">0123456789</p>
         </TypographySwatch>
 
-        <TypographySwatch title={`<span class="typo-link">`}>
-          <span class="typo-link">Radicle Upstream</span>
+        <TypographySwatch title={`<a href="#relative-link">`}>
+          <a href="#relative-link">Relative link</a>
+        </TypographySwatch>
+
+        <TypographySwatch title={`<a href="https://radicle.xyz">`}>
+          <a href="https://radicle.xyz">External link</a>
         </TypographySwatch>
 
         <TypographySwatch title={`<p class="typo-all-caps">`}>

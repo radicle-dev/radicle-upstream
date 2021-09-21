@@ -163,8 +163,9 @@ p,
   font-size: 14px;
 }
 
-/* Links */
+/* Relative links */
 
+a,
 .typo-link {
   color: var(--color-primary);
   cursor: pointer;
@@ -172,13 +173,27 @@ p,
   text-underline-offset: 0.25rem;
 }
 
+a:hover,
 .typo-link:hover,
 .typo-link:focus {
   opacity: 0.75;
 }
 
+a:active,
 .typo-link:active {
   opacity: 0.5;
+}
+
+/* External links */
+a[href^="http://"]:after,
+a[href^="https://"]:after
+{
+  content: "↗";
+  margin-left: 0.1rem;
+  text-decoration: none;
+  /* disables text decoration from containing a element */
+  display: inline-block;
+  vertical-align: text-top;
 }
 
 /* Modifiers */

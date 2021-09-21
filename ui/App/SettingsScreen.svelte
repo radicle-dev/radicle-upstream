@@ -22,7 +22,6 @@
 
   import { Button, Identifier, SegmentedControl } from "ui/DesignSystem";
 
-  import ExternalLink from "ui/App/ExternalLink.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
 
@@ -165,9 +164,9 @@
           <p>
             Share your Device ID with others to be added as a remote.
             <br />
-            <ExternalLink
-              url="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
-              >Learn more about managing devices</ExternalLink>
+            <a
+              href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
+              >Learn more about managing devices</a>
           </p>
           <div class="action">
             <Identifier value={session.identity.peerId} kind="deviceId" />
@@ -248,16 +247,16 @@
         <div class="section-item">
           <p class="typo-text-bold">View community forum</p>
           <div class="action">
-            <ExternalLink url="https://radicle.community/c/site-feedback/2"
-              >radicle.community</ExternalLink>
+            <a href="https://radicle.community/c/site-feedback/2"
+              >radicle.community</a>
           </div>
         </div>
         <div class="section-item">
           <p class="typo-text-bold">Get in touch directly</p>
           <div class="action">
-            <ExternalLink
-              url="https://discord.com/channels/841318878125490186/841318878650302488"
-              >Radicle Community Discord</ExternalLink>
+            <a
+              href="https://discord.com/channels/841318878125490186/841318878650302488"
+              >Radicle Community Discord</a>
           </div>
         </div>
       </section>

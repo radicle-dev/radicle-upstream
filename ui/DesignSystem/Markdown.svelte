@@ -9,26 +9,6 @@
   import marked from "marked";
 
   export let content: string;
-
-  const renderer = {
-    link(href: string, _title: string, text: string) {
-      if (
-        href.toLowerCase().startsWith("http://") ||
-        href.toLowerCase().startsWith("https://")
-      ) {
-        if (text.includes("<img")) {
-          return `<a href="${href}">${text}</a>`;
-        } else {
-          return `<a class="typo-link" style="text-decoration: none;" href="${href}"><span style="text-decoration: underline; margin-right: 0.1rem;">${text}</span><span style="vertical-align: text-top">↗</span></a>`;
-        }
-      } else {
-        // Internal links don't work yet, so we disable user-interaction.
-        return `<span style="text-decoration: underline; text-underline-offset: 0.25rem;">${text}</span>`;
-      }
-    },
-  };
-
-  marked.use({ renderer });
 </script>
 
 <style>
@@ -39,6 +19,7 @@
     margin: 0 0 1.75rem;
     border-bottom: 1px solid var(--color-foreground-level-3);
   }
+
   .markdown :global(h1:not(:first-child)) {
     margin-top: 2rem;
   }
@@ -76,6 +57,7 @@
     font-size: 1.25rem;
     padding: 0.25rem;
   }
+
   .markdown :global(h4) {
     font-family: var(--typeface-medium);
     font-size: 1rem;
@@ -139,6 +121,7 @@
     padding: 0.09rem 0.25rem;
     border-radius: 0.5rem;
   }
+
   .markdown :global(pre) {
     font-family: var(--typeface-mono-regular), monospace;
     font-size: 1rem;
@@ -173,6 +156,28 @@
     list-style-type: inherit;
     padding-left: 1.25rem;
     margin-bottom: 1rem;
+  }
+  /* Disable all links by default. This way we disable relative links,
+     which don't work at the moment and selectively enable external links and
+     anchors which do work. */
+  .markdown :global(a) {
+    color: var(--color-foreground);
+    cursor: default;
+    pointer-events: none;
+  }
+  /* Enable relative anchors. */
+  .markdown :global(a[href^="#"]) {
+    color: var(--color-primary);
+    cursor: pointer;
+    pointer-events: inherit;
+  }
+  /* Enable external links. */
+  .markdown :global(a[href^="http://"]),
+  .markdown :global(a[href^="https://"])
+  {
+    color: var(--color-primary);
+    cursor: pointer;
+    pointer-events: inherit;
   }
 </style>
 
