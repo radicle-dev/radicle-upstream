@@ -7,10 +7,13 @@
 -->
 <script lang="typescript">
   import { settings } from "ui/src/session";
-  import { Theme, UIFont, CodeFont } from "ui/src/settings";
+  import { Theme, UIFont, CodeFont, FontColor } from "ui/src/settings";
 
   $: {
     const theme = $settings ? $settings.appearance.theme : Theme.Dark;
+    const fontColor = $settings
+      ? $settings.appearance.fontColor
+      : FontColor.Blue;
     const uiFont = $settings ? $settings.appearance.uiFont : UIFont.Inter;
     const codeFont = $settings
       ? $settings.appearance.codeFont
@@ -18,5 +21,6 @@
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.setAttribute("data-uifont", uiFont);
     document.documentElement.setAttribute("data-codefont", codeFont);
+    document.documentElement.setAttribute("data-fontColor", fontColor);
   }
 </script>

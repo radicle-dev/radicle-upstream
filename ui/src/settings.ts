@@ -8,17 +8,19 @@ import {
   Appearance,
   CoCo,
   CodeFont,
+  FontColor,
   Settings,
   Theme,
   UIFont,
 } from "./proxy/settings";
 
 export type { Settings, Appearance, CoCo };
-export { CodeFont, Theme, UIFont };
+export { CodeFont, Theme, UIFont, FontColor };
 
 export const defaultSetttings = (): Settings => ({
   appearance: {
     theme: Theme.Dark,
+    fontColor: FontColor.Blue,
     uiFont: UIFont.Inter,
     codeFont: CodeFont.SourceCode,
     hints: {
@@ -58,6 +60,21 @@ export const uiFontOptions: Option<string>[] = [
   {
     title: "System",
     value: UIFont.System,
+  },
+];
+
+export const fontColorOptions: Option<string>[] = [
+  {
+    title: "Blue",
+    value: FontColor.Blue,
+  },
+  {
+    title: "Pink",
+    value: FontColor.Pink,
+  },
+  {
+    title: "Orange",
+    value: FontColor.Orange,
   },
 ];
 

@@ -13,6 +13,7 @@ export interface Settings {
 
 export interface Appearance {
   codeFont: CodeFont;
+  fontColor: FontColor;
   hints: {
     showRemoteHelper: boolean;
   };
@@ -40,9 +41,16 @@ export enum CodeFont {
   System = "system",
 }
 
+export enum FontColor {
+  Blue = "blue",
+  Pink = "pink",
+  Orange = "orange",
+}
+
 export const settingsSchema: zod.ZodSchema<Settings> = zod.object({
   appearance: zod.object({
     codeFont: zod.enum([CodeFont.SourceCode, CodeFont.System]),
+    fontColor: zod.enum([FontColor.Blue, FontColor.Pink, FontColor.Orange]),
     hints: zod.object({
       showRemoteHelper: zod.boolean(),
     }),

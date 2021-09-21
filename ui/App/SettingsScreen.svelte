@@ -13,6 +13,7 @@
     themeOptions,
     uiFontOptions,
     codeFontOptions,
+    fontColorOptions,
   } from "ui/src/settings";
   import { updateChecker } from "ui/src/updateChecker";
   import * as ethereum from "ui/src/ethereum";
@@ -44,6 +45,12 @@
     Session.updateAppearance({
       ...$settingsStore.appearance,
       codeFont: event.detail,
+    });
+
+  const updateFontColor = (event: CustomEvent) =>
+    Session.updateAppearance({
+      ...$settingsStore.appearance,
+      fontColor: event.detail,
     });
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
@@ -222,6 +229,20 @@
               active={$settingsStore.appearance.codeFont}
               options={codeFontOptions}
               on:select={updateCodeFont} />
+          </div>
+        </div>
+        <div class="section-item">
+          <div>
+            <p class="typo-text-bold">Color</p>
+            <p style="color: var(--color-foreground-level-6);">
+              This is the primary color you'll see through the app.
+            </p>
+          </div>
+          <div class="action">
+            <SegmentedControl
+              active={$settingsStore.appearance.fontColor}
+              options={fontColorOptions}
+              on:select={updateFontColor} />
           </div>
         </div>
       </section>

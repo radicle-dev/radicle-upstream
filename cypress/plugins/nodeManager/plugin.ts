@@ -350,6 +350,7 @@ class NodeManager implements NodeManagerPlugin {
           theme: "dark",
           hints: { showRemoteHelper: true },
           uiFont: "inter",
+          fontColor: "blue",
           codeFont: "sourceCode",
         },
         coco: {
