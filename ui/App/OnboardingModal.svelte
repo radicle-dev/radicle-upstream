@@ -10,7 +10,7 @@
 
   import { retryFetch } from "ui/src/retryOnError";
   import { State } from "ui/src/onboarding";
-  import { createIdentity } from "ui/src/identity";
+  import * as proxy from "ui/src/proxy";
   import * as error from "ui/src/error";
   import * as router from "ui/src/router";
   import * as screen from "ui/src/screen";
@@ -59,7 +59,7 @@
         await session.createKeystore(passphrase);
         // Retry until the API is up
         const identity = await retryFetch(
-          () => createIdentity({ handle }),
+          () => proxy.client.identity.create({ handle }),
           100,
           50
         );

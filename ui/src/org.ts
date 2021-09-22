@@ -631,7 +631,7 @@ async function getClaimedIdentity(
   const urn = identitySha1Urn(radicleIdBytes);
   let identity;
   try {
-    identity = await proxy.client.remoteIdentityGet(urn);
+    identity = await proxy.client.personGet(urn);
   } catch (error: unknown) {
     if (error instanceof proxy.ResponseError && error.response.status === 404) {
       return undefined;
