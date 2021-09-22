@@ -13,6 +13,7 @@ import fetch from "node-fetch";
 import waitOn from "wait-on";
 import * as fs from "fs-extra";
 import execa from "execa";
+import * as cookie from "cookie";
 
 import type {
   ConnectNodeOptions,
@@ -222,17 +223,11 @@ class Node {
       throw new Error("No response from keystore request");
     }
 
-    const cookie = keystoreResponse.headers.get("set-cookie");
-    if (!cookie) {
+    const cookieData = keystoreResponse.headers.get("set-cookie");
+    const cookies = cookie.parse(cookieData || "");
+    const authToken = cookies["auth-token"];
+    if (!authToken) {
       throw new Error("Response did not contain an auth cookie");
-    }
-
-    const match = cookie.match(/auth-token=(.*);/);
-    let authToken;
-    if (match && match[1]) {
-      authToken = match[1];
-    } else {
-      throw new Error("Auth cookie does not match the expected shape");
     }
 
     // We have to wait here because proxy restarts its internal machinery
