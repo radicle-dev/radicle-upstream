@@ -12,7 +12,7 @@ use std::{collections::HashMap, time::SystemTime};
 
 use serde::Serialize;
 
-use radicle_daemon::{convert::MaybeFrom, PeerEvent, PeerId, PeerStatus, Urn};
+use radicle_daemon::{PeerEvent, PeerId, PeerStatus, Urn};
 
 /// Significant events happening during proxy runtime.
 #[derive(Clone, Debug)]
@@ -73,44 +73,48 @@ pub enum LocalPeer {
 }
 
 #[allow(clippy::wildcard_enum_match_arm)]
-impl MaybeFrom<PeerEvent> for Notification {
-    fn maybe_from(event: PeerEvent) -> Option<Self> {
-        match event {
-            PeerEvent::GossipFetched {
-                provider, gossip, ..
-            } => Some(Self::LocalPeer(LocalPeer::ProjectUpdated {
-                provider: provider.peer_id,
-                urn: gossip.urn,
-            })),
-            PeerEvent::RequestCloned(urn, peer) => {
-                Some(Self::LocalPeer(LocalPeer::RequestCloned { peer, urn }))
-            },
-            PeerEvent::RequestCreated(urn) => {
-                Some(Self::LocalPeer(LocalPeer::RequestCreated { urn }))
-            },
-            PeerEvent::RequestQueried(urn) => {
-                Some(Self::LocalPeer(LocalPeer::RequestQueried { urn }))
-            },
-            PeerEvent::RequestTimedOut(urn) => {
-                Some(Self::LocalPeer(LocalPeer::RequestTimedOut { urn }))
-            },
-            PeerEvent::StatusChanged { old, new } => {
-                Some(Self::LocalPeer(LocalPeer::StatusChanged { old, new }))
-            },
-            PeerEvent::WaitingRoomTransition(t) => {
-                let since_the_epoch = t
-                    .timestamp
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .expect("Time went backwards");
-                Some(Self::LocalPeer(LocalPeer::WaitingRoomTransition {
-                    event: t.event,
-                    state_before: t.state_before.into(),
-                    state_after: t.state_after.into(),
-                    timestamp: since_the_epoch.as_millis(),
-                }))
-            },
-            _ => None,
-        }
+pub fn from_peer_event(event: PeerEvent) -> Option<Notification> {
+    match event {
+        PeerEvent::GossipFetched {
+            provider, gossip, ..
+        } => Some(Notification::LocalPeer(LocalPeer::ProjectUpdated {
+            provider: provider.peer_id,
+            urn: gossip.urn,
+        })),
+        PeerEvent::RequestCloned(urn, peer) => {
+            Some(Notification::LocalPeer(LocalPeer::RequestCloned {
+                peer,
+                urn,
+            }))
+        },
+        PeerEvent::RequestCreated(urn) => {
+            Some(Notification::LocalPeer(LocalPeer::RequestCreated { urn }))
+        },
+        PeerEvent::RequestQueried(urn) => {
+            Some(Notification::LocalPeer(LocalPeer::RequestQueried { urn }))
+        },
+        PeerEvent::RequestTimedOut(urn) => {
+            Some(Notification::LocalPeer(LocalPeer::RequestTimedOut { urn }))
+        },
+        PeerEvent::StatusChanged { old, new } => {
+            Some(Notification::LocalPeer(LocalPeer::StatusChanged {
+                old,
+                new,
+            }))
+        },
+        PeerEvent::WaitingRoomTransition(t) => {
+            let since_the_epoch = t
+                .timestamp
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("Time went backwards");
+            Some(Notification::LocalPeer(LocalPeer::WaitingRoomTransition {
+                event: t.event,
+                state_before: t.state_before.into(),
+                state_after: t.state_after.into(),
+                timestamp: since_the_epoch.as_millis(),
+            }))
+        },
+        _ => None,
     }
 }
 

@@ -15,7 +15,7 @@ use futures::prelude::*;
 use thiserror::Error;
 use tokio::sync::{watch, RwLock};
 
-use radicle_daemon::{convert::MaybeFrom as _, seed, Peer, PeerStatus, RunConfig};
+use radicle_daemon::{seed, Peer, PeerStatus, RunConfig};
 
 use crate::{config, context, git_helper, http, notification, service, session};
 
@@ -235,9 +235,7 @@ async fn run_rigging(
                                 tracing::debug!(?gossip, ?result, "gossip received")
                             }
 
-                            if let Some(notification) =
-                                notification::Notification::maybe_from(event)
-                            {
+                            if let Some(notification) = notification::from_peer_event(event) {
                                 let _result = peer_events_sender.send(notification).err();
                             }
                         },
