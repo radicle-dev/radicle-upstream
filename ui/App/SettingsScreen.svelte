@@ -16,9 +16,9 @@
       null
     );
 
-  export function getPrimaryColor(): PrimaryColor {
-    const primaryColor = svelteStore.get(primaryColorStore);
-
+  export function primaryColorOrDefault(
+    primaryColor: PrimaryColor | null
+  ): PrimaryColor {
     if (primaryColor === null) {
       return "blue";
     } else {
@@ -263,7 +263,7 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={getPrimaryColor()}
+              active={primaryColorOrDefault($primaryColorStore)}
               options={primaryColorOptions}
               on:select={updateFontColor} />
           </div>
