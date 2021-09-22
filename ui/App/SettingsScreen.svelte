@@ -10,21 +10,10 @@
   import persistentStore from "svelte-persistent-store/dist";
 
   export type PrimaryColor = "blue" | "pink" | "orange";
-  export const primaryColorStore =
-    persistentStore.local.writable<PrimaryColor | null>(
-      "radicle.settings.primaryColor",
-      null
-    );
-
-  export function primaryColorOrDefault(
-    primaryColor: PrimaryColor | null
-  ): PrimaryColor {
-    if (primaryColor === null) {
-      return "blue";
-    } else {
-      return primaryColor;
-    }
-  }
+  export const primaryColorStore = persistentStore.local.writable<PrimaryColor>(
+    "radicle.settings.primaryColor",
+    "blue"
+  );
 </script>
 
 <script lang="typescript">
@@ -263,7 +252,7 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={primaryColorOrDefault($primaryColorStore)}
+              active={$primaryColorStore}
               options={primaryColorOptions}
               on:select={updateFontColor} />
           </div>
