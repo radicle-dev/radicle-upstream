@@ -15,7 +15,7 @@
     "blue"
   );
 
-  export const updatePrimaryColor = (event: CustomEvent): PrimaryColor => {
+  export const updatePrimaryColor = (event: CustomEvent): void => {
     primaryColorStore.set(event.detail);
   };
 
