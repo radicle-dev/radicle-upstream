@@ -6,15 +6,28 @@
  LICENSE file.
 -->
 <script lang="typescript" context="module">
-  export const primaryColorStore = persistentStore.local.writable<
-    "blue" | "pink" | "orange" | null
-  >("radicle.settings.primaryColor", null);
-</script>
-
-<script lang="typescript">
   import * as svelteStore from "svelte/store";
   import persistentStore from "svelte-persistent-store/dist";
 
+  export type PrimaryColor = "blue" | "pink" | "orange";
+  export const primaryColorStore =
+    persistentStore.local.writable<PrimaryColor | null>(
+      "radicle.settings.primaryColor",
+      null
+    );
+
+  export function getPrimaryColor(): PrimaryColor {
+    const primaryColor = svelteStore.get(primaryColorStore);
+
+    if (primaryColor === null) {
+      return "blue";
+    } else {
+      return primaryColor;
+    }
+  }
+</script>
+
+<script lang="typescript">
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import {
     themeOptions,
@@ -53,7 +66,7 @@
     });
 
   const updateFontColor = (event: CustomEvent) => {
-    console.log("update", event);
+    $primaryColorStore = event.detail;
   };
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
@@ -107,7 +120,11 @@
 
   const session = Session.unsealed();
 
-  $: primaryColor = $primaryColorStore === null ? "blue" : $primaryColorStore;
+  const primaryColorOptions = [
+    { title: "Blue", value: "blue" },
+    { title: "Pink", value: "pink" },
+    { title: "Orange", value: "orange" },
+  ];
 </script>
 
 <style>
@@ -246,8 +263,8 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$primaryColor}
-              options={$primaryColorStore}
+              active={getPrimaryColor()}
+              options={primaryColorOptions}
               on:select={updateFontColor} />
           </div>
         </div>

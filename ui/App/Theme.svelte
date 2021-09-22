@@ -7,13 +7,12 @@
 -->
 <script lang="typescript">
   import { settings } from "ui/src/session";
-  import { primaryColorStore } from "ui/App/SettingsScreen.svelte";
+  import { getPrimaryColor } from "ui/App/SettingsScreen.svelte";
   import { Theme, UIFont, CodeFont } from "ui/src/settings";
 
   $: {
     const theme = $settings ? $settings.appearance.theme : Theme.Dark;
-    const primaryColor =
-      $primaryColorStore === null ? "blue" : $primaryColorStore;
+    const primaryColor = getPrimaryColor();
     const uiFont = $settings ? $settings.appearance.uiFont : UIFont.Inter;
     const codeFont = $settings
       ? $settings.appearance.codeFont
