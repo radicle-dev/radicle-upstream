@@ -14,6 +14,16 @@
     "radicle.settings.primaryColor",
     "blue"
   );
+
+  export const updatePrimaryColor = (event: CustomEvent): PrimaryColor => {
+    primaryColorStore.set(event.detail);
+  };
+
+  export const primaryColorOptions = [
+    { title: "Blue", value: "blue" },
+    { title: "Pink", value: "pink" },
+    { title: "Orange", value: "orange" },
+  ];
 </script>
 
 <script lang="typescript">
@@ -53,10 +63,6 @@
       ...$settingsStore.appearance,
       codeFont: event.detail,
     });
-
-  const updateFontColor = (event: CustomEvent) => {
-    $primaryColorStore = event.detail;
-  };
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -108,12 +114,6 @@
   ];
 
   const session = Session.unsealed();
-
-  const primaryColorOptions = [
-    { title: "Blue", value: "blue" },
-    { title: "Pink", value: "pink" },
-    { title: "Orange", value: "orange" },
-  ];
 </script>
 
 <style>
@@ -254,7 +254,7 @@
             <SegmentedControl
               active={$primaryColorStore}
               options={primaryColorOptions}
-              on:select={updateFontColor} />
+              on:select={updatePrimaryColor} />
           </div>
         </div>
       </section>
