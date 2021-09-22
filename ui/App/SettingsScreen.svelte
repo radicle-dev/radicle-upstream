@@ -5,15 +5,21 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="typescript" context="module">
+  export const primaryColorStore = persistentStore.local.writable<
+    "blue" | "pink" | "orange" | null
+  >("radicle.settings.primaryColor", null);
+</script>
+
 <script lang="typescript">
   import * as svelteStore from "svelte/store";
+  import persistentStore from "svelte-persistent-store/dist";
 
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import {
     themeOptions,
     uiFontOptions,
     codeFontOptions,
-    fontColorOptions,
   } from "ui/src/settings";
   import { updateChecker } from "ui/src/updateChecker";
   import * as ethereum from "ui/src/ethereum";
@@ -46,11 +52,9 @@
       codeFont: event.detail,
     });
 
-  const updateFontColor = (event: CustomEvent) =>
-    Session.updateAppearance({
-      ...$settingsStore.appearance,
-      fontColor: event.detail,
-    });
+  const updateFontColor = (event: CustomEvent) => {
+    console.log("update", event);
+  };
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -102,6 +106,8 @@
   ];
 
   const session = Session.unsealed();
+
+  $: primaryColor = $primaryColorStore === null ? "blue" : $primaryColorStore;
 </script>
 
 <style>
@@ -240,8 +246,8 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settingsStore.appearance.fontColor}
-              options={fontColorOptions}
+              active={$primaryColor}
+              options={$primaryColorStore}
               on:select={updateFontColor} />
           </div>
         </div>
