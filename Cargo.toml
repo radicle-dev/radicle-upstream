@@ -4,6 +4,9 @@ members = [
   "proxy/api",
 ]
 
+# These patches are the same as those listed in
+# https://github.com/radicle-dev/radicle-link/blob/master/Cargo.toml
+
 [patch.crates-io.git2]
 git = "https://github.com/radicle-dev/git2-rs.git"
 rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
@@ -15,11 +18,6 @@ rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
 [patch.crates-io.thrussh-encoding]
 git = "https://github.com/FintanH/thrussh.git"
 branch = "generic-agent"
-
-[patch.crates-io.radicle-keystore]
-git = "https://github.com/radicle-dev/radicle-keystore"
-rev = "619ca3600be58025f1f2b2fcc59d5ba72f52141f"
-features = [ "ssh-agent" ]
 
 # Uncomment the following lines to develop against a local copy of
 # `radicle-link`.
