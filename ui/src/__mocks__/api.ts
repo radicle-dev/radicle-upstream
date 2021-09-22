@@ -54,7 +54,6 @@ export const sessionMock: session.SessionData = {
     appearance: {
       theme: settings.Theme.Dark,
       uiFont: settings.UIFont.Inter,
-      fontColor: settings.FontColor.Blue,
       codeFont: settings.CodeFont.SourceCode,
       hints: {
         showRemoteHelper: true,

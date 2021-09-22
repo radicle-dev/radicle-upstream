@@ -23,8 +23,6 @@ pub struct Settings {
 pub struct Appearance {
     /// Currently active color scheme.
     pub theme: Theme,
-    /// Currently active font color.
-    pub font_color: FontColor,
     /// Currently active UI font.
     pub ui_font: UIFont,
     /// Currently active code font.
@@ -48,24 +46,6 @@ pub enum Theme {
 impl Default for Theme {
     fn default() -> Self {
         Self::Dark
-    }
-}
-
-/// Font colors available.
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum FontColor {
-    /// A blue color.
-    Blue,
-    /// A pink color.
-    Pink,
-    /// An orange color.
-    Orange,
-}
-
-impl Default for FontColor {
-    fn default() -> Self {
-        Self::Blue
     }
 }
 
