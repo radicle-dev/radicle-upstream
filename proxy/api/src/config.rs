@@ -10,7 +10,7 @@ use std::{env, io, path};
 
 use directories::ProjectDirs;
 
-use radicle_daemon::profile::ProfileId;
+use librad::profile::ProfileId;
 
 /// Errors when setting up configuration paths and variables.
 #[derive(Debug, thiserror::Error)]

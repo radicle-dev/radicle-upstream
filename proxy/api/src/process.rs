@@ -15,8 +15,6 @@ use futures::prelude::*;
 use thiserror::Error;
 use tokio::sync::{watch, RwLock};
 
-use radicle_daemon::{seed, Peer, PeerStatus, RunConfig};
-
 use crate::{config, context, git_helper, http, notification, service, session};
 
 /// Flags accepted by the proxy binary.
@@ -50,10 +48,12 @@ pub struct Args {
 struct Rigging {
     /// The context provided to the API
     ctx: context::Context,
-    /// The [`Peer`] to run
-    peer: Option<Peer<link_crypto::BoxedSigner, radicle_daemon::config::StreamDiscovery>>,
+    /// The [`radicle_daemon::Peer`] to run
+    peer: Option<
+        radicle_daemon::Peer<link_crypto::BoxedSigner, radicle_daemon::config::StreamDiscovery>,
+    >,
     /// Channel to receive updates to the seed nodes from the API
-    seeds_sender: Option<watch::Sender<Vec<seed::Seed>>>,
+    seeds_sender: Option<watch::Sender<Vec<radicle_daemon::seed::Seed>>>,
 }
 
 /// Run the proxy process
@@ -199,7 +199,8 @@ async fn run_rigging(
 
                     let current_status = peer_control.current_status().await;
 
-                    if seeds == last_seeds && current_status != PeerStatus::Offline {
+                    if seeds == last_seeds && current_status != radicle_daemon::PeerStatus::Offline
+                    {
                         continue;
                     }
 
@@ -309,7 +310,12 @@ async fn rig(
         );
         let disco = radicle_daemon::config::StreamDiscovery::new(seeds_receiver);
 
-        let peer = radicle_daemon::Peer::new(config, disco, store.clone(), RunConfig::default())?;
+        let peer = radicle_daemon::Peer::new(
+            config,
+            disco,
+            store.clone(),
+            radicle_daemon::RunConfig::default(),
+        )?;
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
@@ -354,8 +360,10 @@ async fn session_seeds(
     default_seeds: &[String],
 ) -> Result<Vec<radicle_daemon::seed::Seed>, Box<dyn std::error::Error>> {
     let seeds = session::seeds(store, default_seeds)?;
-    Ok(seed::resolve(&seeds).await.unwrap_or_else(|err| {
-        tracing::error!(?seeds, ?err, "Error parsing seed list");
-        vec![]
-    }))
+    Ok(radicle_daemon::seed::resolve(&seeds)
+        .await
+        .unwrap_or_else(|err| {
+            tracing::error!(?seeds, ?err, "Error parsing seed list");
+            vec![]
+        }))
 }

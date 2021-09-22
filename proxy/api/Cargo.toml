@@ -32,6 +32,7 @@ nonempty = { version = "0.6", features = [ "serialize" ] }
 percent-encoding = "2.1"
 rand = "0.7"
 radicle-keystore = "0.1"
+radicle-source = { version = "^0.2.0", features = ["syntax"] }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 serde_qs = "0.6"
@@ -44,6 +45,18 @@ tokio = { version = "1.2", features = [ "macros", "process", "signal", "time" ] 
 url = "2.1"
 warp = { version = "0.3", default-features = false }
 
+[dependencies.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "988fc7f5d98910a799920c39e822315944614350"
+
+[dependencies.link-crypto]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "988fc7f5d98910a799920c39e822315944614350"
+
+[dependencies.link-identities]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "988fc7f5d98910a799920c39e822315944614350"
+
 [dependencies.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "988fc7f5d98910a799920c39e822315944614350"
@@ -55,14 +68,6 @@ rev = "988fc7f5d98910a799920c39e822315944614350"
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "988fc7f5d98910a799920c39e822315944614350"
-
-[dependencies.link-crypto]
-git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
-
-[dependencies.radicle-source]
-version = "^0.2.0"
-features = ["syntax"]
 
 [dev-dependencies]
 bytes = "1.0"

@@ -4,15 +4,15 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-//! An `Identifier` is the combination of a user handle and the [`radicle_daemon::PeerId`] that
+//! An `Identifier` is the combination of a user handle and the [`link_crypto::PeerId`] that
 //! identifies the user.
 
 use std::{fmt, str::FromStr};
 
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize, Serializer};
 
-use link_crypto::peer::conversion;
-use radicle_daemon::{identities::Person, PeerId};
+use link_crypto::{peer::conversion, PeerId};
+use link_identities::Person;
 
 /// Errors captured when parsing a shareable identifier of the form `<handle>@<urn>`.
 #[derive(Debug, thiserror::Error)]

@@ -8,7 +8,7 @@
 
 use std::io;
 
-use radicle_daemon::{peer, request, state, Urn};
+use link_identities::git::Urn;
 
 use crate::keystore;
 
@@ -21,13 +21,13 @@ pub enum Error {
 
     /// Error interacting with [`radicle_daemon::net::peer::Peer`].
     #[error(transparent)]
-    State(#[from] state::Error),
+    State(#[from] radicle_daemon::state::Error),
 
     #[error(transparent)]
     Source(#[from] radicle_source::error::Error),
 
     #[error(transparent)]
-    Peer(#[from] peer::Error),
+    Peer(#[from] radicle_daemon::peer::Error),
 
     /// An I/O error occurred.
     #[error(transparent)]
@@ -48,9 +48,9 @@ pub enum Error {
     #[error("invalid authentication token")]
     InvalidAuthCookie,
 
-    /// Errors stemming from [`request::waiting_room::WaitingRoom`] interactions.
+    /// Errors stemming from [`radicle_daemon::request::waiting_room::WaitingRoom`] interactions.
     #[error(transparent)]
-    WaitingRoom(#[from] request::waiting_room::Error),
+    WaitingRoom(#[from] radicle_daemon::request::waiting_room::Error),
 
     #[error("project not found")]
     ProjectNotFound,
