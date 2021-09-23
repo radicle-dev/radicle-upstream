@@ -177,7 +177,7 @@
   async function commit(): Promise<State> {
     const wallet_ = svelteStore.get(wallet.store);
     const walletAddress = wallet_.getAddress()?.toLowerCase();
-    const commitment = ensRegistrar.restoreCommitment();
+    const commitment = svelteStore.get(ensRegistrar.commitmentStore);
 
     if (
       commitment &&
@@ -249,7 +249,7 @@
     } finally {
       commitNotification.remove();
     }
-    ensRegistrar.persistCommitment(commitment);
+    ensRegistrar.commitmentStore.set(commitment);
     transaction.add(transaction.commitEnsName(tx));
 
     const txNotification = notification.info({

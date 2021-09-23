@@ -4,12 +4,14 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import * as zod from "zod";
+
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as ethers from "ethers";
 import * as svelteStore from "ui/src/svelteStore";
 import * as Wallet from "ui/src/wallet";
-import * as zod from "zod";
+import * as browserStore from "ui/src/browserStore";
 
 import { Registrar__factory as RegistrarFactory } from "radicle-contracts/build/contract-bindings/ethers";
 
@@ -76,41 +78,11 @@ export const commitmentSchema: zod.Schema<Commitment> = zod.object({
   minimumCommitmentAge: zod.number(),
 });
 
-const COMMITMENT_STORAGE_KEY = "radicle.ens.commitment";
-
-export function persistCommitment(commitment: Commitment): void {
-  window.localStorage.setItem(
-    COMMITMENT_STORAGE_KEY,
-    JSON.stringify(commitment)
-  );
-}
-
-export function clearCommitment(): void {
-  window.localStorage.removeItem(COMMITMENT_STORAGE_KEY);
-}
-
-export function restoreCommitment(): Commitment | null {
-  const commitmentJson = window.localStorage.getItem(COMMITMENT_STORAGE_KEY);
-
-  if (!commitmentJson) {
-    return null;
-  }
-
-  const commitment = JSON.parse(commitmentJson);
-  const result = commitmentSchema.safeParse(commitment);
-
-  if (result.success) {
-    return result.data;
-  } else {
-    error.show(
-      new error.Error({
-        message: "Could not validate persisted commitment",
-        details: { commitment, errors: result.error.errors },
-      })
-    );
-    return null;
-  }
-}
+export const commitmentStore = browserStore.create<Commitment | null>(
+  "radicle.ens.commitment",
+  null,
+  commitmentSchema.nullable()
+);
 
 export async function commit(
   name: string,
