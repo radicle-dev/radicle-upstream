@@ -15,7 +15,7 @@
 
   import type { SvelteComponent } from "svelte";
   import type { Position } from "./Tooltip.svelte";
-  import * as format from "ui/src/format";
+  import * as format from "./lib/format";
 
   import Copyable from "./Copyable.svelte";
   import Icon from "./Icon";

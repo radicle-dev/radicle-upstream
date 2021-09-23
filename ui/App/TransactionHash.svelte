@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import * as org from "ui/src/org";
-  import * as format from "ui/src/format";
+  import { format } from "ui/DesignSystem";
 
   export let hash: string;
 </script>

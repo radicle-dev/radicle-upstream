@@ -11,9 +11,8 @@
   import type * as project from "ui/src/project";
 
   import * as router from "ui/src/router";
-  import * as format from "ui/src/format";
 
-  import { Avatar, Hoverable, Icon, Identifier } from "ui/DesignSystem";
+  import { Avatar, Hoverable, Icon, Identifier, format } from "ui/DesignSystem";
   import TransactionHash from "ui/App/TransactionHash.svelte";
 
   export let anchor: project.Anchor;

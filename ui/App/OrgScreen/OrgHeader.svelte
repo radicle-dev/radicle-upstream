@@ -6,10 +6,9 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Avatar, Copyable, Icon, Identifier } from "ui/DesignSystem";
+  import { Avatar, Copyable, Icon, Identifier, format } from "ui/DesignSystem";
 
   import * as ensResolver from "ui/src/org/ensResolver";
-  import * as format from "ui/src/format";
   import * as ipc from "ui/src/ipc";
 
   export let orgAddress: string;

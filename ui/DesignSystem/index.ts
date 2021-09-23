@@ -31,6 +31,8 @@ import TextInput from "./TextInput.svelte";
 import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
 import Tooltip from "./Tooltip.svelte";
 
+import * as format from "./lib/format";
+
 export {
   Avatar,
   Badge,
@@ -59,3 +61,5 @@ export {
   ThreeDotsMenu,
   Tooltip,
 };
+
+export { format };
