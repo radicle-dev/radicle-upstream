@@ -38,7 +38,14 @@ context("p2p networking", () => {
 
   it(
     "replicates a project from one node to another",
-    { defaultCommandTimeout: 8000 },
+    {
+      defaultCommandTimeout: 8000,
+      // Tests involving two nodes are extremely flaky
+      retries: {
+        runMode: 3,
+        openMode: 1,
+      },
+    },
     () => {
       const maintainer = {
         handle: "rudolfs",
@@ -92,6 +99,9 @@ context("p2p networking", () => {
                 throw new Error("Could not find URN");
               }
 
+              // We’re giving the P2P node some space to avoid race
+              // conditions.
+              cy.wait(2000);
               nodeManager.asNode(contributorNode);
 
               cy.log("navigate to the 'Following' tab");
@@ -140,6 +150,10 @@ context("p2p networking", () => {
               .should("exist");
 
             cy.log("add contributor remote on maintainer's node");
+
+            // We’re giving the P2P node some space to avoid race
+            // conditions.
+            cy.wait(2000);
             nodeManager.asNode(maintainerNode);
 
             commands.pick("project-list-entry-new-fancy-project.xyz").click();
@@ -169,6 +183,9 @@ context("p2p networking", () => {
             const maintainerCommitSubject =
               "Commit replication from maintainer to contributor";
 
+            // We’re giving the P2P node some space to avoid race
+            // conditions.
+            cy.wait(2000);
             nodeManager.exec(
               `cd "${projectPath}"
             git commit --allow-empty -m "${maintainerCommitSubject}"
@@ -229,6 +246,9 @@ context("p2p networking", () => {
               projectName
             );
 
+            // We’re giving the P2P node some space to avoid race
+            // conditions.
+            cy.wait(2000);
             nodeManager.exec(
               `cd "${forkedProjectPath}"
             git commit --allow-empty -m "${contributorCommitSubject}"
