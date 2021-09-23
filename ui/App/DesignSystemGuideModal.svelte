@@ -18,6 +18,12 @@
   } from "ui/src/settings";
 
   import {
+    primaryColorStore,
+    updatePrimaryColor,
+    primaryColorOptions,
+  } from "./SettingsScreen.svelte";
+
+  import {
     Avatar,
     Button,
     Checkbox,
@@ -219,10 +225,17 @@
         </Tooltip>
         <Tooltip value="Code font" position="bottom">
           <SegmentedControl
-            style="background-color: var(--color-background);"
+            style="background-color: var(--color-background); margin-right: 2rem;"
             active={$settingsStore.appearance.codeFont}
             options={codeFontOptions}
             on:select={updateCodeFont} />
+        </Tooltip>
+        <Tooltip value="Font color" position="bottom">
+          <SegmentedControl
+            style="background-color: var(--color-background);"
+            active={$primaryColorStore}
+            options={primaryColorOptions}
+            on:select={updatePrimaryColor} />
         </Tooltip>
       </div>
       <h1 style="margin-bottom: 92px">Primitives</h1>

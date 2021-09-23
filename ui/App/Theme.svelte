@@ -7,6 +7,7 @@
 -->
 <script lang="typescript">
   import { settings } from "ui/src/session";
+  import { primaryColorStore } from "ui/App/SettingsScreen.svelte";
   import { Theme, UIFont, CodeFont } from "ui/src/settings";
 
   $: {
@@ -18,5 +19,6 @@
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.setAttribute("data-uifont", uiFont);
     document.documentElement.setAttribute("data-codefont", codeFont);
+    document.documentElement.setAttribute("data-fontColor", $primaryColorStore);
   }
 </script>

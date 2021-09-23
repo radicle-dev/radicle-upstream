@@ -99,8 +99,8 @@ impl Keystore for FileStore {
     fn create_key(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
         let mut store = self.store(passphrase);
         match store.get_key() {
-            Ok(_keypair) => Err(FileError::KeyExists.into()),
-            Err(FileError::NoSuchKey) => {
+            Ok(_keypair) => Err(FileError::KeyExists(store.key_file_path().to_owned()).into()),
+            Err(FileError::NoSuchKey(_)) => {
                 let key = link_crypto::SecretKey::new();
                 store.put_key(key.clone())?;
                 Ok(key)
@@ -139,7 +139,7 @@ impl Keystore for MemoryStore {
             .lock()
             .expect("Failed to access memory key");
         if key_and_passphrase.is_some() {
-            return Err(FileError::KeyExists.into());
+            return Err(FileError::KeyExists(std::path::PathBuf::new()).into());
         }
 
         let key = link_crypto::SecretKey::new();
@@ -159,7 +159,7 @@ impl Keystore for MemoryStore {
                 Err(FileError::Crypto(SecretBoxError::InvalidKey).into())
             }
         } else {
-            Err(FileError::NoSuchKey.into())
+            Err(FileError::NoSuchKey(std::path::PathBuf::new()).into())
         }
     }
 }
@@ -190,6 +190,6 @@ impl Error {
     #[must_use]
     pub const fn is_key_exists(&self) -> bool {
         #[allow(clippy::wildcard_enum_match_arm)]
-        matches!(self.inner, FileError::KeyExists)
+        matches!(self.inner, FileError::KeyExists(_))
     }
 }

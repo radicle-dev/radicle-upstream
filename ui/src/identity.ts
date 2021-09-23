@@ -5,7 +5,6 @@
 // LICENSE file.
 
 import * as error from "./error";
-import * as remote from "./remote";
 import * as proxy from "./proxy";
 import * as session from "./session";
 import type { Ethereum, Identity } from "./proxy/identity";
@@ -14,15 +13,6 @@ export type { Identity };
 
 // FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
 export type PeerId = string;
-
-const creationStore = remote.createStore<Identity>();
-export const store = creationStore.readable;
-
-export const createIdentity = (
-  params: proxy.IdentityCreateParams
-): Promise<Identity> => {
-  return proxy.client.identityCreate(params);
-};
 
 // Claim the ownership of an Ethereum address, stored on the user's Radicle Identity.
 export const claimEthAddress = async (address: string): Promise<void> =>
@@ -44,7 +34,7 @@ const updateEthereumClaim = async (
       throw new Error("Session is not unsealed");
     }
     const { metadata } = unsealed.identity;
-    await proxy.client.identityUpdate({
+    await proxy.client.identity.update({
       ...metadata,
       ethereum,
     });
@@ -68,10 +58,6 @@ function getExpirationDate(): Date {
   result.setDate(result.getDate() + days);
   return result;
 }
-
-export const fetch = (urn: string): Promise<Identity> => {
-  return proxy.client.identityGet(urn);
-};
 
 // MOCK
 export const fallback: Identity = {

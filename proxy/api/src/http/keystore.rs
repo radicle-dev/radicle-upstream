@@ -92,5 +92,5 @@ pub struct CreateInput {
 
 /// Format the cookie header attributes.
 fn format_cookie_header(token: &str) -> String {
-    format!("auth-token={}; Path=/", token)
+    format!("auth-token={}; Path=/; SameSite=None; Secure", token)
 }
