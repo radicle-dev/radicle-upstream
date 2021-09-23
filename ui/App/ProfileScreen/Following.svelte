@@ -19,10 +19,10 @@
 
   import {
     Button,
+    CopyableIdentifier,
     FollowToggle,
     Hoverable,
     Icon,
-    Identifier,
     List,
   } from "ui/DesignSystem";
 
@@ -104,7 +104,7 @@
               data-cy="undiscovered-project"
               class="undiscovered-project"
               out:fade|local={{ duration: FADE_DURATION }}>
-              <Identifier value={request.urn} kind="radicleId" />
+              <CopyableIdentifier value={request.urn} kind="radicleId" />
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
                   <FollowToggle

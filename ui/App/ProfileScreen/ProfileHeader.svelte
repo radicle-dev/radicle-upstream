@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Avatar, Identifier } from "ui/DesignSystem";
+  import { Avatar, CopyableIdentifier } from "ui/DesignSystem";
 
   export let name: string;
   export let peerId: string;
@@ -33,6 +33,9 @@
     <h1 data-cy="entity-name" class="typo-overflow-ellipsis" title={name}>
       {name}
     </h1>
-    <Identifier value={peerId} kind="deviceId" style="margin-top: 0.5rem;" />
+    <CopyableIdentifier
+      value={peerId}
+      kind="deviceId"
+      style="margin-top: 0.5rem;" />
   </div>
 </div>

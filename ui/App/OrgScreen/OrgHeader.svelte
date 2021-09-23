@@ -6,7 +6,13 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Avatar, Copyable, Icon, Identifier, format } from "ui/DesignSystem";
+  import {
+    Avatar,
+    Copyable,
+    CopyableIdentifier,
+    Icon,
+    format,
+  } from "ui/DesignSystem";
 
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as ipc from "ui/src/ipc";
@@ -82,7 +88,7 @@
           {:else}
             <Icon.Ethereum />
           {/if}
-          <Identifier
+          <CopyableIdentifier
             value={ownerAddress}
             kind="ethAddress"
             name="owner address"
@@ -135,7 +141,7 @@
         <div>
           {#if seedId}
             <div class="row">
-              <Identifier value={seedId} kind="seedAddress" />
+              <CopyableIdentifier value={seedId} kind="seedAddress" />
             </div>
           {/if}
           {#if seedApi}
