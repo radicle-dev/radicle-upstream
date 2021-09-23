@@ -100,16 +100,19 @@ export const fetchBlob = async (
   peerId: string,
   path: string,
   revision: RevisionSelector,
-  highlight?: boolean,
+  highlight?: "dark" | "light" | "h4x0r",
   signal?: AbortSignal
 ): Promise<Blob> => {
+  if (isMarkdown(path)) {
+    highlight = undefined;
+  }
   return proxy.client.source.blobGet(
     {
       projectUrn,
       path: encodeURIComponent(path),
       peerId,
       revision,
-      highlight: highlight && !isMarkdown(path),
+      highlight,
     },
     { abort: signal }
   );
@@ -176,7 +179,7 @@ export const fetchReadme = async (
       peerId,
       path,
       revision,
-      false,
+      undefined,
       signal
     );
     if (blob && !blob.binary && blob.content) {

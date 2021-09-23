@@ -119,7 +119,7 @@ mod handler {
     use radicle_git_ext::Oid;
     use radicle_source::surf::vcs::git::RefScope;
 
-    use crate::{browser, context, error, session, session::settings};
+    use crate::{browser, context, error};
 
     /// Fetch a [`radicle_source::Blob`].
     pub async fn blob(
@@ -132,21 +132,14 @@ mod handler {
         }: super::BlobQuery,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let settings = session::get_current(&ctx.store)?
-            .map(|session| session.settings)
-            .unwrap_or_default();
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
 
-        let theme = if let Some(true) = highlight {
-            Some(match settings.appearance.theme {
-                settings::Theme::Dark => "base16-ocean.dark",
-                settings::Theme::Light => "base16-ocean.light",
-                settings::Theme::H4x0r => "base16-ocean.h4x0r",
-            })
-        } else {
-            None
-        };
+        let theme = highlight.map(|theme| match theme {
+            super::HighlightTheme::Dark => "base16-ocean.dark",
+            super::HighlightTheme::Light => "base16-ocean.light",
+            super::HighlightTheme::H4x0r => "base16-ocean.h4x0r",
+        });
 
         let branch = radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
             .await
@@ -291,7 +284,7 @@ pub struct BlobQuery {
     /// Revision to query at.
     revision: Option<radicle_source::Revision<PeerId>>,
     /// Whether or not to syntax highlight the blob.
-    highlight: Option<bool>,
+    highlight: Option<HighlightTheme>,
 }
 
 /// A query param for [`handler::branches`].
@@ -320,6 +313,18 @@ pub struct TreeQuery {
 pub struct TagQuery {
     /// PeerId to scope the query by.
     peer_id: Option<PeerId>,
+}
+
+/// Syntax highlighting theme
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum HighlightTheme {
+    /// A dark theme.
+    Dark,
+    /// A light theme.
+    Light,
+    /// A h4x0r theme.
+    H4x0r,
 }
 
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
@@ -359,7 +364,7 @@ mod test {
             path: arrows.to_string(),
             peer_id: None,
             revision: Some(revision.clone()),
-            highlight: Some(false),
+            highlight: None,
         };
 
         let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
@@ -417,7 +422,7 @@ mod test {
             path: ls.to_string(),
             peer_id: None,
             revision: Some(revision),
-            highlight: Some(false),
+            highlight: None,
         };
 
         let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
@@ -474,7 +479,7 @@ mod test {
             path: path.to_string(),
             peer_id: None,
             revision: Some(revision.clone()),
-            highlight: Some(false),
+            highlight: None,
         };
 
         // Get ASCII blob.

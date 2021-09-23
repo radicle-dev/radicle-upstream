@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { Readable, derived, get } from "svelte/store";
+import { Readable, derived } from "svelte/store";
 
 import { retryOnError } from "ui/src/retryOnError";
 
@@ -12,7 +12,7 @@ import * as proxy from "./proxy";
 import * as error from "./error";
 import type * as identity from "./identity";
 import * as remote from "./remote";
-import { Appearance, Settings, defaultSetttings } from "./settings";
+import { Settings, Theme, UIFont, CodeFont } from "./proxy/settings";
 import * as svelteStore from "ui/src/svelteStore";
 
 // TYPES
@@ -87,7 +87,19 @@ export const settings: Readable<Settings> = derived(sessionStore, sess => {
   ) {
     return sess.data.settings;
   } else {
-    return defaultSetttings();
+    return {
+      appearance: {
+        theme: Theme.Dark,
+        uiFont: UIFont.Inter,
+        codeFont: CodeFont.SourceCode,
+        hints: {
+          showRemoteHelper: true,
+        },
+      },
+      coco: {
+        seeds: [],
+      },
+    };
   }
 });
 
@@ -169,33 +181,6 @@ export const createKeystore = (passphrase: string): Promise<void> => {
 export const fetch = async (): Promise<void> => {
   sessionStore.loading();
   await fetchSession();
-};
-
-const setSettings = async (settings: Settings): Promise<void> => {
-  try {
-    await proxy.client.sessionSettingsSet(settings);
-  } catch (err: unknown) {
-    error.show(
-      new error.Error({
-        code: error.Code.SessionSettingsUpdateFailure,
-        message: `Failed to update settings`,
-        source: err,
-      })
-    );
-    return;
-  }
-
-  await fetchSession();
-};
-
-const updateSettings = (f: (settings: Settings) => Settings): Promise<void> => {
-  return setSettings(f(get(settings)));
-};
-
-export const updateAppearance = async (
-  appearance: Appearance
-): Promise<void> => {
-  await updateSettings(s => ({ ...s, appearance }));
 };
 
 export const VALID_SEED_MATCH = /^[\w\d]{54}@([\w\d-]+\.)*[\w\d-]+:[\d]{1,5}$/;

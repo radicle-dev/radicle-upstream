@@ -6,7 +6,8 @@
 
 import { get, writable } from "svelte/store";
 
-import { isMac } from "./settings";
+// gives back the OS you're using in hotkeys.svelte & shortcuts.svelte
+export const isMac: boolean = navigator.platform.includes("Mac");
 
 const state = writable(true);
 
