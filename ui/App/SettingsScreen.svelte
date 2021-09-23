@@ -9,7 +9,7 @@
   import * as svelteStore from "svelte/store";
   import persistentStore from "svelte-persistent-store/dist";
 
-  export type PrimaryColor = "blue" | "pink" | "orange";
+  export type PrimaryColor = "blue" | "pink" | "orange" | "hex";
   export const primaryColorStore = persistentStore.local.writable<PrimaryColor>(
     "radicle.settings.primaryColor",
     "blue"
@@ -17,6 +17,10 @@
 
   export const updatePrimaryColor = (event: CustomEvent): void => {
     primaryColorStore.set(event.detail);
+  };
+
+  export const colorPickerChange = (): void => {
+    primaryColorStore.set("hex");
   };
 
   export const primaryColorOptions = [
@@ -114,6 +118,40 @@
   ];
 
   const session = Session.unsealed();
+
+  let colorHex: string = "";
+
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null;
+  };
+
+  $: if ($primaryColorStore === "hex") {
+    const colorRgb = hexToRgb(colorHex);
+    const root = document.documentElement;
+    root.style.setProperty(
+      "--color-primary",
+      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},1`
+    );
+    root.style.setProperty(
+      "--color-primary-level-1",
+      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.17`
+    );
+    root.style.setProperty(
+      "--color-primary-level-2",
+      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.37`
+    );
+    root.style.setProperty(
+      "--color-primary-level-6",
+      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.87`
+    );
+  }
 </script>
 
 <style>
@@ -255,6 +293,10 @@
               active={$primaryColorStore}
               options={primaryColorOptions}
               on:select={updatePrimaryColor} />
+            <input
+              type="color"
+              bind:value={colorHex}
+              on:change={colorPickerChange} />
           </div>
         </div>
       </section>

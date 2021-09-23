@@ -20,6 +20,6 @@
     document.documentElement.setAttribute("data-theme", theme);
     document.documentElement.setAttribute("data-uifont", uiFont);
     document.documentElement.setAttribute("data-codefont", codeFont);
-    document.documentElement.setAttribute("data-fontColor", primaryColor);
+    document.documentElement.setAttribute("data-primarycolor", primaryColor);
   }
 </script>
