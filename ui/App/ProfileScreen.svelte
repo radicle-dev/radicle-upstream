@@ -6,12 +6,16 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import { onDestroy } from "svelte";
+
   import * as Session from "ui/src/session";
   import * as modal from "ui/src/modal";
   import * as remote from "ui/src/remote";
   import * as proxy from "ui/src/proxy";
   import * as error from "ui/src/error";
   import * as project from "ui/src/project";
+  import * as mutexExecutor from "ui/src/mutexExecutor";
+  import * as localPeer from "ui/src/localPeer";
 
   import { Avatar, Button, Icon } from "ui/DesignSystem";
 
@@ -23,7 +27,6 @@
 
   const session = Session.unsealed();
 
-  // TYPES
   interface ProfileProjects {
     cloned: project.Project[];
     follows: project.Project[];
@@ -31,28 +34,43 @@
   }
 
   const profileProjectsStore = remote.createStore<ProfileProjects>();
+  profileProjectsStore.loading();
 
-  const fetchProfileProjects = async (): Promise<void> => {
-    profileProjectsStore.loading();
+  const fetchProfileProjectsExecutor = mutexExecutor.create();
 
+  fetchProfileProjects();
+  const unsubPeerEvents = localPeer.requestEvents.subscribe(() => {
+    fetchProfileProjects();
+  });
+  onDestroy(unsubPeerEvents);
+
+  async function fetchProfileProjects(): Promise<void> {
     try {
-      const cloned = await proxy.client.project.listContributed();
-      const follows = await proxy.client.project.listTracked();
-      const allRequests = await proxy.client.project.requestsList();
-      const requests = allRequests.filter(
-        req =>
-          req.type !== project.RequestStatus.Cloned &&
-          req.type !== project.RequestStatus.Cancelled &&
-          req.type !== project.RequestStatus.TimedOut
+      const profileProjects = await fetchProfileProjectsExecutor.run(
+        async () => {
+          const [cloned, follows, allRequests] = await Promise.all([
+            proxy.client.project.listContributed(),
+            proxy.client.project.listTracked(),
+            proxy.client.project.requestsList(),
+          ]);
+          const requests = allRequests.filter(
+            req =>
+              req.type !== project.RequestStatus.Cloned &&
+              req.type !== project.RequestStatus.Cancelled &&
+              req.type !== project.RequestStatus.TimedOut
+          );
+          return { cloned, follows, requests };
+        }
       );
-
-      profileProjectsStore.success({ cloned, follows, requests });
+      if (profileProjects) {
+        profileProjectsStore.success(profileProjects);
+      }
     } catch (err: unknown) {
       error.show(
         new error.Error({ message: "Failed to fetch projects.", source: err })
       );
     }
-  };
+  }
 
   const showNotificationsForFailedProjects = async (): Promise<void> => {
     try {
@@ -77,7 +95,6 @@
     }
   };
 
-  fetchProfileProjects();
   showNotificationsForFailedProjects();
 </script>
 
