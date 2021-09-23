@@ -7,7 +7,6 @@
 -->
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
-  import { dismissRemoteHelperHint, settings } from "ui/src/session";
 
   import {
     Button,
@@ -70,9 +69,7 @@
       </p>
     {/if}
 
-    {#if $settings.appearance.hints.showRemoteHelper}
-      <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
-    {/if}
+    <RemoteHelperHint />
 
     <Tooltip
       value={!checkoutPath ? "First choose a directory for this project" : ""}

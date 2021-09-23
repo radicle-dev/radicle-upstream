@@ -200,16 +200,6 @@ export const updateAppearance = async (
   await updateSettings(s => ({ ...s, appearance }));
 };
 
-export const dismissRemoteHelperHint = async (): Promise<void> => {
-  await updateSettings(s => ({
-    ...s,
-    appearance: {
-      ...s.appearance,
-      hints: { showRemoteHelper: false },
-    },
-  }));
-};
-
 const updateCoCo = async (coco: CoCo): Promise<void> => {
   await updateSettings(s => ({ ...s, coco }));
 };
