@@ -57,6 +57,10 @@ rev = "988fc7f5d98910a799920c39e822315944614350"
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "988fc7f5d98910a799920c39e822315944614350"
 
+[dependencies.rad-identities]
+git = "https://github.com/radicle-dev/radicle-link.git"
+rev = "988fc7f5d98910a799920c39e822315944614350"
+
 [dependencies.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
 rev = "988fc7f5d98910a799920c39e822315944614350"

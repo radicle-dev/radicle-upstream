@@ -296,6 +296,7 @@ async fn rig(
     };
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
+    let paths = environment.coco_profile.paths();
 
     if let Some(key) = environment.key.clone() {
         let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
@@ -303,11 +304,8 @@ async fn rig(
         let seeds = session_seeds(&store, &args.default_seeds).await?;
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
-        let config = radicle_daemon::config::configure(
-            environment.coco_profile.paths().clone(),
-            signer.clone(),
-            args.peer_listen,
-        );
+        let config =
+            radicle_daemon::config::configure(paths.clone(), signer.clone(), args.peer_listen);
         let disco = radicle_daemon::config::StreamDiscovery::new(seeds_receiver);
 
         let peer = radicle_daemon::Peer::new(
@@ -329,6 +327,8 @@ async fn rig(
             auth_token,
             keystore: environment.keystore.clone(),
             shutdown: Arc::new(tokio::sync::Notify::new()),
+            paths: paths.clone(),
+            signer,
         });
 
         Ok(Rigging {
@@ -345,6 +345,7 @@ async fn rig(
             service_handle,
             auth_token,
             keystore: environment.keystore.clone(),
+            paths: paths.clone(),
         });
         Ok(Rigging {
             ctx,

@@ -52,7 +52,19 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn internal_server_error(err: impl std::error::Error) -> Self {
+    pub fn new(
+        status_code: StatusCode,
+        variant: &'static str,
+        err: &impl std::error::Error,
+    ) -> Self {
+        Self {
+            status_code,
+            variant,
+            message: err.to_string(),
+        }
+    }
+
+    pub fn internal_server_error(err: &impl std::error::Error) -> Self {
         Self {
             status_code: StatusCode::INTERNAL_SERVER_ERROR,
             variant: "INTERNAL_SERVER_ERROR",
@@ -309,10 +321,21 @@ impl From<&error::Error> for Response {
                 variant: "MISSING_DEFAULT_BRANCH",
                 message: "Default branch for project is missing".to_string(),
             },
-            error::Error::Peer(_)
+            error::Error::OpenReadOnlyGitStorage(_)
+            | error::Error::Peer(_)
             | error::Error::Io(_)
             | error::Error::Store(_)
             | error::Error::WaitingRoom(_) => Self::internal_server_error(err),
         }
+    }
+}
+
+impl From<rad_identities::person::Error> for Response {
+    fn from(err: rad_identities::person::Error) -> Self {
+        Self::new(
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "IDENTITIES_PERSON_ERROR",
+            &err,
+        )
     }
 }
