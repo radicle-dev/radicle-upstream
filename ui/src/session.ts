@@ -4,15 +4,12 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { Readable, derived } from "svelte/store";
-
 import { retryOnError } from "ui/src/retryOnError";
 
 import * as proxy from "./proxy";
 import * as error from "./error";
 import type * as identity from "./identity";
 import * as remote from "./remote";
-import { Settings, Theme, UIFont, CodeFont } from "./proxy/settings";
 import * as svelteStore from "ui/src/svelteStore";
 
 // TYPES
@@ -31,7 +28,6 @@ export type Session =
 
 export interface SessionData {
   identity: identity.Identity;
-  settings: Settings;
 }
 
 // STATE
@@ -79,29 +75,6 @@ export const waitUnsealed = async (): Promise<void> => {
     }
   });
 };
-
-export const settings: Readable<Settings> = derived(sessionStore, sess => {
-  if (
-    sess.status === remote.Status.Success &&
-    sess.data.status === Status.UnsealedSession
-  ) {
-    return sess.data.settings;
-  } else {
-    return {
-      appearance: {
-        theme: Theme.Dark,
-        uiFont: UIFont.Inter,
-        codeFont: CodeFont.SourceCode,
-        hints: {
-          showRemoteHelper: true,
-        },
-      },
-      coco: {
-        seeds: [],
-      },
-    };
-  }
-});
 
 // Fetches the session from the proxy and updates the session store.
 //
