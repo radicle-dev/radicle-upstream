@@ -17,7 +17,7 @@
     removeSeed,
   } from "../src/session";
 
-  import { Button, Icon, Identifier, TextInput } from "ui/DesignSystem";
+  import { Button, CopyableIdentifier, Icon, TextInput } from "ui/DesignSystem";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
@@ -151,7 +151,7 @@
         <div class="seeds">
           {#each $settings.coco.seeds as seed (seed)}
             <div class="seed">
-              <Identifier value={seed} kind="seedAddress" />
+              <CopyableIdentifier value={seed} kind="seedAddress" />
               <Icon.Cross
                 dataCy="remove-seed"
                 on:click={() => removeSeed(seed)}

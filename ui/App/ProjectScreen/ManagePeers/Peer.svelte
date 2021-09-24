@@ -16,8 +16,8 @@
   import {
     Avatar,
     Badge,
+    CopyableIdentifier,
     FollowToggle,
-    Identifier,
     Tooltip,
   } from "ui/DesignSystem";
 
@@ -65,7 +65,7 @@
         <Badge style="margin-left: 0.5rem" variant="you" />
       {/if}
     </div>
-    <Identifier
+    <CopyableIdentifier
       value={peer.peerId}
       kind="deviceId"
       style="margin-top: 0.5rem;" />

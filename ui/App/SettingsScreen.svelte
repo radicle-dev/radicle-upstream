@@ -39,7 +39,11 @@
   import * as modal from "ui/src/modal";
   import * as Session from "ui/src/session";
 
-  import { Button, Identifier, SegmentedControl } from "ui/DesignSystem";
+  import {
+    Button,
+    CopyableIdentifier,
+    SegmentedControl,
+  } from "ui/DesignSystem";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
@@ -189,7 +193,9 @@
               >Learn more about managing devices</a>
           </p>
           <div class="action">
-            <Identifier value={session.identity.peerId} kind="deviceId" />
+            <CopyableIdentifier
+              value={session.identity.peerId}
+              kind="deviceId" />
           </div>
         </div>
       </section>

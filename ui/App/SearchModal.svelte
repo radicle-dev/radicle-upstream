@@ -25,7 +25,12 @@
   import { ValidationStatus } from "ui/src/validation";
   import { urnValidationStore } from "ui/src/urn";
 
-  import { FollowToggle, Icon, Identifier, TextInput } from "ui/DesignSystem";
+  import {
+    CopyableIdentifier,
+    FollowToggle,
+    Icon,
+    TextInput,
+  } from "ui/DesignSystem";
   import Remote from "ui/App/Remote.svelte";
 
   let value: string;
@@ -174,7 +179,7 @@
 
       <div slot="error" style="padding: 1.5rem;">
         <div class="header typo-header-3">
-          <Identifier {value} kind="radicleId" showIcon={false} />
+          <CopyableIdentifier {value} kind="radicleId" showIcon={false} />
           <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
         </div>
 

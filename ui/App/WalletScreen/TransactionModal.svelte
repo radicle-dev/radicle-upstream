@@ -13,9 +13,10 @@
   import { TxKind, store as txs } from "ui/src/transaction";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
+  import * as org from "ui/src/org";
 
+  import { IdentifierLink } from "ui/DesignSystem";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
-  import TransactionHash from "ui/App/TransactionHash.svelte";
 
   export let transactionHash: string;
 
@@ -88,7 +89,12 @@
     <div class="section">
       <div class="row">
         <p>Transaction ID</p>
-        <TransactionHash hash={tx.hash} />
+        <IdentifierLink
+          params={{
+            type: "transactionHash",
+            url: org.etherscanUrl(tx.hash),
+            hash: tx.hash,
+          }} />
       </div>
       <div class="row">
         <p>Status</p>

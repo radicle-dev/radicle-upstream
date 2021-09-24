@@ -10,7 +10,7 @@
   import type * as project from "ui/src/project";
   import * as userProfile from "ui/src/userProfile";
 
-  import { Avatar, Identifier, List } from "ui/DesignSystem";
+  import { Avatar, CopyableIdentifier, List } from "ui/DesignSystem";
 
   export let members: org.Member[];
 
@@ -55,7 +55,7 @@
             <p class="typo-text">{member.identity.metadata.handle}</p>
           </div>
         </div>
-        <Identifier
+        <CopyableIdentifier
           value={member.ethereumAddress}
           kind="ethAddress"
           showIcon={false}
@@ -66,7 +66,7 @@
             style="margin-right: 10px"
             size="small"
             kind={{ type: "unknownUser" }} />
-          <Identifier
+          <CopyableIdentifier
             value={member.ethereumAddress}
             kind="ethAddress"
             showIcon={false} />

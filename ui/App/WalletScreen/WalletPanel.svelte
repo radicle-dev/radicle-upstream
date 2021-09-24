@@ -8,10 +8,7 @@
 <script lang="typescript">
   import type * as ethers from "ethers";
 
-  import Icon from "ui/DesignSystem/Icon";
-  import Identifier from "ui/DesignSystem/Identifier.svelte";
-  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
-  import Button from "ui/DesignSystem/Button.svelte";
+  import { Button, CopyableIdentifier, Icon, Tooltip } from "ui/DesignSystem";
 
   import * as ethereum from "ui/src/ethereum";
 
@@ -85,7 +82,7 @@
   </div>
 
   <div class="address-box typo-text">
-    <Identifier
+    <CopyableIdentifier
       name="wallet address"
       value={address}
       kind="ethAddress"

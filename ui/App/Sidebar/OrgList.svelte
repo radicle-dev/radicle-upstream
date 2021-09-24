@@ -13,14 +13,13 @@
 
   import { orgSidebarStore, pendingOrgs } from "ui/src/org";
   import * as ethereum from "ui/src/ethereum";
-  import * as format from "ui/src/format";
   import * as modal from "ui/src/modal";
   import * as Wallet from "ui/src/wallet";
 
   const ethereumEnvironment = ethereum.selectedEnvironment;
   const walletStore = Wallet.store;
 
-  import { Avatar, Icon, Tooltip } from "ui/DesignSystem";
+  import { Avatar, Icon, Tooltip, format } from "ui/DesignSystem";
 
   import CreateOrgModal from "ui/App/CreateOrgModal.svelte";
   import SidebarItem from "./SidebarItem.svelte";

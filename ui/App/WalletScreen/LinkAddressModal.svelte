@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { Avatar, Button, Icon, Identifier } from "ui/DesignSystem";
+  import { Avatar, Button, CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import Remote from "ui/App/Remote.svelte";
@@ -73,7 +73,7 @@
       </div>
       <Icon.ChevronUpDown />
       <p class="address typo-text">
-        <Identifier value={address} kind="ethAddress" />
+        <CopyableIdentifier value={address} kind="ethAddress" />
       </p>
     </div>
 

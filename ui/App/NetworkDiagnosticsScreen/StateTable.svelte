@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import type { RoomState } from "ui/src/waitingRoom";
-  import { Identifier } from "ui/DesignSystem";
+  import { CopyableIdentifier } from "ui/DesignSystem";
 
   export let state: RoomState;
 </script>
@@ -24,7 +24,7 @@
     {#each Object.keys(state).sort() as urn}
       <tr>
         <td>
-          <Identifier value={urn} kind="radicleId" />
+          <CopyableIdentifier value={urn} kind="radicleId" />
         </td>
         <td>{state[urn].state}</td>
         <td>
@@ -33,7 +33,7 @@
               {#each Object.keys(state[urn].peers).sort() as peerId}
                 <tr>
                   <td>
-                    <Identifier value={peerId} kind="deviceId" />
+                    <CopyableIdentifier value={peerId} kind="deviceId" />
                   </td>
                   <td>{JSON.stringify(state[urn].peers[peerId])}</td>
                 </tr>

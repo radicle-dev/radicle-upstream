@@ -9,13 +9,14 @@ import Badge from "./Badge.svelte";
 import Button from "./Button.svelte";
 import Checkbox from "./Checkbox.svelte";
 import Copyable from "./Copyable.svelte";
+import CopyableIdentifier from "./CopyableIdentifier.svelte";
 import DirectoryInput from "./DirectoryInput.svelte";
 import Dropdown from "./Dropdown.svelte";
 import Emoji from "./Emoji.svelte";
 import FollowToggle from "./FollowToggle.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Icon from "./Icon";
-import Identifier from "./Identifier.svelte";
+import IdentifierLink from "./IdentifierLink.svelte";
 import KeyHint from "./KeyHint.svelte";
 import List from "./List.svelte";
 import Markdown from "./Markdown.svelte";
@@ -31,19 +32,22 @@ import TextInput from "./TextInput.svelte";
 import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
 import Tooltip from "./Tooltip.svelte";
 
+import * as format from "./lib/format";
+
 export {
   Avatar,
   Badge,
   Button,
   Checkbox,
   Copyable,
+  CopyableIdentifier,
   DirectoryInput,
   Dropdown,
   Emoji,
   FollowToggle,
   Hoverable,
   Icon,
-  Identifier,
+  IdentifierLink,
   KeyHint,
   List,
   Markdown,
@@ -59,3 +63,5 @@ export {
   ThreeDotsMenu,
   Tooltip,
 };
+
+export { format };

@@ -4,10 +4,11 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import * as zod from "zod";
 import * as svelteStore from "svelte/store";
-import persistentStore from "svelte-persistent-store/dist";
 import * as semver from "semver";
 import * as router from "ui/src/router";
+import * as browserStore from "ui/src/browserStore";
 
 import * as ipc from "./ipc";
 import * as modal from "./modal";
@@ -36,14 +37,16 @@ const VERSION_NOTIFY_SILENCE_INTERVAL = config.isCypressTestEnv
   ? 5000
   : 14 * 24 * 60 * 60 * 1000;
 
-const lastNotifiedStore = persistentStore.local.writable<number | null>(
+const lastNotifiedStore = browserStore.create<number | null>(
   "radicle.settings.updateChecker.lastNotified",
-  null
+  null,
+  zod.number().nullable()
 );
 
-const isEnabledStore = persistentStore.local.writable<boolean | null>(
+const isEnabledStore = browserStore.create<boolean | null>(
   "radicle.settings.updateChecker.isEnabled",
-  null
+  null,
+  zod.boolean().nullable()
 );
 
 class UpdateChecker {

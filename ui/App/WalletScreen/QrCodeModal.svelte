@@ -8,8 +8,7 @@
 <script lang="typescript">
   import { qrcode } from "pure-svg-code";
 
-  import * as format from "ui/src/format";
-  import { Copyable } from "ui/DesignSystem";
+  import { Copyable, format } from "ui/DesignSystem";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let uri: string;

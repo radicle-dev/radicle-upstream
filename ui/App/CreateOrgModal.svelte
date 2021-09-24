@@ -11,7 +11,7 @@
   import {
     Avatar,
     Button,
-    Identifier,
+    CopyableIdentifier,
     RadioOption,
     TextInput,
   } from "ui/DesignSystem";
@@ -139,7 +139,7 @@
             kind={{ type: "userEmoji", uniqueIdentifier: identity.urn }} />
           <p class="typo-text">{identity.metadata.handle}</p>
         </div>
-        <Identifier value={walletAddress} kind="ethAddress" />
+        <CopyableIdentifier value={walletAddress} kind="ethAddress" />
       </div>
     </div>
   </RadioOption>
