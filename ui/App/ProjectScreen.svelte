@@ -7,7 +7,6 @@
 -->
 <script lang="typescript">
   import type { User, Project } from "ui/src/project";
-  import type { Urn } from "ui/src/urn";
 
   import { onDestroy } from "svelte";
 
@@ -38,7 +37,7 @@
   import ProjectHeader from "./ProjectScreen/ProjectHeader.svelte";
   import Source from "./ProjectScreen/Source.svelte";
 
-  export let urn: Urn;
+  export let urn: string;
   export let activeView: router.ProjectView = { type: "files" };
   let hoverstyle: string = "";
 

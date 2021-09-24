@@ -9,7 +9,6 @@ import { format } from "timeago.js";
 import * as api from "./api";
 import * as error from "./error";
 import type { PeerId } from "./identity";
-import type { Urn } from "./urn";
 import * as proxy from "./proxy";
 import type {
   Blob,
@@ -97,7 +96,7 @@ export interface SelectedRevision {
 }
 
 export const fetchBlob = async (
-  projectUrn: Urn,
+  projectUrn: string,
   peerId: string,
   path: string,
   revision: RevisionSelector,
@@ -117,7 +116,7 @@ export const fetchBlob = async (
 };
 
 export const fetchBranches = (
-  projectUrn: Urn,
+  projectUrn: string,
   peerId?: PeerId
 ): Promise<Branch[]> => {
   return api
@@ -133,12 +132,15 @@ export const fetchBranches = (
     );
 };
 
-export const fetchCommit = (projectUrn: Urn, sha1: Sha1): Promise<Commit> => {
+export const fetchCommit = (
+  projectUrn: string,
+  sha1: Sha1
+): Promise<Commit> => {
   return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
 
 export const fetchCommits = (
-  projectUrn: Urn,
+  projectUrn: string,
   peerId: PeerId,
   revision: RevisionSelector
 ): Promise<CommitsHistory> => {
@@ -157,7 +159,7 @@ export const fetchCommits = (
 };
 
 export const fetchReadme = async (
-  projectUrn: Urn,
+  projectUrn: string,
   peerId: PeerId,
   revision: RevisionSelector,
   tree: Tree,
@@ -192,7 +194,7 @@ export const fetchReadme = async (
 };
 
 export const fetchRevisions = (
-  projectUrn: Urn,
+  projectUrn: string,
   peerId?: PeerId
 ): Promise<Revisions> => {
   return Promise.all([
@@ -203,7 +205,10 @@ export const fetchRevisions = (
   });
 };
 
-export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
+export const fetchTags = (
+  projectUrn: string,
+  peerId?: PeerId
+): Promise<Tag[]> => {
   return api
     .get<string[]>(`source/tags/${projectUrn}`, {
       query: {
@@ -218,7 +223,7 @@ export const fetchTags = (projectUrn: Urn, peerId?: PeerId): Promise<Tag[]> => {
 };
 
 export const fetchTree = (
-  projectUrn: Urn,
+  projectUrn: string,
   peerId: PeerId,
   revision: RevisionSelector,
   prefix: string,
