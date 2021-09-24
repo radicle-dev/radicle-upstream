@@ -13,15 +13,18 @@
   import * as remote from "ui/src/remote";
   import * as proxy from "ui/src/proxy";
   import * as error from "ui/src/error";
+  import type { Project } from "ui/src/project";
+  import { isMaintainer } from "ui/src/project";
   import * as project from "ui/src/project";
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as localPeer from "ui/src/localPeer";
 
-  import { Avatar, Button, Icon } from "ui/DesignSystem";
+  import { Button, Icon } from "ui/DesignSystem";
 
   import Header from "ui/App/ScreenLayout/Header.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ProfileHeader from "./ProfileScreen/ProfileHeader.svelte";
+  import ProjectCardSquare from "./ProfileScreen/ProjectCardSquare.svelte";
 
   import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
 
@@ -95,8 +98,30 @@
     }
   };
 
+  const projectCardProps = (project: Project) => ({
+    title: project.metadata.name,
+    description: project.metadata.description || "",
+    maintainerUrn: project.metadata.maintainers[0],
+    showMaintainerBadge: isMaintainer(session.identity.urn, project),
+    anchor: project.anchor,
+    stats: project.stats,
+    urn: project.urn,
+  });
+
   showNotificationsForFailedProjects();
 </script>
+
+<style>
+  .grid {
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+</style>
 
 <ScreenLayout style="margin-top: 0;" dataCy="profile-screen">
   <Header>
@@ -119,44 +144,15 @@
   </Header>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
-    <ul>
-      <h1>cloned</h1>
+    <ul class="grid">
       {#each $profileProjectsStore.data.cloned as project}
-        <li>
-          <Avatar
-            style="margin-right: 0.625rem;"
-            size="small"
-            kind={{
-              type: "userEmoji",
-              uniqueIdentifier: project.metadata.maintainers[0],
-            }} />
-          <pre>
-            {JSON.stringify(project, null, 2)}
-          </pre>
-        </li>
+        <ProjectCardSquare {...projectCardProps(project)} />
       {/each}
-      <h1>follow</h1>
       {#each $profileProjectsStore.data.follows as project}
-        <li>
-          <Avatar
-            style="margin-right: 0.625rem;"
-            size="small"
-            kind={{
-              type: "userEmoji",
-              uniqueIdentifier: project.metadata.maintainers[0],
-            }} />
-          <pre>
-            {JSON.stringify(project, null, 2)}
-          </pre>
-        </li>
+        <ProjectCardSquare {...projectCardProps(project)} />
       {/each}
-      <h1>request</h1>
       {#each $profileProjectsStore.data.requests as project}
-        <li>
-          <pre>
-            {JSON.stringify(project, null, 2)}
-          </pre>
-        </li>
+        requests
       {/each}
     </ul>
   {/if}
