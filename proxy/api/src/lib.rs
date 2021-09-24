@@ -11,7 +11,6 @@
     clippy::cargo,
     clippy::nursery,
     clippy::pedantic,
-    missing_docs,
     unused_import_braces,
     unused_qualifications
 )]

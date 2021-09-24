@@ -94,6 +94,14 @@ pub fn update_identity(
     Ok(())
 }
 
+pub fn update_seeds(store: &kv::Store, seeds: Vec<String>) -> Result<(), error::Error> {
+    if let Some(mut session) = get_current(store)? {
+        session.settings.coco.seeds = seeds;
+        set_current(store, session)?;
+    }
+    Ok(())
+}
+
 /// Update the session settings. Does nothing if there is no session yet.
 ///
 /// # Errors
