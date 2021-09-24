@@ -11,8 +11,8 @@ use radicle_git_ext::Oid;
 use radicle_source::surf::git::RefScope;
 use serde::Serialize;
 
-use link_crypto::BoxedSigner;
-use radicle_daemon::{net, state, PeerId, Urn};
+use link_crypto::{BoxedSigner, PeerId};
+use link_identities::git::Urn;
 
 use crate::project;
 
@@ -44,15 +44,15 @@ pub struct Patch {
 /// * Cannot access the monorepo
 /// * Cannot find references within the monorepo
 pub async fn list(
-    peer: &net::peer::Peer<BoxedSigner>,
+    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     project_urn: Urn,
 ) -> Result<Vec<Patch>, crate::error::Error> {
     let mut patches = Vec::new();
 
     let default_branch_head_commit_id = {
-        let project = state::get_project(peer, project_urn.clone())
+        let project = radicle_daemon::state::get_project(peer, project_urn.clone())
             .await?
-            .ok_or_else(|| state::Error::ProjectNotFound(project_urn.clone()))?;
+            .ok_or_else(|| radicle_daemon::state::Error::ProjectNotFound(project_urn.clone()))?;
         let maintainer = project
             .delegations()
             .iter()
@@ -62,7 +62,7 @@ pub async fn list(
             })
             .next()
             .expect("missing delegation");
-        let default_branch = state::get_branch(
+        let default_branch = radicle_daemon::state::get_branch(
             peer,
             project_urn.clone(),
             Some(PeerId::from(*maintainer)),
@@ -75,7 +75,8 @@ pub async fn list(
         .id
     };
 
-    for project_peer in state::list_project_peers(peer, project_urn.clone()).await? {
+    for project_peer in radicle_daemon::state::list_project_peers(peer, project_urn.clone()).await?
+    {
         let remote = match &project_peer {
             radicle_daemon::project::Peer::Local { .. } => None,
             radicle_daemon::project::Peer::Remote { peer_id, .. } => Some(*peer_id),
@@ -88,9 +89,16 @@ pub async fn list(
             None => RefScope::Local,
         };
 
-        let branch = match state::get_branch(peer, project_urn.clone(), remote, None).await {
+        let branch = match radicle_daemon::state::get_branch(
+            peer,
+            project_urn.clone(),
+            remote,
+            None,
+        )
+        .await
+        {
             Ok(branch) => branch,
-            Err(state::Error::MissingRef { .. }) => {
+            Err(radicle_daemon::state::Error::MissingRef { .. }) => {
                 // The peer hasn’t published any branches yet.
                 continue;
             },

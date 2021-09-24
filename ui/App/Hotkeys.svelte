@@ -15,7 +15,6 @@
 
   import * as modal from "ui/src/modal";
   import * as screen from "ui/src/screen";
-  import { isMac } from "ui/src/settings";
   import * as hotkeys from "ui/src/hotkeys";
   import { config } from "ui/src/config";
 
@@ -27,7 +26,7 @@
   };
 
   const onKeydown = (event: KeyboardEvent) => {
-    const modifierKey = isMac ? event.metaKey : event.ctrlKey;
+    const modifierKey = hotkeys.isMac ? event.metaKey : event.ctrlKey;
     const hasInputTarget =
       !modifierKey &&
       event.target &&

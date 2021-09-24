@@ -28,8 +28,6 @@
   import * as proxy from "ui/src/proxy";
   import { ValidationStatus } from "ui/src/validation";
   import * as screen from "ui/src/screen";
-  import type { Settings } from "ui/src/settings";
-  import { dismissRemoteHelperHint, settings } from "ui/src/session";
 
   import {
     Button,
@@ -164,9 +162,6 @@
     localStateStore.status === remote.Status.Success
       ? localStateStore.data.branches
       : [];
-
-  $: showRemoteHelper =
-    $settings && ($settings as Settings).appearance.hints.showRemoteHelper;
 </script>
 
 <style>
@@ -259,9 +254,7 @@
           </p>
         </div>
       </RadioOption>
-      {#if showRemoteHelper}
-        <RemoteHelperHint on:hide={dismissRemoteHelperHint} />
-      {/if}
+      <RemoteHelperHint />
     </div>
 
     <Tooltip

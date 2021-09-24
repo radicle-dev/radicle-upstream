@@ -7,9 +7,9 @@
 import type * as project from "ui/src/project";
 import type * as session from "ui/src/session";
 import type * as source from "ui/src/source";
+import { Theme, UIFont, CodeFont } from "ui/src/proxy/settings";
 
 import * as identity from "ui/src/identity";
-import * as settings from "ui/src/settings";
 
 type MockedResponse =
   | project.Project
@@ -52,9 +52,9 @@ const surfProjectMock: project.Project = {
 export const sessionMock: session.SessionData = {
   settings: {
     appearance: {
-      theme: settings.Theme.Dark,
-      uiFont: settings.UIFont.Inter,
-      codeFont: settings.CodeFont.SourceCode,
+      theme: Theme.Dark,
+      uiFont: UIFont.Inter,
+      codeFont: CodeFont.SourceCode,
       hints: {
         showRemoteHelper: true,
       },

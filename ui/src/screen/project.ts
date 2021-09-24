@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { Urn } from "ui/src/urn";
 import type { PeerId } from "ui/src/identity";
 
 import { get, derived, Readable } from "svelte/store";
@@ -28,7 +27,7 @@ const refreshExecutor = mutexExecutor.create();
 const screenStore = remote.createStore<Screen>();
 export const store = screenStore.readable;
 
-export const fetch = (projectUrn: Urn): void => {
+export const fetch = (projectUrn: string): void => {
   screenStore.loading();
 
   proxy.client.project
@@ -104,14 +103,14 @@ export const pendingPeers: Readable<
   }
 });
 
-export const trackPeer = (projectUrn: Urn, peerId: PeerId): void => {
+export const trackPeer = (projectUrn: string, peerId: PeerId): void => {
   proxy.client.project
     .peerTrack(projectUrn, peerId)
     .then(() => refreshPeers())
     .catch(err => screenStore.error(error.fromUnknown(err)));
 };
 
-export const untrackPeer = (projectUrn: Urn, peerId: PeerId): void => {
+export const untrackPeer = (projectUrn: string, peerId: PeerId): void => {
   proxy.client.project
     .peerUntrack(projectUrn, peerId)
     .then(() => refreshPeers())
@@ -155,7 +154,7 @@ export const peerValidation = validation.createValidationStore(
 );
 
 export const addPeer = async (
-  projectId: Urn,
+  projectId: string,
   newRemote: PeerId
 ): Promise<boolean> => {
   // This has to be awaited contrary to what tslint suggests, because we're
@@ -171,7 +170,7 @@ export const addPeer = async (
   return true;
 };
 
-export const removePeer = (projectId: Urn, peerId: PeerId): void => {
+export const removePeer = (projectId: string, peerId: PeerId): void => {
   const screen = get(screenStore);
 
   if (screen.status === remote.Status.Success) {
@@ -188,7 +187,7 @@ export const removePeer = (projectId: Urn, peerId: PeerId): void => {
   }
 };
 
-const throwUnlessPeersPresent = (peers: project.User[], projectId: Urn) => {
+const throwUnlessPeersPresent = (peers: project.User[], projectId: string) => {
   if (peers.length === 0) {
     throw new Error(`Project ${projectId} is missing peers`);
   }

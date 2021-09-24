@@ -29,8 +29,9 @@ features = [ "ssh-agent" ]
 # `radicle-link`.
 
 # [patch.'https://github.com/radicle-dev/radicle-link']
-# radicle-daemon = { path = "../radicle-link/daemon" }
 # librad = { path = "../radicle-link/librad" }
 # link-crypto = { path = "../radicle-link/link-crypto" }
+# link-identities = { path = "../radicle-link/link-identities" }
+# radicle-daemon = { path = "../radicle-link/daemon" }
 # radicle-git-ext = { path = "../radicle-link/git-ext" }
 # radicle-git-helpers = { path = "../radicle-link/git-helpers" }

@@ -9,8 +9,6 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use radicle_daemon::git_ext;
-
 use crate::context;
 
 /// Combination of all control filters.
@@ -59,15 +57,13 @@ mod handler {
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use radicle_daemon::{state, LocalIdentity};
-
     use crate::{browser, context, error, project};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Unsealed,
-        owner: LocalIdentity,
+        owner: radicle_daemon::LocalIdentity,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let meta = crate::control::replicate_platinum(
@@ -80,7 +76,7 @@ mod handler {
         .await
         .map_err(error::Error::from)?;
 
-        let branch = state::get_branch(&ctx.peer, meta.urn(), None, None)
+        let branch = radicle_daemon::state::get_branch(&ctx.peer, meta.urn(), None, None)
             .await
             .map_err(error::Error::from)?;
         let stats = browser::using(&ctx.peer, branch, |browser| Ok(browser.get_stats()?))
@@ -119,5 +115,5 @@ pub struct CreateInput {
     /// Long form outline.
     description: String,
     /// Configured default branch.
-    default_branch: git_ext::OneLevel,
+    default_branch: radicle_git_ext::OneLevel,
 }

@@ -9,9 +9,6 @@
 
 use serde::{Deserialize, Serialize};
 
-#[cfg(test)]
-use radicle_daemon::{identities, state};
-
 use crate::{error, identity};
 
 pub mod settings;
@@ -97,6 +94,14 @@ pub fn update_identity(
     Ok(())
 }
 
+pub fn update_seeds(store: &kv::Store, seeds: Vec<String>) -> Result<(), error::Error> {
+    if let Some(mut session) = get_current(store)? {
+        session.settings.coco.seeds = seeds;
+        set_current(store, session)?;
+    }
+    Ok(())
+}
+
 /// Update the session settings. Does nothing if there is no session yet.
 ///
 /// # Errors
@@ -118,9 +123,9 @@ pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(
 /// Panics if anything goes wrong.
 #[cfg(test)]
 pub async fn initialize_test(ctx: &crate::context::Unsealed, owner_handle: &str) -> Session {
-    let owner = state::init_owner(
+    let owner = radicle_daemon::state::init_owner(
         &ctx.peer,
-        identities::payload::Person {
+        link_identities::payload::Person {
             name: owner_handle.into(),
         },
     )

@@ -14,6 +14,7 @@ import type { Project, User } from "ui/src/project";
 import * as remote from "ui/src/remote";
 import * as router from "ui/src/router";
 import * as source from "ui/src/source";
+import * as appearance from "ui/src/appearance";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -323,7 +324,7 @@ const fetchBlob = async (
     peer.peerId,
     path,
     revision,
-    true,
+    get(appearance.theme),
     signal
   );
   return {

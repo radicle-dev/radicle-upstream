@@ -9,7 +9,6 @@
   import type { PeerId } from "ui/src/identity";
   import { PeerType, PeerRole } from "ui/src/project";
   import type { User } from "ui/src/project";
-  import type { Urn } from "ui/src/urn";
   import {
     addPeer,
     pendingPeers,
@@ -34,18 +33,18 @@
     peerValidation.reset();
   }
 
-  const submitPeer = async (projectUrn: Urn) => {
+  const submitPeer = async (projectUrn: string) => {
     if (await addPeer(projectUrn, newPeer)) {
       newPeer = "";
     }
   };
 
-  const cancelFollowRequest = (projectUrn: Urn, peerId: PeerId) => {
+  const cancelFollowRequest = (projectUrn: string, peerId: PeerId) => {
     removePeer(projectUrn, peerId);
     peerValidation.reset();
   };
 
-  const unfollowPeer = (projectUrn: Urn, peerId: PeerId) => {
+  const unfollowPeer = (projectUrn: string, peerId: PeerId) => {
     removePeer(projectUrn, peerId);
     peerValidation.reset();
   };

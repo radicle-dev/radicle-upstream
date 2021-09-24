@@ -11,7 +11,8 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use radicle_daemon::{PeerId, Urn};
+use link_crypto::PeerId;
+use link_identities::git::Urn;
 
 use crate::{context, http};
 
@@ -174,7 +175,8 @@ mod handler {
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use radicle_daemon::{state, LocalIdentity, PeerId, Urn};
+    use link_crypto::PeerId;
+    use link_identities::git::Urn;
 
     use crate::{browser, context, error::Error, http, patch, project};
 
@@ -185,7 +187,7 @@ mod handler {
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = http::guard_self_peer_id(&ctx.peer, peer_id);
-        let path = state::checkout(&ctx.peer, urn, peer_id, path)
+        let path = radicle_daemon::state::checkout(&ctx.peer, urn, peer_id, path)
             .await
             .map_err(Error::from)?;
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
@@ -194,15 +196,15 @@ mod handler {
     /// Create a new [`project::Project`].
     pub async fn create(
         ctx: context::Unsealed,
-        owner: LocalIdentity,
+        owner: radicle_daemon::LocalIdentity,
         input: radicle_daemon::project::Create,
     ) -> Result<impl Reply, Rejection> {
-        let project = state::init_project(&ctx.peer, &owner, input)
+        let project = radicle_daemon::state::init_project(&ctx.peer, &owner, input)
             .await
             .map_err(Error::from)?;
         let urn = project.urn();
 
-        let branch = state::get_branch(
+        let branch = radicle_daemon::state::get_branch(
             &ctx.peer,
             urn,
             None,
@@ -260,7 +262,7 @@ mod handler {
 
     /// List the remote peers for a project.
     pub async fn peers(ctx: context::Unsealed, urn: Urn) -> Result<impl Reply, Rejection> {
-        let peers: Vec<project::Peer> = state::list_project_peers(&ctx.peer, urn)
+        let peers: Vec<project::Peer> = radicle_daemon::state::list_project_peers(&ctx.peer, urn)
             .await
             .map_err(Error::from)?
             .into_iter()
@@ -276,7 +278,7 @@ mod handler {
         peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        state::track(&ctx.peer, urn, peer_id)
+        radicle_daemon::state::track(&ctx.peer, urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -288,7 +290,7 @@ mod handler {
         peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        state::untrack(&ctx.peer, urn, peer_id)
+        radicle_daemon::state::untrack(&ctx.peer, urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -347,9 +349,7 @@ mod test {
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use radicle_daemon::{
-        config, identities::payload::Person, include, state::init_owner, LocalUrl,
-    };
+    use link_identities::payload::Person;
     use radicle_source::surf::vcs::git::git2;
 
     use crate::{context, http, identity, project, session};
@@ -364,7 +364,7 @@ mod test {
 
         let urn = {
             let handle = "cloudhead";
-            let owner = init_owner(
+            let owner = radicle_daemon::state::init_owner(
                 &ctx.peer,
                 Person {
                     name: handle.into(),
@@ -415,17 +415,21 @@ mod test {
                     .to_string()
             })
             .collect::<Vec<_>>();
-        let remote = repo.find_remote(config::RAD_REMOTE)?;
+        let remote = repo.find_remote(radicle_daemon::config::RAD_REMOTE)?;
         assert_eq!(
             remote.url(),
-            Some(LocalUrl::from(urn.clone()).to_string().as_str())
+            Some(
+                radicle_daemon::LocalUrl::from(urn.clone())
+                    .to_string()
+                    .as_str()
+            )
         );
         assert_eq!(refs, vec!["dev", "master", "rad/dev", "rad/master"]);
 
         // Verify presence of include file.
         let config = repo.config()?;
         let include_path = config
-            .get_entry(include::GIT_CONFIG_PATH_KEY)?
+            .get_entry(radicle_daemon::include::GIT_CONFIG_PATH_KEY)?
             .value()
             .unwrap()
             .to_string();
@@ -591,7 +595,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = {
-            let owner = init_owner(
+            let owner = radicle_daemon::state::init_owner(
                 &ctx.peer,
                 Person {
                     name: "cloudhead".into(),
@@ -630,7 +634,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = init_owner(
+        let owner = radicle_daemon::state::init_owner(
             &ctx.peer,
             Person {
                 name: "cloudhead".into(),
@@ -661,7 +665,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = init_owner(
+        let owner = radicle_daemon::state::init_owner(
             &ctx.peer,
             Person {
                 name: "cloudhead".into(),
@@ -695,7 +699,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = init_owner(
+        let owner = radicle_daemon::state::init_owner(
             &ctx.peer,
             Person {
                 name: "cloudhead".into(),
@@ -729,7 +733,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = init_owner(
+        let owner = radicle_daemon::state::init_owner(
             &ctx.peer,
             Person {
                 name: "cloudhead".into(),

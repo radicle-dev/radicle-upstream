@@ -6,19 +6,12 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { settings } from "ui/src/session";
-  import { primaryColorStore } from "ui/App/SettingsScreen.svelte";
-  import { Theme, UIFont, CodeFont } from "ui/src/settings";
+  import { theme, codeFont, uiFont, primaryColor } from "ui/src/appearance";
 
   $: {
-    const theme = $settings ? $settings.appearance.theme : Theme.Dark;
-    const uiFont = $settings ? $settings.appearance.uiFont : UIFont.Inter;
-    const codeFont = $settings
-      ? $settings.appearance.codeFont
-      : CodeFont.SourceCode;
-    document.documentElement.setAttribute("data-theme", theme);
-    document.documentElement.setAttribute("data-uifont", uiFont);
-    document.documentElement.setAttribute("data-codefont", codeFont);
-    document.documentElement.setAttribute("data-fontColor", $primaryColorStore);
+    document.documentElement.setAttribute("data-theme", $theme);
+    document.documentElement.setAttribute("data-uifont", $uiFont);
+    document.documentElement.setAttribute("data-codefont", $codeFont);
+    document.documentElement.setAttribute("data-primary-color", $primaryColor);
   }
 </script>

@@ -8,13 +8,12 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { Urn } from "ui/src/urn";
   import type { User } from "ui/src/project";
 
   import { CopyableIdentifier, FollowToggle } from "ui/DesignSystem";
 
   export let peer: User;
-  export let projectUrn: Urn;
+  export let projectUrn: string;
 
   const dispatch = createEventDispatcher();
 </script>

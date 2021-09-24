@@ -13,12 +13,8 @@ use rand::Rng as _;
 use tokio::sync::RwLock;
 
 use link_crypto::BoxedSigner;
-use radicle_daemon::{net, PeerControl};
 
 use crate::{keystore, service};
-
-#[cfg(test)]
-use radicle_daemon::{config, Peer, RunConfig};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -159,9 +155,9 @@ impl From<Sealed> for Context {
 pub struct Unsealed {
     /// Handle to inspect state and perform actions on the currently running local
     /// [`radicle_daemon::Peer`].
-    pub peer_control: PeerControl,
-    /// [`net::peer::Peer`] to operate on the local monorepo.
-    pub peer: net::peer::Peer<BoxedSigner>,
+    pub peer_control: radicle_daemon::PeerControl,
+    /// [`radicle_daemon::net::peer::Peer`] to operate on the local monorepo.
+    pub peer: radicle_daemon::net::peer::Peer<BoxedSigner>,
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
@@ -217,9 +213,14 @@ impl Unsealed {
         let signer = BoxedSigner::from(link_crypto::SomeSigner { signer: key });
 
         let (peer_control, peer, run_handle) = {
-            let config = config::default(signer, tmp_dir.path())?;
-            let disco = config::static_seed_discovery(&[]);
-            let coco_peer = Peer::new(config, disco, store.clone(), RunConfig::default())?;
+            let config = radicle_daemon::config::default(signer, tmp_dir.path())?;
+            let disco = radicle_daemon::config::static_seed_discovery(&[]);
+            let coco_peer = radicle_daemon::Peer::new(
+                config,
+                disco,
+                store.clone(),
+                radicle_daemon::RunConfig::default(),
+            )?;
             let peer = coco_peer.peer.clone();
 
             let peer_control = coco_peer.control();

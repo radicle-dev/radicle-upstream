@@ -5,34 +5,20 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript" context="module">
-  import * as svelteStore from "svelte/store";
-  import persistentStore from "svelte-persistent-store/dist";
-
-  export type PrimaryColor = "blue" | "pink" | "orange";
-  export const primaryColorStore = persistentStore.local.writable<PrimaryColor>(
-    "radicle.settings.primaryColor",
-    "blue"
-  );
-
-  export const updatePrimaryColor = (event: CustomEvent): void => {
-    primaryColorStore.set(event.detail);
-  };
-
-  export const primaryColorOptions: { title: string; value: PrimaryColor }[] = [
-    { title: "Blue", value: "blue" },
-    { title: "Pink", value: "pink" },
-    { title: "Orange", value: "orange" },
-  ];
-</script>
-
 <script lang="typescript">
+  import * as svelteStore from "svelte/store";
+
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import {
+    theme,
     themeOptions,
-    uiFontOptions,
+    codeFont,
     codeFontOptions,
-  } from "ui/src/settings";
+    uiFont,
+    uiFontOptions,
+    primaryColor,
+    primaryColorOptions,
+  } from "ui/src/appearance";
   import { updateChecker } from "ui/src/updateChecker";
   import * as ethereum from "ui/src/ethereum";
   import * as ipc from "ui/src/ipc";
@@ -47,26 +33,6 @@
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
-
-  const settingsStore = Session.settings;
-
-  const updateTheme = (event: CustomEvent) =>
-    Session.updateAppearance({
-      ...$settingsStore.appearance,
-      theme: event.detail,
-    });
-
-  const updateUIFont = (event: CustomEvent) =>
-    Session.updateAppearance({
-      ...$settingsStore.appearance,
-      uiFont: event.detail,
-    });
-
-  const updateCodeFont = (event: CustomEvent) =>
-    Session.updateAppearance({
-      ...$settingsStore.appearance,
-      codeFont: event.detail,
-    });
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -214,9 +180,9 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settingsStore.appearance.theme}
+              active={$theme}
               options={themeOptions}
-              on:select={updateTheme} />
+              on:select={ev => theme.set(ev.detail)} />
           </div>
         </div>
         <div class="section-item border">
@@ -229,9 +195,9 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settingsStore.appearance.uiFont}
+              active={$uiFont}
               options={uiFontOptions}
-              on:select={updateUIFont} />
+              on:select={ev => uiFont.set(ev.detail)} />
           </div>
         </div>
         <div class="section-item">
@@ -244,9 +210,9 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settingsStore.appearance.codeFont}
+              active={$codeFont}
               options={codeFontOptions}
-              on:select={updateCodeFont} />
+              on:select={ev => codeFont.set(ev.detail)} />
           </div>
         </div>
         <div class="section-item">
@@ -258,9 +224,9 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$primaryColorStore}
+              active={$primaryColor}
               options={primaryColorOptions}
-              on:select={updatePrimaryColor} />
+              on:select={ev => primaryColor.set(ev.detail)} />
           </div>
         </div>
       </section>

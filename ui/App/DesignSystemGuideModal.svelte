@@ -6,22 +6,20 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as session from "ui/src/session";
   import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
 
   import { ValidationStatus } from "ui/src/validation";
   import {
+    theme,
     themeOptions,
-    uiFontOptions,
+    codeFont,
     codeFontOptions,
-  } from "ui/src/settings";
-
-  import {
-    primaryColorStore,
-    updatePrimaryColor,
+    uiFont,
+    uiFontOptions,
+    primaryColor,
     primaryColorOptions,
-  } from "./SettingsScreen.svelte";
+  } from "ui/src/appearance";
 
   import {
     Avatar,
@@ -98,27 +96,6 @@
       })
     ),
   ];
-
-  const settingsStore = session.settings;
-
-  function updateTheme(event: CustomEvent): void {
-    session.updateAppearance({
-      ...$settingsStore.appearance,
-      theme: event.detail,
-    });
-  }
-
-  const updateUIFont = (event: CustomEvent) =>
-    session.updateAppearance({
-      ...$settingsStore.appearance,
-      uiFont: event.detail,
-    });
-
-  const updateCodeFont = (event: CustomEvent) =>
-    session.updateAppearance({
-      ...$settingsStore.appearance,
-      codeFont: event.detail,
-    });
 
   function onKeydown(event: KeyboardEvent) {
     if (event.target === document.body && event.code === "Escape") {
@@ -213,30 +190,30 @@
         <Tooltip value="Theme" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$settingsStore.appearance.theme}
+            active={$theme}
             options={themeOptions}
-            on:select={updateTheme} />
+            on:select={ev => theme.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="UI font" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$settingsStore.appearance.uiFont}
+            active={$uiFont}
             options={uiFontOptions}
-            on:select={updateUIFont} />
+            on:select={ev => uiFont.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="Code font" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$settingsStore.appearance.codeFont}
+            active={$codeFont}
             options={codeFontOptions}
-            on:select={updateCodeFont} />
+            on:select={ev => codeFont.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="Font color" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background);"
-            active={$primaryColorStore}
+            active={$primaryColor}
             options={primaryColorOptions}
-            on:select={updatePrimaryColor} />
+            on:select={ev => primaryColor.set(ev.detail)} />
         </Tooltip>
       </div>
       <h1 style="margin-bottom: 92px">Primitives</h1>

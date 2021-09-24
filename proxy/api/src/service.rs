@@ -10,8 +10,6 @@ use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
 
-use radicle_daemon::profile;
-
 use crate::keystore;
 
 /// Persistent environment with depedencies for running the API and coco peer services.
@@ -23,7 +21,7 @@ pub struct Environment {
     /// If set, we use a temporary directory for on-disk persistence.
     pub temp_dir: Option<tempfile::TempDir>,
     /// Paths & profile id for on-disk persistence.
-    pub coco_profile: profile::Profile,
+    pub coco_profile: librad::profile::Profile,
     /// A reference to the key store.
     pub keystore: Arc<dyn crate::keystore::Keystore + Send + Sync>,
     /// If true, we are running the service in test mode.
@@ -53,7 +51,7 @@ pub enum Error {
         std::io::Error,
     ),
     #[error(transparent)]
-    Profile(#[from] profile::Error),
+    Profile(#[from] librad::profile::Error),
 }
 
 impl Environment {
@@ -61,10 +59,10 @@ impl Environment {
     fn new(config: &EnvironmentConfig) -> Result<Self, Error> {
         let (temp_dir, coco_profile) = if config.test_mode {
             let temp_dir = tempfile::tempdir()?;
-            let coco_profile = profile::Profile::from_root(temp_dir.path(), None)?;
+            let coco_profile = librad::profile::Profile::from_root(temp_dir.path(), None)?;
             (Some(temp_dir), coco_profile)
         } else {
-            let coco_profile = profile::Profile::load()?;
+            let coco_profile = librad::profile::Profile::load()?;
             (None, coco_profile)
         };
 

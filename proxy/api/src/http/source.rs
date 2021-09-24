@@ -9,7 +9,9 @@
 use serde::{Deserialize, Serialize};
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use radicle_daemon::{git_ext, PeerId, Urn};
+use link_crypto::PeerId;
+use link_identities::git::Urn;
+use radicle_git_ext::Oid;
 
 use crate::{context, http};
 
@@ -56,7 +58,7 @@ fn commit_filter(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     path("commit")
         .and(path::param::<Urn>())
-        .and(path::param::<git_ext::Oid>())
+        .and(path::param::<Oid>())
         .and(path::end())
         .and(warp::get())
         .and(http::with_context_unsealed(ctx))
@@ -113,10 +115,11 @@ fn tree_filter(
 mod handler {
     use warp::{reply, Rejection, Reply};
 
-    use radicle_daemon::{git_ext::Oid, state, Urn};
+    use link_identities::git::Urn;
+    use radicle_git_ext::Oid;
     use radicle_source::surf::vcs::git::RefScope;
 
-    use crate::{browser, context, error, session, session::settings};
+    use crate::{browser, context, error};
 
     /// Fetch a [`radicle_source::Blob`].
     pub async fn blob(
@@ -129,23 +132,16 @@ mod handler {
         }: super::BlobQuery,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let settings = session::get_current(&ctx.store)?
-            .map(|session| session.settings)
-            .unwrap_or_default();
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
 
-        let theme = if let Some(true) = highlight {
-            Some(match settings.appearance.theme {
-                settings::Theme::Dark => "base16-ocean.dark",
-                settings::Theme::Light => "base16-ocean.light",
-                settings::Theme::H4x0r => "base16-ocean.h4x0r",
-            })
-        } else {
-            None
-        };
+        let theme = highlight.map(|theme| match theme {
+            super::HighlightTheme::Dark => "base16-ocean.dark",
+            super::HighlightTheme::Light => "base16-ocean.light",
+            super::HighlightTheme::H4x0r => "base16-ocean.h4x0r",
+        });
 
-        let branch = state::get_branch(&ctx.peer, project_urn, peer_id, None)
+        let branch = radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
         let blob = browser::using(&ctx.peer, branch, |browser| {
@@ -163,9 +159,10 @@ mod handler {
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
-        let default_branch = state::get_branch(&ctx.peer, project_urn, peer_id, None)
-            .await
-            .map_err(error::Error::from)?;
+        let default_branch =
+            radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
+                .await
+                .map_err(error::Error::from)?;
         let branches = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::branches(browser, RefScope::from(peer_id))
         })
@@ -180,7 +177,7 @@ mod handler {
         sha1: Oid,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let default_branch = state::find_default_branch(&ctx.peer, project_urn)
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
         let commit = browser::using(&ctx.peer, default_branch, |mut browser| {
@@ -199,7 +196,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
 
-        let default_branch = state::find_default_branch(&ctx.peer, project_urn)
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
         let commits = browser::using(&ctx.peer, default_branch, |mut browser| {
@@ -227,7 +224,7 @@ mod handler {
         _query: super::TagQuery,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let branch = state::find_default_branch(&ctx.peer, project_urn)
+        let branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
         let tags = browser::using(&ctx.peer, branch, |browser| radicle_source::tags(browser))
@@ -248,7 +245,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
-        let branch = state::get_branch(&ctx.peer, project_urn, peer_id, None)
+        let branch = radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
         let tree = browser::using(&ctx.peer, branch, |mut browser| {
@@ -287,7 +284,7 @@ pub struct BlobQuery {
     /// Revision to query at.
     revision: Option<radicle_source::Revision<PeerId>>,
     /// Whether or not to syntax highlight the blob.
-    highlight: Option<bool>,
+    highlight: Option<HighlightTheme>,
 }
 
 /// A query param for [`handler::branches`].
@@ -318,6 +315,18 @@ pub struct TagQuery {
     peer_id: Option<PeerId>,
 }
 
+/// Syntax highlighting theme
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum HighlightTheme {
+    /// A dark theme.
+    Dark,
+    /// A light theme.
+    Light,
+    /// A h4x0r theme.
+    H4x0r,
+}
+
 #[allow(clippy::non_ascii_literal, clippy::unwrap_used)]
 #[cfg(test)]
 mod test {
@@ -327,7 +336,7 @@ mod test {
     use serde_json::{json, Value};
     use warp::{http::StatusCode, test::request};
 
-    use radicle_daemon::{git_ext, identities, state, Urn};
+    use link_identities::git::Urn;
     use radicle_source::surf::vcs::git::RefScope;
 
     use crate::{browser, context, error, http};
@@ -345,7 +354,8 @@ mod test {
             peer_id: None,
         };
         let arrows = "text/arrows.txt";
-        let default_branch = state::find_default_branch(&ctx.peer, urn.clone()).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(&ctx.peer, urn.clone()).await?;
         let want = browser::using(&ctx.peer, default_branch, |mut browser| {
             radicle_source::blob(&mut browser, Some(revision.clone()), arrows)
         })?;
@@ -354,7 +364,7 @@ mod test {
             path: arrows.to_string(),
             peer_id: None,
             revision: Some(revision.clone()),
-            highlight: Some(false),
+            highlight: None,
         };
 
         let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
@@ -402,7 +412,8 @@ mod test {
 
         // Get binary blob.
         let ls = "bin/ls";
-        let default_branch = state::find_default_branch(&ctx.peer, urn.clone()).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(&ctx.peer, urn.clone()).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::blob(browser, Some(revision.clone()), ls)
         })?;
@@ -411,7 +422,7 @@ mod test {
             path: ls.to_string(),
             peer_id: None,
             revision: Some(revision),
-            highlight: Some(false),
+            highlight: None,
         };
 
         let path = format!("/blob/{}?{}", urn, serde_qs::to_string(&query).unwrap());
@@ -468,7 +479,7 @@ mod test {
             path: path.to_string(),
             peer_id: None,
             revision: Some(revision.clone()),
-            highlight: Some(false),
+            highlight: None,
         };
 
         // Get ASCII blob.
@@ -482,7 +493,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |mut browser| {
             radicle_source::blob(&mut browser, Some(revision), path)
         })?;
@@ -507,7 +518,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::branches(browser, RefScope::All)
         })?;
@@ -528,7 +539,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = replicate_platinum(&ctx).await?;
-        let sha1 = git_ext::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
+        let sha1 = radicle_git_ext::Oid::try_from("3873745c8f6ffb45c990eb23b491d4b4b6182f95")?;
 
         let res = request()
             .method("GET")
@@ -536,7 +547,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |mut browser| {
             radicle_source::commit::header(&mut browser, *sha1)
         })?;
@@ -591,7 +602,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |mut browser| {
             radicle_source::commits(&mut browser, Some(revision.clone()))
         })?;
@@ -656,7 +667,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::tags(browser)
         })?;
@@ -691,7 +702,7 @@ mod test {
         let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |mut browser| {
             radicle_source::tree(&mut browser, Some(revision), Some(prefix.to_string()))
         })?;
@@ -762,7 +773,7 @@ mod test {
         );
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |mut browser| {
             radicle_source::tree(&mut browser, Some(revision), None)
         })?;
@@ -775,9 +786,9 @@ mod test {
     }
 
     async fn replicate_platinum(ctx: &context::Unsealed) -> Result<Urn, error::Error> {
-        let owner = state::init_owner(
+        let owner = radicle_daemon::state::init_owner(
             &ctx.peer,
-            identities::payload::Person {
+            link_identities::payload::Person {
                 name: "cloudhead".into(),
             },
         )

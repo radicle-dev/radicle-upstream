@@ -8,7 +8,7 @@
 
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use radicle_daemon::Urn;
+use link_identities::git::Urn;
 
 use crate::{context, http};
 
@@ -58,7 +58,7 @@ mod handler {
 
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use radicle_daemon::Urn;
+    use link_identities::git::Urn;
 
     use crate::{context, error};
 
@@ -101,7 +101,7 @@ mod test {
     use serde_json::json;
     use warp::{http::StatusCode, test::request};
 
-    use radicle_daemon::{git_ext, Urn};
+    use link_identities::git::Urn;
 
     use crate::{context, http};
 
@@ -112,7 +112,7 @@ mod test {
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = Urn::new(git_ext::Oid::try_from(
+        let urn = Urn::new(radicle_git_ext::Oid::try_from(
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 
@@ -139,7 +139,7 @@ mod test {
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = Urn::new(git_ext::Oid::try_from(
+        let urn = Urn::new(radicle_git_ext::Oid::try_from(
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 
@@ -165,7 +165,7 @@ mod test {
         let handle = tokio::spawn(run);
         let api = super::filters(ctx.clone().into());
 
-        let urn = Urn::new(git_ext::Oid::try_from(
+        let urn = Urn::new(radicle_git_ext::Oid::try_from(
             "7ab8629dd6da14dcacde7f65b3d58cd291d7e235",
         )?);
 

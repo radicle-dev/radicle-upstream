@@ -6,7 +6,6 @@
 
 import type { Project } from "ui/src/project";
 import * as source from "ui/src/source";
-import type { Urn } from "ui/src/urn";
 import * as proxy from "ui/src/proxy";
 import type * as proxyProject from "ui/src/proxy/project";
 import type { Identity } from "ui/src/proxy/identity";
@@ -52,7 +51,7 @@ function makePatch(proxyPatch: proxyProject.Patch): Patch {
 
 export const TAG_PREFIX = "radicle-patch/";
 
-export const getAll = async (projectUrn: Urn): Promise<Patch[]> => {
+export const getAll = async (projectUrn: string): Promise<Patch[]> => {
   const proxyPatches = await proxy.client.project.patchList(projectUrn);
   return proxyPatches.map(makePatch);
 };

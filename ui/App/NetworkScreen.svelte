@@ -9,13 +9,10 @@
   import * as svelteStore from "svelte/store";
 
   import { status } from "ui/src/localPeer";
+  import * as proxy from "ui/src/proxy";
   import { indicatorState } from "ui/src/network";
-  import {
-    settings,
-    seedValidation,
-    addSeed,
-    removeSeed,
-  } from "../src/session";
+  import { createValidationStore, ValidationStatus } from "ui/src/validation";
+  import { VALID_SEED_MATCH } from "ui/src/session";
 
   import { Button, CopyableIdentifier, Icon, TextInput } from "ui/DesignSystem";
 
@@ -23,16 +20,59 @@
 
   const indicatorStatus = svelteStore.derived(status, indicatorState);
 
+  let seeds: string[] = [];
+  let loaded = false;
   let seedInputValue: string = "";
 
-  const submitSeed = async () => {
-    if (await addSeed(seedInputValue)) {
-      seedInputValue = "";
-    }
-  };
+  const seedValidation = createValidationStore(
+    {
+      format: {
+        pattern: VALID_SEED_MATCH,
+        message: "This is not a valid seed address",
+      },
+    },
+    [
+      {
+        promise: (seed: string) => {
+          return Promise.resolve(!seeds.includes(seed));
+        },
+        validationMessage: "This seed already exists",
+      },
+    ]
+  );
 
   $: if (seedInputValue === "") {
     seedValidation.reset();
+  }
+
+  fetchSeeds();
+
+  async function addSeed() {
+    seedValidation.validate(seedInputValue);
+    // We have to wait a tick so that the asynchronous validations can
+    // run and update the validation status
+    await Promise.resolve();
+    if (svelteStore.get(seedValidation).status === ValidationStatus.Success) {
+      await updateSeeds(seeds => [...seeds, seedInputValue]);
+      seedInputValue = "";
+    }
+  }
+
+  async function fetchSeeds() {
+    seeds = await proxy.client.seedsGet();
+    loaded = true;
+  }
+
+  function removeSeed(index: number) {
+    updateSeeds(seeds => {
+      seeds.splice(index, 1);
+      return seeds;
+    });
+  }
+
+  async function updateSeeds(f: (seeds: string[]) => string[]) {
+    seeds = f(seeds);
+    await proxy.client.seedsPut(seeds);
   }
 </script>
 
@@ -141,20 +181,20 @@
             validation={$seedValidation} />
           <Button
             dataCy="add-seed"
-            on:click={submitSeed}
-            disabled={!seedInputValue}
+            on:click={addSeed}
+            disabled={!seedInputValue || !loaded}
             variant="outline">
             Add
           </Button>
         </div>
 
         <div class="seeds">
-          {#each $settings.coco.seeds as seed (seed)}
+          {#each seeds as seed, index (seed)}
             <div class="seed">
               <CopyableIdentifier value={seed} kind="seedAddress" />
               <Icon.Cross
                 dataCy="remove-seed"
-                on:click={() => removeSeed(seed)}
+                on:click={() => removeSeed(index)}
                 style="margin-left: 1.5rem; cursor:pointer;" />
             </div>
           {/each}

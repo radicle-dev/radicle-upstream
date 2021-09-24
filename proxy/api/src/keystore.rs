@@ -16,7 +16,7 @@
 
 use std::convert::Infallible;
 
-use radicle_daemon::Paths;
+use librad::paths::Paths;
 pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{self, Pwhash, SecretBoxError},

@@ -8,7 +8,7 @@
 
 use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
-use radicle_daemon::Urn;
+use link_identities::git::Urn;
 
 use crate::{context, http};
 
@@ -70,7 +70,7 @@ fn get_remote_filter(
 mod handler {
     use warp::{http::StatusCode, reject, reply, Rejection, Reply};
 
-    use radicle_daemon::Urn;
+    use link_identities::git::Urn;
 
     use crate::{context, error, http, identity, session};
 
@@ -127,8 +127,6 @@ mod test {
     use std::convert::TryInto;
     use warp::{http::StatusCode, test::request};
 
-    use radicle_daemon::state;
-
     use crate::{context, error, http, identity, session};
 
     #[tokio::test]
@@ -163,12 +161,12 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                state::default_owner(&ctx.peer)
+                radicle_daemon::state::default_owner(&ctx.peer)
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                state::get_local(&ctx.peer, urn.clone())
+                radicle_daemon::state::get_local(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -239,12 +237,12 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                state::default_owner(&ctx.peer)
+                radicle_daemon::state::default_owner(&ctx.peer)
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                state::get_local(&ctx.peer, urn.clone())
+                radicle_daemon::state::get_local(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -315,12 +313,12 @@ mod test {
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                state::default_owner(&ctx.peer)
+                radicle_daemon::state::default_owner(&ctx.peer)
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                state::get_local(&ctx.peer, urn.clone())
+                radicle_daemon::state::get_local(&ctx.peer, urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -351,7 +349,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let user = state::init_user(&ctx.peer, "cloudhead".to_string()).await?;
+        let user = radicle_daemon::state::init_user(&ctx.peer, "cloudhead".to_string()).await?;
 
         let res = request()
             .method("GET")
