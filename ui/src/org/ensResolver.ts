@@ -36,7 +36,7 @@ export interface Registration {
   twitter: string | null;
   github: string | null;
   seedId: string | null;
-  seedApi: string | null;
+  seedHost: string | null;
 }
 
 export async function setRecords(
@@ -98,11 +98,11 @@ export async function setRecords(
           ])
         );
         break;
-      case "seedApi":
+      case "seedHost":
         calls.push(
           iface.encodeFunctionData("setText", [
             node,
-            "eth.radicle.seed.api",
+            "eth.radicle.seed.host",
             record.value,
           ])
         );
@@ -140,10 +140,10 @@ export async function getRegistration(
     resolver.getText("com.twitter"),
     resolver.getText("com.github"),
     resolver.getText("eth.radicle.seed.id"),
-    resolver.getText("eth.radicle.seed.api"),
+    resolver.getText("eth.radicle.seed.host"),
   ]);
 
-  const [address, avatar, url, twitter, github, seedId, seedApi] = meta.map(
+  const [address, avatar, url, twitter, github, seedId, seedHost] = meta.map(
     (value: PromiseSettledResult<string>) =>
       value.status === "fulfilled" ? value.value : null
   );
@@ -157,7 +157,7 @@ export async function getRegistration(
     twitter,
     github,
     seedId,
-    seedApi,
+    seedHost,
   };
 }
 
