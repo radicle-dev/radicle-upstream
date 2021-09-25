@@ -8,6 +8,7 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
 
+  import * as router from "ui/src/router";
   import * as Session from "ui/src/session";
   import * as modal from "ui/src/modal";
   import * as remote from "ui/src/remote";
@@ -25,6 +26,8 @@
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ProfileHeader from "./ProfileScreen/ProfileHeader.svelte";
   import ProjectCardSquare from "./ProfileScreen/ProjectCardSquare.svelte";
+  import RequestCardSquare from "./ProfileScreen/RequestCardSquare.svelte";
+  import SearchModal from "ui/App/SearchModal.svelte";
 
   import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
 
@@ -98,6 +101,18 @@
     }
   };
 
+  const onSelect = ({ detail: project }: { detail: Project }) => {
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: { type: "files" },
+    });
+  };
+
+  const onUnFollow = (urn: string): void => {
+    proxy.client.project.requestCancel(urn).then(fetchProfileProjects);
+  };
+
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
     description: project.metadata.description || "",
@@ -107,6 +122,8 @@
     stats: project.stats,
     urn: project.urn,
   });
+
+  let showRequests: boolean = false;
 
   showNotificationsForFailedProjects();
 </script>
@@ -120,6 +137,26 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
     padding: 2rem;
+  }
+
+  .box {
+    border: 1px solid var(--color-foreground-level-3);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    height: 15rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .requests {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .search {
+    justify-content: center;
+    align-items: center;
   }
 </style>
 
@@ -146,14 +183,61 @@
   {#if $profileProjectsStore.status === remote.Status.Success}
     <ul class="grid">
       {#each $profileProjectsStore.data.cloned as project}
-        <ProjectCardSquare {...projectCardProps(project)} />
+        <ProjectCardSquare
+          {...projectCardProps(project)}
+          on:click={() => onSelect({ detail: project })} />
       {/each}
       {#each $profileProjectsStore.data.follows as project}
-        <ProjectCardSquare {...projectCardProps(project)} />
+        <ProjectCardSquare
+          {...projectCardProps(project)}
+          on:click={() => onSelect({ detail: project })} />
       {/each}
-      {#each $profileProjectsStore.data.requests as project}
-        requests
-      {/each}
+      {#if $profileProjectsStore.data.requests.length > 0}
+        <li class="box requests">
+          <div>
+            <h2>Still looking...</h2>
+            <p style="margin-top: 1rem;">
+              {$profileProjectsStore.data.requests.length} project{$profileProjectsStore
+                .data.requests.length > 1
+                ? "s"
+                : ""} you’re following haven’t been found yet.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            on:click={() => {
+              showRequests = !showRequests;
+            }}
+            style="align-self: flex-start;">
+            {!showRequests ? "Show" : "Hide"}
+            {$profileProjectsStore.data.requests.length} project{$profileProjectsStore
+              .data.requests.length > 1
+              ? "s"
+              : ""}
+          </Button>
+        </li>
+        {#if showRequests}
+          {#each $profileProjectsStore.data.requests as project}
+            <RequestCardSquare
+              urn={project.urn}
+              on:unfollow={() => onUnFollow(project.urn)} />
+          {/each}
+        {/if}
+      {/if}
+      <li class="search box">
+        <p
+          style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
+          Follow a new project
+        </p>
+        <Button
+          on:click={() => {
+            modal.toggle(SearchModal);
+          }}
+          icon={Icon.MagnifyingGlass}
+          variant="outline">
+          Look for a project
+        </Button>
+      </li>
     </ul>
   {/if}
 </ScreenLayout>

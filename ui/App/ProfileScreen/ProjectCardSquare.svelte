@@ -36,6 +36,7 @@
     display: flex;
     justify-content: space-between;
     flex-direction: column;
+    cursor: pointer;
   }
   .title-row {
     display: flex;
@@ -46,6 +47,9 @@
   .desc {
     margin-top: 0.75rem;
     color: var(--color-foreground-level-6);
+    max-height: 3rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   .bottom {
@@ -54,7 +58,7 @@
   }
 </style>
 
-<li class="project-card">
+<li class="project-card" on:click>
   <div>
     <div class="title-row">
       <h2 class="typo-overflow-ellipsis">{title}</h2>
