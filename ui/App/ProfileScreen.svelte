@@ -24,12 +24,13 @@
 
   import Header from "ui/App/ScreenLayout/Header.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import ProfileHeader from "./ProfileScreen/ProfileHeader.svelte";
-  import ProjectCardSquare from "./ProfileScreen/ProjectCardSquare.svelte";
-  import RequestCardSquare from "./ProfileScreen/RequestCardSquare.svelte";
+  import Error from "ui/App/ProfileScreen/Error.svelte";
+  import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
+  import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
+  import RequestCardSquare from "ui/App/ProfileScreen/RequestCardSquare.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
-
   import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
+  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
 
   const session = Session.unsealed();
 
@@ -113,6 +114,10 @@
     proxy.client.project.requestCancel(urn).then(fetchProfileProjects);
   };
 
+  const create = () => {
+    modal.toggle(CreateProjectModal);
+  };
+
   const projectCardProps = (project: Project) => ({
     title: project.metadata.name,
     description: project.metadata.description || "",
@@ -181,63 +186,72 @@
   </Header>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
-    <ul class="grid">
-      {#each $profileProjectsStore.data.cloned as project}
-        <ProjectCardSquare
-          {...projectCardProps(project)}
-          on:click={() => onSelect({ detail: project })} />
-      {/each}
-      {#each $profileProjectsStore.data.follows as project}
-        <ProjectCardSquare
-          {...projectCardProps(project)}
-          on:click={() => onSelect({ detail: project })} />
-      {/each}
-      {#if $profileProjectsStore.data.requests.length > 0}
-        <li class="box requests">
-          <div>
-            <h2>Still looking...</h2>
-            <p style="margin-top: 1rem;">
+    {#if (Array.isArray($profileProjectsStore.data) && $profileProjectsStore.data.length === 0) || $profileProjectsStore.data === null}
+      <EmptyState
+        text="You don’t have any projects yet."
+        primaryActionText="Start your first project"
+        on:primaryAction={create} />
+    {:else}
+      <ul class="grid">
+        {#each $profileProjectsStore.data.cloned as project}
+          <ProjectCardSquare
+            {...projectCardProps(project)}
+            on:click={() => onSelect({ detail: project })} />
+        {/each}
+        {#each $profileProjectsStore.data.follows as project}
+          <ProjectCardSquare
+            {...projectCardProps(project)}
+            on:click={() => onSelect({ detail: project })} />
+        {/each}
+        {#if $profileProjectsStore.data.requests.length > 0}
+          <li class="box requests">
+            <div>
+              <h2>Still looking...</h2>
+              <p style="margin-top: 1rem;">
+                {$profileProjectsStore.data.requests.length} project{$profileProjectsStore
+                  .data.requests.length > 1
+                  ? "s"
+                  : ""} you’re following haven’t been found yet.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              on:click={() => {
+                showRequests = !showRequests;
+              }}
+              style="align-self: flex-start;">
+              {!showRequests ? "Show" : "Hide"}
               {$profileProjectsStore.data.requests.length} project{$profileProjectsStore
                 .data.requests.length > 1
                 ? "s"
-                : ""} you’re following haven’t been found yet.
-            </p>
-          </div>
+                : ""}
+            </Button>
+          </li>
+          {#if showRequests}
+            {#each $profileProjectsStore.data.requests as project}
+              <RequestCardSquare
+                urn={project.urn}
+                on:unfollow={() => onUnFollow(project.urn)} />
+            {/each}
+          {/if}
+        {/if}
+        <li class="search box">
+          <p
+            style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
+            Follow a new project
+          </p>
           <Button
-            variant="outline"
             on:click={() => {
-              showRequests = !showRequests;
+              modal.toggle(SearchModal);
             }}
-            style="align-self: flex-start;">
-            {!showRequests ? "Show" : "Hide"}
-            {$profileProjectsStore.data.requests.length} project{$profileProjectsStore
-              .data.requests.length > 1
-              ? "s"
-              : ""}
+            icon={Icon.MagnifyingGlass}
+            variant="outline">
+            Look for a project
           </Button>
         </li>
-        {#if showRequests}
-          {#each $profileProjectsStore.data.requests as project}
-            <RequestCardSquare
-              urn={project.urn}
-              on:unfollow={() => onUnFollow(project.urn)} />
-          {/each}
-        {/if}
-      {/if}
-      <li class="search box">
-        <p
-          style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
-          Follow a new project
-        </p>
-        <Button
-          on:click={() => {
-            modal.toggle(SearchModal);
-          }}
-          icon={Icon.MagnifyingGlass}
-          variant="outline">
-          Look for a project
-        </Button>
-      </li>
-    </ul>
+      </ul>
+    {/if}
+  {:else if $profileProjectsStore.status === remote.Status.Error}
+    <Error message={$profileProjectsStore.error.message} />
   {/if}
 </ScreenLayout>

@@ -16,7 +16,9 @@
 
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import Error from "ui/App/ProfileScreen/Error.svelte";
   import Header from "ui/App/ScreenLayout/Header.svelte";
+  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
 
   import UserProfileHeader from "./UserProfileScreen/UserProfileHeader.svelte";
 
@@ -70,13 +72,19 @@
     </Header>
 
     {#if $store.status === remote.Status.Success}
-      <ul class="grid">
-        {#each $store.data as project}
-          <ProjectCardSquare
-            {...projectCardProps(project)}
-            on:click={() => select({ detail: project })} />
-        {/each}
-      </ul>
+      {#if (Array.isArray($store.data) && $store.data.length === 0) || $store.data === null}
+        <EmptyState text="This peer doesn't have any projects." />
+      {:else}
+        <ul class="grid">
+          {#each $store.data as project}
+            <ProjectCardSquare
+              {...projectCardProps(project)}
+              on:click={() => select({ detail: project })} />
+          {/each}
+        </ul>
+      {/if}
+    {:else if $store.status === remote.Status.Error}
+      <Error message={$store.error.message} />
     {/if}
   {/if}
 </ScreenLayout>
