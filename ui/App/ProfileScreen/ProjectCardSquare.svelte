@@ -58,7 +58,7 @@
   }
 </style>
 
-<li class="project-card" on:click>
+<li class="project-card" data-cy={`project-list-entry-${title}`} on:click>
   <div>
     <div class="title-row">
       <h2 class="typo-overflow-ellipsis">{title}</h2>
