@@ -239,12 +239,8 @@ context("patches", () => {
 
               cy.log("contributor follows the project");
               commands.followProject(urn, contributorNode.httpPort);
-              commands.pick("following-tab").click();
               commands
-                .pick(
-                  "following-tab-contents",
-                  "project-list-entry-new-fancy-project.xyz"
-                )
+                .pick("project-list-entry-new-fancy-project.xyz")
                 .should("exist");
 
               cy.log("contributor checks out the project");
@@ -401,12 +397,8 @@ context("patches", () => {
             cy.get<string>("@projectUrn").then(urn => {
               cy.log("contributor checks out the project");
               commands.followProject(urn, contributorNode.httpPort);
-              commands.pick("following-tab").click();
               commands
-                .pick(
-                  "following-tab-contents",
-                  `project-list-entry-${projectName}`
-                )
+                .pick(`project-list-entry-${projectName}`)
                 .should("exist");
 
               cy.exec(`mkdir -p "${contributorProjectsDir}"`);

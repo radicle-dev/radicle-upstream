@@ -24,7 +24,7 @@
   }
 </style>
 
-<li class="request-card" on:click>
+<li class="request-card" on:click data-cy="undiscovered-project">
   <CopyableIdentifier kind="radicleId" value={urn} />
   <FollowToggle style="align-self: flex-start;" following on:unfollow />
 </li>

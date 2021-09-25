@@ -75,7 +75,7 @@
       {#if (Array.isArray($store.data) && $store.data.length === 0) || $store.data === null}
         <EmptyState text="This peer doesn't have any projects." />
       {:else}
-        <ul class="grid">
+        <ul class="grid" data-cy="project-list">
           {#each $store.data as project}
             <ProjectCardSquare
               {...projectCardProps(project)}

@@ -192,7 +192,7 @@
         primaryActionText="Start your first project"
         on:primaryAction={create} />
     {:else}
-      <ul class="grid">
+      <ul class="grid" data-cy="project-list">
         {#each $profileProjectsStore.data.cloned as project}
           <ProjectCardSquare
             {...projectCardProps(project)}
