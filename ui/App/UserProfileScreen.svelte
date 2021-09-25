@@ -6,34 +6,58 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type { Project } from "ui/src/project";
+  import { fetchProjects, projects as store } from "ui/src/userProfile";
+  import { isMaintainer } from "ui/src/project";
+  import * as router from "ui/src/router";
+  import * as Session from "ui/src/session";
   import * as remote from "ui/src/remote";
   import * as userProfile from "ui/src/userProfile";
 
-  import { Icon } from "ui/DesignSystem";
-
+  import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import Header from "ui/App/ScreenLayout/Header.svelte";
-  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import UserProfileHeader from "./UserProfileScreen/UserProfileHeader.svelte";
-  import ProjectsTab from "./UserProfileScreen/Projects.svelte";
 
   export let urn: string;
 
+  const select = ({ detail: project }: { detail: Project }) => {
+    router.push({
+      type: "project",
+      urn: project.urn,
+      activeView: { type: "files" },
+    });
+  };
+
+  const projectCardProps = (project: Project) => ({
+    title: project.metadata.name,
+    description: project.metadata.description || "",
+    maintainerUrn: project.metadata.maintainers[0],
+    showMaintainerBadge: isMaintainer(session.identity.urn, project),
+    anchor: project.anchor,
+    stats: project.stats,
+    urn: project.urn,
+  });
+
   const userProfileStore = userProfile.user;
+  const session = Session.unsealed();
 
-  const tabs = [
-    {
-      title: "Projects",
-      active: true,
-      icon: Icon.ChevronLeftRight,
-      onClick: () => {},
-    },
-  ];
-
+  fetchProjects(urn);
   userProfile.fetchUser(urn);
 </script>
+
+<style>
+  .grid {
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+</style>
 
 <ScreenLayout dataCy="user-profile-screen">
   {#if $userProfileStore.status === remote.Status.Success}
@@ -45,9 +69,14 @@
         {urn} />
     </Header>
 
-    <ActionBar>
-      <TabBar slot="left" {tabs} />
-    </ActionBar>
-    <ProjectsTab {urn} />
+    {#if $store.status === remote.Status.Success}
+      <ul class="grid">
+        {#each $store.data as project}
+          <ProjectCardSquare
+            {...projectCardProps(project)}
+            on:click={() => select({ detail: project })} />
+        {/each}
+      </ul>
+    {/if}
   {/if}
 </ScreenLayout>
