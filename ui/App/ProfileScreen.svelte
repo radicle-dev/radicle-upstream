@@ -235,7 +235,7 @@
             {/each}
           {/if}
         {/if}
-        <li class="search box">
+        <li class="search box" data-cy="search-box">
           <p
             style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
             Follow a new project
