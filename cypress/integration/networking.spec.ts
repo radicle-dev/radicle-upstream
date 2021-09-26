@@ -200,7 +200,6 @@ context("p2p networking", () => {
             cy.log("check that the commit shows up in the contributor's UI");
             nodeManager.asNode(contributorNode);
 
-            commands.pick("following-tab").click();
             commands.pick("project-list-entry-new-fancy-project.xyz").click();
             commands.pick("commits-tab").click();
             commands
