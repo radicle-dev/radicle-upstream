@@ -129,29 +129,34 @@
           g: parseInt(result[2], 16),
           b: parseInt(result[3], 16),
         }
-      : null;
+      : {
+          r: 21,
+          g: 21,
+          b: 21,
+        };
   };
 
   $: if ($primaryColorStore === "hex") {
     const colorRgb = hexToRgb(colorHex);
-    const root = document.documentElement;
-    root.style.setProperty(
-      "--color-primary",
-      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},1`
-    );
-    root.style.setProperty(
-      "--color-primary-level-1",
-      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.17`
-    );
-    root.style.setProperty(
-      "--color-primary-level-2",
-      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.37`
-    );
-    root.style.setProperty(
-      "--color-primary-level-6",
-      `rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.87`
-    );
+
+    const element = document.createElement("style");
+    // Append style element to head
+    document.head.appendChild(element);
+    // Reference to the stylesheet
+    // eslint-disable-next-line
+    const sheet = element.sheet!;
+    let styles = '[data-primarycolor="hex"] {';
+    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},1`;
+    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.17`;
+    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.37`;
+    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.87`;
+    styles += "}";
+
+    // Add the first CSS rule to the stylesheet
+    sheet.insertRule(styles, 0);
   }
+
+  $: console.log($primaryColorStore);
 </script>
 
 <style>
