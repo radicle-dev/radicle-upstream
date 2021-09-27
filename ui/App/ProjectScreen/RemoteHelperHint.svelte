@@ -10,9 +10,9 @@
 
   import * as browserStore from "ui/src/browserStore";
 
-  const remoteHelperHintShown = browserStore.create<boolean>(
-    "radicle.remoteHelperHintShown",
-    false,
+  const isRemoteHelperHintVisible = browserStore.create<boolean>(
+    "radicle.isRemoteHelperHintVisible",
+    true,
     zod.boolean()
   );
 </script>
@@ -44,13 +44,13 @@
   }
 </style>
 
-{#if !$remoteHelperHintShown}
+{#if $isRemoteHelperHintVisible}
   <div class="info" data-cy="remote-helper-hint">
     <div
       data-cy="close-hint-button"
       class="close-hint-button"
       on:click={() => {
-        remoteHelperHintShown.set(true);
+        $isRemoteHelperHintVisible = false;
       }}>
       <Icon.CrossSmall />
     </div>
