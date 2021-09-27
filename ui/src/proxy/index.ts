@@ -8,7 +8,6 @@ import * as zod from "zod";
 
 import { config } from "ui/src/config";
 
-import * as settings from "./settings";
 import * as identity from "./identity";
 import * as control from "./control";
 import * as project from "./project";
@@ -19,12 +18,10 @@ export { ResponseError };
 
 export interface Session {
   identity: identity.Identity;
-  settings: settings.Settings;
 }
 
 export const sessionSchema: zod.ZodSchema<Session> = zod.object({
   identity: identity.identitySchema,
-  settings: settings.settingsSchema,
 });
 
 interface KeyStoreUnsealParams {
@@ -60,18 +57,6 @@ export class Client {
       },
       sessionSchema
     );
-  }
-
-  async sessionSettingsSet(
-    settings: settings.Settings,
-    options?: RequestOptions
-  ): Promise<void> {
-    return this.fetcher.fetchOkNoContent({
-      method: "POST",
-      path: "session/settings",
-      body: settings,
-      options,
-    });
   }
 
   async personGet(

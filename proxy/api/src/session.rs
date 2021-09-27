@@ -102,20 +102,6 @@ pub fn update_seeds(store: &kv::Store, seeds: Vec<String>) -> Result<(), error::
     Ok(())
 }
 
-/// Update the session settings. Does nothing if there is no session yet.
-///
-/// # Errors
-///
-/// Errors when we cannot access the store.
-pub fn set_settings(store: &kv::Store, settings: settings::Settings) -> Result<(), error::Error> {
-    if let Some(mut session) = get_current(store)? {
-        session.settings = settings;
-
-        set_current(store, session)?;
-    }
-    Ok(())
-}
-
 /// Initialize a session for tests.
 ///
 /// Creates an owner identity for the session using `owner_handle` and stores the current session.

@@ -194,6 +194,13 @@
             options={themeOptions}
             on:select={ev => theme.set(ev.detail)} />
         </Tooltip>
+        <Tooltip value="Primary color" position="bottom">
+          <SegmentedControl
+            style="background-color: var(--color-background); margin-right: 2rem;"
+            active={$primaryColor}
+            options={primaryColorOptions}
+            on:select={ev => primaryColor.set(ev.detail)} />
+        </Tooltip>
         <Tooltip value="UI font" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background); margin-right: 2rem;"
@@ -203,17 +210,10 @@
         </Tooltip>
         <Tooltip value="Code font" position="bottom">
           <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
+            style="background-color: var(--color-background);"
             active={$codeFont}
             options={codeFontOptions}
             on:select={ev => codeFont.set(ev.detail)} />
-        </Tooltip>
-        <Tooltip value="Font color" position="bottom">
-          <SegmentedControl
-            style="background-color: var(--color-background);"
-            active={$primaryColor}
-            options={primaryColorOptions}
-            on:select={ev => primaryColor.set(ev.detail)} />
         </Tooltip>
       </div>
       <h1 style="margin-bottom: 92px">Primitives</h1>

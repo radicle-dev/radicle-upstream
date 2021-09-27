@@ -12,8 +12,6 @@ describe("waitUnsealed", () => {
       status: session.Status.UnsealedSession,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       identity: undefined as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      settings: undefined as any,
     });
     await session.waitUnsealed();
   });
@@ -24,8 +22,6 @@ describe("waitUnsealed", () => {
       status: session.Status.UnsealedSession,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       identity: undefined as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      settings: undefined as any,
     });
     await unsealed;
   });

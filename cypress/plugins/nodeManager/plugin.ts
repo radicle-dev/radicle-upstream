@@ -338,19 +338,9 @@ class NodeManager implements NodeManagerPlugin {
       return firstNode.id !== node.id;
     });
 
-    await fetch(`http://${HOST}:${firstNode.httpPort}/v1/session/settings`, {
-      method: "post",
-      body: JSON.stringify({
-        appearance: {
-          theme: "dark",
-          hints: { showRemoteHelper: true },
-          uiFont: "inter",
-          codeFont: "sourceCode",
-        },
-        coco: {
-          seeds: remainingNodes.map(node => node.peerAddress),
-        },
-      }),
+    await fetch(`http://${HOST}:${firstNode.httpPort}/v1/session/seeds`, {
+      method: "PUT",
+      body: JSON.stringify(remainingNodes.map(node => node.peerAddress)),
       headers: {
         Cookie: `auth-token=${firstNode.authToken}`,
         "Content-Type": "application/json",
