@@ -5,13 +5,21 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="typescript" context="module">
+  import * as zod from "zod";
+
+  import * as browserStore from "ui/src/browserStore";
+
+  const isRemoteHelperHintVisible = browserStore.create<boolean>(
+    "radicle.isRemoteHelperHintVisible",
+    true,
+    zod.boolean()
+  );
+</script>
+
 <script lang="typescript">
-  import { createEventDispatcher } from "svelte";
   import { Copyable, Hoverable, Icon } from "ui/DesignSystem";
 
-  const dispatch = createEventDispatcher();
-
-  export let style: string | undefined = undefined;
   let hover = false;
 </script>
 
@@ -36,31 +44,33 @@
   }
 </style>
 
-<div class="info" {style} data-cy="remote-helper-hint">
-  <div
-    data-cy="close-hint-button"
-    class="close-hint-button"
-    on:click={() => {
-      dispatch("hide");
-    }}>
-    <Icon.CrossSmall />
+{#if $isRemoteHelperHintVisible}
+  <div class="info" data-cy="remote-helper-hint">
+    <div
+      data-cy="close-hint-button"
+      class="close-hint-button"
+      on:click={() => {
+        $isRemoteHelperHintVisible = false;
+      }}>
+      <Icon.CrossSmall />
+    </div>
+    <p class="description">
+      To publish code to Radicle, you need to add this to your shell
+      configuration file. Not sure how?
+      <a
+        class="typo-link"
+        href="https://docs.radicle.xyz/docs/getting-started#configuring-your-system">
+        Read more
+      </a>
+    </p>
+    <Hoverable bind:hovering={hover}>
+      <Copyable name="shell configuration" tooltipStyle="width: fit-content;">
+        <p
+          class="typo-text-small-mono"
+          style="color: var(--color-foreground-level-6)">
+          export PATH="$HOME/.radicle/bin:$PATH"
+        </p>
+      </Copyable>
+    </Hoverable>
   </div>
-  <p class="description">
-    To publish code to Radicle, you need to add this to your shell configuration
-    file. Not sure how?
-    <a
-      class="typo-link"
-      href="https://docs.radicle.xyz/docs/getting-started#configuring-your-system">
-      Read more
-    </a>
-  </p>
-  <Hoverable bind:hovering={hover}>
-    <Copyable name="shell configuration" tooltipStyle="width: fit-content;">
-      <p
-        class="typo-text-small-mono"
-        style="color: var(--color-foreground-level-6)">
-        export PATH="$HOME/.radicle/bin:$PATH"
-      </p>
-    </Copyable>
-  </Hoverable>
-</div>
+{/if}

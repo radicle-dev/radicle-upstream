@@ -13,7 +13,12 @@
   import * as notification from "ui/src/notification";
   import * as search from "ui/src/search";
   import * as router from "ui/src/router";
-  import { FollowToggle, Hoverable, List, Identifier } from "ui/DesignSystem";
+  import {
+    CopyableIdentifier,
+    FollowToggle,
+    Hoverable,
+    List,
+  } from "ui/DesignSystem";
 
   import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
 
@@ -56,7 +61,7 @@
   <Hoverable let:hovering={hover} style="flex: 1">
     <div class="list-item" data-cy={`project-list-entry-${anchor.id}`}>
       <div class="typo-text anchor-row">
-        <Identifier value={anchor.projectId} kind="radicleId" />
+        <CopyableIdentifier value={anchor.projectId} kind="radicleId" />
         <ProjectAnchorPopover {anchor} />
       </div>
       {#if hover}

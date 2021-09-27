@@ -11,11 +11,6 @@ use serde::Serialize;
 use std::convert::Infallible;
 use warp::{http::StatusCode, reject, reply, Rejection, Reply};
 
-use radicle_daemon::{
-    project::{self, create},
-    state,
-};
-
 use crate::error;
 
 /// HTTP layer specific rejections.
@@ -104,115 +99,121 @@ pub async fn recover(err: Rejection) -> Result<impl Reply, Infallible> {
         } else if let Some(err) = err.find::<error::Error>() {
             match err {
                 error::Error::State(err) => match err {
-                    state::Error::Checkout(checkout_error) => match checkout_error {
-                        project::checkout::Error::AlreadExists(_) => (
-                            StatusCode::CONFLICT,
-                            "PATH_EXISTS",
-                            checkout_error.to_string(),
-                        ),
-                        project::checkout::Error::Git(git_error) => (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            "GIT_ERROR",
-                            git_error.message().to_string(),
-                        ),
-                        project::checkout::Error::Include(include_error) => (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            "INTERNAL_ERROR",
-                            include_error.to_string(),
-                        ),
-                        project::checkout::Error::Io(io) => (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            "INTERNAL_ERROR",
-                            io.to_string(),
-                        ),
-                        project::checkout::Error::Transport(err) => (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            "TRANSPORT_ERROR",
-                            err.to_string(),
-                        ),
-                        project::checkout::Error::Prefix(err) => (
-                            StatusCode::INTERNAL_SERVER_ERROR,
-                            "PREFIX_ERROR",
-                            err.to_string(),
-                        ),
+                    radicle_daemon::state::Error::Checkout(checkout_error) => {
+                        match checkout_error {
+                            radicle_daemon::project::checkout::Error::AlreadExists(_) => (
+                                StatusCode::CONFLICT,
+                                "PATH_EXISTS",
+                                checkout_error.to_string(),
+                            ),
+                            radicle_daemon::project::checkout::Error::Git(git_error) => (
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                "GIT_ERROR",
+                                git_error.message().to_string(),
+                            ),
+                            radicle_daemon::project::checkout::Error::Include(include_error) => (
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                "INTERNAL_ERROR",
+                                include_error.to_string(),
+                            ),
+                            radicle_daemon::project::checkout::Error::Io(io) => (
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                "INTERNAL_ERROR",
+                                io.to_string(),
+                            ),
+                            radicle_daemon::project::checkout::Error::Transport(err) => (
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                "TRANSPORT_ERROR",
+                                err.to_string(),
+                            ),
+                            radicle_daemon::project::checkout::Error::Prefix(err) => (
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                "PREFIX_ERROR",
+                                err.to_string(),
+                            ),
+                        }
                     },
-                    state::Error::Create(create::Error::Validation(err)) => match err {
-                        create::validation::Error::AlreadExists(_) => {
+                    radicle_daemon::state::Error::Create(
+                        radicle_daemon::project::create::Error::Validation(err),
+                    ) => match err {
+                        radicle_daemon::project::create::validation::Error::AlreadExists(_) => {
                             (StatusCode::CONFLICT, "PATH_EXISTS", err.to_string())
                         },
-                        create::validation::Error::EmptyExistingPath(_) => {
+                        radicle_daemon::project::create::validation::Error::EmptyExistingPath(_) => {
                             (StatusCode::BAD_REQUEST, "EMPTY_PATH", err.to_string())
                         },
-                        create::validation::Error::Git(_) => (
+                        radicle_daemon::project::create::validation::Error::Git(_) => (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             "GIT_ERROR",
                             err.to_string(),
                         ),
-                        create::validation::Error::MissingAuthorEmail => (
+                        radicle_daemon::project::create::validation::Error::MissingAuthorEmail => (
                             StatusCode::BAD_REQUEST,
                             "MISSING_AUTHOR_EMAIL",
                             err.to_string(),
                         ),
-                        create::validation::Error::MissingGitConfig => (
+                        radicle_daemon::project::create::validation::Error::MissingGitConfig => (
                             StatusCode::BAD_REQUEST,
                             "MISSING_GIT_CONFIG",
                             err.to_string(),
                         ),
-                        create::validation::Error::MissingAuthorName => (
+                        radicle_daemon::project::create::validation::Error::MissingAuthorName => (
                             StatusCode::BAD_REQUEST,
                             "MISSING_AUTHOR_NAME",
                             err.to_string(),
                         ),
-                        create::validation::Error::MissingDefaultBranch { .. } => (
+                        radicle_daemon::project::create::validation::Error::MissingDefaultBranch { .. } => (
                             StatusCode::BAD_REQUEST,
                             "MISSING_DEFAULT_BRANCH",
                             err.to_string(),
                         ),
-                        create::validation::Error::MissingUrl => {
+                        radicle_daemon::project::create::validation::Error::MissingUrl => {
                             (StatusCode::BAD_REQUEST, "MISSING_URL", err.to_string())
                         },
-                        create::validation::Error::PathDoesNotExist(_) => (
+                        radicle_daemon::project::create::validation::Error::PathDoesNotExist(_) => (
                             StatusCode::NOT_FOUND,
                             "PATH_DOES_NOT_EXIST",
                             err.to_string(),
                         ),
-                        create::validation::Error::NotARepo(_) => {
+                        radicle_daemon::project::create::validation::Error::NotARepo(_) => {
                             (StatusCode::BAD_REQUEST, "NOT_A_REPO", err.to_string())
                         },
-                        create::validation::Error::Io(err) => {
+                        radicle_daemon::project::create::validation::Error::Io(err) => {
                             (StatusCode::BAD_REQUEST, "IO_ERROR", err.to_string())
                         },
-                        create::validation::Error::UrlMismatch { .. } => {
+                        radicle_daemon::project::create::validation::Error::UrlMismatch { .. } => {
                             (StatusCode::BAD_REQUEST, "URL_MISMATCH", err.to_string())
                         },
 
-                        create::validation::Error::Transport(_) => (
+                        radicle_daemon::project::create::validation::Error::Transport(_) => (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             "TRANSPORT_ERROR",
                             err.to_string(),
                         ),
-                        create::validation::Error::Remote(_) => (
+                        radicle_daemon::project::create::validation::Error::Remote(_) => (
                             StatusCode::INTERNAL_SERVER_ERROR,
                             "MISSING_REMOTE",
                             err.to_string(),
                         ),
                     },
-                    state::Error::Git(git_error) => (
+                    radicle_daemon::state::Error::Git(git_error) => (
                         StatusCode::BAD_REQUEST,
                         "GIT_ERROR",
                         format!("Internal Git error: {:?}", git_error),
                     ),
-                    state::Error::MissingOwner => {
+                    radicle_daemon::state::Error::MissingOwner => {
                         (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
                     },
-                    state::Error::Storage(state::error::storage::Error::Blob(
-                        state::error::blob::Error::NotFound(_),
-                    )) => (
+                    radicle_daemon::state::Error::Storage(
+                        radicle_daemon::state::error::storage::Error::Blob(
+                            radicle_daemon::state::error::blob::Error::NotFound(_),
+                        ),
+                    ) => (
                         StatusCode::NOT_FOUND,
                         "NOT_FOUND",
                         "entity not found".to_string(),
                     ),
-                    state::Error::IdentityExists(_) => {
+                    radicle_daemon::state::Error::IdentityExists(_) => {
                         (StatusCode::CONFLICT, "IDENTITY_EXISTS", err.to_string())
                     },
                     _ => (
@@ -285,12 +286,12 @@ mod tests {
     use serde_json::{json, Value};
     use warp::{reply::Reply as _, Rejection};
 
-    use radicle_daemon::{git_ext, Urn};
+    use link_identities::git::Urn;
 
     #[tokio::test]
     async fn recover_custom() {
         let urn = Urn::new(
-            git_ext::Oid::try_from("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")
+            radicle_git_ext::Oid::try_from("7ab8629dd6da14dcacde7f65b3d58cd291d7e235")
                 .expect("failed to parse Oid"),
         );
         let message = format!("the current session is in use by `{}`", urn);

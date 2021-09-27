@@ -4,10 +4,10 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as svelteStore from "svelte/store";
+import * as zod from "zod";
 import Big from "big.js";
 import * as ethers from "ethers";
-import persistentStore from "svelte-persistent-store/dist";
+import * as browserStore from "ui/src/browserStore";
 import { config, isCypressTestEnv } from "ui/src/config";
 import * as error from "ui/src/error";
 
@@ -16,21 +16,15 @@ import * as contractAddresses from "./contractAddresses";
 
 export { Environment, supportedNetwork, Network, contractAddresses };
 
-// The store where the selected Ethereum environment is persisted.
-export const selectedEnvironment = persistentStore.local.writable<Environment>(
-  "ethereum-environment-v0",
-  config.isDev ? Environment.Rinkeby : Environment.Mainnet
+export const selectedEnvironment = browserStore.create<Environment>(
+  "radicle.ethereum.environment",
+  config.isDev ? Environment.Rinkeby : Environment.Mainnet,
+  zod.union([
+    zod.literal(Environment.Mainnet),
+    zod.literal(Environment.Rinkeby),
+    zod.literal(Environment.Local),
+  ])
 );
-
-if (
-  ![Environment.Mainnet, Environment.Rinkeby, Environment.Local].includes(
-    svelteStore.get(selectedEnvironment)
-  )
-) {
-  selectedEnvironment.set(
-    config.isDev ? Environment.Rinkeby : Environment.Mainnet
-  );
-}
 
 if (isCypressTestEnv) {
   selectedEnvironment.set(Environment.Local);

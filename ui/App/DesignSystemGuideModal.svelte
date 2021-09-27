@@ -6,32 +6,32 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import * as session from "ui/src/session";
   import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
 
   import { ValidationStatus } from "ui/src/validation";
   import {
+    theme,
     themeOptions,
-    uiFontOptions,
+    codeFont,
     codeFontOptions,
-  } from "ui/src/settings";
-
-  import {
-    primaryColorStore,
-    updatePrimaryColor,
+    uiFont,
+    uiFontOptions,
+    primaryColor,
     primaryColorOptions,
-  } from "./SettingsScreen.svelte";
+    primaryColorHex,
+  } from "ui/src/appearance";
 
   import {
     Avatar,
     Button,
     Checkbox,
     Copyable,
+    CopyableIdentifier,
     Dropdown,
     FollowToggle,
     Icon,
-    Identifier,
+    IdentifierLink,
     Notification,
     PasswordInput,
     SegmentedControl,
@@ -97,27 +97,6 @@
       })
     ),
   ];
-
-  const settingsStore = session.settings;
-
-  function updateTheme(event: CustomEvent): void {
-    session.updateAppearance({
-      ...$settingsStore.appearance,
-      theme: event.detail,
-    });
-  }
-
-  const updateUIFont = (event: CustomEvent) =>
-    session.updateAppearance({
-      ...$settingsStore.appearance,
-      uiFont: event.detail,
-    });
-
-  const updateCodeFont = (event: CustomEvent) =>
-    session.updateAppearance({
-      ...$settingsStore.appearance,
-      codeFont: event.detail,
-    });
 
   function onKeydown(event: KeyboardEvent) {
     if (event.target === document.body && event.code === "Escape") {
@@ -212,30 +191,33 @@
         <Tooltip value="Theme" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$settingsStore.appearance.theme}
+            active={$theme}
             options={themeOptions}
-            on:select={updateTheme} />
+            on:select={ev => theme.set(ev.detail)} />
+        </Tooltip>
+        <Tooltip value="Primary color" position="bottom">
+          <SegmentedControl
+            style="background-color: var(--color-background); margin-right: 2rem;"
+            active={$primaryColor}
+            options={primaryColorOptions}
+            on:select={ev => primaryColor.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="UI font" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$settingsStore.appearance.uiFont}
+            active={$uiFont}
             options={uiFontOptions}
-            on:select={updateUIFont} />
+            on:select={ev => uiFont.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="Code font" position="bottom">
           <SegmentedControl
             style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$settingsStore.appearance.codeFont}
+            active={$codeFont}
             options={codeFontOptions}
-            on:select={updateCodeFont} />
+            on:select={ev => codeFont.set(ev.detail)} />
         </Tooltip>
-        <Tooltip value="Font color" position="bottom">
-          <SegmentedControl
-            style="background-color: var(--color-background);"
-            active={$primaryColorStore}
-            options={primaryColorOptions}
-            on:select={updatePrimaryColor} />
+        <Tooltip value="Custom font color" position="bottom">
+          <input type="color" bind:value={$primaryColorHex} />
         </Tooltip>
       </div>
       <h1 style="margin-bottom: 92px">Primitives</h1>
@@ -766,6 +748,90 @@
         </div>
       </Section>
 
+      <Section
+        title="Copyable identifiers"
+        subTitle="Various Radicle and Ethereum identifiers that can be copied to clipboard">
+        <div class="swatch">
+          <CopyableIdentifier
+            kind="radicleId"
+            value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
+            showIcon={false} />
+        </div>
+
+        <div class="swatch">
+          <CopyableIdentifier
+            style="margin-right: 1rem;"
+            kind="radicleId"
+            value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
+
+          <CopyableIdentifier
+            style="margin-right: 1rem;"
+            kind="deviceId"
+            value="hyyo6u8rhnuswory4c6symx471yseke74oq1myfesoig7zggcixejy" />
+
+          <CopyableIdentifier
+            style="margin-right: 1rem;"
+            kind="ethAddress"
+            value="0xA66A5686D5c3A42C0b6c76FEd05e58C6bc851E9f" />
+        </div>
+
+        <div class="swatch">
+          <CopyableIdentifier
+            kind="seedAddress"
+            value="hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345" />
+        </div>
+
+        <div class="swatch">
+          <CopyableIdentifier
+            kind="commitHash"
+            value="20436154e1118b39f1b2bf3c049ab040ca910846" />
+        </div>
+      </Section>
+
+      <Section
+        title="Identifier links"
+        subTitle="Various Radicle and Ethereum identifiers that link within Upstream or to external resources">
+        <div class="swatch">
+          <IdentifierLink
+            params={{
+              type: "transactionHash",
+              url: "https://rinkeby.etherscan.io/tx/0xcf23b34a9f09245226c19114af534ee094b028922a1280003226fd98acb410ea",
+              hash: "0xcf23b34a9f09245226c19114af534ee094b028922a1280003226fd98acb410ea",
+            }} />
+        </div>
+        <div class="swatch">
+          <IdentifierLink
+            params={{
+              type: "commitHash",
+              hash: "20436154e1118b39f1b2bf3c049ab040ca910846",
+              onClick: () => {},
+            }} />
+        </div>
+      </Section>
+
+      <Section title="Copyable" subTitle="Copy to clipboard">
+        <div class="swatch">
+          <Copyable name="command" clipboardContent="git push rad">
+            <pre
+              style="typo-text-mono">
+              git push rad
+            </pre>
+          </Copyable>
+        </div>
+
+        <div class="swatch">
+          <Copyable
+            name="WalletConnect link"
+            clipboardContent="wc:ca1716bb-aeb0-4420-aee9-8ee15e577740@1?bridge=https%3A%2F%2Fe.bridge.walletconnect.org&key=199be30aedc8fff6e19019ea3a7a9a7f998a499b7f50ba89f06bf918fc2dab39">
+            wc:ca171…dab39
+          </Copyable>
+        </div>
+
+        <div class="swatch">
+          <Copyable>when no props are supplied</Copyable>
+        </div>
+      </Section>
+
       <Section title="Misc" subTitle="Everything else">
         <div class="swatch">
           <ThreeDotsMenu
@@ -807,51 +873,9 @@
 
         <div class="swatch">
           <FollowToggle disabled style="margin-right: 1rem;" />
-
           <FollowToggle disabled style="margin-right: 1rem;" following />
           <FollowToggle style="margin-right: 1rem;" />
-
           <FollowToggle following />
-        </div>
-
-        <div class="swatch" />
-
-        <div class="swatch">
-          <Copyable name="command" clipboardContent="git push rad">
-            <pre style="typo-text-mono">
-            git push rad
-          </pre>
-          </Copyable>
-        </div>
-
-        <div class="swatch">
-          <Identifier
-            kind="radicleId"
-            value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
-            showIcon={false} />
-        </div>
-
-        <div class="swatch">
-          <Identifier
-            style="margin-right: 1rem;"
-            kind="radicleId"
-            value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
-
-          <Identifier
-            style="margin-right: 1rem;"
-            kind="deviceId"
-            value="hyyo6u8rhnuswory4c6symx471yseke74oq1myfesoig7zggcixejy" />
-
-          <Identifier
-            style="margin-right: 1rem;"
-            kind="ethAddress"
-            value="0xA66A5686D5c3A42C0b6c76FEd05e58C6bc851E9f" />
-        </div>
-
-        <div class="swatch">
-          <Identifier
-            kind="seedAddress"
-            value="hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345" />
         </div>
       </Section>
     </div>

@@ -28,7 +28,7 @@ export const fetchProjects = (urn: string): void => {
 
 export const fetchUser = (urn: string): void => {
   proxy.client
-    .remoteIdentityGet(urn)
+    .personGet(urn)
     .then(userStore.success)
     .catch(err => userStore.error(error.fromUnknown(err)));
 };

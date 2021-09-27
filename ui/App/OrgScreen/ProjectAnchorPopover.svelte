@@ -10,11 +10,16 @@
 
   import type * as project from "ui/src/project";
 
+  import * as org from "ui/src/org";
   import * as router from "ui/src/router";
-  import * as format from "ui/src/format";
 
-  import { Avatar, Hoverable, Icon, Identifier } from "ui/DesignSystem";
-  import TransactionHash from "ui/App/TransactionHash.svelte";
+  import {
+    Avatar,
+    CopyableIdentifier,
+    Hoverable,
+    Icon,
+    IdentifierLink,
+  } from "ui/DesignSystem";
 
   export let anchor: project.Anchor;
   export let replicated: boolean = false;
@@ -108,7 +113,7 @@
                 {anchor.registration?.domain}
               </p>
             {:else}
-              <Identifier
+              <CopyableIdentifier
                 kind="ethAddress"
                 value={anchor.orgAddress}
                 showIcon={false} />
@@ -130,7 +135,12 @@
             <p class="typo-text-bold" style="margin-right: 0.5rem;">
               Transaction hash
             </p>
-            <TransactionHash hash={anchor.transactionId} />
+            <IdentifierLink
+              params={{
+                type: "transactionHash",
+                url: org.etherscanUrl(anchor.transactionId),
+                hash: anchor.transactionId,
+              }} />
           </div>
         {/if}
         <div class="meta">
@@ -139,11 +149,14 @@
             Commit hash
           </p>
           {#if replicated}
-            <span class="typo-link" on:click={openCommit}>
-              {format.shortCommitHash(anchor.commitHash)}
-            </span>
+            <IdentifierLink
+              params={{
+                type: "commitHash",
+                hash: anchor.commitHash,
+                onClick: openCommit,
+              }} />
           {:else}
-            <Identifier
+            <CopyableIdentifier
               style="display: inline-block;"
               kind="commitHash"
               value={anchor.commitHash} />

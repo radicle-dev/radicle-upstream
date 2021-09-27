@@ -12,7 +12,6 @@ import type * as identity from "./identity";
 import * as ipc from "./ipc";
 import * as remote from "./remote";
 import * as source from "./source";
-import type { Urn } from "./urn";
 import * as validation from "./validation";
 import * as proxy from "./proxy";
 import {
@@ -296,7 +295,7 @@ export const repositoryPathValidationStore = (
 };
 
 // Checks if the provided user is part of the maintainer list of the project.
-export const isMaintainer = (userUrn: Urn, project: Project): boolean => {
+export const isMaintainer = (userUrn: string, project: Project): boolean => {
   return project.metadata.maintainers.includes(userUrn);
 };
 

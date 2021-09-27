@@ -51,7 +51,7 @@
     } finally {
       registrationNotification.remove();
     }
-    ensRegistrar.clearCommitment();
+    ensRegistrar.commitmentStore.set(null);
 
     transaction.add(transaction.registerEnsName(registrationTx));
 

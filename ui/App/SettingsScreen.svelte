@@ -5,68 +5,35 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript" context="module">
-  import * as svelteStore from "svelte/store";
-  import persistentStore from "svelte-persistent-store/dist";
-
-  export type PrimaryColor = "blue" | "pink" | "orange" | "hex";
-  export const primaryColorStore = persistentStore.local.writable<PrimaryColor>(
-    "radicle.settings.primaryColor",
-    "blue"
-  );
-
-  export const updatePrimaryColor = (event: CustomEvent): void => {
-    primaryColorStore.set(event.detail);
-  };
-
-  export const colorPickerChange = (): void => {
-    primaryColorStore.set("hex");
-  };
-
-  export const primaryColorOptions = [
-    { title: "Blue", value: "blue" },
-    { title: "Pink", value: "pink" },
-    { title: "Orange", value: "orange" },
-  ];
-</script>
-
 <script lang="typescript">
+  import * as svelteStore from "svelte/store";
+
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import {
+    theme,
     themeOptions,
-    uiFontOptions,
+    codeFont,
     codeFontOptions,
-  } from "ui/src/settings";
+    uiFont,
+    uiFontOptions,
+    primaryColor,
+    primaryColorOptions,
+    primaryColorHex,
+  } from "ui/src/appearance";
   import { updateChecker } from "ui/src/updateChecker";
   import * as ethereum from "ui/src/ethereum";
   import * as ipc from "ui/src/ipc";
   import * as modal from "ui/src/modal";
   import * as Session from "ui/src/session";
 
-  import { Button, Identifier, SegmentedControl } from "ui/DesignSystem";
+  import {
+    Button,
+    CopyableIdentifier,
+    SegmentedControl,
+  } from "ui/DesignSystem";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
-
-  const settingsStore = Session.settings;
-
-  const updateTheme = (event: CustomEvent) =>
-    Session.updateAppearance({
-      ...$settingsStore.appearance,
-      theme: event.detail,
-    });
-
-  const updateUIFont = (event: CustomEvent) =>
-    Session.updateAppearance({
-      ...$settingsStore.appearance,
-      uiFont: event.detail,
-    });
-
-  const updateCodeFont = (event: CustomEvent) =>
-    Session.updateAppearance({
-      ...$settingsStore.appearance,
-      codeFont: event.detail,
-    });
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -118,45 +85,6 @@
   ];
 
   const session = Session.unsealed();
-
-  let colorHex: string = "";
-
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : {
-          r: 21,
-          g: 21,
-          b: 21,
-        };
-  };
-
-  $: if ($primaryColorStore === "hex") {
-    const colorRgb = hexToRgb(colorHex);
-
-    const element = document.createElement("style");
-    // Append style element to head
-    document.head.appendChild(element);
-    // Reference to the stylesheet
-    // eslint-disable-next-line
-    const sheet = element.sheet!;
-    let styles = '[data-primarycolor="hex"] {';
-    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},1`;
-    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.17`;
-    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.37`;
-    styles += `--color-primary: rgba(${colorRgb.r},${colorRgb.g},${colorRgb.b},0.87`;
-    styles += "}";
-
-    // Add the first CSS rule to the stylesheet
-    sheet.insertRule(styles, 0);
-  }
-
-  $: console.log($primaryColorStore);
 </script>
 
 <style>
@@ -232,7 +160,9 @@
               >Learn more about managing devices</a>
           </p>
           <div class="action">
-            <Identifier value={session.identity.peerId} kind="deviceId" />
+            <CopyableIdentifier
+              value={session.identity.peerId}
+              kind="deviceId" />
           </div>
         </div>
       </section>
@@ -251,9 +181,9 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settingsStore.appearance.theme}
+              active={$theme}
               options={themeOptions}
-              on:select={updateTheme} />
+              on:select={ev => theme.set(ev.detail)} />
           </div>
         </div>
         <div class="section-item border">
@@ -266,9 +196,9 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settingsStore.appearance.uiFont}
+              active={$uiFont}
               options={uiFontOptions}
-              on:select={updateUIFont} />
+              on:select={ev => uiFont.set(ev.detail)} />
           </div>
         </div>
         <div class="section-item">
@@ -281,9 +211,9 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$settingsStore.appearance.codeFont}
+              active={$codeFont}
               options={codeFontOptions}
-              on:select={updateCodeFont} />
+              on:select={ev => codeFont.set(ev.detail)} />
           </div>
         </div>
         <div class="section-item">
@@ -295,13 +225,24 @@
           </div>
           <div class="action">
             <SegmentedControl
-              active={$primaryColorStore}
+              active={$primaryColor}
               options={primaryColorOptions}
-              on:select={updatePrimaryColor} />
-            <input
-              type="color"
-              bind:value={colorHex}
-              on:change={colorPickerChange} />
+              on:select={ev => primaryColor.set(ev.detail)} />
+          </div>
+        </div>
+        <div class="section-item">
+          <div>
+            <p class="typo-text-bold">Color</p>
+            <p style="color: var(--color-foreground-level-6);">
+              This is the primary color you'll see through the app.
+            </p>
+          </div>
+          <div class="action">
+            <SegmentedControl
+              active={$primaryColor}
+              options={primaryColorOptions}
+              on:select={ev => primaryColor.set(ev.detail)} />
+            <input type="color" bind:value={$primaryColorHex} />
           </div>
         </div>
       </section>

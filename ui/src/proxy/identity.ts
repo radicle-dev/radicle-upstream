@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import * as zod from "zod";
+import type { Fetcher, RequestOptions } from "./fetcher";
 
 export interface RemoteIdentity {
   metadata: Metadata;
@@ -18,6 +19,20 @@ export interface Identity {
   peerId: string;
 }
 
+export const identitySchema = zod.object({
+  metadata: zod.object({
+    handle: zod.string(),
+    ethereum: zod
+      .object({
+        address: zod.string(),
+        expiration: zod.string(),
+      })
+      .nullable(),
+  }),
+  urn: zod.string(),
+  peerId: zod.string(),
+});
+
 export interface Metadata {
   handle: string;
   ethereum: Ethereum | null;
@@ -25,7 +40,6 @@ export interface Metadata {
 
 // A claim over an Ethereum Address
 export interface Ethereum {
-  // TODO(nuno): make type-safe?
   address: string;
   expiration: string;
 }
@@ -44,16 +58,48 @@ export const remoteIdentitySchema = zod.object({
   peerIds: zod.array(zod.string()),
 });
 
-export const identitySchema = zod.object({
-  metadata: zod.object({
-    handle: zod.string(),
-    ethereum: zod
-      .object({
-        address: zod.string(),
-        expiration: zod.string(),
-      })
-      .nullable(),
-  }),
-  urn: zod.string(),
-  peerId: zod.string(),
-});
+export class Client {
+  private fetcher: Fetcher;
+
+  constructor(fetcher: Fetcher) {
+    this.fetcher = fetcher;
+  }
+
+  async create(
+    params: { handle: string },
+    options?: RequestOptions
+  ): Promise<Identity> {
+    return this.fetcher.fetchOk(
+      {
+        method: "POST",
+        path: "identities",
+        body: params,
+        options,
+      },
+      identitySchema
+    );
+  }
+
+  async get(urn: string, options?: RequestOptions): Promise<Identity> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `identities/${urn}`,
+        options,
+      },
+      identitySchema
+    );
+  }
+
+  async update(params: Metadata, options?: RequestOptions): Promise<Identity> {
+    return this.fetcher.fetchOk(
+      {
+        method: "PUT",
+        path: "identities",
+        body: params,
+        options,
+      },
+      identitySchema
+    );
+  }
+}

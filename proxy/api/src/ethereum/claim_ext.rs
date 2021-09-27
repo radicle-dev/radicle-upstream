@@ -10,7 +10,7 @@
 use crate::ethereum::address::Address;
 use chrono::{DateTime, Utc};
 use lazy_static::lazy_static;
-use radicle_daemon::identities::payload::HasNamespace;
+use link_identities::payload::HasNamespace;
 use serde::{Deserialize, Serialize};
 use url::Url;
 

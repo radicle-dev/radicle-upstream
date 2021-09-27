@@ -12,7 +12,7 @@ use std::{collections::HashSet, convert::TryFrom, ops::Deref};
 use serde::{Deserialize, Serialize};
 
 use link_crypto::BoxedSigner;
-use radicle_daemon::{net, project, project::peer, state, Person, Project as RadProject, Urn};
+use link_identities::{git::Urn, Person, Project as LinkProject};
 use radicle_source::surf::vcs::git::Stats;
 
 use crate::{browser, error, identity};
@@ -31,11 +31,11 @@ pub struct Metadata {
     pub maintainers: HashSet<Urn>,
 }
 
-impl TryFrom<RadProject> for Metadata {
+impl TryFrom<LinkProject> for Metadata {
     type Error = error::Error;
 
     #[allow(clippy::redundant_closure_for_method_calls)]
-    fn try_from(project: RadProject) -> Result<Self, Self::Error> {
+    fn try_from(project: LinkProject) -> Result<Self, Self::Error> {
         let subject = project.subject();
         // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their
         // PublicKey. Should we display these?
@@ -96,12 +96,12 @@ impl Partial {
 }
 
 /// Construct a Project from its metadata and stats
-impl TryFrom<RadProject> for Partial {
+impl TryFrom<LinkProject> for Partial {
     type Error = error::Error;
 
-    /// Create a `Project` given a [`RadProject`] and the [`Stats`]
+    /// Create a `Project` given a [`LinkProject`] and the [`Stats`]
     /// for the repository.
-    fn try_from(project: RadProject) -> Result<Self, Self::Error> {
+    fn try_from(project: LinkProject) -> Result<Self, Self::Error> {
         let urn = project.urn();
         let metadata = Metadata::try_from(project)?;
 
@@ -114,12 +114,12 @@ impl TryFrom<RadProject> for Partial {
 }
 
 /// Construct a Project from its metadata and stats
-impl TryFrom<(RadProject, Stats)> for Full {
+impl TryFrom<(LinkProject, Stats)> for Full {
     type Error = error::Error;
 
-    /// Create a `Project` given a [`RadProject`] and the [`Stats`]
+    /// Create a `Project` given a [`LinkProject`] and the [`Stats`]
     /// for the repository.
-    fn try_from((project, stats): (RadProject, Stats)) -> Result<Self, Self::Error> {
+    fn try_from((project, stats): (LinkProject, Stats)) -> Result<Self, Self::Error> {
         let urn = project.urn();
         let metadata = Metadata::try_from(project)?;
 
@@ -133,18 +133,26 @@ impl TryFrom<(RadProject, Stats)> for Full {
 
 /// Codified relation in form of roles and availability of project views.
 #[derive(Debug, Clone, Serialize)]
-pub struct Peer(peer::Peer<peer::Status<identity::Identity>>);
+pub struct Peer(
+    radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Status<identity::Identity>>,
+);
 
 impl Deref for Peer {
-    type Target = peer::Peer<peer::Status<identity::Identity>>;
+    type Target = radicle_daemon::project::peer::Peer<
+        radicle_daemon::project::peer::Status<identity::Identity>,
+    >;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl From<peer::Peer<peer::Status<Person>>> for Peer {
-    fn from(peer: peer::Peer<peer::Status<Person>>) -> Self {
+impl From<radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Status<Person>>>
+    for Peer
+{
+    fn from(
+        peer: radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Status<Person>>,
+    ) -> Self {
         let peer_id = peer.peer_id();
         Self(peer.map(|status| status.map(|user| (peer_id, user).into())))
     }
@@ -210,16 +218,23 @@ impl Projects {
     ///   * We couldn't get the list of projects
     ///   * We couldn't inspect the `signed_refs` of the project
     ///   * We couldn't get stats for a project
-    pub async fn list(peer: &net::peer::Peer<BoxedSigner>) -> Result<Self, error::Error> {
+    pub async fn list(
+        peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
+    ) -> Result<Self, error::Error> {
         let mut projects = Self {
             tracked: vec![],
             contributed: vec![],
             failures: vec![],
         };
 
-        for project in state::list_projects(peer).await? {
+        for project in radicle_daemon::state::list_projects(peer).await? {
             let project = Project::try_from(project)?;
-            let default_branch = match state::find_default_branch(peer, project.urn.clone()).await {
+            let default_branch = match radicle_daemon::state::find_default_branch(
+                peer,
+                project.urn.clone(),
+            )
+            .await
+            {
                 Err(err) => {
                     tracing::warn!(project_urn = %project.urn, ?err, "cannot find default branch");
                     projects.failures.push(Failure::DefaultBranch(project));
@@ -241,7 +256,7 @@ impl Projects {
 
             let project = project.fulfill(stats);
 
-            let refs = match state::load_refs(peer, project.urn.clone()).await {
+            let refs = match radicle_daemon::state::load_refs(peer, project.urn.clone()).await {
                 Err(err) => {
                     tracing::warn!(project_urn = %project.urn, ?err, "cannot load refs");
                     projects.failures.push(Failure::SignedRefs(project));
@@ -329,14 +344,14 @@ impl Iterator for IntoIter {
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
 pub async fn get(
-    peer: &net::peer::Peer<BoxedSigner>,
+    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     project_urn: Urn,
 ) -> Result<Full, error::Error> {
-    let project = state::get_project(peer, project_urn.clone())
+    let project = radicle_daemon::state::get_project(peer, project_urn.clone())
         .await?
         .ok_or(crate::error::Error::ProjectNotFound)?;
 
-    let branch = state::find_default_branch(peer, project_urn.clone()).await?;
+    let branch = radicle_daemon::state::find_default_branch(peer, project_urn.clone()).await?;
     let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
 
     Full::try_from((project, project_stats))
@@ -358,22 +373,26 @@ pub async fn get(
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
 pub async fn list_for_user(
-    peer: &net::peer::Peer<BoxedSigner>,
+    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     user: &Urn,
 ) -> Result<Vec<Full>, error::Error> {
     let mut projects = vec![];
 
-    for project in state::list_projects(peer).await? {
-        let tracked = state::tracked(peer, project.urn())
+    for project in radicle_daemon::state::list_projects(peer).await? {
+        let tracked = radicle_daemon::state::tracked(peer, project.urn())
             .await?
             .into_iter()
-            .filter_map(project::Peer::replicated_remote)
+            .filter_map(radicle_daemon::project::Peer::replicated_remote)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer_id, _)) = tracked {
             let subject = project.subject();
-            let branch =
-                state::get_branch(peer, project.urn(), peer_id, subject.default_branch.clone())
-                    .await?;
+            let branch = radicle_daemon::state::get_branch(
+                peer,
+                project.urn(),
+                peer_id,
+                subject.default_branch.clone(),
+            )
+            .await?;
             let stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
             let full = Full::try_from((project, stats))?;
 

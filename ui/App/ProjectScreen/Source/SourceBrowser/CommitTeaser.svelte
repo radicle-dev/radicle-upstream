@@ -10,9 +10,8 @@
 
   import { formatCommitTime } from "ui/src/source";
   import type { CommitHeader } from "ui/src/source";
-  import * as format from "ui/src/format";
 
-  import Icon from "ui/DesignSystem/Icon";
+  import { Icon, format } from "ui/DesignSystem";
 
   export let commit: CommitHeader;
   export let style: string | undefined = undefined;

@@ -167,7 +167,7 @@ export const onboardUser = (
 ): Cypress.Chainable<void> => {
   return cy.then(async () => {
     await proxyClient.keyStoreCreate({ passphrase: "radicle-upstream" });
-    await proxyClient.identityCreate({ handle });
+    await proxyClient.identity.create({ handle });
   });
 };
 

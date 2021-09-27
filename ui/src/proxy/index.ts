@@ -27,10 +27,6 @@ export const sessionSchema: zod.ZodSchema<Session> = zod.object({
   settings: settings.settingsSchema,
 });
 
-export interface IdentityCreateParams {
-  handle: string;
-}
-
 interface KeyStoreUnsealParams {
   passphrase: string;
 }
@@ -45,12 +41,14 @@ export class Client {
   public control: control.Control;
   public project: project.Client;
   public source: source.Client;
+  public identity: identity.Client;
 
   constructor(baseUrl: string) {
     this.fetcher = new Fetcher(baseUrl);
     this.control = new control.Control(this.fetcher);
     this.project = new project.Client(this.fetcher);
     this.source = new source.Client(this.fetcher);
+    this.identity = new identity.Client(this.fetcher);
   }
 
   async sessionGet(options?: RequestOptions): Promise<Session> {
@@ -76,36 +74,7 @@ export class Client {
     });
   }
 
-  async identityCreate(
-    params: IdentityCreateParams,
-    options?: RequestOptions
-  ): Promise<identity.Identity> {
-    return this.fetcher.fetchOk(
-      {
-        method: "POST",
-        path: "identities",
-        body: params,
-        options,
-      },
-      identity.identitySchema
-    );
-  }
-
-  async identityGet(
-    urn: string,
-    options?: RequestOptions
-  ): Promise<identity.Identity> {
-    return this.fetcher.fetchOk(
-      {
-        method: "GET",
-        path: `identities/${urn}`,
-        options,
-      },
-      identity.identitySchema
-    );
-  }
-
-  async remoteIdentityGet(
+  async personGet(
     urn: string,
     options?: RequestOptions
   ): Promise<identity.RemoteIdentity> {
@@ -116,21 +85,6 @@ export class Client {
         options,
       },
       identity.remoteIdentitySchema
-    );
-  }
-
-  async identityUpdate(
-    params: identity.Metadata,
-    options?: RequestOptions
-  ): Promise<identity.Identity> {
-    return this.fetcher.fetchOk(
-      {
-        method: "PUT",
-        path: "identities",
-        body: params,
-        options,
-      },
-      identity.identitySchema
     );
   }
 
@@ -154,6 +108,26 @@ export class Client {
       method: "POST",
       path: "keystore",
       body: params,
+      options,
+    });
+  }
+
+  async seedsGet(options?: RequestOptions): Promise<string[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: "session/seeds",
+        options,
+      },
+      zod.array(zod.string())
+    );
+  }
+
+  async seedsPut(seeds: string[], options?: RequestOptions): Promise<void> {
+    return this.fetcher.fetchOkNoContent({
+      method: "PUT",
+      path: "session/seeds",
+      body: seeds,
       options,
     });
   }

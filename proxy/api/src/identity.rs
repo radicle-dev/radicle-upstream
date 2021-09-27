@@ -10,10 +10,11 @@ use chrono::{DateTime, Utc};
 
 use serde::{Deserialize, Serialize};
 
-use link_crypto::BoxedSigner;
-use radicle_daemon::{
-    identities::payload::{self, ExtError, PersonPayload},
-    net, state, PeerId, Person as DaemonPerson, Urn,
+use link_crypto::{BoxedSigner, PeerId};
+use link_identities::{
+    git::Urn,
+    payload::{self, ExtError, PersonPayload},
+    Person as LinkPerson,
 };
 
 use crate::{
@@ -35,8 +36,8 @@ pub struct Identity {
     pub metadata: Metadata,
 }
 
-impl From<(PeerId, DaemonPerson)> for Identity {
-    fn from((peer_id, user): (PeerId, DaemonPerson)) -> Self {
+impl From<(PeerId, LinkPerson)> for Identity {
+    fn from((peer_id, user): (PeerId, LinkPerson)) -> Self {
         let identity = Person::from(user);
         Self {
             peer_id,
@@ -58,8 +59,8 @@ pub struct Person {
     pub peer_ids: Vec<PeerId>,
 }
 
-impl From<DaemonPerson> for Person {
-    fn from(person: DaemonPerson) -> Self {
+impl From<LinkPerson> for Person {
+    fn from(person: LinkPerson) -> Self {
         let urn = person.urn();
         let handle = person.subject().name.to_string();
         let peer_ids = person
@@ -153,10 +154,10 @@ impl From<Ethereum> for EthereumClaimExtV1 {
 ///
 /// # Errors
 pub async fn create(
-    peer: &net::peer::Peer<BoxedSigner>,
+    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let user = state::init_owner(peer, metadata).await?;
+    let user = radicle_daemon::state::init_owner(peer, metadata).await?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
@@ -164,19 +165,20 @@ pub async fn create(
 ///
 /// # Errors
 pub async fn update(
-    peer: &net::peer::Peer<BoxedSigner>,
+    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let current_payload = state::default_owner(peer)
+    let current_payload = radicle_daemon::state::default_owner(peer)
         .await?
-        .ok_or(state::Error::MissingOwner)?
+        .ok_or(radicle_daemon::state::Error::MissingOwner)?
         .payload()
         .clone();
-    let new_payload = update_payload(current_payload, metadata).map_err(state::Error::from)?;
-    state::update_owner_payload(peer, new_payload).await?;
-    let user = state::default_owner(peer)
+    let new_payload =
+        update_payload(current_payload, metadata).map_err(radicle_daemon::state::Error::from)?;
+    radicle_daemon::state::update_owner_payload(peer, new_payload).await?;
+    let user = radicle_daemon::state::default_owner(peer)
         .await?
-        .ok_or(state::Error::MissingOwner)?;
+        .ok_or(radicle_daemon::state::Error::MissingOwner)?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
@@ -186,10 +188,10 @@ pub async fn update(
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub async fn get(
-    peer: &net::peer::Peer<BoxedSigner>,
+    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     id: Urn,
 ) -> Result<Option<Identity>, error::Error> {
-    match state::get_local(peer, id).await? {
+    match radicle_daemon::state::get_local(peer, id).await? {
         Some(user) => Ok(Some(
             (peer.peer_id(), user.into_inner().into_inner()).into(),
         )),
@@ -203,9 +205,9 @@ pub async fn get(
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
 pub async fn get_remote(
-    peer: &net::peer::Peer<BoxedSigner>,
+    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     id: Urn,
 ) -> Result<Option<Person>, error::Error> {
-    let user = state::get_user(peer, id).await?;
+    let user = radicle_daemon::state::get_user(peer, id).await?;
     Ok(user.map(Person::from))
 }

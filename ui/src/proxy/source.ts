@@ -108,7 +108,7 @@ interface BlobGetParams {
   peerId?: string;
   path: string;
   revision: RevisionSelector;
-  highlight?: boolean;
+  highlight?: "dark" | "light" | "h4x0r";
 }
 
 export class Client {

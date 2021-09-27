@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { derived, get, writable, Readable } from "svelte/store";
+import * as svelteStore from "svelte/store";
 
 import * as error from "./error";
 
@@ -35,17 +35,17 @@ export const is = <T>(data: Data<T>, status: Status): boolean => {
 // it only accepts data that conforms to the `RemoteData` interface
 //
 // a Readable store of Remote Data based on type T
-export interface Store<T> extends Readable<Data<T>> {
+export interface Store<T> extends svelteStore.Readable<Data<T>> {
   is: (status: Status) => boolean;
   loading: () => void;
   success: (response: T) => void;
   error: (error: error.Error) => void;
-  readable: Readable<Data<T>>;
+  readable: svelteStore.Readable<Data<T>>;
   // Try and unwrap the underlying store's data value.
   // Returns the data of type T if the store's data
   // is in `SuccessState`, undefined otherwise.
   unwrap: () => T | undefined;
-  start: (start: StartStopNotifier<Data<T>>) => void;
+  start: (start: svelteStore.StartStopNotifier<Data<T>>) => void;
   reset: () => void;
 }
 
@@ -58,15 +58,10 @@ interface Update<T> {
   (status: Status.Error, payload: error.Error): void;
 }
 
-declare type Subscriber<T> = (value: T) => void;
-declare type Unsubscriber = () => void;
-declare type StartStopNotifier<T> = (set: Subscriber<T>) => Unsubscriber | void;
-
-// TODO(sos): add @param docs here, consider making generic type T required
 export const createStore = <T>(): Store<T> => {
-  let starter: StartStopNotifier<Data<T>> | null;
+  let starter: svelteStore.StartStopNotifier<Data<T>> | null;
   const initialState = { status: Status.NotAsked } as Data<T>;
-  const internalStore = writable(initialState, set => {
+  const internalStore = svelteStore.writable(initialState, set => {
     if (starter) {
       return starter(set);
     } else {
@@ -104,12 +99,12 @@ export const createStore = <T>(): Store<T> => {
   const resetInternalStore = () => update(() => ({ status: Status.NotAsked }));
 
   const is = (status: Status): boolean => {
-    return get(internalStore).status === status;
+    return svelteStore.get(internalStore).status === status;
   };
 
   const unwrap = (): T | undefined => {
     return is(Status.Success)
-      ? (get(internalStore) as SuccessState).data
+      ? (svelteStore.get(internalStore) as SuccessState).data
       : undefined;
   };
 
@@ -124,9 +119,9 @@ export const createStore = <T>(): Store<T> => {
         updateInternalStore(Status.Error, err);
       }
     },
-    readable: derived(internalStore, $store => $store),
+    readable: svelteStore.derived(internalStore, $store => $store),
     unwrap,
-    start: (start: StartStopNotifier<Data<T>>): void => {
+    start: (start: svelteStore.StartStopNotifier<Data<T>>): void => {
       starter = start;
     },
     reset: resetInternalStore,
@@ -134,7 +129,7 @@ export const createStore = <T>(): Store<T> => {
 };
 
 export const fetch = <T>(store: Store<T>, req: Promise<T>): void => {
-  if (get(store).status === Status.NotAsked) {
+  if (svelteStore.get(store).status === Status.NotAsked) {
     store.loading();
   }
 

@@ -8,7 +8,6 @@
 <script lang="typescript">
   import { createEventDispatcher } from "svelte";
 
-  import type { Urn } from "ui/src/urn";
   import type { User } from "ui/src/project";
 
   import { PeerType, PeerRole } from "ui/src/project";
@@ -16,13 +15,13 @@
   import {
     Avatar,
     Badge,
+    CopyableIdentifier,
     FollowToggle,
-    Identifier,
     Tooltip,
   } from "ui/DesignSystem";
 
   export let peer: User;
-  export let projectUrn: Urn;
+  export let projectUrn: string;
 
   const dispatch = createEventDispatcher();
 </script>
@@ -65,7 +64,7 @@
         <Badge style="margin-left: 0.5rem" variant="you" />
       {/if}
     </div>
-    <Identifier
+    <CopyableIdentifier
       value={peer.peerId}
       kind="deviceId"
       style="margin-top: 0.5rem;" />

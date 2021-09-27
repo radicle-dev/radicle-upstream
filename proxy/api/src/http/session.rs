@@ -13,6 +13,8 @@ use crate::{context, http};
 /// Combination of all session filters.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     get_filter(ctx.clone())
+        .or(get_seeds_filter(ctx.clone()))
+        .or(put_seeds_filter(ctx.clone()))
         .or(update_settings_filter(ctx))
         .boxed()
 }
@@ -37,6 +39,29 @@ fn update_settings_filter(
         .and(http::with_context_unsealed(ctx))
         .and(warp::body::json())
         .and_then(handler::update_settings)
+}
+
+/// `GET /seeds`
+fn get_seeds_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("seeds")
+        .and(path::end())
+        .and(warp::get())
+        .and(http::with_context_unsealed(ctx))
+        .and_then(handler::get_seeds)
+}
+
+/// `PUT /seeds`
+fn put_seeds_filter(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    path("seeds")
+        .and(path::end())
+        .and(warp::put())
+        .and(http::with_context_unsealed(ctx))
+        .and(warp::body::json())
+        .and_then(handler::update_seeds)
 }
 
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
@@ -65,6 +90,26 @@ mod handler {
         session::set_settings(&ctx.store, settings)?;
 
         Ok(reply::with_status(reply(), StatusCode::NO_CONTENT))
+    }
+
+    #[allow(clippy::unused_async)]
+    pub async fn get_seeds(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+        let seeds = match session::get_current(&ctx.store)? {
+            None => vec![],
+            Some(session) => session.settings.coco.seeds,
+        };
+
+        Ok(reply::json(&seeds))
+    }
+
+    #[allow(clippy::unused_async)]
+    pub async fn update_seeds(
+        ctx: context::Unsealed,
+        seeds: Vec<String>,
+    ) -> Result<impl Reply, Rejection> {
+        session::update_seeds(&ctx.store, seeds)?;
+
+        Ok(warp::reply::with_status(reply(), StatusCode::NO_CONTENT))
     }
 }
 

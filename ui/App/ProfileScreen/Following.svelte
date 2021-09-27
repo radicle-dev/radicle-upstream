@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Urn } from "ui/src/urn";
   import type { Project } from "ui/src/project";
 
   import { fade } from "svelte/transition";
@@ -19,10 +18,10 @@
 
   import {
     Button,
+    CopyableIdentifier,
     FollowToggle,
     Hoverable,
     Icon,
-    Identifier,
     List,
   } from "ui/DesignSystem";
 
@@ -33,7 +32,7 @@
 
   const FADE_DURATION = 200;
   const session = Session.unsealed();
-  const onCancel = (urn: Urn): void => {
+  const onCancel = (urn: string): void => {
     proxy.client.project.requestCancel(urn).then(fetchFollowing);
   };
   const onSelect = ({ detail: project }: { detail: Project }) => {
@@ -104,7 +103,7 @@
               data-cy="undiscovered-project"
               class="undiscovered-project"
               out:fade|local={{ duration: FADE_DURATION }}>
-              <Identifier value={request.urn} kind="radicleId" />
+              <CopyableIdentifier value={request.urn} kind="radicleId" />
               {#if hover}
                 <div transition:fade={{ duration: FADE_DURATION }}>
                   <FollowToggle

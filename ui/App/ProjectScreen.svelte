@@ -7,14 +7,12 @@
 -->
 <script lang="typescript">
   import type { User, Project } from "ui/src/project";
-  import type { Urn } from "ui/src/urn";
 
   import { onDestroy } from "svelte";
 
   import { copyToClipboard } from "ui/src/ipc";
   import { isMaintainer, isContributor } from "ui/src/project";
 
-  import * as format from "ui/src/format";
   import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
@@ -28,7 +26,7 @@
     store,
   } from "ui/src/screen/project";
 
-  import { Button, Icon, ThreeDotsMenu } from "ui/DesignSystem";
+  import { Button, Icon, ThreeDotsMenu, format } from "ui/DesignSystem";
   import Remote from "ui/App/Remote.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -39,7 +37,7 @@
   import ProjectHeader from "./ProjectScreen/ProjectHeader.svelte";
   import Source from "./ProjectScreen/Source.svelte";
 
-  export let urn: Urn;
+  export let urn: string;
   export let activeView: router.ProjectView = { type: "files" };
   let hoverstyle: string = "";
 

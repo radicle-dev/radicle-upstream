@@ -4,14 +4,15 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-use link_crypto::{BoxedSigner, PublicKey, SecretKey, SomeSigner};
-use radicle_daemon::profile::Profile;
-use radicle_git_helpers::remote_helper;
-use radicle_keystore::{crypto, pinentry::SecUtf8, FileStorage, Keystore};
 use std::{
     io::Write as _,
     process::{Command, Stdio},
 };
+
+use librad::profile::Profile;
+use link_crypto::{BoxedSigner, PublicKey, SecretKey, SomeSigner};
+use radicle_git_helpers::remote_helper;
+use radicle_keystore::{crypto, pinentry::SecUtf8, FileStorage, Keystore};
 
 const SECRET_KEY_FILE: &str = "librad.key";
 

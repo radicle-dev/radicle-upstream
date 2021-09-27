@@ -12,7 +12,7 @@
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
 
-  import { Icon, Identifier } from "ui/DesignSystem";
+  import { CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
   import Changeset from "./SourceBrowser/Changeset.svelte";
@@ -87,7 +87,7 @@
             it differently. -->
           <span>{$commit.data.header.author.name}</span>
           <span>committed</span>
-          <Identifier
+          <CopyableIdentifier
             style="display: inline-block;"
             kind="commitHash"
             value={$commit.data.header.sha1} />
@@ -144,7 +144,7 @@
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
         <p class="field">
           Commit
-          <Identifier
+          <CopyableIdentifier
             tooltipPosition="left"
             style="display: inline-block;"
             kind="commitHash"

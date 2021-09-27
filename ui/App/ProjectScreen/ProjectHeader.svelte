@@ -8,7 +8,7 @@
 <script lang="typescript">
   import type { Stats } from "ui/src/project";
 
-  import { Icon, Identifier } from "ui/DesignSystem";
+  import { Icon, CopyableIdentifier } from "ui/DesignSystem";
 
   export let name: string;
   export let urn: string;
@@ -68,7 +68,10 @@
     on:click={() => (onClick ? onClick() : {})}>
     {name}
   </h1>
-  <Identifier value={urn} kind="radicleId" style="margin-top: 0.5rem;" />
+  <CopyableIdentifier
+    value={urn}
+    kind="radicleId"
+    style="margin-top: 0.5rem;" />
   {#if description}
     <p class="description typo-overflow-ellipsis" title={description}>
       {description}

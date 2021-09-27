@@ -99,21 +99,21 @@
     0 0 0.5rem rgba(0, 255, 0, 0.19);
 }
 
-[data-primarycolor="blue"] {
+[data-primary-color="blue"] {
   --color-primary: rgba(85, 85, 255, 1);
   --color-primary-level-1: rgba(85, 85, 255, 0.17);
   --color-primary-level-2: rgba(85, 85, 255, 0.37);
   --color-primary-level-6: rgba(85, 85, 255, 0.87);
 }
 
-[data-primarycolor="pink"] {
+[data-primary-color="pink"] {
   --color-primary: rgba(255, 85, 255, 1);
   --color-primary-level-1: rgba(255, 85, 255, 0.17);
   --color-primary-level-2: rgba(255, 85, 255, 0.37);
   --color-primary-level-6: rgba(255, 85, 255, 0.87);
 }
 
-[data-primarycolor="orange"] {
+[data-primary-color="orange"] {
   --color-primary: rgba(255, 123, 0, 1);
   --color-primary-level-1: rgba(255, 123, 0, 0.17);
   --color-primary-level-2: rgba(255, 123, 0, 0.37);
