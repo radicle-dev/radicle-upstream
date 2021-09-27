@@ -62,7 +62,7 @@
     </Header>
 
     {#if $projects.status === remote.Status.Success}
-      {#if Array.isArray($projects.data) && $projects.data.length === 0}
+      {#if $projects.data.length === 0}
         <EmptyState text="This peer doesn't have any projects." />
       {:else}
         <ul class="grid" data-cy="project-list">
