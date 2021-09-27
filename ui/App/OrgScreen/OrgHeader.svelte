@@ -30,7 +30,7 @@
     registration?.twitter &&
     `https://twitter.com/${registration.twitter.replace("@", "")}`;
   $: seedId = registration?.seedId;
-  $: seedApi = registration?.seedApi;
+  $: seedHost = registration?.seedHost;
 </script>
 
 <style>
@@ -102,7 +102,7 @@
           </div>
         {/if}
       </div>
-      {#if websiteUrl || githubUrl || twitterUrl || seedId || seedApi}
+      {#if websiteUrl || githubUrl || twitterUrl || (seedId && seedHost)}
         <div>
           {#if websiteUrl}
             <div class="row">
@@ -139,20 +139,11 @@
           {/if}
         </div>
         <div>
-          {#if seedId}
+          {#if seedId && seedHost}
             <div class="row">
-              <CopyableIdentifier value={seedId} kind="seedAddress" />
-            </div>
-          {/if}
-          {#if seedApi}
-            <div class="row">
-              <Icon.Globe />
-              <div class="url">
-                <span
-                  on:click={() => {
-                    seedApi && ipc.openUrl(seedApi);
-                  }}>{seedApi}</span>
-              </div>
+              <CopyableIdentifier
+                value={`${seedId}@${seedHost}:8776`}
+                kind="seedAddress" />
             </div>
           {/if}
         </div>
