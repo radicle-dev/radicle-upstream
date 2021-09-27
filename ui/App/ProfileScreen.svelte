@@ -216,6 +216,7 @@
             </div>
             <Button
               variant="outline"
+              dataCy="show-requests"
               on:click={() => {
                 showRequests = !showRequests;
               }}

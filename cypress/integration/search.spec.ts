@@ -21,6 +21,7 @@ context("search", () => {
       commands.pick("sidebar", "search").click();
       commands.pasteInto(["search-input"], `rad:git:${projectId}`);
       commands.pick("follow-toggle").click();
+      commands.pick("show-requests").click();
       commands
         .pickWithContent(["undiscovered-project"], projectId.slice(-5))
         .should("exist");

@@ -27,6 +27,7 @@ context("project following", () => {
       .pick("notification")
       .should("contain", "You’ll be notified when this project has been found");
 
+    commands.pick("show-requests").click();
     commands
       .pickWithContent(["undiscovered-project"], projectId.slice(-5))
       .trigger("mouseenter")
