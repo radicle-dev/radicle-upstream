@@ -7,7 +7,7 @@
 -->
 <script lang="typescript">
   import type { Project } from "ui/src/project";
-  import { fetchProjects, projects as store } from "ui/src/userProfile";
+  import { fetchProjects, projects } from "ui/src/userProfile";
   import { isMaintainer } from "ui/src/project";
   import * as router from "ui/src/router";
   import * as Session from "ui/src/session";
@@ -24,13 +24,13 @@
 
   export let urn: string;
 
-  const select = ({ detail: project }: { detail: Project }) => {
+  function openProject({ detail: project }: { detail: Project }) {
     router.push({
       type: "project",
       urn: project.urn,
       activeView: { type: "files" },
     });
-  };
+  }
 
   const userProfileStore = userProfile.user;
   const session = Session.unsealed();
@@ -61,23 +61,23 @@
         {urn} />
     </Header>
 
-    {#if $store.status === remote.Status.Success}
-      {#if (Array.isArray($store.data) && $store.data.length === 0) || $store.data === null}
+    {#if $projects.status === remote.Status.Success}
+      {#if Array.isArray($projects.data) && $projects.data.length === 0}
         <EmptyState text="This peer doesn't have any projects." />
       {:else}
         <ul class="grid" data-cy="project-list">
-          {#each $store.data as project}
+          {#each $projects.data as project}
             <li>
               <ProjectCardSquare
                 {project}
                 isMaintainer={isMaintainer(session.identity.urn, project)}
-                on:click={() => select({ detail: project })} />
+                on:click={() => openProject({ detail: project })} />
             </li>
           {/each}
         </ul>
       {/if}
-    {:else if $store.status === remote.Status.Error}
-      <Error message={$store.error.message} />
+    {:else if $projects.status === remote.Status.Error}
+      <Error message={$projects.error.message} />
     {/if}
   {/if}
 </ScreenLayout>

@@ -107,21 +107,17 @@
     }
   };
 
-  const onSelect = ({ detail: project }: { detail: Project }) => {
+  function openProject({ detail: project }: { detail: Project }) {
     router.push({
       type: "project",
       urn: project.urn,
       activeView: { type: "files" },
     });
-  };
+  }
 
-  const onUnFollow = (urn: string): void => {
+  function onUnFollow(urn: string): void {
     proxy.client.project.requestCancel(urn).then(fetchProfileProjects);
-  };
-
-  const create = () => {
-    modal.toggle(CreateProjectModal);
-  };
+  }
 
   function projectCountText(storeLength: number) {
     return `${storeLength} project${storeLength > 1 ? "s" : ""}`;
@@ -190,11 +186,11 @@
   </Header>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
-    {#if (Array.isArray($profileProjectsStore.data) && $profileProjectsStore.data.length === 0) || $profileProjectsStore.data === null}
+    {#if Array.isArray($profileProjectsStore.data) && $profileProjectsStore.data.length === 0}
       <EmptyState
         text="You don’t have any projects yet."
         primaryActionText="Start your first project"
-        on:primaryAction={create} />
+        on:primaryAction={() => modal.toggle(CreateProjectModal)} />
     {:else}
       <ul class="grid" data-cy="project-list">
         {#each $profileProjectsStore.data.cloned as project}
@@ -202,7 +198,7 @@
             <ProjectCardSquare
               {project}
               isMaintainer={isMaintainer(session.identity.urn, project)}
-              on:click={() => onSelect({ detail: project })} />
+              on:click={() => openProject({ detail: project })} />
           </li>
         {/each}
         {#each $profileProjectsStore.data.follows as project}
@@ -210,7 +206,7 @@
             <ProjectCardSquare
               isMaintainer={isMaintainer(session.identity.urn, project)}
               {project}
-              on:click={() => onSelect({ detail: project })} />
+              on:click={() => openProject({ detail: project })} />
           </li>
         {/each}
         {#if $profileProjectsStore.data.requests.length > 0}
