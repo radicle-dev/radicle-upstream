@@ -6,25 +6,14 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type * as project from "ui/src/project";
+  import type { Project } from "ui/src/project";
 
   import { Avatar, Badge, CopyableIdentifier } from "ui/DesignSystem";
   import ProjectAnchorPopover from "ui/App/OrgScreen/ProjectAnchorPopover.svelte";
   import ProjectStats from "./ProjectStats.svelte";
 
-  interface Stats {
-    branches: number;
-    commits: number;
-    contributors: number;
-  }
-
-  export let title: string;
-  export let urn: string;
-  export let description: string | undefined = undefined;
-  export let maintainerUrn: string;
-  export let showMaintainerBadge: boolean = false;
-  export let anchor: project.Anchor | undefined;
-  export let stats: Stats | undefined;
+  export let project: Project;
+  export let isMaintainer: boolean | false;
 </script>
 
 <style>
@@ -58,34 +47,35 @@
   }
 </style>
 
-<li class="project-card" data-cy={`project-list-entry-${title}`} on:click>
+<div
+  class="project-card"
+  data-cy={`project-list-entry-${project.metadata.name}`}
+  on:click>
   <div>
     <div class="title-row">
-      <h2 class="typo-overflow-ellipsis">{title}</h2>
-      {#if showMaintainerBadge}
+      <h2 class="typo-overflow-ellipsis">{project.metadata.name}</h2>
+      {#if isMaintainer}
         <Badge style="margin-left: 0.5rem" variant="maintainer" />
       {/if}
     </div>
-    <CopyableIdentifier kind="radicleId" value={urn} />
-    {#if description}
-      <p class="desc">{description}</p>
+    <CopyableIdentifier kind="radicleId" value={project.urn} />
+    {#if project.metadata.description}
+      <p class="desc">{project.metadata.description}</p>
     {/if}
-    {#if anchor}
-      <ProjectAnchorPopover {anchor} replicated={true} />
+    {#if project.anchor}
+      <ProjectAnchorPopover anchor={project.anchor} replicated={true} />
     {/if}
   </div>
   <div class="bottom">
-    {#if stats}
-      <ProjectStats
-        branches={stats.branches}
-        commits={stats.commits}
-        contributors={stats.contributors} />
-    {/if}
+    <ProjectStats
+      branches={project.stats.branches}
+      commits={project.stats.commits}
+      contributors={project.stats.contributors} />
     <Avatar
       size="small"
       kind={{
         type: "userEmoji",
-        uniqueIdentifier: maintainerUrn,
+        uniqueIdentifier: project.metadata.maintainers[0],
       }} />
   </div>
-</li>
+</div>

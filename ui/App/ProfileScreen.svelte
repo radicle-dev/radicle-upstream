@@ -7,6 +7,7 @@
 -->
 <script lang="typescript">
   import { onDestroy } from "svelte";
+  import { fade } from "svelte/transition";
 
   import * as router from "ui/src/router";
   import * as Session from "ui/src/session";
@@ -20,14 +21,18 @@
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as localPeer from "ui/src/localPeer";
 
-  import { Button, Icon } from "ui/DesignSystem";
+  import {
+    Button,
+    Icon,
+    FollowToggle,
+    CopyableIdentifier,
+  } from "ui/DesignSystem";
 
   import Header from "ui/App/ScreenLayout/Header.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
-  import RequestCardSquare from "ui/App/ProfileScreen/RequestCardSquare.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
   import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
   import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
@@ -118,15 +123,9 @@
     modal.toggle(CreateProjectModal);
   };
 
-  const projectCardProps = (project: Project) => ({
-    title: project.metadata.name,
-    description: project.metadata.description || "",
-    maintainerUrn: project.metadata.maintainers[0],
-    showMaintainerBadge: isMaintainer(session.identity.urn, project),
-    anchor: project.anchor,
-    stats: project.stats,
-    urn: project.urn,
-  });
+  function projectCountText(storeLength: number) {
+    return `${storeLength} project${storeLength > 1 ? "s" : ""}`;
+  }
 
   let showRequests: boolean = false;
 
@@ -157,6 +156,11 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+  }
+
+  .request-card {
+    justify-content: space-between;
+    cursor: pointer;
   }
 
   .search {
@@ -194,24 +198,28 @@
     {:else}
       <ul class="grid" data-cy="project-list">
         {#each $profileProjectsStore.data.cloned as project}
-          <ProjectCardSquare
-            {...projectCardProps(project)}
-            on:click={() => onSelect({ detail: project })} />
+          <li>
+            <ProjectCardSquare
+              {project}
+              isMaintainer={isMaintainer(session.identity.urn, project)}
+              on:click={() => onSelect({ detail: project })} />
+          </li>
         {/each}
         {#each $profileProjectsStore.data.follows as project}
-          <ProjectCardSquare
-            {...projectCardProps(project)}
-            on:click={() => onSelect({ detail: project })} />
+          <li>
+            <ProjectCardSquare
+              isMaintainer={isMaintainer(session.identity.urn, project)}
+              {project}
+              on:click={() => onSelect({ detail: project })} />
+          </li>
         {/each}
         {#if $profileProjectsStore.data.requests.length > 0}
           <li class="box requests">
             <div>
               <h2>Still looking...</h2>
               <p style="margin-top: 1rem;">
-                {$profileProjectsStore.data.requests.length} project{$profileProjectsStore
-                  .data.requests.length > 1
-                  ? "s"
-                  : ""} you’re following haven’t been found yet.
+                {projectCountText($profileProjectsStore.data.requests.length)} you’re
+                following haven’t been found yet.
               </p>
             </div>
             <Button
@@ -222,17 +230,21 @@
               }}
               style="align-self: flex-start;">
               {!showRequests ? "Show" : "Hide"}
-              {$profileProjectsStore.data.requests.length} project{$profileProjectsStore
-                .data.requests.length > 1
-                ? "s"
-                : ""}
+              {projectCountText($profileProjectsStore.data.requests.length)}
             </Button>
           </li>
           {#if showRequests}
             {#each $profileProjectsStore.data.requests as project}
-              <RequestCardSquare
-                urn={project.urn}
-                on:unfollow={() => onUnFollow(project.urn)} />
+              <li
+                class="request-card box"
+                data-cy="undiscovered-project"
+                out:fade|local={{ duration: 200 }}>
+                <CopyableIdentifier kind="radicleId" value="{project.urn}}" />
+                <FollowToggle
+                  style="align-self: flex-start;"
+                  following
+                  on:unfollow={() => onUnFollow(project.urn)} />
+              </li>
             {/each}
           {/if}
         {/if}

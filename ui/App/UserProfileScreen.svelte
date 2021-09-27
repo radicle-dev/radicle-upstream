@@ -32,16 +32,6 @@
     });
   };
 
-  const projectCardProps = (project: Project) => ({
-    title: project.metadata.name,
-    description: project.metadata.description || "",
-    maintainerUrn: project.metadata.maintainers[0],
-    showMaintainerBadge: isMaintainer(session.identity.urn, project),
-    anchor: project.anchor,
-    stats: project.stats,
-    urn: project.urn,
-  });
-
   const userProfileStore = userProfile.user;
   const session = Session.unsealed();
 
@@ -77,9 +67,12 @@
       {:else}
         <ul class="grid" data-cy="project-list">
           {#each $store.data as project}
-            <ProjectCardSquare
-              {...projectCardProps(project)}
-              on:click={() => select({ detail: project })} />
+            <li>
+              <ProjectCardSquare
+                {project}
+                isMaintainer={isMaintainer(session.identity.urn, project)}
+                on:click={() => select({ detail: project })} />
+            </li>
           {/each}
         </ul>
       {/if}
