@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { unreachable } from "ui/src/unreachable";
+  import { unreachable } from "./lib/unreachable";
   import * as radicleAvatar from "radicle-avatar";
   import Emoji from "./Emoji.svelte";
 

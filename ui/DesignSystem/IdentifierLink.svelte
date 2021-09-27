@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { unreachable } from "ui/src/unreachable";
+  import { unreachable } from "./lib/unreachable";
   import * as format from "./lib/format";
   import Icon from "./Icon";
 
