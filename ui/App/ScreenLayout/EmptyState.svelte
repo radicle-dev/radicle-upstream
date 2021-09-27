@@ -89,7 +89,10 @@
     </Tooltip>
   {/if}
   {#if secondaryActionText}
-    <button data-cy="secondary-action" on:click={() => onSecondaryAction()}>
+    <button
+      data-cy="secondary-action"
+      style="margin-top: 0.5rem;"
+      on:click={() => onSecondaryAction()}>
       <p>{secondaryActionText}</p>
     </button>
   {/if}

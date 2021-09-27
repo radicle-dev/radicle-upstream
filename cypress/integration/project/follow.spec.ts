@@ -30,7 +30,6 @@ context("project following", () => {
     commands.pick("show-requests").click();
     commands
       .pickWithContent(["undiscovered-project"], projectId.slice(-5))
-      .trigger("mouseenter")
       .within(() => {
         commands.pick("follow-toggle").click();
       });

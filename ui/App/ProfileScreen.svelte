@@ -186,11 +186,13 @@
   </Header>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
-    {#if Array.isArray($profileProjectsStore.data) && $profileProjectsStore.data.length === 0}
+    {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.requests.length === 0}
       <EmptyState
-        text="You don’t have any projects yet."
+        text="You haven't created or followed any projects yet"
         primaryActionText="Start your first project"
-        on:primaryAction={() => modal.toggle(CreateProjectModal)} />
+        on:primaryAction={() => modal.toggle(CreateProjectModal)}
+        secondaryActionText="Or look for a project"
+        on:secondaryAction={() => modal.toggle(SearchModal)} />
     {:else}
       <ul class="grid" data-cy="project-list">
         {#each $profileProjectsStore.data.cloned as project}

@@ -13,7 +13,7 @@
   import ProjectStats from "./ProjectStats.svelte";
 
   export let project: Project;
-  export let isMaintainer: boolean | false;
+  export let isMaintainer: boolean;
 </script>
 
 <style>
