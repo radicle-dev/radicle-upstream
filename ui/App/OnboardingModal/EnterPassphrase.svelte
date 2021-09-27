@@ -13,17 +13,17 @@
 
   import { ValidationStatus, getValidationState } from "ui/src/validation";
 
-  import { Button, Icon, PasswordInput } from "ui/DesignSystem";
+  import { Button, Icon, TextInput } from "ui/DesignSystem";
 
   export let disabled = false;
 
   const dispatch = createEventDispatcher();
 
-  let passphraseInput: PasswordInput;
-  let repeatedPassphraseInput: PasswordInput;
+  let passphraseInput: TextInput;
+  let repeatedPassphraseInput: TextInput;
   let passphrase = "";
   let repeatedPassphrase = "";
-  let visible: boolean = false;
+  let isPassphraseConcealed: boolean = true;
 
   let validations: { [key: string]: string[] } | false = false;
   let beginValidation = false;
@@ -130,7 +130,7 @@
 
   const resetCheck = () => {
     if (passphrase.length === 0) {
-      visible = false;
+      isPassphraseConcealed = true;
     }
   };
 </script>
@@ -184,10 +184,12 @@
       </span>
     </p>
 
-    <PasswordInput
+    <TextInput
       bind:this={passphraseInput}
-      on:enter={() => {
-        repeatedPassphraseInput.focus();
+      on:keydown={event => {
+        if (event.key === "Enter") {
+          repeatedPassphraseInput.focus();
+        }
       }}
       on:change={resetCheck}
       on:keypress={resetCheck}
@@ -198,14 +200,18 @@
       style="margin-top: 1.5rem;"
       validation={passphraseValidation}
       bind:value={passphrase}
-      {visible}
+      concealed={isPassphraseConcealed}
       {disabled} />
 
     <div class="repeat" hidden={!passphrase}>
       <p style="margin-bottom: 0.5rem;">And enter it again, just to be safe.</p>
-      <PasswordInput
+      <TextInput
         bind:this={repeatedPassphraseInput}
-        on:enter={next}
+        on:keydown={event => {
+          if (event.key === "Enter") {
+            next();
+          }
+        }}
         on:change={resetCheck}
         on:keypress={resetCheck}
         dataCy="repeat-passphrase-input"
@@ -213,7 +219,7 @@
         hint="↵"
         validation={repeatedPassphraseValidation}
         bind:value={repeatedPassphrase}
-        {visible}
+        concealed={isPassphraseConcealed}
         {disabled} />
     </div>
 
@@ -222,14 +228,13 @@
         a bug in Svelte.
         https://github.com/sveltejs/language-tools/issues/1113 -->
       <Button
-        dataCy={`${visible ? "hide" : "show"}-passphrase`}
         variant={`transparent`}
         style={`margin-right: 1rem; ${
           passphrase.length === 0 ? "visibility:hidden;" : ""
         }`}
-        icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
-        on:click={() => (visible = !visible)}>
-        {visible ? "Hide" : "Show"} Passphrase
+        icon={isPassphraseConcealed ? Icon.EyeOpen : Icon.EyeClosed}
+        on:click={() => (isPassphraseConcealed = !isPassphraseConcealed)}>
+        {isPassphraseConcealed ? "Show" : "Hide"} Passphrase
       </Button>
       <div class="back-and-set-buttons">
         <Button

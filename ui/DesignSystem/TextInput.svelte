@@ -6,40 +6,50 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import Icon from "./Icon";
-  import Spinner from "./Spinner.svelte";
-  import KeyHint from "./KeyHint.svelte";
-
   import type { ValidationState } from "ui/src/validation";
+
   import { ValidationStatus as Status } from "ui/src/validation";
 
-  export let style: string | undefined = undefined;
-  export let inputStyle: string | undefined = undefined;
-  export let placeholder: string | undefined = undefined;
-  export let value = "";
-  export let dataCy: string | undefined = undefined;
-  export let disabled: boolean = false;
-  export let suffix: string | undefined = undefined;
-  export let inputElement: HTMLInputElement | undefined = undefined;
+  import Icon from "./Icon";
+  import KeyHint from "./KeyHint.svelte";
+  import Spinner from "./Spinner.svelte";
 
-  export let validation: ValidationState | undefined = undefined;
-  export let validationStyle: string | undefined = undefined;
-  export let hint = "";
+  export let autofocus: boolean = false;
+  export let disabled: boolean = false;
   export let showLeftItem: boolean = false;
   export let showSuccessCheck: boolean = false;
-  export let spellcheck: boolean = false;
-  export let autofocus: boolean = false;
+  export let concealed: boolean = false;
 
+  export let dataCy: string | undefined = undefined;
+  export let hint: string | undefined = undefined;
+  export let inputStyle: string | undefined = undefined;
+  export let placeholder: string | undefined = undefined;
+  export let style: string | undefined = undefined;
+  export let suffix: string | undefined = undefined;
+  export let validation: ValidationState | undefined = undefined;
+  export let value: string | undefined = undefined;
+
+  export const focus = (): void => {
+    inputElement && inputElement.focus();
+  };
+
+  let inputElement: HTMLInputElement | undefined = undefined;
   let inputHeight: number;
 
-  // Can't use normal `autofocus` attribute on the `inputElement`:
-  // "Autofocus processing was blocked because a document's URL has a fragment".
+  // Can't use normal `autofocus` attribute on the `inputElement`: "Autofocus
+  // processing was blocked because a document's URL has a fragment".
   // preventScroll is necessary for onboarding animations to work.
   $: if (autofocus) {
     inputElement && inputElement.focus({ preventScroll: true });
   }
 
-  $: showHint = hint.length > 0 && value.length === 0;
+  // We do it this way to work around the svelte-check error: 'type' attribute
+  // cannot be dynamic if input uses two-way binding (svelte).
+  $: if (inputElement) {
+    inputElement.type = concealed ? "password" : "text";
+  }
+
+  $: showHint = hint && value && value.length === 0;
 </script>
 
 <style>
@@ -72,6 +82,10 @@
 
   input[disabled]:hover {
     background-color: var(--color-foreground-level-1);
+  }
+
+  .concealed {
+    color: var(--color-foreground-level-6);
   }
 
   input::placeholder {
@@ -139,19 +153,21 @@
 <div {style} class="wrapper">
   <div bind:clientHeight={inputHeight} on:click>
     <input
-      data-cy={dataCy}
+      style={inputStyle}
       class:invalid={validation && validation.status === Status.Error}
       class:padding={validation && validation.status !== Status.NotStarted}
       class:left-item={showLeftItem}
+      class:concealed
+      data-cy={dataCy}
       {placeholder}
-      bind:value
       {disabled}
+      spellcheck={false}
+      bind:value
+      bind:this={inputElement}
       on:change
       on:input
       on:keydown
-      bind:this={inputElement}
-      {spellcheck}
-      style={inputStyle} />
+      on:keypress />
   </div>
 
   {#if showLeftItem}
@@ -193,7 +209,7 @@
         dataCy="validation-error-icon"
         style="fill: var(--color-negative); justify-content: flex-start;
         position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
-      <div class="validation-row" style={validationStyle}>
+      <div class="validation-row">
         <p>{validation.message}</p>
       </div>
     {:else if showHint}

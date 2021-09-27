@@ -34,7 +34,6 @@
     Icon,
     IdentifierLink,
     Notification,
-    PasswordInput,
     SegmentedControl,
     Spinner,
     SupportButton,
@@ -498,17 +497,22 @@
         </div>
 
         <div class="swatch">
-          <PasswordInput
+          <TextInput
             style="width: 100%;"
+            concealed={true}
             placeholder="Please enter a password" />
         </div>
 
         <div class="swatch">
-          <PasswordInput style="width: 100%;" value="my super long password" />
+          <TextInput
+            concealed={true}
+            style="width: 100%;"
+            value="my super long password" />
         </div>
 
         <div class="swatch">
-          <PasswordInput
+          <TextInput
+            concealed={true}
             style="width: 100%;"
             value="too short"
             validation={{

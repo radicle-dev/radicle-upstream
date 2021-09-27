@@ -17,7 +17,7 @@
 
   export let handle = "";
 
-  let nameInput: HTMLInputElement;
+  let nameInput: TextInput;
   let beginValidation = false;
 
   const validationStore = onboarding.createHandleValidationStore();
@@ -109,7 +109,7 @@
     <TextInput
       autofocus
       placeholder="Enter a display name (e.g. coolprogrammer3000)"
-      bind:inputElement={nameInput}
+      bind:this={nameInput}
       bind:value={handle}
       on:keydown={onKeydown}
       dataCy="handle-input"

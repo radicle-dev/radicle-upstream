@@ -44,7 +44,7 @@
   type RepoType = "new" | "existing";
 
   let currentSelection: RepoType;
-  let nameInput: HTMLInputElement;
+  let nameInput: TextInput;
 
   let startValidations = false;
 
@@ -268,7 +268,7 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        bind:inputElement={nameInput}
+        bind:this={nameInput}
         validation={$nameValidation}
         disabled={isExisting} />
     </Tooltip>

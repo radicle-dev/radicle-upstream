@@ -12,12 +12,12 @@
   import * as error from "ui/src/error";
   import * as notification from "ui/src/notification";
 
-  import { Button, Emoji, Icon, PasswordInput } from "ui/DesignSystem";
+  import { Button, Emoji, Icon, TextInput } from "ui/DesignSystem";
 
   let passphrase = "";
   let unlockInProgress = false;
-  let input: PasswordInput;
-  let visible: boolean = false;
+  let input: TextInput;
+  let isPassphraseConcealed: boolean = true;
 
   let errorNotificationHandle: notification.Handle | undefined;
 
@@ -65,7 +65,7 @@
 
   const resetCheck = () => {
     if (passphrase.length === 0) {
-      visible = false;
+      isPassphraseConcealed = true;
     }
   };
 </script>
@@ -103,26 +103,29 @@
   </p>
 
   <div class="form">
-    <PasswordInput
-      {visible}
+    <TextInput
+      concealed={isPassphraseConcealed}
       bind:this={input}
       autofocus
       placeholder="Enter your passphrase"
       bind:value={passphrase}
       disabled={unlockInProgress}
       dataCy="passphrase-input"
-      on:enter={onEnter}
+      on:keydown={event => {
+        if (event.key === "Enter") {
+          onEnter();
+        }
+      }}
       on:change={resetCheck}
       on:keypress={resetCheck}
       style="width: 20rem;" />
 
     <div class="buttons">
       <Button
-        dataCy={`${visible ? "hide" : "show"}-passphrase`}
         variant="transparent"
-        icon={visible ? Icon.EyeClosed : Icon.EyeOpen}
-        on:click={() => (visible = !visible)}>
-        {visible ? "Hide" : "Show"} Passphrase
+        icon={isPassphraseConcealed ? Icon.EyeOpen : Icon.EyeClosed}
+        on:click={() => (isPassphraseConcealed = !isPassphraseConcealed)}>
+        {isPassphraseConcealed ? "Show" : "Hide"} Passphrase
       </Button>
       <Button
         dataCy="unlock-button"
