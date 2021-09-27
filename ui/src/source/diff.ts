@@ -9,7 +9,7 @@ import {
   LineDiffType,
   ModifiedFile,
   Diff,
-} from "ui/src/proxy/commit";
+} from "proxy-client/commit";
 
 export type { ModifiedFile, Diff };
 

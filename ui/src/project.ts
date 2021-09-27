@@ -7,7 +7,7 @@
 import { get, writable } from "svelte/store";
 
 import * as proxy from "ui/src/proxy";
-import type { LocalState } from "ui/src/proxy/source";
+import type { LocalState } from "proxy-client/source";
 import type * as ensResolver from "./org/ensResolver";
 import * as error from "./error";
 import type * as identity from "./identity";
@@ -25,7 +25,7 @@ import {
   PeerRole,
   PeerReplicationStatusType,
   PeerReplicated,
-} from "./proxy/project";
+} from "proxy-client/project";
 
 export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };

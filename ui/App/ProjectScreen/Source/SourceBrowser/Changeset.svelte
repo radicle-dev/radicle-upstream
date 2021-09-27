@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { Diff, CommitStats } from "ui/src/proxy/commit";
+  import type { Diff, CommitStats } from "proxy-client/commit";
 
   import Icon from "ui/DesignSystem/Icon";
 

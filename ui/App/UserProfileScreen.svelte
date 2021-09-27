@@ -11,8 +11,8 @@
   import * as Session from "ui/src/session";
   import * as remote from "ui/src/remote";
   import * as proxy from "ui/src/proxy";
-  import type * as proxyProject from "ui/src/proxy/project";
-  import type * as proxyIdentity from "ui/src/proxy/identity";
+  import type * as proxyProject from "proxy-client/project";
+  import type * as proxyIdentity from "proxy-client/identity";
   import * as error from "ui/src/error";
 
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";

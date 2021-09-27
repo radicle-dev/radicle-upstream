@@ -6,10 +6,10 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type * as proxyIdentity from "ui/src/proxy/identity";
+  import type * as identity from "ui/src/identity";
   import { Avatar, CopyableIdentifier } from "ui/DesignSystem";
 
-  export let identityMetadata: proxyIdentity.Metadata;
+  export let identityMetadata: identity.Metadata;
   export let urn: string;
   export let deviceIds: string[];
 </script>

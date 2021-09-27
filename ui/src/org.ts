@@ -8,7 +8,7 @@ import lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
 import type { Org } from "./org/theGraphApi";
-import type * as identity from "ui/src/proxy/identity";
+import type * as identity from "proxy-client/identity";
 import type * as project from "ui/src/project";
 
 import * as Safe from "./org/safe";

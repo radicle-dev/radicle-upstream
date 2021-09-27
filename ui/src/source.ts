@@ -12,13 +12,16 @@ import type { PeerId } from "./identity";
 import * as proxy from "./proxy";
 import type {
   Blob,
-  RevisionSelector,
   Branch,
-  Tag,
+  Commit,
+  CommitHeader,
+  Person,
+  RevisionSelector,
   SourceObject,
-} from "./proxy/source";
-import type { Person, CommitHeader, Commit } from "./proxy/commit";
-import { RevisionType, Stats } from "./proxy/source";
+  Stats,
+  Tag,
+} from "proxy-client/source";
+import { RevisionType } from "proxy-client/source";
 
 export type {
   Blob,
