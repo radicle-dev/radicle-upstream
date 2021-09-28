@@ -39,7 +39,7 @@ mkdir -p "$cargo_deny_cache"
 mkdir -p ~/.cargo
 ln -sf "$cargo_deny_cache" ~/.cargo/advisory-db
 
-if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
+if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" && "${RUNNER_OS:-}" != "macOS" ]]; then
   free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
   min_free_cache_kb=$(( 2 * 1024 * 1024 )) # 2GiB is 25%
   echo "$(( free_cache_space_kb / 1024 )) MiB free space on /cache"
@@ -98,7 +98,7 @@ log-group-start "Run proxy tests"
 (
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
-  timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
+  cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
 log-group-end
 
