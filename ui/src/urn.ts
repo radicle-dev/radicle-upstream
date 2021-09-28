@@ -27,7 +27,7 @@ export const urnValidationStore = (): validation.ValidationStore =>
   validation.createValidationStore(urnConstraints);
 
 // Takes a Radicle URN and returns its payload as a binary encoded SHA1
-export function parseIdentitySha1(urn: string): Uint8Array {
+export function urnToSha1(urn: string): Uint8Array {
   const matches = urn.match(GET_URN_ID) || [];
   const id = matches[1];
   if (!id) {
@@ -58,8 +58,8 @@ export function parseIdentitySha1(urn: string): Uint8Array {
 }
 
 // Takes a binary encoded SHA1 and encodes it into a Radicle URN --
-// it's the inverse of parseIdentitySha1.
-export function identitySha1Urn(hash: Uint8Array): string {
+// it's the inverse of urnToSha1.
+export function sha1ToUrn(hash: Uint8Array): string {
   // a SHA-1 digest is always 20 bytes
   if (hash.length !== 20) {
     throw new error.Error({

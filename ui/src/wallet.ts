@@ -212,6 +212,13 @@ export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
   }
 );
 
+export function isConnected(): boolean {
+  const walletStore = svelteStore.get(store);
+  const wallet = svelteStore.get(walletStore);
+
+  return wallet.status === Status.Connected;
+}
+
 // Activate the store so that the wallet is never destroyed when all views
 // unsubscribe.
 store.subscribe(() => {});

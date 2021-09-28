@@ -13,11 +13,11 @@ import {
   Claims__factory as ClaimsFactory,
 } from "radicle-contracts/build/contract-bindings/ethers";
 
-import { parseIdentitySha1 } from "ui/src/urn";
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as transaction from "ui/src/transaction";
+import * as Urn from "ui/src/urn";
 
 // Get the address of the Claims Contract for the given environment
 export function claimsAddress(environment: ethereum.Environment): string {
@@ -55,7 +55,7 @@ export class ClaimsContract {
   }
 
   async claim(urn: string): Promise<void> {
-    const payload = parseIdentitySha1(urn);
+    const payload = Urn.urnToSha1(urn);
     const tx = await this.contract.claim(FORMAT_SHA1, payload);
     transaction.add(transaction.claimRadicleIdentity(tx, urn));
   }

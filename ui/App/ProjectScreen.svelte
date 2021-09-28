@@ -6,7 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { User, Project } from "ui/src/project";
+  import type { User, Project, ConfirmedAnchor } from "ui/src/project";
+  import type * as projectRoute from "./ProjectScreen/route";
 
   import { onDestroy } from "svelte";
 
@@ -38,7 +39,8 @@
   import Source from "./ProjectScreen/Source.svelte";
 
   export let urn: string;
-  export let activeView: router.ProjectView = { type: "files" };
+  export let anchors: ConfirmedAnchor[];
+  export let activeView: projectRoute.ProjectView = { type: "files" };
   let hoverstyle: string = "";
 
   const mouseenter = () => {
@@ -108,11 +110,14 @@
         name={project.metadata.name}
         description={project.metadata.description}
         stats={project.stats}
+        latestAnchorTimestamp={anchors.slice(-1)[0]?.timestamp}
         onClick={() =>
           router.push({
             type: "project",
-            urn: urn,
-            activeView: { type: "files" },
+            params: {
+              urn: urn,
+              activeView: { type: "files" },
+            },
           })} />
 
       <div slot="right" style="display: flex;">
@@ -140,6 +145,7 @@
       {activeView}
       {project}
       {selectedPeer}
+      {anchors}
       isContributor={isContributor(peerSelection)} />
   </Remote>
 </ScreenLayout>

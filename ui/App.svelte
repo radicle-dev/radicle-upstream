@@ -139,7 +139,8 @@
   {:else if $activeRouteStore.type === "project"}
     <ProjectScreen
       activeView={$activeRouteStore.activeView}
-      urn={$activeRouteStore.urn} />
+      urn={$activeRouteStore.urn}
+      anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "network"}
     <NetworkScreen />
   {:else if $activeRouteStore.type === "settings"}

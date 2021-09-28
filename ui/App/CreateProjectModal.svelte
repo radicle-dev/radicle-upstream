@@ -85,8 +85,10 @@
 
         router.push({
           type: "project",
-          urn: response.urn,
-          activeView: { type: "files" },
+          params: {
+            urn: response.urn,
+            activeView: { type: "files" },
+          },
         });
         notification.info({
           message: `Project ${response.metadata.name} was created!`,

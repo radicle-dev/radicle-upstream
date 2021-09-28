@@ -15,12 +15,12 @@ import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
 import { claimsAddress, ClaimsContract } from "./attestation/contract";
-import { identitySha1Urn } from "ui/src/urn";
 import { isCypressTestEnv } from "ui/src/config";
 import { memoizeLru } from "ui/src/memoizeLru";
 import { sleep } from "ui/src/sleep";
 import { unreachable } from "ui/src/unreachable";
 
+import * as Urn from "ui/src/urn";
 import * as ensRegistrar from "./org/ensRegistrar";
 import * as ensResolver from "./org/ensResolver";
 import * as error from "ui/src/error";
@@ -628,7 +628,7 @@ async function getClaimedIdentity(
   if (!radicleIdBytes) {
     return undefined;
   }
-  const urn = identitySha1Urn(radicleIdBytes);
+  const urn = Urn.sha1ToUrn(radicleIdBytes);
   let identity;
   try {
     identity = await proxy.client.personGet(urn);

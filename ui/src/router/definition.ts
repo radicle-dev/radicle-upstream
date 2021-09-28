@@ -4,16 +4,11 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as org from "ui/App/OrgScreen/route";
+import * as projectRoute from "ui/App/ProjectScreen/route";
+import * as orgRoute from "ui/App/OrgScreen/route";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type ProfileTab = "projects" | "following";
-export type ProjectView =
-  | { type: "files" }
-  | { type: "commits" }
-  | { type: "commit"; commitHash: string }
-  | { type: "patches"; filter: "open" | "closed" | "all" }
-  | { type: "patch"; id: string; peerId: string };
 export type WalletTab = "transactions";
 
 export type Route =
@@ -21,35 +16,28 @@ export type Route =
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
-  | { type: "org"; params: org.Params }
+  | { type: "org"; params: orgRoute.Params }
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; urn: string }
   | {
       type: "project";
-      urn: string;
-      activeView: ProjectView;
+      params: projectRoute.Params;
     }
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "network" }
   | { type: "settings" };
-
-export type OrgTab = "projects" | "members";
 
 export type LoadedRoute =
   | { type: "boot" }
   | { type: "designSystemGuide" }
   | { type: "lock" }
   | { type: "onboarding" }
-  | org.LoadedRoute
+  | orgRoute.LoadedRoute
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; urn: string }
-  | {
-      type: "project";
-      urn: string;
-      activeView: ProjectView;
-    }
+  | projectRoute.LoadedRoute
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "network" }
   | { type: "settings" };
@@ -60,7 +48,7 @@ export function routeToPath(route: Route): string {
   if (route.type === "profile" || route.type === "networkDiagnostics") {
     subRoute = `/${route.activeTab}`;
   } else if (route.type === "project") {
-    subRoute = `/${route.activeView.type}`;
+    subRoute = `/${route.params.activeView.type}`;
   }
 
   return `#/${route.type}${subRoute}`;
@@ -69,7 +57,9 @@ export function routeToPath(route: Route): string {
 export async function loadRoute(route: Route): Promise<LoadedRoute> {
   switch (route.type) {
     case "org":
-      return org.load(route.params);
+      return orgRoute.load(route.params);
+    case "project":
+      return projectRoute.load(route.params);
     default:
       return route;
   }

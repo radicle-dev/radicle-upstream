@@ -14,12 +14,13 @@
   import * as router from "ui/src/router";
 
   import {
-    Avatar,
     CopyableIdentifier,
     Hoverable,
     Icon,
     IdentifierLink,
   } from "ui/DesignSystem";
+
+  import OrgIdentity from "ui/App/OrgIdentity.svelte";
 
   export let anchor: project.Anchor;
   export let replicated: boolean = false;
@@ -29,8 +30,10 @@
   const openCommit = () => {
     router.push({
       type: "project",
-      activeView: { type: "commit", commitHash: anchor.commitHash },
-      urn: anchor.projectId,
+      params: {
+        activeView: { type: "commit", commitHash: anchor.commitHash },
+        urn: anchor.projectId,
+      },
     });
   };
 
@@ -77,12 +80,6 @@
   .meta:last-of-type {
     padding-bottom: 1rem;
   }
-  .org-domain {
-    color: var(--color-foreground-level-6);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
 </style>
 
 <Hoverable bind:hovering={hover} style="display: inline-flex;">
@@ -99,42 +96,32 @@
             style={`fill: var(${anchorColor}); margin-right: 0.5rem;`} />
 
           {#if anchor.orgAddress}
-            <p class="typo-text-bold" style={`color: var(${titleColor})`}>
+            <span
+              class="typo-text-bold"
+              style={`color: var(${titleColor}); margin-right: 0.5rem;`}>
               {title}
-            </p>
-            <Avatar
-              size="small"
-              style="margin: 0 0.5rem 0 0.5rem;"
-              kind={anchor.registration?.avatar
-                ? { type: "orgImage", url: anchor.registration.avatar }
-                : { type: "orgEmoji", uniqueIdentifier: anchor.orgAddress }} />
-            {#if anchor.registration?.domain}
-              <p class="typo-text-bold org-domain">
-                {anchor.registration?.domain}
-              </p>
-            {:else}
-              <CopyableIdentifier
-                kind="ethAddress"
-                value={anchor.orgAddress}
-                showIcon={false} />
-            {/if}
+            </span>
+
+            <OrgIdentity
+              orgAddress={anchor.orgAddress}
+              registration={anchor.registration} />
           {/if}
         </div>
         {#if anchor.type === "pending"}
           <div class="meta">
             <Icon.Pen style="margin-right: 0.5rem;" />
-            <p class="typo-text-bold" style="margin-right: 0.5rem;">
+            <span class="typo-text-bold" style="margin-right: 0.5rem;">
               Signed by {anchor.confirmations} of {anchor.threshold}
-            </p>
+            </span>
           </div>
         {/if}
 
         {#if anchor.type === "confirmed"}
           <div class="meta">
             <Icon.Ethereum style="margin-right: 0.5rem;" />
-            <p class="typo-text-bold" style="margin-right: 0.5rem;">
+            <span class="typo-text-bold" style="margin-right: 0.5rem;">
               Transaction hash
-            </p>
+            </span>
             <IdentifierLink
               params={{
                 type: "transactionHash",
@@ -145,9 +132,9 @@
         {/if}
         <div class="meta">
           <Icon.Commit style="margin-right: 0.5rem;" />
-          <p class="typo-text-bold" style="margin-right: 0.5rem;">
+          <span class="typo-text-bold" style="margin-right: 0.5rem;">
             Commit hash
-          </p>
+          </span>
           {#if replicated}
             <IdentifierLink
               params={{
