@@ -26,6 +26,7 @@
     Avatar,
     Button,
     Checkbox,
+    ColorInput,
     Copyable,
     CopyableIdentifier,
     Dropdown,
@@ -196,15 +197,22 @@
             on:select={ev => theme.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="Primary color" position="bottom">
-          <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$primaryColor}
-            options={primaryColorOptions}
-            on:select={ev => primaryColor.set(ev.detail)} />
+          <div style="display: flex;">
+            <SegmentedControl
+              style="background-color: var(--color-background); margin-right: 1rem;"
+              active={$primaryColor}
+              options={primaryColorOptions}
+              on:select={ev => primaryColor.set(ev.detail)} />
+            {#if $primaryColor === "custom"}
+              <ColorInput
+                style="margin-right: 1rem;"
+                bind:value={$primaryColorHex} />
+            {/if}
+          </div>
         </Tooltip>
         <Tooltip value="UI font" position="bottom">
           <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
+            style="background-color: var(--color-background); margin-left: 1rem; margin-right: 2rem;"
             active={$uiFont}
             options={uiFontOptions}
             on:select={ev => uiFont.set(ev.detail)} />
@@ -215,9 +223,6 @@
             active={$codeFont}
             options={codeFontOptions}
             on:select={ev => codeFont.set(ev.detail)} />
-        </Tooltip>
-        <Tooltip value="Custom font color" position="bottom">
-          <input type="color" bind:value={$primaryColorHex} />
         </Tooltip>
       </div>
       <h1 style="margin-bottom: 92px">Primitives</h1>

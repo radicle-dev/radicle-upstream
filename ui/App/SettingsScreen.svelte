@@ -7,7 +7,6 @@
 -->
 <script lang="typescript">
   import * as svelteStore from "svelte/store";
-  import { fade } from "svelte/transition";
 
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import {
@@ -29,6 +28,7 @@
 
   import {
     Button,
+    ColorInput,
     CopyableIdentifier,
     SegmentedControl,
   } from "ui/DesignSystem";
@@ -134,23 +134,6 @@
   .border {
     border-bottom: 1px solid var(--color-foreground-level-1);
   }
-
-  input[type="color"] {
-    -webkit-appearance: none;
-    border: 1px solid var(--color-foreground-level-3);
-    border-radius: 0.5rem;
-    width: 2.5rem;
-    height: 2.5rem;
-    margin-left: 1rem;
-  }
-  input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
-  }
-  input[type="color"]::-webkit-color-swatch {
-    border: none;
-    border-radius: 0.25rem;
-    margin: 0.25rem;
-  }
 </style>
 
 <ScreenLayout dataCy="settings-page">
@@ -247,9 +230,8 @@
               options={primaryColorOptions}
               on:select={ev => primaryColor.set(ev.detail)} />
             {#if $primaryColor === "custom"}
-              <input
-                transition:fade={{ duration: 200 }}
-                type="color"
+              <ColorInput
+                style="margin-left: 1rem;"
                 bind:value={$primaryColorHex} />
             {/if}
           </div>

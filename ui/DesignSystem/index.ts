@@ -8,6 +8,7 @@ import Avatar from "./Avatar.svelte";
 import Badge from "./Badge.svelte";
 import Button from "./Button.svelte";
 import Checkbox from "./Checkbox.svelte";
+import ColorInput from "./ColorInput.svelte";
 import Copyable from "./Copyable.svelte";
 import CopyableIdentifier from "./CopyableIdentifier.svelte";
 import DirectoryInput from "./DirectoryInput.svelte";
@@ -39,6 +40,7 @@ export {
   Badge,
   Button,
   Checkbox,
+  ColorInput,
   Copyable,
   CopyableIdentifier,
   DirectoryInput,
