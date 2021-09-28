@@ -17,8 +17,7 @@ context("project following", () => {
   });
 
   it("follows and unfollows", () => {
-    commands.pick("following-tab").click();
-    commands.pick("primary-action").contains("Look for a project").click();
+    commands.pick("search-box").contains("Look for a project").click();
     // The extra whitespace is intentional to check that the input is
     // trimmed.
     commands.pick("search-input").type(`  rad:git:${projectId}  `);
@@ -28,13 +27,15 @@ context("project following", () => {
       .pick("notification")
       .should("contain", "You’ll be notified when this project has been found");
 
+    commands.pick("show-requests").click();
     commands
       .pickWithContent(["undiscovered-project"], projectId.slice(-5))
-      .trigger("mouseenter")
       .within(() => {
         commands.pick("follow-toggle").click();
       });
 
-    commands.pick("empty-state").should("exist");
+    commands
+      .pickWithContent(["undiscovered-project"], projectId.slice(-5))
+      .should("not.exist");
   });
 });

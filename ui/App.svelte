@@ -116,7 +116,7 @@
   {:else if $activeRouteStore.type === "onboarding"}
     <OnboardingModal />
   {:else if $activeRouteStore.type === "profile"}
-    <ProfileScreen activeTab={$activeRouteStore.activeTab} />
+    <ProfileScreen />
   {:else if $activeRouteStore.type === "userProfile"}
     <UserProfileScreen urn={$activeRouteStore.urn} />
   {:else if $activeRouteStore.type === "networkDiagnostics"}

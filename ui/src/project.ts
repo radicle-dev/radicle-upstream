@@ -13,7 +13,6 @@ import * as ipc from "./ipc";
 import * as remote from "./remote";
 import * as source from "./source";
 import * as validation from "./validation";
-import * as proxy from "./proxy";
 import {
   Project as ProxyProject,
   Metadata,
@@ -68,18 +67,6 @@ export const creation = creationStore.readable;
 
 const localStateStore = remote.createStore<source.LocalState>();
 export const localState = localStateStore.readable;
-
-const projectsStore = remote.createStore<Project[]>();
-export const projects = projectsStore.readable;
-
-export const fetchList = (): void => {
-  projectsStore.loading();
-
-  proxy.client.project
-    .listContributed()
-    .then(projectsStore.success)
-    .catch(err => projectsStore.error(error.fromUnknown(err)));
-};
 
 export const clearLocalState = (): void => {
   localStateStore.reset();
