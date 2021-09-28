@@ -190,7 +190,7 @@
   {#if $profileProjectsStore.status === remote.Status.Success}
     {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
       <EmptyState
-        text="You haven’t created or followed any projects yet"
+        text="You haven’t created or followed any projects yet."
         primaryActionText="Start your first project"
         on:primaryAction={() => {
           modal.toggle(CreateProjectModal);
