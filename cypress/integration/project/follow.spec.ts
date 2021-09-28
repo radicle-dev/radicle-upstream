@@ -34,6 +34,8 @@ context("project following", () => {
         commands.pick("follow-toggle").click();
       });
 
-    commands.pick("empty-state").should("exist");
+    commands
+      .pickWithContent(["undiscovered-project"], projectId.slice(-5))
+      .should("not.exist");
   });
 });
