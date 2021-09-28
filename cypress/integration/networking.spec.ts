@@ -104,20 +104,13 @@ context("p2p networking", () => {
               cy.wait(2000);
               nodeManager.asNode(contributorNode);
 
-              cy.log("navigate to the 'Following' tab");
-              commands.pick("following-tab").click();
               commands.pick("sidebar", "search").click();
               commands.pasteInto(["search-input"], urn);
               commands.pick("follow-toggle").click();
             });
 
             cy.log("project moved out of the waiting area and is available");
-            commands
-              .pick(
-                "following-tab-contents",
-                "project-list-entry-new-fancy-project.xyz"
-              )
-              .click();
+            commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
             cy.log("maintainer shows up in the peer selector");
             commands
@@ -207,7 +200,6 @@ context("p2p networking", () => {
             cy.log("check that the commit shows up in the contributor's UI");
             nodeManager.asNode(contributorNode);
 
-            commands.pick("following-tab").click();
             commands.pick("project-list-entry-new-fancy-project.xyz").click();
             commands.pick("commits-tab").click();
             commands
