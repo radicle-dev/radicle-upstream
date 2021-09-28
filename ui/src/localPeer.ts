@@ -215,8 +215,10 @@ eventBus.onValue(event => {
             handler: () =>
               router.push({
                 type: "project",
-                urn: event.urn,
-                activeView: { type: "files" },
+                params: {
+                  urn: event.urn,
+                  activeView: { type: "files" },
+                },
               }),
           },
         ],

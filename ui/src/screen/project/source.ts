@@ -306,8 +306,10 @@ export const selectCommit = (commit: source.CommitHeader): void => {
 
     router.push({
       type: "project",
-      urn: project.urn,
-      activeView: { type: "commit", commitHash: commit.sha1 },
+      params: {
+        urn: project.urn,
+        activeView: { type: "commit", commitHash: commit.sha1 },
+      },
     });
   }
 };

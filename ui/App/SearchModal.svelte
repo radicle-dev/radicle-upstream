@@ -47,8 +47,10 @@
     reset();
     router.push({
       type: "project",
-      urn: project.urn,
-      activeView: { type: "files" },
+      params: {
+        urn: project.urn,
+        activeView: { type: "files" },
+      },
     });
     modal.hide();
   };

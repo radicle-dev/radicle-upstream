@@ -52,8 +52,10 @@
   const select = ({ detail: project }: { detail: Project.Project }) => {
     router.push({
       type: "project",
-      activeView: { type: "files" },
-      urn: project.urn,
+      params: {
+        activeView: { type: "files" },
+        urn: project.urn,
+      },
     });
   };
 </script>

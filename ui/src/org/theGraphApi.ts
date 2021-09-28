@@ -4,19 +4,18 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as apolloCore from "@apollo/client/core";
-import * as ethers from "ethers";
-import * as multihash from "multihashes";
-import * as svelteStore from "svelte/store";
-
-import type * as project from "ui/src/project";
+import type { Registration } from "./ensResolver";
 import type * as ensResolver from "ui/src/org/ensResolver";
+import type * as project from "ui/src/project";
+
+import * as apolloCore from "@apollo/client/core";
+import * as svelteStore from "svelte/store";
+import * as ethers from "ethers";
 
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
-import * as urn from "ui/src/urn";
 import * as wallet from "ui/src/wallet";
-import type { Registration } from "./ensResolver";
+import * as contract from "./contract";
 
 function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
   return new apolloCore.ApolloClient({
@@ -65,10 +64,13 @@ export async function getOrgs(
 ): Promise<Org[]> {
   const orgsResponse = await orgsSubgraphClient().query<{
     orgs: Array<{
+      // Org address.
       id: string;
+      // Owner address.
       owner: string;
+      // Creator address.
       creator: string;
-      // This is a UNIX seconds timestamp formatted as a string
+      // This is a UNIX seconds timestamp formatted as a string.
       timestamp: string;
     }>;
   }>({
@@ -96,7 +98,20 @@ export async function getOrgProjectAnchors(
   registration?: ensResolver.Registration
 ): Promise<project.Anchor[]> {
   const response = (
-    await orgsSubgraphClient().query({
+    await orgsSubgraphClient().query<{
+      projects: Array<{
+        anchor: {
+          // Transaction ID.
+          id: string;
+          // Project ID.
+          objectId: string;
+          // Commit hash encoded as multihash.
+          multihash: string;
+          // This is a UNIX seconds timestamp formatted as a string.
+          timestamp: string;
+        };
+      }>;
+    }>({
       query: apolloCore.gql`
         query GetOrgAnchoredProjects($orgAddress: String!) {
           projects(where: {org: $orgAddress}) {
@@ -113,38 +128,77 @@ export async function getOrgProjectAnchors(
     })
   ).data.projects;
 
-  return response.map(
-    (project: {
-      anchor: {
+  return response.map(project => {
+    const anchor: project.Anchor = {
+      type: "confirmed",
+      orgAddress,
+      transactionId: project.anchor.id,
+      projectId: contract.decodeUrn(project.anchor.objectId),
+      commitHash: contract.decodeSha1(project.anchor.multihash),
+      timestamp: parseInt(project.anchor.timestamp),
+      registration,
+    };
+
+    return anchor;
+  });
+}
+
+export async function getProjectAnchors(
+  projectId: string
+): Promise<project.ConfirmedAnchor[]> {
+  const response = (
+    await orgsSubgraphClient().query<{
+      anchors: Array<{
+        // Transaction ID.
         id: string;
+        org: {
+          // Org address.
+          id: string;
+        };
+        // Project ID.
         objectId: string;
+        // Anchor object type. "0" stands for project commit hash.
+        tag: string;
+        // Anchor object encoded as multihash.
         multihash: string;
-        // This is a UNIX seconds timestamp formatted as a string
-        timestamp: number;
-      };
-    }) => {
-      const decodedProjectId = urn.identitySha1Urn(
-        ethers.utils.arrayify(`0x${project.anchor.objectId.slice(26)}`)
-      );
+        // This is a UNIX seconds timestamp formatted as a string.
+        timestamp: string;
+      }>;
+    }>({
+      query: apolloCore.gql`
+        query GetProjectAnchors($projectId: String!) {
+          anchors(where: {objectId: $projectId}) {
+            id
+            org {
+              id
+            }
+            objectId
+            tag
+            multihash
+            timestamp
+          }
+        }
+      `,
+      variables: {
+        projectId: ethers.utils.hexlify(contract.encodeUrn(projectId)),
+      },
+    })
+  ).data.anchors;
 
-      const byteArray = ethers.utils.arrayify(project.anchor.multihash);
-      const decodedMultihash = multihash.decode(byteArray);
-      const decodedCommitHash = ethers.utils
-        .hexlify(decodedMultihash.digest)
-        .replace(/^0x/, "");
-      const anchor: project.Anchor = {
+  return response
+    .filter(anchor => {
+      return anchor.tag === "0";
+    })
+    .map(anchor => {
+      return {
         type: "confirmed",
-        orgAddress,
-        transactionId: project.anchor.id,
-        projectId: decodedProjectId,
-        commitHash: decodedCommitHash,
-        timestamp: project.anchor.timestamp,
-        registration,
+        transactionId: anchor.id,
+        orgAddress: anchor.org.id,
+        projectId: contract.decodeUrn(anchor.objectId),
+        commitHash: contract.decodeSha1(anchor.multihash),
+        timestamp: parseInt(anchor.timestamp),
       };
-
-      return anchor;
-    }
-  );
+    });
 }
 
 // Returns `true` if `err` is a 502 or 503 HTTP response error thrown

@@ -41,10 +41,16 @@ context("patches", () => {
         { dataDir: tempDirPath, handle: "rudolfs" },
         node => {
           nodeManager.asNode(node);
-          commands.createEmptyProject(
-            "new-project",
-            tempDirPath,
-            node.httpPort
+          cy.then(() =>
+            node.client.project.create({
+              repo: {
+                type: "new",
+                path: tempDirPath,
+                name: "new-project",
+              },
+              description: "",
+              defaultBranch: "main",
+            })
           );
           commands.pick("sidebar", "settings").click();
           commands.pick("sidebar", "profile").click();
@@ -133,11 +139,7 @@ context("patches", () => {
         { dataDir: tempDirPath, handle: "rudolfs" },
         node => {
           nodeManager.asNode(node);
-          commands.createEmptyProject(
-            "new-project",
-            tempDirPath,
-            node.httpPort
-          );
+          commands.createEmptyProject(node.client, "new-project", tempDirPath);
           commands.pick("sidebar", "settings").click();
           commands.pick("sidebar", "profile").click();
           commands.pick("project-list-entry-new-project").should("exist");
@@ -207,9 +209,9 @@ context("patches", () => {
             const projectName = "new-fancy-project.xyz";
             cy.log("Create a project via API");
             commands.createEmptyProject(
+              maintainerNode.client,
               projectName,
-              maintainerProjectsDir,
-              maintainerNode.httpPort
+              maintainerProjectsDir
             );
 
             cy.log("refresh the UI for the project to show up");
@@ -238,18 +240,18 @@ context("patches", () => {
               nodeManager.asNode(contributorNode);
 
               cy.log("contributor follows the project");
-              commands.followProject(urn, contributorNode.httpPort);
+              cy.then(() => contributorNode.client.project.requestSubmit(urn));
               commands
                 .pick("project-list-entry-new-fancy-project.xyz")
                 .should("exist");
 
               cy.log("contributor checks out the project");
               cy.exec(`mkdir -p "${contributorProjectsDir}"`);
-              commands.checkoutProject(
-                urn,
-                contributorProjectsDir,
-                maintainerNode.peerId,
-                contributorNode.httpPort
+              cy.then(() =>
+                contributorNode.client.project.checkout(urn, {
+                  path: contributorProjectsDir,
+                  peerId: maintainerNode.peerId,
+                })
               );
             });
 
@@ -300,10 +302,11 @@ context("patches", () => {
                 throw new Error("Could not find URN");
               }
 
-              commands.trackPeer(
-                urn,
-                contributorNode.peerId,
-                maintainerNode.httpPort
+              cy.then(() =>
+                maintainerNode.client.project.peerTrack(
+                  urn,
+                  contributorNode.peerId
+                )
               );
             });
 
@@ -370,9 +373,9 @@ context("patches", () => {
             cy.log("Create a project via API");
             commands
               .createEmptyProject(
+                maintainerNode.client,
                 projectName,
-                maintainerProjectsDir,
-                maintainerNode.httpPort
+                maintainerProjectsDir
               )
               .as("projectUrn");
 
@@ -396,27 +399,29 @@ context("patches", () => {
             nodeManager.asNode(contributorNode);
             cy.get<string>("@projectUrn").then(urn => {
               cy.log("contributor checks out the project");
-              commands.followProject(urn, contributorNode.httpPort);
+              cy.then(() => contributorNode.client.project.requestSubmit(urn));
+              commands.pick("following-tab").click();
               commands
                 .pick(`project-list-entry-${projectName}`)
                 .should("exist");
 
               cy.exec(`mkdir -p "${contributorProjectsDir}"`);
-              commands.checkoutProject(
-                urn,
-                contributorProjectsDir,
-                maintainerNode.peerId,
-                contributorNode.httpPort
+              cy.then(() =>
+                contributorNode.client.project.checkout(urn, {
+                  path: contributorProjectsDir,
+                  peerId: maintainerNode.peerId,
+                })
               );
             });
 
             cy.log("maintainer tracks peer");
             nodeManager.asNode(maintainerNode);
             cy.get<string>("@projectUrn").then(urn => {
-              commands.trackPeer(
-                urn,
-                contributorNode.peerId,
-                maintainerNode.httpPort
+              cy.then(() =>
+                maintainerNode.client.project.peerTrack(
+                  urn,
+                  contributorNode.peerId
+                )
               );
             });
 

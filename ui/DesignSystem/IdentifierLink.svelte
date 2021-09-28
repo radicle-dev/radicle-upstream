@@ -8,24 +8,35 @@
 <script lang="typescript">
   import { unreachable } from "ui/src/unreachable";
   import * as format from "./lib/format";
+  import Icon from "./Icon";
 
   export let params:
     | { type: "commitHash"; hash: string; onClick: () => void }
     | { type: "transactionHash"; hash: string; url: string };
+  export let showIcon: boolean = false;
 </script>
 
 <style>
-  a {
+  a,
+  span {
     color: var(--color-foreground-level-6);
   }
 </style>
 
-{#if params.type === "commitHash"}
-  <span class="typo-link" on:click={params.onClick}>
-    {format.shortCommitHash(params.hash)}
-  </span>
-{:else if params.type === "transactionHash"}
-  <a class="typo-link" href={params.url}>{format.shortEthTx(params.hash)}</a>
-{:else}
-  {unreachable(params)}
-{/if}
+<div style="display: flex;">
+  {#if params.type === "commitHash"}
+    {#if showIcon}
+      <Icon.Commit />
+    {/if}
+    <span class="typo-link" on:click={params.onClick}>
+      {format.shortCommitHash(params.hash)}
+    </span>
+  {:else if params.type === "transactionHash"}
+    {#if showIcon}
+      <Icon.Ethereum />
+    {/if}
+    <a class="typo-link" href={params.url}>{format.shortEthTx(params.hash)}</a>
+  {:else}
+    {unreachable(params)}
+  {/if}
+</div>

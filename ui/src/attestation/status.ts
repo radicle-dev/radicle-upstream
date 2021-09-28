@@ -4,15 +4,16 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import { Signer, ethers } from "ethers";
+import * as svelteStore from "svelte/store";
+
 import type { Identity } from "ui/src/identity";
 import type { UnsealedSession } from "ui/src/session";
 import type { Wallet } from "ui/src/wallet";
 
-import { Signer, ethers } from "ethers";
 import { claimsAddress, ClaimsContract } from "./contract";
-import { parseIdentitySha1 } from "ui/src/urn";
 import * as session from "ui/src/session";
-import * as svelteStore from "svelte/store";
+import * as urn from "ui/src/urn";
 
 export enum AttestationStatus {
   Fetching = "Fetching",
@@ -90,7 +91,7 @@ async function getAttestationStatus(
   if (claimed === undefined) {
     return AttestationStatus.Incomplete;
   }
-  const expected = parseIdentitySha1(identity.urn);
+  const expected = urn.urnToSha1(identity.urn);
   if (ethers.utils.hexlify(claimed) !== ethers.utils.hexlify(expected)) {
     return AttestationStatus.UnmatchingRoot;
   }

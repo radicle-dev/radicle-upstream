@@ -24,11 +24,13 @@
   const selectPatch = ({ detail: patch }: { detail: Patch }) => {
     router.push({
       type: "project",
-      urn: project.urn,
-      activeView: {
-        type: "patch",
-        peerId: patch.peerId,
-        id: patch.id,
+      params: {
+        urn: project.urn,
+        activeView: {
+          type: "patch",
+          peerId: patch.peerId,
+          id: patch.id,
+        },
       },
     });
   };
@@ -95,8 +97,10 @@
       on:select={option => {
         router.push({
           type: "project",
-          urn: project.urn,
-          activeView: { type: "patches", filter: option.detail },
+          params: {
+            urn: project.urn,
+            activeView: { type: "patches", filter: option.detail },
+          },
         });
       }} />
   </div>

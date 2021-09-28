@@ -8,6 +8,8 @@
 <script lang="typescript">
   import type { Stats } from "ui/src/project";
 
+  import dayjs from "dayjs";
+
   import { Icon, CopyableIdentifier } from "ui/DesignSystem";
 
   export let name: string;
@@ -15,6 +17,7 @@
   export let description: string | undefined = undefined;
   export let stats: Stats;
   export let onClick: (() => void) | undefined = undefined;
+  export let latestAnchorTimestamp: number | undefined = undefined;
 </script>
 
 <style>
@@ -40,18 +43,20 @@
   .stat-item {
     display: flex;
     color: var(--color-foreground-level-6);
-    margin-right: 1rem;
   }
 
-  .stat-item p {
-    margin-left: 0.5rem;
-    white-space: nowrap;
-  }
-
-  .stat-separator {
+  .stat-item:not(:last-of-type)::after {
+    content: "•";
     display: flex;
     color: var(--color-foreground-level-3);
-    margin-right: 1rem;
+    margin: 0 1rem 0 1rem;
+    font-family: var(--typeface-mono-bold);
+    font-weight: bold;
+  }
+
+  .stat-item span {
+    margin-left: 0.5rem;
+    white-space: nowrap;
   }
 
   .clickable {
@@ -81,22 +86,29 @@
     {#if stats.branches > 0}
       <div class="stat-item">
         <Icon.Branch />
-        <p>
+        <span>
           {stats.branches === 1 ? `1 Branch` : `${stats.branches} Branches`}
-        </p>
+        </span>
       </div>
     {/if}
-    {#if stats.branches > 0 && stats.contributors > 0}
-      <span class="typo-mono-bold stat-separator">•</span>
-    {/if}
+
     {#if stats.contributors > 0}
       <div class="stat-item">
         <Icon.User />
-        <p>
+        <span>
           {stats.contributors === 1
             ? `1 Contributor`
             : `${stats.contributors} Contributors`}
-        </p>
+        </span>
+      </div>
+    {/if}
+
+    {#if latestAnchorTimestamp}
+      <div class="stat-item">
+        <Icon.Anchor />
+        <span>
+          Last anchored {dayjs().to(dayjs.unix(latestAnchorTimestamp))}
+        </span>
       </div>
     {/if}
   </div>

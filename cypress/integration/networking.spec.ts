@@ -76,9 +76,9 @@ context("p2p networking", () => {
             const projectName = "new-fancy-project.xyz";
             cy.log("Create a project via API");
             commands.createEmptyProject(
+              maintainerNode.client,
               projectName,
-              maintainerProjectsDir,
-              maintainerNode.httpPort
+              maintainerProjectsDir
             );
 
             cy.log("refresh the UI for the project to show up");

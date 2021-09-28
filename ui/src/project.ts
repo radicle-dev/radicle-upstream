@@ -29,7 +29,7 @@ import {
 export type { Metadata, Stats, Request, Peer, PeerReplicated };
 export { RequestStatus, PeerReplicationStatusType, PeerRole, PeerType };
 
-interface ConfirmedAnchor {
+export interface ConfirmedAnchor {
   type: "confirmed";
   transactionId: string;
   orgAddress: string;
