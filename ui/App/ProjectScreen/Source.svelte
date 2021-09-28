@@ -6,9 +6,10 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Project, User } from "ui/src/project";
+  import type { Project, User, ConfirmedAnchor } from "ui/src/project";
   import type { Screen } from "ui/src/screen/project/source";
   import type { Branch, Tag } from "ui/src/source";
+  import type * as projectRoute from "./route";
 
   import { onDestroy } from "svelte";
 
@@ -27,6 +28,7 @@
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
   import * as screen from "ui/src/screen";
+  import * as wallet from "ui/src/wallet";
 
   import { Icon } from "ui/DesignSystem";
 
@@ -37,6 +39,7 @@
   import PatchButton from "./Source/PatchButton.svelte";
   import RevisionSelector from "./Source/SourceBrowser/RevisionSelector.svelte";
 
+  import Anchors from "./Source/Anchors.svelte";
   import CommitTab from "./Source/Commit.svelte";
   import CommitsTab from "./Source/Commits.svelte";
   import FilesTab from "./Source/Code.svelte";
@@ -46,11 +49,12 @@
   export let project: Project;
   export let selectedPeer: User;
   export let isContributor: boolean;
+  export let anchors: ConfirmedAnchor[];
 
-  export let activeView: router.ProjectView;
+  export let activeView: projectRoute.ProjectView;
 
-  const tabs = (active: router.ProjectView, screen: Screen) => {
-    return [
+  const tabs = (active: projectRoute.ProjectView, screen: Screen) => {
+    const items = [
       {
         title: "Files",
         active: active.type === "files",
@@ -61,8 +65,10 @@
           } else {
             router.push({
               type: "project",
-              urn: project.urn,
-              activeView: { type: "files" },
+              params: {
+                urn: project.urn,
+                activeView: { type: "files" },
+              },
             });
           }
         },
@@ -75,8 +81,10 @@
         onClick: () => {
           router.push({
             type: "project",
-            urn: project.urn,
-            activeView: { type: "commits" },
+            params: {
+              urn: project.urn,
+              activeView: { type: "commits" },
+            },
           });
         },
       },
@@ -88,12 +96,37 @@
         onClick: () => {
           router.push({
             type: "project",
-            urn: project.urn,
-            activeView: { type: "patches", filter: "open" },
+            params: {
+              urn: project.urn,
+              activeView: { type: "patches", filter: "open" },
+            },
           });
         },
       },
     ];
+
+    if (wallet.isConnected()) {
+      return [
+        ...items,
+        {
+          title: "Anchors",
+          active: active.type === "anchors",
+          icon: Icon.Anchor,
+          counter: anchors.length,
+          onClick: () => {
+            router.push({
+              type: "project",
+              params: {
+                urn: project.urn,
+                activeView: { type: "anchors" },
+              },
+            });
+          },
+        },
+      ];
+    } else {
+      return items;
+    }
   };
 
   $: patchesTabSelected = activeView.type === "patches";
@@ -186,7 +219,14 @@
   {:else if activeView.type === "commits"}
     <CommitsTab />
   {:else if activeView.type === "commit"}
-    <CommitTab commitHash={activeView.commitHash} />
+    <CommitTab
+      commitHash={activeView.commitHash}
+      anchors={anchors.filter(anchor => {
+        return (
+          activeView.type === "commit" &&
+          anchor.commitHash === activeView.commitHash
+        );
+      })} />
   {:else if activeView.type === "patches"}
     <PatchList
       project={$store.data.project}
@@ -194,6 +234,8 @@
       filter={activeView.filter} />
   {:else if activeView.type === "patch"}
     <Patch {project} id={activeView.id} peerId={activeView.peerId} />
+  {:else if activeView.type === "anchors"}
+    <Anchors {anchors} />
   {:else}
     {unreachable(activeView)}
   {/if}

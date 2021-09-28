@@ -15,7 +15,7 @@
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
 
-  import { IdentifierLink } from "ui/DesignSystem";
+  import { IdentifierLink, format } from "ui/DesignSystem";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let transactionHash: string;
@@ -105,7 +105,7 @@
       <div class="row">
         <p>Timestamp</p>
         <p>
-          {dayjs(tx.date).format("HH:mm:ss [on] D MMMM YYYY")}
+          {dayjs(tx.date).format(format.TRANSACTION_TIMESTAMP_FORMAT)}
         </p>
       </div>
     </div>

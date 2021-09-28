@@ -4,6 +4,10 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+// dayjs(1632733193970).format(TRANSACTION_TIMESTAMP_FORMAT) ->
+// 27 Sep 2021 at 10:59
+export const TRANSACTION_TIMESTAMP_FORMAT = "D MMM YYYY [at] HH:mm";
+
 export function shorten(
   value: string,
   beginningLength: number,

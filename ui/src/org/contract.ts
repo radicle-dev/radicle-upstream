@@ -9,12 +9,13 @@ import type {
   TransactionResponse,
 } from "@ethersproject/providers";
 import * as ethers from "ethers";
-import * as multihash from "multihashes";
 
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
-import * as urn from "ui/src/urn";
+import * as multihash from "multihashes";
+
 import { memoizeLru } from "ui/src/memoizeLru";
+import * as Urn from "ui/src/urn";
 
 export type { TransactionResponse };
 
@@ -113,15 +114,10 @@ export async function generateAnchorProjectTxData(
 ): Promise<string> {
   const orgContract = new ethers.Contract(ethers.constants.AddressZero, orgAbi);
 
-  const { encodedProjectUrn, encodedCommitHash } = encodeAnchorData(
-    projectUrn,
-    commitHash
-  );
-
   const orgContractInstance = await orgContract.populateTransaction.anchor(
-    encodedProjectUrn,
+    encodeUrn(projectUrn),
     ethers.constants.Zero,
-    encodedCommitHash
+    encodeSha1(commitHash)
   );
 
   const txData = orgContractInstance.data;
@@ -142,32 +138,12 @@ export function submitSingleSigAnchor(
   signer: ethers.Signer
 ): Promise<TransactionResponse> {
   const org = new ethers.Contract(orgAddress, orgAbi, signer);
-  const { encodedProjectUrn, encodedCommitHash } = encodeAnchorData(
-    projectUrn,
-    commitHash
-  );
 
   return org.anchor(
-    encodedProjectUrn,
+    encodeUrn(projectUrn),
     ethers.constants.Zero,
-    encodedCommitHash
+    encodeSha1(commitHash)
   );
-}
-
-function encodeAnchorData(
-  projectUrn: string,
-  commitHash: string
-): { encodedProjectUrn: Uint8Array; encodedCommitHash: Uint8Array } {
-  const encodedProjectUrn = ethers.utils.zeroPad(
-    urn.parseIdentitySha1(projectUrn),
-    32
-  );
-  const encodedCommitHash = multihash.encode(
-    ethers.utils.arrayify(`0x${commitHash}`),
-    "sha1"
-  );
-
-  return { encodedProjectUrn, encodedCommitHash };
 }
 
 export interface AnchorData {
@@ -180,19 +156,10 @@ export function parseAnchorTx(data: string): AnchorData | undefined {
   const parsedTx = iface.parseTransaction({ data });
 
   if (parsedTx.name === "anchor") {
-    const encodedProjectUrn = parsedTx.args[0];
-    const encodedCommitHash = parsedTx.args[2];
-
-    const projectId = urn.identitySha1Urn(
-      ethers.utils.arrayify(`0x${encodedProjectUrn.slice(26)}`)
-    );
-    const byteArray = ethers.utils.arrayify(encodedCommitHash);
-    const decodedMultihash = multihash.decode(byteArray);
-    const decodedCommitHash = ethers.utils
-      .hexlify(decodedMultihash.digest)
-      .replace(/^0x/, "");
-
-    return { projectId: projectId, commitHash: decodedCommitHash };
+    return {
+      projectId: decodeUrn(parsedTx.args[0]),
+      commitHash: decodeSha1(parsedTx.args[2]),
+    };
   }
 }
 
@@ -226,4 +193,22 @@ export async function populateSetNameTransaction(
   }
 
   return txData;
+}
+
+export function encodeUrn(urn: string): Uint8Array {
+  return ethers.utils.zeroPad(Urn.urnToSha1(urn), 32);
+}
+
+export function decodeUrn(encodedUrn: string): string {
+  return Urn.sha1ToUrn(ethers.utils.arrayify(`0x${encodedUrn.slice(26)}`));
+}
+
+function encodeSha1(sha1: string): Uint8Array {
+  return multihash.encode(ethers.utils.arrayify(`0x${sha1}`), "sha1");
+}
+
+export function decodeSha1(encodedSha1: string): string {
+  const byteArray = ethers.utils.arrayify(encodedSha1);
+  const decodedMultihash = multihash.decode(byteArray);
+  return ethers.utils.hexlify(decodedMultihash.digest).replace(/^0x/, "");
 }

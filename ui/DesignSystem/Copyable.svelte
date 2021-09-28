@@ -59,6 +59,7 @@
     display: flex;
     min-height: 24px;
     width: 100%;
+    align-items: center;
   }
 </style>
 

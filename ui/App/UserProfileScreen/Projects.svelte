@@ -20,8 +20,10 @@
   const select = ({ detail: project }: { detail: Project }) => {
     router.push({
       type: "project",
-      urn: project.urn,
-      activeView: { type: "files" },
+      params: {
+        urn: project.urn,
+        activeView: { type: "files" },
+      },
     });
   };
 

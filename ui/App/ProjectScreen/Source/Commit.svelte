@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import type * as project from "ui/src/project";
+
   import { commit, fetchCommit } from "ui/src/screen/project/source";
   import { formatCommitTime } from "ui/src/source";
   import * as error from "ui/src/error";
@@ -14,10 +16,12 @@
 
   import { CopyableIdentifier, Icon } from "ui/DesignSystem";
 
+  import AnchorCard from "./AnchorCard.svelte";
   import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
   import Changeset from "./SourceBrowser/Changeset.svelte";
 
   export let commitHash: string;
+  export let anchors: project.ConfirmedAnchor[];
 
   $: {
     if ($commit.status === remote.Status.Error) {
@@ -36,8 +40,9 @@
     min-width: var(--content-min-width);
   }
 
-  .content {
+  .commit-header {
     background: var(--color-foreground-level-1);
+    border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
     padding: 1.5rem;
   }
@@ -80,7 +85,7 @@
       style="padding: 1rem; z-index: 0;"
       on:arrowClick={() => router.pop()}>
       <h3 style="margin-bottom: .75rem">{$commit.data.header.summary}</h3>
-      <div class="metadata">
+      <div>
         <span class="field">
           <!-- NOTE(cloudhead): These awful margin hacks are here because
             there is a bug in prettier that breaks our HTML if we try to format
@@ -107,7 +112,7 @@
         </span>
       </div>
     </BackButton>
-    <div class="content" data-cy="commit-header">
+    <div class="commit-header" data-cy="commit-header">
       <pre
         class="typo-mono"
         style="margin-bottom: 1rem">
@@ -121,16 +126,16 @@
       <hr />
       <div class="context">
         <div>
-          <p class="field">
+          <span class="field">
             Authored by
             <span class="author typo-semi-bold">
               {$commit.data.header.author.name}
             </span>
             <span class="typo-mono"
               >&lt;{$commit.data.header.author.email}&gt;</span>
-          </p>
+          </span>
           {#if $commit.data.header.committer.email !== $commit.data.header.author.email}
-            <p class="field">
+            <span class="field">
               Committed by
               <span class="author typo-semi-bold">
                 {$commit.data.header.committer.name}
@@ -138,20 +143,24 @@
               <span class="typo-mono">
                 &lt;{$commit.data.header.committer.email}&gt;
               </span>
-            </p>
+            </span>
           {/if}
         </div>
         <!-- TODO(cloudhead): Commit parents when dealing with merge commit -->
-        <p class="field">
+        <span class="field">
           Commit
           <CopyableIdentifier
             tooltipPosition="left"
             style="display: inline-block;"
             kind="commitHash"
             value={$commit.data.header.sha1} />
-        </p>
+        </span>
       </div>
     </div>
+
+    {#each anchors as anchor}
+      <AnchorCard {anchor} showCommitHash={false} style="margin-top: 1rem;" />
+    {/each}
 
     <main>
       <Changeset diff={$commit.data.diff} stats={$commit.data.stats} />
