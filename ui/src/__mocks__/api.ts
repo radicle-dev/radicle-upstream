@@ -7,7 +7,6 @@
 import type * as project from "ui/src/project";
 import type * as session from "ui/src/session";
 import type * as source from "ui/src/source";
-import { Theme, UIFont, CodeFont } from "ui/src/proxy/settings";
 
 import * as identity from "ui/src/identity";
 
@@ -50,19 +49,6 @@ const surfProjectMock: project.Project = {
 };
 
 export const sessionMock: session.SessionData = {
-  settings: {
-    appearance: {
-      theme: Theme.Dark,
-      uiFont: UIFont.Inter,
-      codeFont: CodeFont.SourceCode,
-      hints: {
-        showRemoteHelper: true,
-      },
-    },
-    coco: {
-      seeds: ["seed.radicle.xyz"],
-    },
-  },
   identity: identity.fallback,
 };
 

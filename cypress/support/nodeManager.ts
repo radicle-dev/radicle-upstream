@@ -7,6 +7,7 @@
 import qs from "qs";
 
 import type { Config } from "ui/src/config";
+import * as proxy from "ui/src/proxy";
 
 import { createPlugin } from "cypress/support/plugin";
 import {
@@ -15,24 +16,36 @@ import {
   NodeManagerPlugin,
 } from "cypress/plugins/nodeManager/shared";
 
+interface NodeHandle extends NodeSession {
+  client: proxy.Client;
+}
+
 const nodeManagerPlugin = createPlugin<NodeManagerPlugin>(
   "nodeManager",
   pluginMethods
 );
 
-const startAndOnboardNode = (
+function startAndOnboardNode(
   dataDir: string,
   onboardedUser: OnboardedUser
-): Cypress.Chainable<NodeSession> => {
-  return nodeManagerPlugin.startNode(dataDir).then(id => {
-    cy.log(`Started node ${id}`);
-    return nodeManagerPlugin.onboardNode({
-      id,
-      handle: onboardedUser.handle || "secretariat",
-      passphrase: onboardedUser.passphrase || "radicle-upstream",
-    });
-  });
-};
+): Cypress.Chainable<NodeHandle> {
+  return nodeManagerPlugin
+    .startNode(dataDir)
+    .then(id => {
+      cy.log(`Started node ${id}`);
+      return nodeManagerPlugin.onboardNode({
+        id,
+        handle: onboardedUser.handle || "secretariat",
+        passphrase: onboardedUser.passphrase || "radicle-upstream",
+      });
+    })
+    .then(
+      (nodeSession): NodeHandle => ({
+        ...nodeSession,
+        client: new proxy.Client(`http://localhost:${nodeSession.httpPort}`),
+      })
+    );
+}
 
 const withNodeManager = (callback: () => void): void => {
   nodeManagerPlugin.stopAllNodes();
@@ -77,13 +90,13 @@ ${cmd}`,
   );
 };
 
-export const withOneOnboardedNode = (
+export function withOneOnboardedNode(
   options: {
     dataDir: string;
     handle?: string;
   },
-  callback: (node: NodeSession) => void
-): void => {
+  callback: (node: NodeHandle) => void
+): void {
   withNodeManager(() => {
     startAndOnboardNode(options.dataDir, {
       handle: options.handle,
@@ -91,12 +104,12 @@ export const withOneOnboardedNode = (
       callback(node);
     });
   });
-};
+}
 
-export const withTwoOnboardedNodes = (
+export function withTwoOnboardedNodes(
   options: WithTwoOnboardedNodesOptions,
-  callback: (node1: NodeSession, node2: NodeSession) => void
-): void => {
+  callback: (node1: NodeHandle, node2: NodeHandle) => void
+): void {
   withNodeManager(() => {
     startAndOnboardNode(options.dataDir, options.node1User).then(node0 => {
       startAndOnboardNode(options.dataDir, options.node2User).then(node1 => {
@@ -104,7 +117,7 @@ export const withTwoOnboardedNodes = (
       });
     });
   });
-};
+}
 
 export const asNode = (node: NodeSession): void => {
   cy.log(`switching UI to node ${node.id}`);
