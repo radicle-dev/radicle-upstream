@@ -289,11 +289,6 @@ impl From<&error::Error> for Response {
                 variant: "FORBIDDEN",
                 message: err.to_string(),
             },
-            error::Error::SessionInUse(_) => Self {
-                status_code: StatusCode::BAD_REQUEST,
-                variant: "SESSION_IN_USE",
-                message: err.to_string(),
-            },
             _ => Self {
                 status_code: StatusCode::INTERNAL_SERVER_ERROR,
                 variant: "INTERNAL_SERVER_ERROR",

@@ -8,8 +8,6 @@
 
 use std::io;
 
-use link_identities::git::Urn;
-
 use crate::keystore;
 
 /// All error variants the API will return.
@@ -32,9 +30,6 @@ pub enum Error {
     /// An I/O error occurred.
     #[error(transparent)]
     Io(#[from] io::Error),
-
-    #[error("the current session is in use by `{0}`")]
-    SessionInUse(Urn),
 
     /// Issues when access persistent storage.
     #[error(transparent)]

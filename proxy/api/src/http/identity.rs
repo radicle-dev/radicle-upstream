@@ -60,17 +60,20 @@ mod handler {
 
     use link_identities::git::Urn;
 
-    use crate::{context, error, http, identity, session};
+    use crate::{context, http, identity, session};
 
     /// Create a new [`identity::Identity`].
     pub async fn create(
         ctx: context::Unsealed,
         metadata: identity::Metadata,
     ) -> Result<impl Reply, Rejection> {
-        if let Some(session) = session::get_current(&ctx.store)? {
-            return Err(Rejection::from(error::Error::SessionInUse(
-                session.identity.urn,
-            )));
+        if session::get_current(&ctx.store)?.is_some() {
+            return Err(http::error::Response {
+                status_code: StatusCode::BAD_REQUEST,
+                variant: "SESSION_IN_USE",
+                message: "A session already exists".to_string(),
+            }
+            .into());
         }
 
         let id = identity::create(&ctx.peer, metadata).await?;
