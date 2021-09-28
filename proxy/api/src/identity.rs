@@ -182,29 +182,12 @@ pub async fn update(
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
-/// Retrieve an identity by id. We assume the `Identity` is owned by this peer.
-///
-/// # Errors
-///
-/// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub async fn get(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
-    id: Urn,
-) -> Result<Option<Identity>, error::Error> {
-    match radicle_daemon::state::get_local(peer, id).await? {
-        Some(user) => Ok(Some(
-            (peer.peer_id(), user.into_inner().into_inner()).into(),
-        )),
-        None => Ok(None),
-    }
-}
-
 /// Retrieve an identity by id.
 ///
 /// # Errors
 ///
 /// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub async fn get_remote(
+pub async fn get(
     peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
     id: Urn,
 ) -> Result<Option<Person>, error::Error> {

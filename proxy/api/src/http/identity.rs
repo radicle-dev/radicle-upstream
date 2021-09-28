@@ -14,8 +14,7 @@ use crate::{context, http};
 
 /// Combination of all identity routes.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    get_filter(ctx.clone())
-        .or(get_remote_filter(ctx.clone()))
+    get_remote_filter(ctx.clone())
         .or(create_filter(ctx.clone()))
         .or(update_filter(ctx))
         .boxed()
@@ -41,17 +40,6 @@ fn update_filter(
         .and(http::with_context_unsealed(ctx))
         .and(warp::body::json())
         .and_then(handler::update)
-}
-
-/// `GET /<id>`
-fn get_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path::param::<Urn>()
-        .and(warp::path::end())
-        .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
-        .and_then(handler::get)
 }
 
 /// `GET /remote/<id>`
@@ -104,15 +92,9 @@ mod handler {
         Ok(reply::with_status(reply::json(&id), StatusCode::OK))
     }
 
-    /// Get the [`identity::Identity`] for the given `id`.
-    pub async fn get(id: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let id = identity::get(&ctx.peer, id.clone()).await?;
-        Ok(reply::json(&id))
-    }
-
     /// Get the [`identity::Person`] for the given `id`.
     pub async fn get_remote(id: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        match identity::get_remote(&ctx.peer, id.clone()).await? {
+        match identity::get(&ctx.peer, id.clone()).await? {
             Some(id) => Ok(reply::json(&id)),
             None => Err(reject::not_found()),
         }
@@ -123,7 +105,7 @@ mod handler {
 #[cfg(test)]
 mod test {
     use pretty_assertions::assert_eq;
-    use serde_json::{json, Value};
+    use serde_json::json;
     use std::convert::TryInto;
     use warp::{http::StatusCode, test::request};
 
@@ -339,41 +321,6 @@ mod test {
                 })
             );
         });
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn get() -> Result<(), error::Error> {
-        let tmp_dir = tempfile::tempdir()?;
-        let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
-        let api = super::filters(ctx.clone().into());
-
-        let user = radicle_daemon::state::init_user(&ctx.peer, "cloudhead".to_string()).await?;
-
-        let res = request()
-            .method("GET")
-            .path(&format!("/{}", user.urn()))
-            .reply(&api)
-            .await;
-
-        let handle = user.subject().name.to_string();
-        let peer_id = ctx.peer.peer_id();
-        let urn = user.urn();
-
-        let have: Value = serde_json::from_slice(res.body()).unwrap();
-        assert_eq!(res.status(), StatusCode::OK);
-        assert_eq!(
-            have,
-            json!(identity::Identity {
-                peer_id,
-                urn,
-                metadata: identity::Metadata {
-                    handle,
-                    ethereum: None
-                },
-            })
-        );
 
         Ok(())
     }

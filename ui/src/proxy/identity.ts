@@ -80,17 +80,6 @@ export class Client {
     );
   }
 
-  async get(urn: string, options?: RequestOptions): Promise<Identity> {
-    return this.fetcher.fetchOk(
-      {
-        method: "GET",
-        path: `identities/${urn}`,
-        options,
-      },
-      identitySchema
-    );
-  }
-
   async update(params: Metadata, options?: RequestOptions): Promise<Identity> {
     return this.fetcher.fetchOk(
       {
