@@ -203,16 +203,14 @@
               active={$primaryColor}
               options={primaryColorOptions}
               on:select={ev => primaryColor.set(ev.detail)} />
-            {#if $primaryColor === "custom"}
-              <ColorInput
-                style="margin-right: 1rem;"
-                bind:value={$primaryColorHex} />
-            {/if}
+            <ColorInput
+              style="margin-right: 2rem;"
+              bind:value={$primaryColorHex} />
           </div>
         </Tooltip>
         <Tooltip value="UI font" position="bottom">
           <SegmentedControl
-            style="background-color: var(--color-background); margin-left: 1rem; margin-right: 2rem;"
+            style="background-color: var(--color-background); margin-right: 2rem;"
             active={$uiFont}
             options={uiFontOptions}
             on:select={ev => uiFont.set(ev.detail)} />

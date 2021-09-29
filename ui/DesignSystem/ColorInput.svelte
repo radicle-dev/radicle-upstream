@@ -6,8 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { fade } from "svelte/transition";
-
   export let value: string | undefined = undefined;
   export let style: string | undefined = undefined;
 </script>
@@ -30,4 +28,4 @@
   }
 </style>
 
-<input {style} transition:fade={{ duration: 200 }} type="color" bind:value />
+<input {style} type="color" bind:value />

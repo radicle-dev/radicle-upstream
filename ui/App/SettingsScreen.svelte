@@ -229,11 +229,9 @@
               active={$primaryColor}
               options={primaryColorOptions}
               on:select={ev => primaryColor.set(ev.detail)} />
-            {#if $primaryColor === "custom"}
-              <ColorInput
-                style="margin-left: 1rem;"
-                bind:value={$primaryColorHex} />
-            {/if}
+            <ColorInput
+              style="margin-left: 1rem;"
+              bind:value={$primaryColorHex} />
           </div>
         </div>
       </section>

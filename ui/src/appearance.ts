@@ -101,6 +101,6 @@ export const primaryColorOptions: Option<PrimaryColor>[] = [
 
 export const primaryColorHex = browserStore.create<string>(
   "radicle.appearance.primaryColorHex",
-  "#000000",
+  "#5555FF",
   zod.string()
 );
