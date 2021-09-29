@@ -51,6 +51,16 @@ pub struct Response {
     pub message: String,
 }
 
+impl Response {
+    pub fn internal_server_error(err: impl std::error::Error) -> Self {
+        Self {
+            status_code: StatusCode::INTERNAL_SERVER_ERROR,
+            variant: "INTERNAL_SERVER_ERROR",
+            message: err.to_string(),
+        }
+    }
+}
+
 impl warp::reject::Reject for Response {}
 
 #[allow(clippy::unused_async)]
@@ -289,11 +299,20 @@ impl From<&error::Error> for Response {
                 variant: "FORBIDDEN",
                 message: err.to_string(),
             },
-            _ => Self {
-                status_code: StatusCode::INTERNAL_SERVER_ERROR,
-                variant: "INTERNAL_SERVER_ERROR",
-                message: err.to_string(),
+            error::Error::ProjectNotFound => Self {
+                status_code: StatusCode::NOT_FOUND,
+                variant: "PROJECT_NOT_FOUND",
+                message: "Project not found".to_string(),
             },
+            error::Error::MissingDefaultBranch => Self {
+                status_code: StatusCode::INTERNAL_SERVER_ERROR,
+                variant: "MISSING_DEFAULT_BRANCH",
+                message: "Default branch for project is missing".to_string(),
+            },
+            error::Error::Peer(_)
+            | error::Error::Io(_)
+            | error::Error::Store(_)
+            | error::Error::WaitingRoom(_) => Self::internal_server_error(err),
         }
     }
 }
