@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.11](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.10...v0.2.11) (2021-09-29)
+
+
+### Features
+
+* add dedicated endpoint for network seeds ([d846f10](https://github.com/radicle-dev/radicle-upstream/commit/d846f10e1b3afd63d1cc56de19d10b50059da9a8)), closes [#1137](https://github.com/radicle-dev/radicle-upstream/issues/1137)
+* add experimental windows support ([dd1eeda](https://github.com/radicle-dev/radicle-upstream/commit/dd1eedadebfb17b1e3dbfe313c49bff26592a300))
+* add primary font color to settings ([86f9a60](https://github.com/radicle-dev/radicle-upstream/commit/86f9a60a6180c21a9fd512860702f154725569e4))
+* add tests for ethereum attestation ([f178d4b](https://github.com/radicle-dev/radicle-upstream/commit/f178d4b2c6c003e873b914f7294ef6fc195c4481))
+* add validated browser storage abstraction ([55abc41](https://github.com/radicle-dev/radicle-upstream/commit/55abc4177503331d14ef3f7a6699a4f9777b03d6))
+* implement signMessage for test wallet ([3de455b](https://github.com/radicle-dev/radicle-upstream/commit/3de455bc2347034e6fd783f1c7103f9d915baa70))
+* improve DesignSystem guide ([e972998](https://github.com/radicle-dev/radicle-upstream/commit/e9729984c9e7c9ca80951f23f436af78fb5d0d0f))
+* improve keyboard shortcuts ([2a74775](https://github.com/radicle-dev/radicle-upstream/commit/2a74775f617fe467152e1fa4adcd282f5480e85d))
+* improve org sidebar ux ([2c15838](https://github.com/radicle-dev/radicle-upstream/commit/2c15838fca61bc3cd1397f972b49d360a53177e8))
+* integrate org ENS name registration ([3fd6112](https://github.com/radicle-dev/radicle-upstream/commit/3fd6112bde2111a723ba478374f78c143df87079))
+* show anchors on project page ([b028ed4](https://github.com/radicle-dev/radicle-upstream/commit/b028ed4834f9fc287ffe829ed5a5de12208bf07a))
+* show notification when route loading takes long ([f14121c](https://github.com/radicle-dev/radicle-upstream/commit/f14121cbc8366d13f18728832f9166f4bafb9589))
+
+
+### Bug Fixes
+
+* cache claimed identities for one minute ([b0b59a3](https://github.com/radicle-dev/radicle-upstream/commit/b0b59a36369598479bbc1642a972f468af3ec940))
+* catch formatting errors in .ts files in pre-commit check ([b1ee6d9](https://github.com/radicle-dev/radicle-upstream/commit/b1ee6d96083cc75ef43d091de4036d20b9ffae28))
+* cookie handling after electron and cypress upgrade ([5508f24](https://github.com/radicle-dev/radicle-upstream/commit/5508f24f77edb5fd67f962f1a61e1a77d58a9ff9)), closes [#1197](https://github.com/radicle-dev/radicle-upstream/issues/1197)
+* disable failing patches test ([b871b77](https://github.com/radicle-dev/radicle-upstream/commit/b871b774353ca20ed8649fc0deb5352bae869849)), closes [#2308](https://github.com/radicle-dev/radicle-upstream/issues/2308)
+* display token balance properly ([7f79ebd](https://github.com/radicle-dev/radicle-upstream/commit/7f79ebd8e1194e2616972f54c1d5933a0f382396)), closes [#2264](https://github.com/radicle-dev/radicle-upstream/issues/2264)
+* don’t optimize webpack builds in development ([1d14cf4](https://github.com/radicle-dev/radicle-upstream/commit/1d14cf4799e82eb2b98bec918719f5a218329dc6))
+* don’t swallow transaction error source ([3e45a15](https://github.com/radicle-dev/radicle-upstream/commit/3e45a15bf86951b98008c04076d8eadc01409786))
+* fix prettier formatting ([ceb42bf](https://github.com/radicle-dev/radicle-upstream/commit/ceb42bf56517ef0850d77ccbde9e20d9a14b9009))
+* fix regression from Modal update ([92da21a](https://github.com/radicle-dev/radicle-upstream/commit/92da21ae6ea043a384ca248dd3d6a3f2e66600c6))
+* get rid of typescript warning ([413e0f8](https://github.com/radicle-dev/radicle-upstream/commit/413e0f887be68f3a6dd77f7bf2a265bdd9ac928e))
+* handle wallet connect rejection ([f8daaec](https://github.com/radicle-dev/radicle-upstream/commit/f8daaeceef22c2b1c179f7d29feaa7a70b4dbaad))
+* improve pending anchor message ([3b0b8bd](https://github.com/radicle-dev/radicle-upstream/commit/3b0b8bd1d5672ae90d4a7e66deab5772805fbb7e))
+* increase timeout to unseal ([5895280](https://github.com/radicle-dev/radicle-upstream/commit/5895280be11ac26c9699187102cec7e9fb71729f)), closes [#2252](https://github.com/radicle-dev/radicle-upstream/issues/2252)
+* make DirectoryInput text field open the file dialog ([1019cbd](https://github.com/radicle-dev/radicle-upstream/commit/1019cbdaaae2e7c08791caad06b43b372f5ad220))
+* make sure all svelte files have the typescript lang tag ([242c565](https://github.com/radicle-dev/radicle-upstream/commit/242c565e050f19c4488990a5f4a049d054bd4054))
+* network page scroll and button alignment ([e9979df](https://github.com/radicle-dev/radicle-upstream/commit/e9979dfd1c71ade69f4dd734ceeecdad46333592)), closes [#242](https://github.com/radicle-dev/radicle-upstream/issues/242)
+* persist connection state of test wallet connect ([02a9329](https://github.com/radicle-dev/radicle-upstream/commit/02a93291ae0fdbb8fe797ea9342d97b5e62c2dee))
+* reduce The Graph API request amount ([3e3c553](https://github.com/radicle-dev/radicle-upstream/commit/3e3c553dadcfa5db6b7afb44edbe196312b2ce57))
+* reload org list in sidebar on wallet account switch ([bc964e1](https://github.com/radicle-dev/radicle-upstream/commit/bc964e1308c6c4dc935da167cfa02f7edf94587f))
+* respond with 404 if project is not found ([8f39aa9](https://github.com/radicle-dev/radicle-upstream/commit/8f39aa9fb03af2874313fbf846149fa054ad47f9)), closes [#2427](https://github.com/radicle-dev/radicle-upstream/issues/2427)
+* show passphrase button always visible ([c95c10a](https://github.com/radicle-dev/radicle-upstream/commit/c95c10a3b22788139b6882eb049292d96e589cb5))
+* store appearance settings in browser ([be05d08](https://github.com/radicle-dev/radicle-upstream/commit/be05d080c4b3b3e52070583a8bbce4984627b50e)), closes [#2130](https://github.com/radicle-dev/radicle-upstream/issues/2130) [#1849](https://github.com/radicle-dev/radicle-upstream/issues/1849)
+* store remote helper hint data locally ([074bcc8](https://github.com/radicle-dev/radicle-upstream/commit/074bcc89dff62f1c1dab464414acbca285580778)), closes [#1849](https://github.com/radicle-dev/radicle-upstream/issues/1849)
+* try to avoid CI race conditions in networking tests ([2ce35ae](https://github.com/radicle-dev/radicle-upstream/commit/2ce35aef3158f13a31d117502648a09c7a61fddf))
+* type component props consistently ([325a4b8](https://github.com/radicle-dev/radicle-upstream/commit/325a4b8db7c81c01d4ffd1b15f171ba2bee14666))
+* update link to docs on how to obtain RAD token ([7ded359](https://github.com/radicle-dev/radicle-upstream/commit/7ded359776d3e2cad957897ba41accab46728714))
+* update org ENS names in sidebar after registration ([77bb1d8](https://github.com/radicle-dev/radicle-upstream/commit/77bb1d808e18fe8ca4959a07ffd8f2e21a8d61bf))
+* update release bucket for latest release ([1ee551b](https://github.com/radicle-dev/radicle-upstream/commit/1ee551b44ddbade6acce4146bf1362f770f25da2))
+* use Gnosis Safe API instead of The Graph index ([2371bc9](https://github.com/radicle-dev/radicle-upstream/commit/2371bc920db89b282f44e001967e303a5ef4c8b1))
+* use our own walletconnect bridge ([377dcf5](https://github.com/radicle-dev/radicle-upstream/commit/377dcf506a3264fa70c73df14697e0528be306eb))
+
 ### [0.2.10](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.9...v0.2.10) (2021-08-16)
 
 
