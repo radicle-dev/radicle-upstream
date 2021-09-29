@@ -31,7 +31,6 @@
     Icon,
     TextInput,
   } from "ui/DesignSystem";
-  import Remote from "ui/App/Remote.svelte";
 
   let value: string;
   $: value = $inputStore.trim();
@@ -169,17 +168,17 @@
   </div>
 
   <div class="result" class:tracked class:untracked>
-    <Remote {store} let:data={project}>
+    {#if $store.status === remote.Status.Success}
       <div style="padding: 1.5rem;">
         <div
           data-cy="project-name"
           class="header typo-header-3"
-          on:click={_ev => navigateToProject(project)}>
-          <span class="id">{project.metadata.name}</span>
+          on:click={navigateToProject.bind(null, $store.data)}>
+          <span class="id">{$store.data.metadata.name}</span>
         </div>
       </div>
-
-      <div slot="error" style="padding: 1.5rem;">
+    {:else if $store.status === remote.Status.Error}
+      <div style="padding: 1.5rem;">
         <div class="header typo-header-3">
           <CopyableIdentifier {value} kind="radicleId" showIcon={false} />
           <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
@@ -190,6 +189,6 @@
           here. Follow it and you’ll be notified as soon as it’s available.
         </p>
       </div>
-    </Remote>
+    {/if}
   </div>
 </div>

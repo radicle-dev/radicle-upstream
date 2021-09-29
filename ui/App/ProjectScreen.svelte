@@ -6,20 +6,19 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { User, Project, ConfirmedAnchor } from "ui/src/project";
-  import type * as projectRoute from "./ProjectScreen/route";
-
   import { onDestroy } from "svelte";
 
-  import { copyToClipboard } from "ui/src/ipc";
-  import { isMaintainer, isContributor } from "ui/src/project";
-
+  import * as Session from "ui/src/session";
   import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
+  import * as error from "ui/src/error";
   import * as notification from "ui/src/notification";
+  import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
   import * as userProfile from "ui/src/userProfile";
-  import * as Session from "ui/src/session";
+  import type { User, Project, ConfirmedAnchor } from "ui/src/project";
+  import { copyToClipboard } from "ui/src/ipc";
+  import { isMaintainer, isContributor } from "ui/src/project";
   import {
     fetch,
     selectPeer,
@@ -28,7 +27,6 @@
   } from "ui/src/screen/project";
 
   import { Button, Icon, ThreeDotsMenu, format } from "ui/DesignSystem";
-  import Remote from "ui/App/Remote.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import Header from "ui/App/ScreenLayout/Header.svelte";
@@ -37,6 +35,7 @@
   import PeerSelector from "./ProjectScreen/PeerSelector.svelte";
   import ProjectHeader from "./ProjectScreen/ProjectHeader.svelte";
   import Source from "./ProjectScreen/Source.svelte";
+  import type * as projectRoute from "./ProjectScreen/route";
 
   export let urn: string;
   export let anchors: ConfirmedAnchor[];
@@ -99,17 +98,21 @@
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);
+
+  $: if ($store.status === remote.Status.Error) {
+    error.show($store.error);
+  }
 </script>
 
 <ScreenLayout dataCy="project-screen">
-  <Remote {store} let:data={{ peerSelection, project, selectedPeer }}>
+  {#if $store.status === remote.Status.Success}
     <Header>
       <ProjectHeader
         slot="left"
-        urn={project.urn}
-        name={project.metadata.name}
-        description={project.metadata.description}
-        stats={project.stats}
+        urn={$store.data.project.urn}
+        name={$store.data.project.metadata.name}
+        description={$store.data.project.metadata.description}
+        stats={$store.data.project.stats}
         latestAnchorTimestamp={anchors.slice(-1)[0]?.timestamp}
         onClick={() =>
           router.push({
@@ -123,11 +126,11 @@
       <div slot="right" style="display: flex;">
         <div style="display: flex;" class="button-transition">
           <PeerSelector
-            peers={peerSelection}
+            peers={$store.data.peerSelection}
             on:modal={onPeerModal}
             on:open={onOpenPeer}
             on:select={onSelectPeer}
-            selected={selectedPeer} />
+            selected={$store.data.selectedPeer} />
           <Button
             dataCy="manage-remotes"
             icon={Icon.Pen}
@@ -138,14 +141,14 @@
             on:mouseleave={mouseleave}
             style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         </div>
-        <ThreeDotsMenu menuItems={menuItems(project)} />
+        <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
       </div>
     </Header>
     <Source
       {activeView}
-      {project}
-      {selectedPeer}
+      project={$store.data.project}
+      selectedPeer={$store.data.selectedPeer}
       {anchors}
-      isContributor={isContributor(peerSelection)} />
-  </Remote>
+      isContributor={isContributor($store.data.peerSelection)} />
+  {/if}
 </ScreenLayout>
