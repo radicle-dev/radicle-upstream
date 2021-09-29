@@ -101,7 +101,7 @@ const createRc: yargs.CommandModule<unknown, StartOptions> = {
       releaseAs: options.type,
     });
     console.log(
-      `✔ standard-version --infile ./CHANGELOG.md --silent --sign --release-as ${options.releaseType}`
+      `✔ standard-version --infile ./CHANGELOG.md --silent --sign --release-as ${options.type}`
     );
 
     await promptContinue("Create release pull request?");
