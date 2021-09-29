@@ -31,6 +31,12 @@
   .project-card:hover {
     background-color: var(--color-foreground-level-1);
   }
+
+  .project-card:active {
+    transition: transform 0.1s ease-in-out;
+    transform: scale(0.95);
+  }
+
   .title-row {
     display: flex;
     margin-bottom: 1rem;
