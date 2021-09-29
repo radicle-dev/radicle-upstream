@@ -5,6 +5,7 @@
 * [NodeJS](https://nodejs.org/en/)
 * [Yarn](https://yarnpkg.com/getting-started/install)
 * [Rustup](https://github.com/rust-lang/rustup)
+* [`cargo-watch`](https://github.com/watchexec/cargo-watch#install)
 * Dependencies of [Cypress](https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements)
 
 ## Running Upstream from source
