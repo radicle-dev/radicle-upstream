@@ -27,6 +27,10 @@
     flex-direction: column;
     cursor: pointer;
   }
+
+  .project-card:hover {
+    background-color: var(--color-foreground-level-1);
+  }
   .title-row {
     display: flex;
     margin-bottom: 1rem;
