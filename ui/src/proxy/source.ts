@@ -111,6 +111,11 @@ interface BlobGetParams {
   highlight?: "dark" | "light" | "h4x0r";
 }
 
+interface RefsGetParams {
+  projectUrn: string;
+  peerId?: string;
+}
+
 export class Client {
   private fetcher: Fetcher;
 
@@ -118,7 +123,10 @@ export class Client {
     this.fetcher = fetcher;
   }
 
-  async blobGet(params: BlobGetParams, options: RequestOptions): Promise<Blob> {
+  async blobGet(
+    params: BlobGetParams,
+    options?: RequestOptions
+  ): Promise<Blob> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -132,6 +140,40 @@ export class Client {
         options,
       },
       blobSchema
+    );
+  }
+
+  async branchesGet(
+    params: RefsGetParams,
+    options?: RequestOptions
+  ): Promise<string[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `source/branches/${params.projectUrn}`,
+        query: {
+          peerId: params.peerId,
+        },
+        options,
+      },
+      zod.array(zod.string())
+    );
+  }
+
+  async tagsGet(
+    params: RefsGetParams,
+    options?: RequestOptions
+  ): Promise<string[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `source/tags/${params.projectUrn}`,
+        query: {
+          peerId: params.peerId,
+        },
+        options,
+      },
+      zod.array(zod.string())
     );
   }
 }

@@ -118,23 +118,6 @@ export const fetchBlob = async (
   );
 };
 
-export const fetchBranches = (
-  projectUrn: string,
-  peerId?: PeerId
-): Promise<Branch[]> => {
-  return api
-    .get<string[]>(`source/branches/${projectUrn}`, {
-      query: {
-        peerId,
-      },
-    })
-    .then(names =>
-      names.map(name => {
-        return { type: RevisionType.Branch, name };
-      })
-    );
-};
-
 export const fetchCommit = (
   projectUrn: string,
   sha1: Sha1
@@ -196,34 +179,30 @@ export const fetchReadme = async (
   }
 };
 
-export const fetchRevisions = (
+export async function fetchRevisions(
   projectUrn: string,
   peerId?: PeerId
-): Promise<Revisions> => {
-  return Promise.all([
-    fetchBranches(projectUrn, peerId),
-    fetchTags(projectUrn, peerId),
-  ]).then(([branches, tags]) => {
-    return { branches, tags };
-  });
-};
+): Promise<Revisions> {
+  const [branchNames, tagNames] = await Promise.all([
+    proxy.client.source.branchesGet({ projectUrn, peerId }),
+    proxy.client.source.tagsGet({ projectUrn, peerId }),
+  ]);
 
-export const fetchTags = (
-  projectUrn: string,
-  peerId?: PeerId
-): Promise<Tag[]> => {
-  return api
-    .get<string[]>(`source/tags/${projectUrn}`, {
-      query: {
-        peerId,
-      },
+  const branches = branchNames.map(
+    (name): Branch => ({
+      type: RevisionType.Branch,
+      name,
     })
-    .then(names =>
-      names.map(name => {
-        return { type: RevisionType.Tag, name };
-      })
-    );
-};
+  );
+
+  const tags = tagNames.map(
+    (name): Tag => ({
+      type: RevisionType.Tag,
+      name,
+    })
+  );
+  return { branches, tags };
+}
 
 export const fetchTree = (
   projectUrn: string,
