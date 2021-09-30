@@ -34,7 +34,7 @@
 
   .project-card:active {
     transition: transform 0.1s ease-in-out;
-    transform: scale(0.95);
+    transform: scale(0.99);
   }
 
   .title-row {
