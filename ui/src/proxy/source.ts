@@ -25,6 +25,37 @@ export interface CommitHeader {
   summary: string;
 }
 
+const commitHeaderSchema: zod.Schema<CommitHeader> = zod.object({
+  author: personSchema,
+  committer: personSchema,
+  committerTime: zod.number(),
+  description: zod.string(),
+  sha1: zod.string(),
+  summary: zod.string(),
+});
+
+export interface Stats {
+  branches: number;
+  commits: number;
+  contributors: number;
+}
+
+const statsSchema: zod.Schema<Stats> = zod.object({
+  branches: zod.number(),
+  commits: zod.number(),
+  contributors: zod.number(),
+});
+
+export interface CommitSummary {
+  headers: CommitHeader[];
+  stats: Stats;
+}
+
+const commitSummarySchema: zod.Schema<CommitSummary> = zod.object({
+  headers: zod.array(commitHeaderSchema),
+  stats: statsSchema,
+});
+
 export enum ObjectType {
   Blob = "BLOB",
   Tree = "TREE",
@@ -46,14 +77,7 @@ const sourceObjectSchema: zod.Schema<SourceObject> = zod.object({
   info: zod.object({
     name: zod.string(),
     objectType: zod.enum([ObjectType.Blob, ObjectType.Tree]),
-    lastCommit: zod.object({
-      author: personSchema,
-      committer: personSchema,
-      committerTime: zod.number(),
-      description: zod.string(),
-      sha1: zod.string(),
-      summary: zod.string(),
-    }),
+    lastCommit: commitHeaderSchema,
   }),
 });
 
@@ -116,6 +140,12 @@ interface RefsGetParams {
   peerId?: string;
 }
 
+interface CommitsGetParams {
+  projectUrn: string;
+  peerId?: string;
+  revision: RevisionSelector;
+}
+
 export class Client {
   private fetcher: Fetcher;
 
@@ -174,6 +204,26 @@ export class Client {
         options,
       },
       zod.array(zod.string())
+    );
+  }
+
+  async commitsGet(
+    params: CommitsGetParams,
+    options?: RequestOptions
+  ): Promise<CommitSummary> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `source/commits/${params.projectUrn}`,
+        query: {
+          revision: {
+            ...params.revision,
+            peerId: params.peerId,
+          },
+        },
+        options,
+      },
+      commitSummarySchema
     );
   }
 }
