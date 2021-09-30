@@ -78,6 +78,7 @@
   }
   input[type="color"]::-webkit-color-swatch-wrapper {
     padding: 0;
+    cursor: pointer;
   }
   input[type="color"]::-webkit-color-swatch {
     border: none;
@@ -98,8 +99,8 @@
   {/each}
   {#if active === "custom"}
     <input
-      in:fly={{ x: 30, duration: 100, easing: backOut }}
-      out:fly={{ x: 30, duration: 100 }}
+      in:fly|local={{ x: 30, duration: 100, easing: backOut }}
+      out:fly|local={{ x: 30, duration: 100 }}
       {style}
       type="color"
       bind:value={colorValue} />

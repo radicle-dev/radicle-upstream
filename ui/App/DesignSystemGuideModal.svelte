@@ -26,7 +26,7 @@
     Avatar,
     Button,
     Checkbox,
-    ColorInput,
+    SegmentedColorPicker,
     Copyable,
     CopyableIdentifier,
     Dropdown,
@@ -198,19 +198,16 @@
         </Tooltip>
         <Tooltip value="Primary color" position="bottom">
           <div style="display: flex;">
-            <SegmentedControl
-              style="background-color: var(--color-background); margin-right: 1rem;"
+            <SegmentedColorPicker
               active={$primaryColor}
               options={primaryColorOptions}
-              on:select={ev => primaryColor.set(ev.detail)} />
-            <ColorInput
-              style="margin-right: 2rem;"
-              bind:value={$primaryColorHex} />
+              on:select={ev => primaryColor.set(ev.detail)}
+              bind:colorValue={$primaryColorHex} />
           </div>
         </Tooltip>
         <Tooltip value="UI font" position="bottom">
           <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
+            style="background-color: var(--color-background); margin: 0 2rem;"
             active={$uiFont}
             options={uiFontOptions}
             on:select={ev => uiFont.set(ev.detail)} />
