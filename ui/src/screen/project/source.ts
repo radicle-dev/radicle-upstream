@@ -46,7 +46,7 @@ export interface Root {
 export type View = Aborted | Blob | Error | Root;
 
 export interface Code {
-  lastCommit: source.CommitHeader;
+  lastCommit: source.CommitHeader | null;
   path: string;
   view: View;
 }
@@ -80,12 +80,12 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
   const fetchTreeRoot = async (
     selectedRevision: source.RevisionSelector
   ): Promise<[source.Tree, Code]> => {
-    const tree = await source.fetchTree(
-      project.urn,
-      peer.peerId,
-      selectedRevision,
-      ""
-    );
+    const tree = await proxy.client.source.treeGet({
+      projectUrn: project.urn,
+      peerId: peer.peerId,
+      revision: selectedRevision,
+      prefix: "",
+    });
     const root = await fetchCode(project, peer, selectedRevision, tree, "");
     return [tree, root];
   };
@@ -221,12 +221,16 @@ export const selectRevision = async (
 
     const request = new AbortController();
     const fetchTreeCode = async (): Promise<[source.Tree, Code]> => {
-      const tree = await source.fetchTree(
-        project.urn,
-        peer.peerId,
-        revision,
-        "",
-        request.signal
+      const tree = await proxy.client.source.treeGet(
+        {
+          projectUrn: project.urn,
+          peerId: peer.peerId,
+          revision,
+          prefix: "",
+        },
+        {
+          abort: request.signal,
+        }
       );
 
       const newCode = await fetchCode(

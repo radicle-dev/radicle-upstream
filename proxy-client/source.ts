@@ -43,23 +43,21 @@ export enum ObjectType {
   Tree = "TREE",
 }
 
-interface Info {
-  name: string;
-  objectType: ObjectType;
-  lastCommit: CommitHeader;
-}
-
 export interface SourceObject {
   path: string;
-  info: Info;
+  info: {
+    name: string;
+    objectType: ObjectType;
+    lastCommit: CommitHeader | null;
+  };
 }
 
-const sourceObjectSchema: zod.Schema<SourceObject> = zod.object({
+const sourceObjectSchema = zod.object({
   path: zod.string(),
   info: zod.object({
     name: zod.string(),
     objectType: zod.enum([ObjectType.Blob, ObjectType.Tree]),
-    lastCommit: commitHeaderSchema,
+    lastCommit: commitHeaderSchema.nullable(),
   }),
 });
 
@@ -94,6 +92,14 @@ const localStateSchema: zod.Schema<LocalState> = zod.object({
   branches: zod.array(zod.string()),
 });
 
+export interface Tree extends SourceObject {
+  entries: SourceObject[];
+}
+
+const treeSchema: zod.Schema<Tree> = sourceObjectSchema.extend({
+  entries: zod.array(sourceObjectSchema),
+});
+
 export enum RevisionType {
   Branch = "branch",
   Tag = "tag",
@@ -123,6 +129,13 @@ interface BlobGetParams {
   path: string;
   revision: RevisionSelector;
   highlight?: "dark" | "light" | "h4x0r";
+}
+
+interface TreeGetParams {
+  projectUrn: string;
+  peerId: string;
+  revision: RevisionSelector;
+  prefix: string;
 }
 
 interface RefsGetParams {
@@ -182,6 +195,25 @@ export class Client {
         options,
       },
       zod.array(zod.string())
+    );
+  }
+
+  async treeGet(
+    params: TreeGetParams,
+    options?: RequestOptions
+  ): Promise<Tree> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `source/tree/${params.projectUrn}`,
+        query: {
+          peerId: params.peerId,
+          revision: { ...params.revision, peerId: params.peerId },
+          prefix: params.prefix,
+        },
+        options,
+      },
+      treeSchema
     );
   }
 

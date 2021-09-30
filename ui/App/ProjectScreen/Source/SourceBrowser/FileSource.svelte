@@ -16,7 +16,7 @@
   import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
 
   export let blob: Blob;
-  export let commit: CommitHeader;
+  export let commit: CommitHeader | null;
 </script>
 
 <style>
@@ -86,9 +86,11 @@
         <span>{blob.path.split("/").join(" / ")}</span>
       </span>
     </div>
-    <div class="commit-header">
-      <CommitTeaser {commit} on:select style="height: 100%" />
-    </div>
+    {#if commit}
+      <div class="commit-header">
+        <CommitTeaser {commit} on:select style="height: 100%" />
+      </div>
+    {/if}
   </header>
   <div class="container">
     {#if blob.binary}

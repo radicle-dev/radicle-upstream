@@ -14,7 +14,7 @@
 
   import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
 
-  export let commit: CommitHeader;
+  export let commit: CommitHeader | null;
   export let view: Root;
   export let emptyRepo: boolean;
 </script>
@@ -26,9 +26,11 @@
   }
 </style>
 
-<div class="commit-header">
-  <CommitTeaser {commit} on:select style="height: 100%" />
-</div>
+{#if commit}
+  <div class="commit-header">
+    <CommitTeaser {commit} on:select style="height: 100%" />
+  </div>
+{/if}
 
 {#if view.readme}
   <Readme content={view.readme.content} path={view.readme.path} />

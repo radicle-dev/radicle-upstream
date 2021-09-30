@@ -6,7 +6,6 @@
 
 import { format } from "timeago.js";
 
-import * as api from "./api";
 import * as error from "./error";
 import type { PeerId } from "./identity";
 import * as proxy from "./proxy";
@@ -172,19 +171,6 @@ export async function fetchRevisions(
   );
   return { branches, tags };
 }
-
-export const fetchTree = (
-  projectUrn: string,
-  peerId: PeerId,
-  revision: RevisionSelector,
-  prefix: string,
-  signal?: AbortSignal
-): Promise<Tree> => {
-  return api.get<Tree>(`source/tree/${projectUrn}`, {
-    query: { peerId, revision: { ...revision, peerId }, prefix },
-    signal,
-  });
-};
 
 const findReadme = (tree: Tree): string | null => {
   for (const entry of tree.entries) {
