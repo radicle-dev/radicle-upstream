@@ -12,3 +12,117 @@ The Upstream team owns the following infrastructure.
     are managed by the Radicle Foundation.
   * Certificates for the loadbalancers are automatically provisioned by GCP.
 * Provides a container registry under `gcr.io/radicle-upstream`.
+
+
+### Upstream Org Seed Node
+
+We're running our own [Org Seed Node][os] for Upstream on a 4vCPU, 8GB RAM,
+50GB SSD GCP instance. For setting it up, we followed these instructions:
+
+1. Create a GCP instance:
+
+```bash
+gcloud compute instances create org-node \
+--project=radicle-upstream \
+--zone=europe-north1-a \
+--machine-type=e2-custom-4-8192 \
+--network-interface=address=34.88.42.196,\
+                    network-tier=PREMIUM,\
+                    subnet=default \
+--maintenance-policy=MIGRATE \
+--service-account=995532143689-compute@developer.gserviceaccount.com \
+--scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
+--tags=org-node,http-server,https-server \
+--create-disk=auto-delete=yes,boot=yes,device-name=org-node,image=projects/debian-cloud/global/images/debian-10-buster-v20210916,mode=rw,size=50,type=projects/radicle-upstream/zones/europe-north1-a/diskTypes/pd-ssd \
+--no-shielded-secure-boot \
+--shielded-vtpm \
+--shielded-integrity-monitoring \
+--reservation-affinity=any
+```
+
+2. Open ports `tcp:80` and `tcp:443` for serving git repositories of projects
+   over HTTP and HTTPS, port `tcp:8777` for [serving the source code browsing
+   API][sc] and `udp:8776` for the Radicle P2P protocol:
+
+```bash
+gcloud compute --project=radicle-upstream firewall-rules create org-node \
+--direction=INGRESS \
+--priority=1000 \
+--network=default --action=ALLOW --rules=tcp:80,tcp:443,tcp:8777,udp:8776 \
+--source-ranges=0.0.0.0/0 \
+--target-tags=org-node
+```
+
+3. Connect to the instance:
+
+```bash
+gcloud beta compute ssh --zone "europe-north1-a" "org-node" \
+--project "radicle-upstream"
+```
+
+4. As `root`, install all necessary dependencies:
+
+```bash
+sudo su
+
+apt-get update
+apt-get upgrade
+```
+
+5. [Install docker][do]:
+
+```bash
+apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+echo \
+  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+apt-get update
+
+apt-get install docker-ce docker-ce-cli containerd.io
+apt-get install python3-pip
+
+adduser --disabled-password --disabled-login orgnode
+usermod -aG docker orgnode
+```
+
+6. As `orgnode`, set up radicle-client-services:
+
+```bash
+su orgnode
+
+cd /home/orgnode
+pip3 install docker-compose
+
+echo "export PATH=$PATH:/home/orgnode/.local/bin" >>.bashrc
+source .bashrc
+
+git clone https://github.com/radicle-dev/radicle-client-services.git
+
+cd radicle-client-services
+docker-compose pull
+
+tee -a .env << END
+DOCKER_TAG=latest
+RADICLE_ORGS=0xe22450214b02C2416481aC2d3Be51536f7bb1fFf
+RADICLE_DOMAIN=seed.upstream.radicle.xyz
+ETH_RPC_URL=wss://mainnet.infura.io/ws/v3/7a19a4bf0af84fcc86ffb693a257fad4
+RADICLE_SEED_USER=0
+END
+
+docker-compose -f docker-compose.yml up
+```
+
+
+
+[do]: https://docs.docker.com/engine/install/debian
+[os]: https://github.com/radicle-dev/radicle-client-services#setting-up-an-org-seed-node
+[sc]: https://app.radicle.network/orgs/upstream.radicle.eth/projects/rad:git:hnrk8ueib11sen1g9n1xbt71qdns9n4gipw1o/3b6b4b3d198c0070c8ba57846ec5e154826207d4
