@@ -6,8 +6,11 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import { fly } from "svelte/transition";
+  import { backOut } from "svelte/easing";
   import { createEventDispatcher } from "svelte";
   export let style: string | undefined = undefined;
+  export let colorValue: string | undefined = undefined;
   const dispatch = createEventDispatcher();
 
   interface Option<T> {
@@ -34,6 +37,7 @@
 
 <style>
   .segmented-control {
+    overflow: hidden;
     display: flex;
     width: fit-content;
     border: 1px solid var(--color-foreground-level-3);
@@ -45,8 +49,8 @@
   }
   .segmented-control button {
     cursor: pointer;
-    padding: 0 0.75rem;
     max-height: 1.875rem;
+    padding: 0rem 0.75rem;
     border-radius: 0.25rem;
     margin: 0.25rem;
     background-color: var(--color-background);
@@ -65,6 +69,20 @@
   .segmented-control button:active {
     background-color: var(--color-foreground-level-2);
   }
+
+  input[type="color"] {
+    -webkit-appearance: none;
+    margin: 0.25rem;
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 0.25rem;
+  }
 </style>
 
 <div class="segmented-control" {style}>
@@ -78,4 +96,12 @@
       {option.title}
     </button>
   {/each}
+  {#if active === "custom"}
+    <input
+      in:fly={{ x: 30, duration: 100, easing: backOut }}
+      out:fly={{ x: 30, duration: 100 }}
+      {style}
+      type="color"
+      bind:value={colorValue} />
+  {/if}
 </div>

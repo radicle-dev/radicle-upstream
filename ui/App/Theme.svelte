@@ -22,10 +22,12 @@
   const customPrimaryColorRule = makeCssStyleRule();
   $: {
     const { r, g, b } = hexToRgbColor($primaryColorHex);
-    customPrimaryColorRule.style.setProperty(
-      "--color-primary",
-      `rgba(${r},${g},${b},1)`
-    );
+    customPrimaryColorRule.style.cssText = `
+      --color-primary: rgba(${r},${g},${b},1);
+      --color-primary-level-1: rgba(${r},${g},${b},0.17);
+      --color-primary-level-2: rgba(${r},${g},${b},0.37);
+      --color-primary-level-6: rgba(${r},${g},${b},0.87);
+    `;
   }
 
   function hexToRgbColor(hex: string): { r: number; g: number; b: number } {

@@ -28,9 +28,9 @@
 
   import {
     Button,
-    ColorInput,
     CopyableIdentifier,
     SegmentedControl,
+    SegmentedColorPicker,
   } from "ui/DesignSystem";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -225,13 +225,11 @@
             </p>
           </div>
           <div class="action">
-            <SegmentedControl
+            <SegmentedColorPicker
               active={$primaryColor}
               options={primaryColorOptions}
-              on:select={ev => primaryColor.set(ev.detail)} />
-            <ColorInput
-              style="margin-left: 1rem;"
-              bind:value={$primaryColorHex} />
+              on:select={ev => primaryColor.set(ev.detail)}
+              bind:colorValue={$primaryColorHex} />
           </div>
         </div>
       </section>
