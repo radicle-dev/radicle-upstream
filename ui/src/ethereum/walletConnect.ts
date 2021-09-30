@@ -12,6 +12,8 @@ import type { ITxData, ISessionStatus } from "@walletconnect/types";
 import * as svelteStore from "svelte/store";
 import { isEqual } from "lodash";
 import * as ethers from "ethers";
+import * as browserStore from "ui/src/browserStore";
+import * as zod from "zod";
 
 import * as Error from "ui/src/error";
 import {
@@ -233,6 +235,12 @@ export class WalletConnectClient implements WalletConnect {
   }
 }
 
+const testClientConnected = browserStore.create<boolean>(
+  "radicle.walletConnectTestClientEnabled",
+  false,
+  zod.boolean()
+);
+
 // WalletConnect test client that is backed by an in-memory wallet and
 // automatically signs and submits transactions without user
 // interaction.
@@ -264,6 +272,10 @@ export class TestClient implements WalletConnect {
         INFURA_API_KEY_RINKEBY
       );
     }
+
+    if (svelteStore.get(testClientConnected)) {
+      this.connect();
+    }
   }
 
   async connect(): Promise<boolean> {
@@ -271,10 +283,12 @@ export class TestClient implements WalletConnect {
       accountAddress: this.wallet.address,
       chainId: this.chainId,
     });
+    testClientConnected.set(true);
     return true;
   }
 
   async disconnect(): Promise<void> {
+    testClientConnected.set(false);
     this._connection.set(undefined);
   }
 

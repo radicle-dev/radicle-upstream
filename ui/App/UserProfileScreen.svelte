@@ -6,13 +6,14 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Project } from "ui/src/project";
-  import { fetchProjects, projects } from "ui/src/userProfile";
-  import { isMaintainer } from "ui/src/project";
+  import { isMaintainer, Project } from "ui/src/project";
   import * as router from "ui/src/router";
   import * as Session from "ui/src/session";
   import * as remote from "ui/src/remote";
-  import * as userProfile from "ui/src/userProfile";
+  import * as proxy from "ui/src/proxy";
+  import type * as proxyProject from "ui/src/proxy/project";
+  import type * as proxyIdentity from "ui/src/proxy/identity";
+  import * as error from "ui/src/error";
 
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -24,7 +25,7 @@
 
   export let urn: string;
 
-  function openProject({ detail: project }: { detail: Project }) {
+  function openProject(project: Project) {
     router.push({
       type: "project",
       params: {
@@ -34,11 +35,26 @@
     });
   }
 
-  const userProfileStore = userProfile.user;
+  const userStore = remote.createStore<proxyIdentity.RemoteIdentity>();
+  fetchUser();
+
+  const projectsStore = remote.createStore<proxyProject.Project[]>();
+  remote.fetch(projectsStore, proxy.client.project.listForUser(urn));
+
   const session = Session.unsealed();
 
-  fetchProjects(urn);
-  userProfile.fetchUser(urn);
+  async function fetchUser() {
+    try {
+      userStore.success(await proxy.client.personGet(urn));
+    } catch (err: unknown) {
+      error.show(
+        new error.Error({
+          message: "Failed to fetch user data",
+          source: err,
+        })
+      );
+    }
+  }
 </script>
 
 <style>
@@ -54,32 +70,32 @@
 </style>
 
 <ScreenLayout dataCy="user-profile-screen">
-  {#if $userProfileStore.status === remote.Status.Success}
+  {#if $userStore.status === remote.Status.Success}
     <Header>
       <UserProfileHeader
         slot="left"
-        identityMetadata={$userProfileStore.data.metadata}
-        deviceIds={$userProfileStore.data.peerIds}
+        identityMetadata={$userStore.data.metadata}
+        deviceIds={$userStore.data.peerIds}
         {urn} />
     </Header>
 
-    {#if $projects.status === remote.Status.Success}
-      {#if $projects.data.length === 0}
+    {#if $projectsStore.status === remote.Status.Success}
+      {#if $projectsStore.data.length === 0}
         <EmptyState text="This peer doesn't have any projects." />
       {:else}
         <ul class="grid" data-cy="project-list">
-          {#each $projects.data as project}
+          {#each $projectsStore.data as project}
             <li>
               <ProjectCardSquare
                 {project}
                 isMaintainer={isMaintainer(session.identity.urn, project)}
-                on:click={() => openProject({ detail: project })} />
+                on:click={() => openProject(project)} />
             </li>
           {/each}
         </ul>
       {/if}
-    {:else if $projects.status === remote.Status.Error}
-      <Error message={$projects.error.message} />
+    {:else if $projectsStore.status === remote.Status.Error}
+      <Error message={$projectsStore.error.message} />
     {/if}
   {/if}
 </ScreenLayout>
