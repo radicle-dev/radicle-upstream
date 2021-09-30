@@ -93,6 +93,37 @@ export async function getOrgs(
   }));
 }
 
+export async function getAllOrgs(): Promise<Org[]> {
+  const orgsResponse = await orgsSubgraphClient().query<{
+    orgs: Array<{
+      // Org address.
+      id: string;
+      // Owner address.
+      owner: string;
+      // Creator address.
+      creator: string;
+      // This is a UNIX seconds timestamp formatted as a string.
+      timestamp: string;
+    }>;
+  }>({
+    query: apolloCore.gql`
+    query GetOrgs {
+      orgs {
+        id
+        owner
+        creator
+        timestamp
+      }
+    }
+    `
+  });
+
+  return orgsResponse.data.orgs.map(org => ({
+    ...org,
+    timestamp: Number.parseInt(org.timestamp),
+  }));
+}
+
 export async function getOrgProjectAnchors(
   orgAddress: string,
   registration?: ensResolver.Registration

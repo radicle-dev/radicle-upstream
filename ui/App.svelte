@@ -32,6 +32,7 @@
   import LockScreen from "ui/App/LockScreen.svelte";
   import NetworkDiagnosticsScreen from "ui/App/NetworkDiagnosticsScreen.svelte";
   import NetworkScreen from "ui/App/NetworkScreen.svelte";
+  import ExploreScreen from "ui/App/ExploreScreen.svelte";
   import OrgScreen from "ui/App/OrgScreen.svelte";
   import ProfileScreen from "ui/App/ProfileScreen.svelte";
   import ProjectScreen from "ui/App/ProjectScreen.svelte";
@@ -143,6 +144,8 @@
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "network"}
     <NetworkScreen />
+  {:else if $activeRouteStore.type === "explore"}
+    <ExploreScreen />
   {:else if $activeRouteStore.type === "settings"}
     <SettingsScreen />
   {:else if $activeRouteStore.type === "wallet"}
