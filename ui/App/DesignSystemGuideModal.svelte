@@ -732,7 +732,7 @@
         </div>
 
         <div class="swatch">
-          <Tooltip value="Bottom" position="bottom">
+          <Tooltip value="A very long text" position="bottom">
             <Button variant="outline">Hover me!</Button>
           </Tooltip>
         </div>

@@ -19,14 +19,16 @@
   let container: Element | null = null;
   let message: Element | null = null;
 
-  let visibility: "hidden" | "visible" = "hidden";
+  let visible: boolean;
   let offset: Offset = {
     top: 0,
     left: 0,
   };
 
+  const TOOLTIP_MARGIN = 8;
+
   function hide() {
-    visibility = "hidden";
+    visible = false;
   }
 
   function show() {
@@ -39,7 +41,7 @@
     const containerRect = container.getBoundingClientRect();
     const messageRect = message.getBoundingClientRect();
 
-    visibility = "visible";
+    visible = true;
     offset = calculateOffset(position, containerRect, messageRect);
   }
 
@@ -51,54 +53,58 @@
     switch (position) {
       case "top":
         return {
-          top: container.top - 40,
-          left: container.left + container.width / 2,
+          top: -(TOOLTIP_MARGIN + message.height),
+          left: (container.width - message.width) / 2,
         };
 
       case "right":
         return {
-          top: container.top + container.height / 2 - 16,
-          left: container.right + 8,
+          top: (container.height - message.height) / 2,
+          left: container.width + TOOLTIP_MARGIN,
         };
 
       case "bottom":
         return {
-          top: container.bottom + 8,
-          left: container.left + container.width / 2,
+          top: container.height + TOOLTIP_MARGIN,
+          left: (container.width - message.width) / 2,
         };
 
       case "left":
         return {
-          top: container.top + container.height / 2 - 16,
-          left: container.left - message.width - 8,
+          top: (container.height - message.height) / 2,
+          left: -(message.width + TOOLTIP_MARGIN),
         };
     }
   }
 </script>
 
 <style>
+  .container {
+    position: relative;
+  }
+
   .tooltip {
     white-space: nowrap;
     user-select: none;
     background-color: var(--color-foreground);
     color: var(--color-background);
-    text-align: center;
     border-radius: 0.5rem;
     padding: 4px 8px;
-    position: fixed;
+    position: absolute;
     pointer-events: none;
     z-index: 100;
+    visibility: hidden;
   }
 
-  .tooltip.bottom,
-  .tooltip.top {
-    transform: translateX(-50%);
+  .visible {
+    visibility: visible;
   }
 </style>
 
 {#if value}
   <div
     {style}
+    class="container"
     bind:this={container}
     data-cy="tooltip"
     on:mouseenter={show}
@@ -106,9 +112,10 @@
     <slot />
     <div
       bind:this={message}
-      class={`tooltip ${position}`}
-      style={`top: ${offset.top}px; left: ${offset.left}px; visibility: ${visibility}`}>
-      <p>{value}</p>
+      class="tooltip"
+      class:visible
+      style={`top: ${offset.top}px; left: ${offset.left}px`}>
+      {value}
     </div>
   </div>
 {:else}
