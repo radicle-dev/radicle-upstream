@@ -298,15 +298,15 @@
     },
   ];
 
-  // async function fetchOrgs() {
-  //   orgs = await theGraphApi.getAllOrgs();
-  //   orgs.map(async org => {
-  //     org.registration = await ensResolver.getCachedRegistrationByAddress(
-  //       org.id
-  //     );
-  //   });
-  //   console.log(orgs);
-  // }
+  async function fetchOrgs() {
+    orgs = await theGraphApi.getAllOrgs();
+    orgs.map(async org => {
+      org.registration = await ensResolver.getCachedRegistrationByAddress(
+        org.id
+      );
+    });
+    console.log(orgs);
+  }
 
   // fetchOrgs();
 </script>
