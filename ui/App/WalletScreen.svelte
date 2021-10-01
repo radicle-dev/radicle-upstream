@@ -90,13 +90,12 @@
   .container {
     min-width: var(--content-min-width);
     max-width: var(--content-max-width);
-    padding: var(--content-padding);
-    margin: 0 auto;
+    padding: 0 var(--content-padding);
+    margin: 2rem auto;
   }
   .content {
     display: grid;
     grid-template-columns: 20rem auto;
-    margin-top: 1.5rem;
     gap: 1.5rem;
   }
   .title {

@@ -9,6 +9,7 @@
   import * as theGraphApi from "ui/src/org/theGraphApi";
   import * as Org from "ui/src/org";
   import * as ensResolver from "ui/src/org/ensResolver";
+  import { push } from "ui/src/router";
 
   import { Avatar, Badge, CopyableIdentifier, Icon } from "ui/DesignSystem";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -636,7 +637,7 @@
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: 4rem auto;
+    margin: 2rem auto;
     min-width: var(--content-min-width);
     padding: 0 var(--content-padding);
   }
@@ -690,7 +691,13 @@
     <h1 style="padding: 0 0.75rem;">Explore orgs</h1>
     <div class="grid">
       {#each resolvedOrgs as { org, owner }}
-        <div class="box">
+        <div
+          class="box"
+          on:click={() =>
+            push({
+              type: "org",
+              params: { address: org.id, view: "projects" },
+            })}>
           <header class="row">
             <Avatar
               style="margin-right: 1rem;"
