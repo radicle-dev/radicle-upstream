@@ -84,16 +84,23 @@ export const codeFontOptions: Option<string>[] = [
   },
 ];
 
-export type PrimaryColor = "blue" | "pink" | "orange";
+export type PrimaryColor = "blue" | "pink" | "orange" | "custom";
 
 export const primaryColor = browserStore.create<PrimaryColor>(
   "radicle.appearance.primaryColor",
   "blue",
-  zod.enum(["blue", "pink", "orange"])
+  zod.enum(["blue", "pink", "orange", "custom"])
 );
 
 export const primaryColorOptions: Option<PrimaryColor>[] = [
   { title: "Blue", value: "blue" },
   { title: "Pink", value: "pink" },
   { title: "Orange", value: "orange" },
+  { title: "Custom", value: "custom" },
 ];
+
+export const primaryColorHex = browserStore.create<string>(
+  "radicle.appearance.primaryColorHex",
+  "#5555FF",
+  zod.string()
+);

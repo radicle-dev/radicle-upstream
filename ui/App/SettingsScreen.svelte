@@ -18,6 +18,7 @@
     uiFontOptions,
     primaryColor,
     primaryColorOptions,
+    primaryColorHex,
   } from "ui/src/appearance";
   import { updateChecker } from "ui/src/updateChecker";
   import * as ethereum from "ui/src/ethereum";
@@ -29,6 +30,7 @@
     Button,
     CopyableIdentifier,
     SegmentedControl,
+    SegmentedColorPicker,
   } from "ui/DesignSystem";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -223,10 +225,11 @@
             </p>
           </div>
           <div class="action">
-            <SegmentedControl
+            <SegmentedColorPicker
               active={$primaryColor}
               options={primaryColorOptions}
-              on:select={ev => primaryColor.set(ev.detail)} />
+              on:select={ev => primaryColor.set(ev.detail)}
+              bind:colorValue={$primaryColorHex} />
           </div>
         </div>
       </section>

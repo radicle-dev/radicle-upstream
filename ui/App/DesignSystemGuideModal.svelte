@@ -19,12 +19,14 @@
     uiFontOptions,
     primaryColor,
     primaryColorOptions,
+    primaryColorHex,
   } from "ui/src/appearance";
 
   import {
     Avatar,
     Button,
     Checkbox,
+    SegmentedColorPicker,
     Copyable,
     CopyableIdentifier,
     Dropdown,
@@ -195,22 +197,24 @@
             on:select={ev => theme.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="Primary color" position="bottom">
-          <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$primaryColor}
-            options={primaryColorOptions}
-            on:select={ev => primaryColor.set(ev.detail)} />
+          <div style="display: flex;">
+            <SegmentedColorPicker
+              active={$primaryColor}
+              options={primaryColorOptions}
+              on:select={ev => primaryColor.set(ev.detail)}
+              bind:colorValue={$primaryColorHex} />
+          </div>
         </Tooltip>
         <Tooltip value="UI font" position="bottom">
           <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
+            style="background-color: var(--color-background); margin: 0 2rem;"
             active={$uiFont}
             options={uiFontOptions}
             on:select={ev => uiFont.set(ev.detail)} />
         </Tooltip>
         <Tooltip value="Code font" position="bottom">
           <SegmentedControl
-            style="background-color: var(--color-background);"
+            style="background-color: var(--color-background); margin-right: 2rem;"
             active={$codeFont}
             options={codeFontOptions}
             on:select={ev => codeFont.set(ev.detail)} />
@@ -732,7 +736,7 @@
         </div>
 
         <div class="swatch">
-          <Tooltip value="Bottom" position="bottom">
+          <Tooltip value="A very long text" position="bottom">
             <Button variant="outline">Hover me!</Button>
           </Tooltip>
         </div>
