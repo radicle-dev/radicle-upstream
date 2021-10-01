@@ -26,7 +26,7 @@ export type Route =
     }
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "network" }
-  | { type: "explore" }
+  | { type: "orgs" }
   | { type: "settings" };
 
 export type LoadedRoute =
@@ -41,7 +41,7 @@ export type LoadedRoute =
   | projectRoute.LoadedRoute
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "network" }
-  | { type: "explore" }
+  | { type: "orgs" }
   | { type: "settings" };
 
 export function routeToPath(route: Route): string {

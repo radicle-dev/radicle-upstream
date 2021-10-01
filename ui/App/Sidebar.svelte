@@ -93,12 +93,12 @@
         <Icon.MagnifyingGlass />
       </SidebarItem>
     </Tooltip>
-    <Tooltip value="Explore">
+    <Tooltip value="Orgs">
       <SidebarItem
         indicator
-        active={$activeRouteStore.type === "explore"}
-        onClick={() => push({ type: "explore" })}>
-        <Icon.Globe />
+        active={$activeRouteStore.type === "orgs"}
+        onClick={() => push({ type: "orgs" })}>
+        <Icon.Orgs />
       </SidebarItem>
     </Tooltip>
     <WalletStatusIndicator

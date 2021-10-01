@@ -10,7 +10,7 @@
 
   export let emoji: string;
 
-  type EmojiSize = "small" | "regular" | "medium" | "big" | "huge";
+  type EmojiSize = "small" | "regular" | "large" | "huge";
   export let size: EmojiSize = "regular";
 
   export let style: string | undefined = undefined;
@@ -33,14 +33,9 @@
     width: 1rem;
   }
 
-  :global(.emoji.medium) {
-    height: 1.125rem;
-    width: 1.125rem;
-  }
-
-  :global(.emoji.big) {
-    height: 2.25rem;
-    width: 2.25rem;
+  :global(.emoji.large) {
+    height: 2rem;
+    width: 2rem;
   }
 
   :global(.emoji.huge) {

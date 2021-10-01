@@ -7,8 +7,11 @@
 -->
 <script lang="typescript">
   import * as theGraphApi from "ui/src/org/theGraphApi";
+  import * as orgApi from "ui/src/org";
   import * as ensResolver from "ui/src/org/ensResolver";
+  import * as ipc from "ui/src/ipc";
 
+  import { Avatar, Badge, CopyableIdentifier, Icon } from "ui/DesignSystem";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
   let orgs: theGraphApi.Org[] = [
@@ -17,24 +20,6 @@
       id: "0x0c9e540936be2da6fa221a1333b763556d781a83",
       owner: "0xc0a5fb55c5799e9da4d3f2a7ea13f444e3528222",
       timestamp: 1626913848,
-    },
-    {
-      creator: "0x0afe2b28fdd73f20f4f39e25500bb33f524e0655",
-      id: "0x10eb03b735a0ecf09c9d27780f711f147042337e",
-      owner: "0x0afe2b28fdd73f20f4f39e25500bb33f524e0655",
-      timestamp: 1631342006,
-    },
-    {
-      creator: "0x88d01d4354da0d65c38b0196c4400525a5eebe17",
-      id: "0x308b6a4a3a4e883ab7aaf64d67583f4a45e2d3cd",
-      owner: "0xe604e173d371524a4a523290bd2f0c4dd92bda76",
-      timestamp: 1628991851,
-    },
-    {
-      creator: "0xa5aca1577cb8981d512b74da4c95ac7f3be07efc",
-      id: "0x34f2c1ac75d0627ab29e367718235d058d5fd88a",
-      owner: "0x441428454b614d2bb2782165ef1cee53da79dd93",
-      timestamp: 1625499194,
     },
     {
       creator: "0x7bcf7a112e9fc7ff2b54a52990976e5c3352f2d2",
@@ -59,24 +44,6 @@
       id: "0x5a0a2fe16bd95ce30b080a5d9b991b63b462c402",
       owner: "0xb616340a10f14218e5db19cdadda686a9557658b",
       timestamp: 1626943292,
-    },
-    {
-      creator: "0x808a023b72260170c95d831f589a1ae0dca1e43e",
-      id: "0x5a8f8c62af2c11910a2099547ca5885e79707be6",
-      owner: "0xf5512d277a815833acfc56548382753bd6f8953c",
-      timestamp: 1626367074,
-    },
-    {
-      creator: "0x01623c98f9651095d600f2ecb45dfa1072fc9589",
-      id: "0x612a5adf8cf8b655c427a1f70bf656f2f0be5bf2",
-      owner: "0x01623c98f9651095d600f2ecb45dfa1072fc9589",
-      timestamp: 1628167072,
-    },
-    {
-      creator: "0xb616340a10f14218e5db19cdadda686a9557658b",
-      id: "0x74bf3a90fc54f8db5c34de98c188ef98832c6679",
-      owner: "0xb616340a10f14218e5db19cdadda686a9557658b",
-      timestamp: 1626943313,
     },
     {
       creator: "0x53bcfaed43441c7bb6149563ec11f756739c9f6a",
@@ -202,12 +169,6 @@
       timestamp: 1627866420,
     },
     {
-      creator: "0x1c0aa8ccd568d90d61659f060d1bfb1e6f855a20",
-      id: "0xbf33d32ba0b90f2c1db4cf70316024134bde8df5",
-      owner: "0xab77c7245e4b04e315ebce6aa8692b1d73775dda",
-      timestamp: 1626474422,
-    },
-    {
       creator: "0xf7fde6e62522c4251aff03d46a306aa1ba5e04f1",
       id: "0xc21600e7abdfee5231a722076745da458f1b9c8d",
       owner: "0x074cf1766c2ea57563e6e53cca730ab3301087fe",
@@ -224,12 +185,6 @@
         seedId: null,
         seedHost: null,
       },
-    },
-    {
-      creator: "0xefeba186fc1445fb93deaea12ed6f206a4b5d974",
-      id: "0xceaa01bd5a428d2910c82bbefe1bc7a8cc6207d9",
-      owner: "0x641edb587867a703e132a4210d63e93c52aa97ff",
-      timestamp: 1626788188,
     },
     {
       creator: "0x315d35dfc2a50348237e9e999af8f1c05f1d94b4",
@@ -298,8 +253,28 @@
     },
   ];
 
+  // creator: "0x7bcf7a112e9fc7ff2b54a52990976e5c3352f2d2",
+  // id: "0x5234a2e25b5b9802565a53e1859dee3a226def8f",
+  // owner: "0x15e63259524546050d0e8b7f599d6c0f8d53c672",
+  // timestamp: 1628247093,
+  // registration: {
+  //   domain: "community.radicle.eth",
+  //   url: "https://radicle.community",
+  //   avatar:
+  //     "https://pbs.twimg.com/profile_images/1372563232850870274/aREQff_C_400x400.jpg",
+  //   owner: "0x641eDB587867a703E132a4210d63e93C52AA97fF",
+  //   address: "0x5234A2E25B5b9802565a53e1859deE3A226Def8F",
+  //   twitter: "radicle",
+  //   github: "radicle-dev",
+  //   seedId: "hybz7p93bzo5z3qw97g5pbk1f1ue6hrmcqzp1t7hedaoehbu44ixqq",
+  //   seedHost: "seed.radicle.community",
+
   async function fetchOrgs() {
     orgs = await theGraphApi.getAllOrgs();
+    orgs.map(async org => {
+      let owner = await orgApi.getOwner(org.id);
+      return { owner: owner, org: org };
+    });
     orgs.map(async org => {
       org.registration = await ensResolver.getCachedRegistrationByAddress(
         org.id
@@ -308,7 +283,7 @@
     console.log(orgs);
   }
 
-  // fetchOrgs();
+  fetchOrgs();
 </script>
 
 <style>
@@ -318,14 +293,80 @@
     min-width: var(--content-min-width);
     padding: 0 var(--content-padding);
   }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .box {
+    border: 1px solid var(--color-foreground-level-3);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .title-meta {
+    display: flex;
+    flex-direction: column;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    gap: 0.5rem;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+  }
 </style>
 
 <ScreenLayout dataCy="network-page">
   <div class="container">
-    <h1>Explore</h1>
-    <div class="content">
+    <h1>Orgs</h1>
+    <div class="grid">
       {#each orgs as org}
-        <p>{org.id}</p>
+        <div class="box">
+          <header class="row">
+            <Avatar
+              style="margin-right: 1rem;"
+              size="large"
+              kind={org.registration?.avatar
+                ? { type: "orgImage", url: org.registration.avatar }
+                : { type: "orgEmoji", uniqueIdentifier: org.id }} />
+            <div class="title-meta">
+              <h3 class="typo-overflow-ellipsis">
+                {org.registration?.domain ? org.registration.domain : org.id}
+              </h3>
+              <Badge
+                style="align-self: flex-start;"
+                caption="single signer org" />
+            </div>
+          </header>
+          <ul class="metadata">
+            <li class="row">
+              <CopyableIdentifier
+                value={org.id}
+                kind="ethAddress"
+                name="org address" />
+            </li>
+            {#if org.registration?.url}
+              <li class="row">
+                <Icon.Globe />
+                <div style="cursor: pointer; margin-left: .5rem;">
+                  <span
+                    on:click={() => {
+                      org.registration?.url &&
+                        ipc.openUrl(org.registration?.url);
+                    }}>{org.registration?.url}</span>
+                </div>
+              </li>
+            {/if}
+          </ul>
+        </div>
       {/each}
     </div>
   </div>

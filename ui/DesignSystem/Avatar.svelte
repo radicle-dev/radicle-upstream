@@ -26,7 +26,7 @@
 
   export let kind: Kind;
 
-  export let size: "small" | "regular" | "huge" = "regular";
+  export let size: "small" | "regular" | "large" | "huge" = "regular";
 
   // TODO: memoize this because we call it twice for each emoji component.
   function emojiAvatar(kind: EmojiKind): {
@@ -67,38 +67,50 @@
   }
 
   .circle.small {
-    width: 24px;
-    height: 24px;
-    border-radius: 12px;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.75rem;
   }
 
   .circle.regular {
-    width: 32px;
-    height: 32px;
-    border-radius: 16px;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 1rem;
+  }
+
+  .circle.large {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
   }
 
   .circle.huge {
-    width: 120px;
-    height: 120px;
-    border-radius: 60px;
+    width: 7.5rem;
+    height: 7.5rem;
+    border-radius: 3.75rem;
   }
 
   .square.small {
-    width: 24px;
-    height: 24px;
+    width: 1.5rem;
+    height: 1.5rem;
     border-radius: 0.25rem;
   }
 
   .square.regular {
-    width: 32px;
-    height: 32px;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+  }
+
+  .square.large {
+    width: 4rem;
+    height: 4rem;
     border-radius: 0.5rem;
   }
 
   .square.huge {
-    width: 120px;
-    height: 120px;
+    width: 7.5rem;
+    height: 7.5rem;
     border-radius: 1.5rem;
   }
 
@@ -131,6 +143,7 @@
   class="container"
   class:small={size === "small"}
   class:regular={size === "regular"}
+  class:large={size === "regular"}
   class:huge={size === "huge"}
   {style}>
   {#if kind.type === "userImage"}
@@ -138,6 +151,7 @@
       class="avatar circle"
       class:small={size === "small"}
       class:regular={size === "regular"}
+      class:large={size === "large"}
       class:huge={size === "huge"}
       src={kind.url}
       alt="user-avatar" />
@@ -146,6 +160,7 @@
       class="avatar square"
       class:small={size === "small"}
       class:regular={size === "regular"}
+      class:large={size === "large"}
       class:huge={size === "huge"}
       src={kind.url}
       alt="user-avatar" />
@@ -154,6 +169,7 @@
       class="avatar circle"
       class:small={size === "small"}
       class:regular={size === "regular"}
+      class:large={size === "large"}
       class:huge={size === "huge"}
       style={`background-color: ${emojiAvatar(kind).backgroundColor}`}
       data-cy="emoji">
@@ -164,6 +180,7 @@
       class="avatar square"
       class:small={size === "small"}
       class:regular={size === "regular"}
+      class:large={size === "large"}
       class:huge={size === "huge"}
       style={`background-color: ${emojiAvatar(kind).backgroundColor}`}
       data-cy="emoji">
@@ -174,6 +191,7 @@
       class="avatar pulsate square"
       class:small={size === "small"}
       class:regular={size === "regular"}
+      class:large={size === "large"}
       class:huge={size === "huge"}
       style="background-color: var(--color-foreground-level-3);"
       data-cy="emoji" />
@@ -182,6 +200,7 @@
       class="avatar circle"
       class:small={size === "small"}
       class:regular={size === "regular"}
+      class:large={size === "large"}
       class:huge={size === "huge"}
       style="background: var(--color-foreground-level-3)" />
   {:else}
