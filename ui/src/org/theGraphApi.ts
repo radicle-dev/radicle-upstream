@@ -108,14 +108,14 @@ export async function getAllOrgs(): Promise<Org[]> {
   }>({
     query: apolloCore.gql`
     query GetOrgs {
-      orgs {
+      orgs(first: 9) {
         id
         owner
         creator
         timestamp
       }
     }
-    `
+    `,
   });
 
   return orgsResponse.data.orgs.map(org => ({
