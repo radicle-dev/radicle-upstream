@@ -158,7 +158,6 @@
 
   .request-card {
     justify-content: space-between;
-    cursor: pointer;
   }
 
   .search {
