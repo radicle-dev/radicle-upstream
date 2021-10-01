@@ -26,6 +26,7 @@ import PasswordInput from "./PasswordInput.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
+import SegmentedColorPicker from "./SegmentedColorPicker.svelte";
 import Spinner from "./Spinner.svelte";
 import SupportButton from "./SupportButton.svelte";
 import TextInput from "./TextInput.svelte";
@@ -57,6 +58,7 @@ export {
   RadicleLogo,
   RadioOption,
   SegmentedControl,
+  SegmentedColorPicker,
   Spinner,
   SupportButton,
   TextInput,
