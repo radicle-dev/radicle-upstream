@@ -73,7 +73,7 @@
 
   .header {
     display: flex;
-    padding: 0.5rem 3rem 0.5rem;
+    padding: 0.5rem 1.5rem 0.5rem;
     width: 100%;
   }
 </style>

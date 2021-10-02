@@ -15,22 +15,11 @@
   } from "ui/DesignSystem";
 
   import * as ensResolver from "ui/src/org/ensResolver";
-  import * as ipc from "ui/src/ipc";
 
-  export let orgAddress: string;
-  export let ownerAddress: string;
-  export let threshold: number | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
+  export let orgAddress: string;
 
   $: name = registration?.domain.replace(`.${ensResolver.DOMAIN}`, "");
-  $: websiteUrl = registration?.url;
-  $: githubUrl =
-    registration?.github && `https://github.com/${registration.github}`;
-  $: twitterUrl =
-    registration?.twitter &&
-    `https://twitter.com/${registration.twitter.replace("@", "")}`;
-  $: seedId = registration?.seedId;
-  $: seedHost = registration?.seedHost;
 </script>
 
 <style>
@@ -53,9 +42,6 @@
   }
   .domain {
     color: var(--color-foreground-level-4);
-  }
-  .url {
-    cursor: pointer;
   }
 </style>
 
@@ -83,71 +69,14 @@
     <div style="display: flex; gap: 1rem;">
       <div>
         <div class="row">
-          {#if threshold}
-            <Icon.Gnosis />
-          {:else}
-            <Icon.Ethereum />
-          {/if}
+          <Icon.Ethereum />
           <CopyableIdentifier
-            value={ownerAddress}
+            value={orgAddress}
             kind="ethAddress"
             name="owner address"
             showIcon={false} />
         </div>
-        {#if threshold}
-          <div class="row">
-            <Icon.Orgs />
-            {threshold}
-            {threshold === 1 ? "signature" : "signatures"} required for quorum
-          </div>
-        {/if}
       </div>
-      {#if websiteUrl || githubUrl || twitterUrl || (seedId && seedHost)}
-        <div>
-          {#if websiteUrl}
-            <div class="row">
-              <Icon.Globe />
-              <div class="url">
-                <span
-                  on:click={() => {
-                    websiteUrl && ipc.openUrl(websiteUrl);
-                  }}>{websiteUrl}</span>
-              </div>
-            </div>
-          {/if}
-          {#if githubUrl}
-            <div class="row">
-              <Icon.Github />
-              <div class="url">
-                <span
-                  on:click={() => {
-                    githubUrl && ipc.openUrl(githubUrl);
-                  }}>{githubUrl}</span>
-              </div>
-            </div>
-          {/if}
-          {#if twitterUrl}
-            <div class="row">
-              <Icon.Twitter />
-              <div class="url">
-                <span
-                  on:click={() => {
-                    twitterUrl && ipc.openUrl(twitterUrl);
-                  }}>{twitterUrl}</span>
-              </div>
-            </div>
-          {/if}
-        </div>
-        <div>
-          {#if seedId && seedHost}
-            <div class="row">
-              <CopyableIdentifier
-                value={`${seedId}@${seedHost}:8776`}
-                kind="seedAddress" />
-            </div>
-          {/if}
-        </div>
-      {/if}
     </div>
   </div>
 </div>

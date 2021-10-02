@@ -9,6 +9,7 @@
   let wrapper: Element;
   let scrollHeight: number;
   let scrollY = 0;
+  export let style: string = "";
 
   $: if (wrapper) {
     scrollHeight = wrapper.getBoundingClientRect().top;
@@ -45,7 +46,7 @@
   bind:this={wrapper}
   class="action-bar-wrapper"
   class:elevation={scrollY > scrollHeight}>
-  <div class="action-bar">
+  <div class="action-bar" {style}>
     <slot name="left" />
     <slot name="right" />
   </div>
