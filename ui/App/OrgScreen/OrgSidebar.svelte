@@ -30,7 +30,7 @@
 <style>
   aside {
     border: 1px solid var(--color-foreground-level-2);
-    border-radius: 1rem;
+    border-radius: 0.5rem;
     overflow: hidden;
     margin-top: 1.5rem;
   }
