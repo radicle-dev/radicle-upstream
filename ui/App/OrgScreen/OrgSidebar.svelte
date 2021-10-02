@@ -13,9 +13,9 @@
 
   import { CopyableIdentifier, Icon } from "ui/DesignSystem";
 
-  export let ownerAddress: string;
+  export let ownerAddress: string | undefined = undefined;
   export let threshold: number | undefined = undefined;
-  export let members: org.Member[];
+  export let members: org.Member[] | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
 
   $: websiteUrl = registration?.url?.replace("https://", "");
@@ -31,17 +31,15 @@
   aside {
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 1rem;
-    padding: 1.5rem;
     overflow: hidden;
     margin-top: 1.5rem;
   }
   .row {
-    margin-bottom: 1.5rem;
+    padding: 1.5rem;
     color: var(--color-foreground-level-6);
+    border-bottom: 1px solid var(--color-foreground-level-2);
   }
-  .row:last-child {
-    margin-bottom: 0;
-  }
+
   .row-title {
     display: flex;
     align-items: center;

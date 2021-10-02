@@ -113,7 +113,7 @@
 
   <div class="sidebar-layout">
     <main>
-      <ActionBar style="padding: 0">
+      <ActionBar style="padding: 0; margin-top: 1rem;">
         <div slot="left">
           <TabBar tabs={tabs(address, activeTab)} />
         </div>

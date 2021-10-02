@@ -21,6 +21,7 @@
 
   import ProjectsTab from "ui/App/OrgScreen/Projects.svelte";
   import OrgHeader from "ui/App/OrgScreen/OrgHeader.svelte";
+  import OrgSidebar from "ui/App/OrgScreen/OrgSidebar.svelte";
   import ProjectsMenu from "ui/App/OrgScreen/ProjectsMenu.svelte";
 
   export let owner: string;
@@ -70,38 +71,50 @@
   };
 </script>
 
+<style>
+  .sidebar-layout {
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    min-width: var(--content-min-width);
+    padding: 0 var(--content-padding);
+    display: grid;
+    grid-template-columns: auto 18rem;
+    gap: 1.5rem;
+  }
+</style>
+
 <ScreenLayout>
   <Header>
-    <OrgHeader
-      {registration}
-      slot="left"
-      orgAddress={address}
-      ownerAddress={owner} />
+    <OrgHeader {registration} slot="left" orgAddress={address} />
     <div slot="right" style="display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
       <ThreeDotsMenu menuItems={menuItems(address)} />
     </div>
   </Header>
+  <div class="sidebar-layout">
+    <main>
+      <ActionBar style="padding: 0; margin-top: 1rem;">
+        <div slot="left">
+          <TabBar tabs={tabs(address)} />
+        </div>
+        <div slot="right">
+          <ProjectsMenu
+            isMultiSig={false}
+            orgAddress={address}
+            gnosisSafeAddress={owner}
+            availableProjectCount={projectCount}
+            hasPendingAnchors={anchors.pendingResolved.length !== 0 ||
+              anchors.pendingUnresolved.length !== 0} />
+        </div>
+      </ActionBar>
 
-  <ActionBar>
-    <div slot="left">
-      <TabBar tabs={tabs(address)} />
-    </div>
-    <div slot="right">
-      <ProjectsMenu
+      <ProjectsTab
         isMultiSig={false}
-        orgAddress={address}
-        gnosisSafeAddress={owner}
-        availableProjectCount={projectCount}
-        hasPendingAnchors={anchors.pendingResolved.length !== 0 ||
-          anchors.pendingUnresolved.length !== 0} />
-    </div>
-  </ActionBar>
-
-  <ProjectsTab
-    isMultiSig={false}
-    {address}
-    ownerAddress={owner}
-    disableAnchorCreation={projectCount === 0}
-    {anchors} />
+        {address}
+        ownerAddress={owner}
+        disableAnchorCreation={projectCount === 0}
+        {anchors} />
+    </main>
+    <OrgSidebar {registration} ownerAddress={owner} />
+  </div>
 </ScreenLayout>
