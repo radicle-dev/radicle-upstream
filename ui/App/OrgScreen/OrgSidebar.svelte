@@ -13,7 +13,7 @@
 
   import { CopyableIdentifier, Icon } from "ui/DesignSystem";
 
-  export let ownerAddress: string | undefined = undefined;
+  export let ownerAddress: string;
   export let threshold: number | undefined = undefined;
   export let members: org.Member[] | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
@@ -71,7 +71,7 @@
         name="owner address"
         showIcon={false} />
     </div>
-    {#if threshold}
+    {#if members && threshold}
       <div class="row">
         <div class="row-title">
           <Icon.Orgs />
