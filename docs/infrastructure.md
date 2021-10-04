@@ -12,23 +12,36 @@ The Upstream team owns the following infrastructure.
     are managed by the Radicle Foundation.
   * Certificates for the loadbalancers are automatically provisioned by GCP.
 * Provides a container registry under `gcr.io/radicle-upstream`.
+* Provides Org Seed Node service (see below)
 
 
 ### Upstream Org Seed Node
 
-We're running our own [Org Seed Node][os] for Upstream on a 4vCPU, 8GB RAM,
-50GB SSD GCP instance. For setting it up, we followed these instructions:
+We're running our own [Org Seed Node][os] for Upstream.
 
-1. Create a GCP instance:
+The org node uses the following resources
+* GCE VM `org-node`
+  * 4vCPI, 8GB RAM, 50GB SSD disk
+* External IP Address `org-node`
+  * bound to the VM instance `org-node`
+  * reachable under `seed.upstream.radicle.xyz`
+* Firewall rule `org-node` to allow traffic to the `org-node` VM.
+
+To set up the org node follow these instructions.
+
+1. Create an external IP address
+```bash
+gcloud compute addresses create "org-node" --region europe-north1
+```
+
+2. Create a GCP instance:
 
 ```bash
 gcloud compute instances create org-node \
 --project=radicle-upstream \
 --zone=europe-north1-a \
 --machine-type=e2-custom-4-8192 \
---network-interface=address=34.88.42.196,\
-                    network-tier=PREMIUM,\
-                    subnet=default \
+--address="org-node" \
 --maintenance-policy=MIGRATE \
 --service-account=995532143689-compute@developer.gserviceaccount.com \
 --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
@@ -40,7 +53,7 @@ gcloud compute instances create org-node \
 --reservation-affinity=any
 ```
 
-2. Open ports `tcp:80` and `tcp:443` for serving git repositories of projects
+3. Open ports `tcp:80` and `tcp:443` for serving git repositories of projects
    over HTTP and HTTPS, port `tcp:8777` for [serving the source code browsing
    API][sc] and `udp:8776` for the Radicle P2P protocol:
 
@@ -53,25 +66,20 @@ gcloud compute --project=radicle-upstream firewall-rules create org-node \
 --target-tags=org-node
 ```
 
-3. Connect to the instance:
+4. Connect to the instance:
 
 ```bash
 gcloud beta compute ssh --zone "europe-north1-a" "org-node" \
 --project "radicle-upstream"
 ```
 
-4. As `root`, install all necessary dependencies:
+5. [Install docker][do]:
 
 ```bash
 sudo su
 
 apt-get update
 apt-get upgrade
-```
-
-5. [Install docker][do]:
-
-```bash
 apt-get install \
     apt-transport-https \
     ca-certificates \
@@ -88,15 +96,16 @@ echo \
 apt-get update
 
 apt-get install docker-ce docker-ce-cli containerd.io
-apt-get install python3-pip
-
-adduser --disabled-password --disabled-login orgnode
-usermod -aG docker orgnode
 ```
 
 6. As `orgnode`, set up radicle-client-services:
 
 ```bash
+apt-get install python3-pip
+
+adduser --disabled-password --disabled-login orgnode
+usermod -aG docker orgnode
+
 su orgnode
 
 cd /home/orgnode
