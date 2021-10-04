@@ -21,5 +21,5 @@
 </style>
 
 <div class="container">
-  <EmptyState headerText="Loading..." emoji="🕵️" text="" />
+  <EmptyState headerText="Loading…" emoji="🕵️" />
 </div>

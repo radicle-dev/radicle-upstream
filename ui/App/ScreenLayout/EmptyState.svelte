@@ -14,7 +14,7 @@
 
   export let style: string | undefined = undefined;
   export let emoji: string = "🪴";
-  export let text: string = "Nothing to see here";
+  export let text: string | undefined = undefined;
   export let headerText: string | undefined = undefined;
   export let primaryActionText: string | undefined = undefined;
   export let secondaryActionText: string | undefined = undefined;
@@ -69,13 +69,13 @@
 </style>
 
 <div class="empty-state" data-cy="empty-state" {style}>
-  {#if emoji.length}
+  {#if emoji}
     <Emoji {emoji} size="huge" />
   {/if}
   {#if headerText}
     <h3>{headerText}</h3>
   {/if}
-  {#if text.length}
+  {#if text}
     <p class="text">{text}</p>
   {/if}
   {#if primaryActionText}
@@ -96,5 +96,7 @@
       <p>{secondaryActionText}</p>
     </button>
   {/if}
-  <slot />
+  <div style="margin: 1.5rem;">
+    <slot />
+  </div>
 </div>

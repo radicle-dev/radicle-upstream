@@ -10,24 +10,18 @@
 
   import { commit, fetchCommit } from "ui/src/screen/project/source";
   import { formatCommitTime } from "ui/src/source";
-  import * as error from "ui/src/error";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
 
   import { CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   import AnchorCard from "./AnchorCard.svelte";
+  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
   import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
   import Changeset from "./SourceBrowser/Changeset.svelte";
 
   export let commitHash: string;
   export let anchors: project.ConfirmedAnchor[];
-
-  $: {
-    if ($commit.status === remote.Status.Error) {
-      error.show($commit.error);
-    }
-  }
 
   fetchCommit(commitHash);
 </script>
@@ -165,5 +159,12 @@
     <main>
       <Changeset diff={$commit.data.diff} stats={$commit.data.stats} />
     </main>
+  {:else if $commit.status === remote.Status.Error}
+    <EmptyState emoji="🦤">
+      Commit <CopyableIdentifier
+        kind="commitHash"
+        value={commitHash}
+        style="display: inline-block;" /> isn’t replicated yet.
+    </EmptyState>
   {/if}
 </div>

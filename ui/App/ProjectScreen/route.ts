@@ -6,6 +6,8 @@
 
 import type * as project from "ui/src/project";
 
+import * as lodash from "lodash";
+
 import * as ensResolver from "ui/src/org/ensResolver";
 import * as theGraphApi from "ui/src/org/theGraphApi";
 import * as wallet from "ui/src/wallet";
@@ -34,7 +36,10 @@ export async function load(params: Params): Promise<LoadedRoute> {
   let anchors: project.ConfirmedAnchor[] = [];
 
   if (wallet.isConnected()) {
-    anchors = await theGraphApi.getProjectAnchors(params.urn);
+    anchors = lodash.sortBy(
+      await theGraphApi.getProjectAnchors(params.urn),
+      "timestamp"
+    );
 
     if (
       params.activeView.type === "anchors" ||
