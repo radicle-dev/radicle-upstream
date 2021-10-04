@@ -98,9 +98,10 @@ apt-get update
 apt-get install docker-ce docker-ce-cli containerd.io
 ```
 
-6. As `orgnode`, set up radicle-client-services:
+6. Set up radicle-client-services:
 
 ```bash
+sudo su
 apt-get install python3-pip
 
 adduser --disabled-password --disabled-login orgnode
