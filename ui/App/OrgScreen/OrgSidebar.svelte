@@ -31,13 +31,16 @@
   aside {
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
-    overflow: hidden;
     margin-top: 1.5rem;
   }
   .row {
     padding: 1.5rem;
     color: var(--color-foreground-level-6);
     border-bottom: 1px solid var(--color-foreground-level-2);
+  }
+
+  .row:last-child {
+    border-bottom: none;
   }
 
   .row-title {
@@ -48,6 +51,9 @@
   }
   .url {
     cursor: pointer;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 </style>
 
