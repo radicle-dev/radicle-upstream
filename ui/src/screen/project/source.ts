@@ -284,14 +284,18 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
     try {
       commitStore.success(await source.fetchCommit(project.urn, sha1));
     } catch (err: unknown) {
-      commitStore.error(error.fromUnknown(err));
-      error.show(
-        new error.Error({
-          code: error.Code.CommitFetchFailure,
-          message: "Could not fetch commit",
-          source: err,
-        })
-      );
+      const e = error.fromUnknown(err);
+      if (e.message.match("object not found")) {
+        commitStore.error(e);
+      } else {
+        error.show(
+          new error.Error({
+            code: error.Code.CommitFetchFailure,
+            message: "Could not fetch commit",
+            source: err,
+          })
+        );
+      }
     }
   }
 };

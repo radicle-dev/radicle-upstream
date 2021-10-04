@@ -23,7 +23,7 @@
   export let anchors: project.ConfirmedAnchor[];
 
   $: latest = anchors.slice(-1)[0];
-  $: oldAnchors = anchors.slice(0, -1);
+  $: oldAnchors = anchors.slice(0, -1).reverse();
 
   const openCommit = (commitHash: string, projectId: string) => {
     router.push({
