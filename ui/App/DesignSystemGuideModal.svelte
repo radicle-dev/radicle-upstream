@@ -736,7 +736,7 @@
         </div>
 
         <div class="swatch">
-          <Tooltip value="A very long text" position="bottom">
+          <Tooltip value="Bottom" position="bottom">
             <Button variant="outline">Hover me!</Button>
           </Tooltip>
         </div>
