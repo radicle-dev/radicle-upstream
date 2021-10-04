@@ -32,6 +32,7 @@
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
     margin-top: 1.5rem;
+    height: fit-content;
   }
   .row {
     padding: 1.5rem;
@@ -58,88 +59,86 @@
 </style>
 
 <aside>
-  {#if websiteUrl || githubUrl || twitterUrl || (seedId && seedHost) || threshold}
+  <div class="row">
+    {#if threshold}
+      <div class="row-title">
+        <Icon.Gnosis />
+        <p class="typo-text-bold">Gnosis safe</p>
+      </div>
+    {:else}
+      <div class="row-title">
+        <Icon.Ethereum />
+        <p class="typo-text-bold">Owner address</p>
+      </div>
+    {/if}
+    <CopyableIdentifier
+      value={ownerAddress}
+      kind="ethAddress"
+      name="owner address"
+      showIcon={false} />
+  </div>
+  {#if members && threshold}
     <div class="row">
-      {#if threshold}
-        <div class="row-title">
-          <Icon.Gnosis />
-          <p class="typo-text-bold">Gnosis safe</p>
-        </div>
-      {:else}
-        <div class="row-title">
-          <Icon.Ethereum />
-          <p class="typo-text-bold">Owner address</p>
-        </div>
-      {/if}
+      <div class="row-title">
+        <Icon.Orgs />
+        <p class="typo-text-bold">Quorum</p>
+      </div>
+      {threshold} of {members.length}
+      {threshold === 1 ? "signature" : "signatures"} required
+    </div>
+  {/if}
+  {#if seedId && seedHost}
+    <div class="row">
+      <div class="row-title">
+        <Icon.Server />
+        <p class="typo-text-bold">Seed address</p>
+      </div>
       <CopyableIdentifier
-        value={ownerAddress}
-        kind="ethAddress"
-        name="owner address"
+        value={`${registration?.seedId}@${registration?.seedHost}:8776`}
+        kind="seedAddress"
         showIcon={false} />
     </div>
-    {#if members && threshold}
-      <div class="row">
-        <div class="row-title">
-          <Icon.Orgs />
-          <p class="typo-text-bold">Quorum</p>
-        </div>
-        {threshold} of {members.length}
-        {threshold === 1 ? "signature" : "signatures"} required
+  {/if}
+  {#if githubUrl}
+    <div class="row">
+      <div class="row-title">
+        <Icon.Github />
+        <p class="typo-text-bold">Github</p>
       </div>
-    {/if}
-    {#if seedId && seedHost}
-      <div class="row">
-        <div class="row-title">
-          <Icon.Server />
-          <p class="typo-text-bold">Seed address</p>
-        </div>
-        <CopyableIdentifier
-          value={`${registration?.seedId}@${registration?.seedHost}:8776`}
-          kind="seedAddress"
-          showIcon={false} />
+      <div class="url">
+        <span
+          on:click={() => {
+            githubUrl && ipc.openUrl(githubUrl);
+          }}>{githubUrl}</span>
       </div>
-    {/if}
-    {#if githubUrl}
-      <div class="row">
-        <div class="row-title">
-          <Icon.Github />
-          <p class="typo-text-bold">Github</p>
-        </div>
-        <div class="url">
-          <span
-            on:click={() => {
-              githubUrl && ipc.openUrl(githubUrl);
-            }}>{githubUrl}</span>
-        </div>
+    </div>
+  {/if}
+  {#if websiteUrl}
+    <div class="row">
+      <div class="row-title">
+        <Icon.Globe />
+        <p class="typo-text-bold">Website</p>
       </div>
-    {/if}
-    {#if websiteUrl}
-      <div class="row">
-        <div class="row-title">
-          <Icon.Globe />
-          <p class="typo-text-bold">Website</p>
-        </div>
-        <div class="url">
-          <span
-            on:click={() => {
-              websiteUrl && ipc.openUrl(websiteUrl);
-            }}>{websiteUrl}</span>
-        </div>
+      <div class="url">
+        <span
+          on:click={() => {
+            websiteUrl && ipc.openUrl(websiteUrl);
+          }}>{websiteUrl}</span>
       </div>
-    {/if}
-    {#if twitterUrl}
-      <div class="row">
-        <div class="row-title">
-          <Icon.Twitter />
-          <p class="typo-text-bold">Twitter</p>
-        </div>
-        <div class="url">
-          <span
-            on:click={() => {
-              twitterUrl && ipc.openUrl(twitterUrl);
-            }}>{twitterUrl}</span>
-        </div>
+    </div>
+  {/if}
+  {#if twitterUrl}
+    <div class="row">
+      <div class="row-title">
+        <Icon.Twitter />
+        <p class="typo-text-bold">Twitter</p>
       </div>
-    {/if}
+      <div class="url">
+        <span
+          on:click={() => {
+            twitterUrl && ipc.openUrl(twitterUrl);
+          }}>{twitterUrl}</span>
+      </div>
+    </div>
   {/if}
 </aside>

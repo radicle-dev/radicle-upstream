@@ -8,6 +8,7 @@
 <script lang="typescript">
   import type { Registration } from "ui/src/org/ensResolver";
 
+  import { store } from "ui/src/wallet";
   import * as ipc from "ui/src/ipc";
   import * as router from "ui/src/router";
   import * as org from "ui/src/org";
@@ -23,6 +24,7 @@
   import OrgHeader from "ui/App/OrgScreen/OrgHeader.svelte";
   import OrgSidebar from "ui/App/OrgScreen/OrgSidebar.svelte";
   import ProjectsMenu from "ui/App/OrgScreen/ProjectsMenu.svelte";
+  import { getAddress } from "@ethersproject/address";
 
   export let owner: string;
   export let address: string;
@@ -69,6 +71,16 @@
       },
     ];
   };
+
+  const showSidebar: boolean =
+    registration?.url ||
+    registration?.github ||
+    registration?.twitter ||
+    (registration?.seedId && registration?.seedHost)
+      ? true
+      : false;
+
+  $: wallet = $store;
 </script>
 
 <style>
@@ -81,6 +93,10 @@
     grid-template-columns: auto 18rem;
     gap: 1.5rem;
   }
+
+  .single-column {
+    grid-template-columns: 1fr;
+  }
 </style>
 
 <ScreenLayout>
@@ -91,20 +107,22 @@
       <ThreeDotsMenu menuItems={menuItems(address)} />
     </div>
   </Header>
-  <div class="sidebar-layout">
+  <div class={`sidebar-layout ${!showSidebar ? "single-column" : ""}`}>
     <main>
       <ActionBar style="padding: 0; margin-top: 1rem;">
         <div slot="left">
           <TabBar tabs={tabs(address)} />
         </div>
         <div slot="right">
-          <ProjectsMenu
-            isMultiSig={false}
-            orgAddress={address}
-            gnosisSafeAddress={owner}
-            availableProjectCount={projectCount}
-            hasPendingAnchors={anchors.pendingResolved.length !== 0 ||
-              anchors.pendingUnresolved.length !== 0} />
+          {#if owner === wallet.getAddress()}
+            <ProjectsMenu
+              isMultiSig={false}
+              orgAddress={address}
+              gnosisSafeAddress={owner}
+              availableProjectCount={projectCount}
+              hasPendingAnchors={anchors.pendingResolved.length !== 0 ||
+                anchors.pendingUnresolved.length !== 0} />
+          {/if}
         </div>
       </ActionBar>
 
@@ -115,6 +133,8 @@
         disableAnchorCreation={projectCount === 0}
         {anchors} />
     </main>
-    <OrgSidebar {registration} ownerAddress={owner} />
+    {#if showSidebar}
+      <OrgSidebar {registration} ownerAddress={owner} />
+    {/if}
   </div>
 </ScreenLayout>

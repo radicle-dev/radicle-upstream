@@ -8,6 +8,7 @@
 <script lang="typescript">
   import type * as orgRoute from "./OrgScreen/route";
   import type { Registration } from "ui/src/org/ensResolver";
+  import { store } from "ui/src/wallet";
 
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
@@ -88,6 +89,16 @@
       },
     ];
   };
+
+  $: wallet = $store;
+
+  function isMember() {
+    return members
+      .map(m => {
+        return m.ethereumAddress === wallet.getAddress();
+      })
+      .includes(true);
+  }
 </script>
 
 <style>
@@ -118,18 +129,20 @@
           <TabBar tabs={tabs(address, activeTab)} />
         </div>
         <div slot="right">
-          {#if activeTab.type === "projects"}
-            <ProjectsMenu
-              isMultiSig={true}
-              orgAddress={address}
-              {gnosisSafeAddress}
-              availableProjectCount={activeTab.projectCount}
-              hasPendingAnchors={activeTab.anchors.pendingResolved.length !==
-                0 || activeTab.anchors.pendingUnresolved.length !== 0} />
-          {:else if activeTab.type === "members"}
-            <MembersMenu {gnosisSafeAddress} />
-          {:else}
-            {unreachable(activeTab)}
+          {#if isMember()}
+            {#if activeTab.type === "projects"}
+              <ProjectsMenu
+                isMultiSig={true}
+                orgAddress={address}
+                {gnosisSafeAddress}
+                availableProjectCount={activeTab.projectCount}
+                hasPendingAnchors={activeTab.anchors.pendingResolved.length !==
+                  0 || activeTab.anchors.pendingUnresolved.length !== 0} />
+            {:else if activeTab.type === "members"}
+              <MembersMenu {gnosisSafeAddress} />
+            {:else}
+              {unreachable(activeTab)}
+            {/if}
           {/if}
         </div>
       </ActionBar>
@@ -137,6 +150,7 @@
       {#if activeTab.type === "projects"}
         <ProjectsTab
           isMultiSig={true}
+          isMember={isMember()}
           {address}
           ownerAddress={gnosisSafeAddress}
           disableAnchorCreation={activeTab.projectCount === 0}

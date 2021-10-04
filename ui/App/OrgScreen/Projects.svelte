@@ -23,6 +23,7 @@
   export let ownerAddress: string;
   export let disableAnchorCreation = false;
   export let isMultiSig: boolean;
+  export let isMember: boolean | undefined = undefined;
 
   function isWaitingForExecution(anchors: org.OrgAnchors): boolean {
     if (anchors.pendingResolved.length > 0) {
@@ -132,7 +133,7 @@
     <UnresolvedAnchorList anchors={anchors.confirmedUnresolved} />
   {/if}
 
-  {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0}
+  {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0 && isMember}
     <EmptyState
       emoji="🪴"
       text="Get started by anchoring your org’s first project."
@@ -144,5 +145,7 @@
       on:primaryAction={() => {
         org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
       }} />
+  {:else if !isMember}
+    <EmptyState emoji="🪴" text="This org doesn't have any anchors." />
   {/if}
 </div>
