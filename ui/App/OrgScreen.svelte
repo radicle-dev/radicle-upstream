@@ -59,7 +59,7 @@
   };
 
   const menuItems = (address: string, gnosisSafeAddress: string) => {
-    return [
+    let items = [
       {
         title: "View on Etherscan",
         icon: Icon.At,
@@ -81,13 +81,17 @@
           ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
         },
       },
-      {
+    ];
+
+    if (isMember()) {
+      items.push({
         title: registration ? "Edit ENS name" : "Register ENS name",
         icon: Icon.Ethereum,
         event: () =>
           org.openEnsConfiguration(address, registration, gnosisSafeAddress),
-      },
-    ];
+      });
+    }
+    return items;
   };
 
   $: wallet = $store;
