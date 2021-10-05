@@ -24,7 +24,6 @@
   import OrgHeader from "ui/App/OrgScreen/OrgHeader.svelte";
   import OrgSidebar from "ui/App/OrgScreen/OrgSidebar.svelte";
   import ProjectsMenu from "ui/App/OrgScreen/ProjectsMenu.svelte";
-  import { getAddress } from "@ethersproject/address";
 
   export let owner: string;
   export let address: string;

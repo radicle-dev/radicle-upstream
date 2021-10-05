@@ -21,7 +21,7 @@
   export let registration: ensResolver.Registration | undefined = undefined;
 
   export function copy(): void {
-    let content = `${registration?.seedId}@${registration?.seedHost}:8776`;
+    const content = `${registration?.seedId}@${registration?.seedHost}:8776`;
     ipc.copyToClipboard(content.trim());
     notification.info({
       message: "Org node address copied to your clipboard",

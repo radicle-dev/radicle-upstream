@@ -59,7 +59,7 @@
   };
 
   const menuItems = (address: string, gnosisSafeAddress: string) => {
-    let items = [
+    const items = [
       {
         title: "View on Etherscan",
         icon: Icon.At,
