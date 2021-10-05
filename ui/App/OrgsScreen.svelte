@@ -140,7 +140,7 @@
           </header>
           <ul class="metadata">
             <li class="row">
-              {#if owner.threshold}
+              {#if owner.type === "gnosis-safe"}
                 <Icon.Gnosis />
               {:else}
                 <Icon.Ethereum />
