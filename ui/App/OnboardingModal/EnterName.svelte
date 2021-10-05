@@ -99,7 +99,7 @@
   <div>
     <h1>
       Hey
-      <Emoji emoji="👋 " size="big" style="display: inline;" />
+      <Emoji emoji="👋 " size="large" style="display: inline;" />
       what should we call you?
     </h1>
     <p>
