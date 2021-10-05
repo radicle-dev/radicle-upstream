@@ -10,6 +10,8 @@
   import type * as ensResolver from "ui/src/org/ensResolver";
 
   import * as ipc from "ui/src/ipc";
+  import * as notification from "ui/src/notification";
+  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
 
   import { CopyableIdentifier, Icon } from "ui/DesignSystem";
 
@@ -17,6 +19,14 @@
   export let threshold: number | undefined = undefined;
   export let members: org.Member[] | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
+
+  export function copy(): void {
+    let content = `${registration?.seedId}@${registration?.seedHost}:8776`;
+    ipc.copyToClipboard(content.trim());
+    notification.info({
+      message: "Org node address copied to your clipboard",
+    });
+  }
 
   $: websiteUrl = registration?.url?.replace("https://", "");
   $: githubUrl = registration?.github && `github.com/${registration.github}`;
@@ -91,12 +101,16 @@
     <div class="row">
       <div class="row-title">
         <Icon.Server />
-        <p class="typo-text-bold">Seed address</p>
+        <p class="typo-text-bold">Org node</p>
       </div>
-      <CopyableIdentifier
-        value={`${registration?.seedId}@${registration?.seedHost}:8776`}
-        kind="seedAddress"
-        showIcon={false} />
+      <Tooltip value="Copy org node address to clipboard" position="top">
+        <p
+          class="typo-overflow-ellipsis"
+          style="cursor: pointer;"
+          on:click|stopPropagation={copy}>
+          {registration?.seedHost}
+        </p>
+      </Tooltip>
     </div>
   {/if}
   {#if githubUrl}

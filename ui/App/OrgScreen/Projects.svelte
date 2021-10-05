@@ -145,7 +145,7 @@
       on:primaryAction={() => {
         org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
       }} />
-  {:else if !isMember}
+  {:else if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0 && !isMember}
     <EmptyState emoji="🪴" text="This org doesn't have any anchors." />
   {/if}
 </div>
