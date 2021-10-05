@@ -181,16 +181,3 @@ pub async fn update(
         .ok_or(radicle_daemon::state::Error::MissingOwner)?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
-
-/// Retrieve an identity by id.
-///
-/// # Errors
-///
-/// Errors if access to coco state on the filesystem fails, or the id is malformed.
-pub async fn get(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
-    id: Urn,
-) -> Result<Option<Person>, error::Error> {
-    let user = radicle_daemon::state::get_user(peer, id).await?;
-    Ok(user.map(Person::from))
-}

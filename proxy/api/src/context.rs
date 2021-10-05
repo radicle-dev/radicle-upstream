@@ -75,6 +75,15 @@ impl Context {
         }
     }
 
+    pub fn read_only_storage(&self) -> Result<librad::git::storage::ReadOnly, crate::error::Error> {
+        let paths = match self {
+            Self::Sealed(sealed) => &sealed.paths,
+            Self::Unsealed(unsealed) => &unsealed.paths,
+        };
+        let storage = librad::git::storage::ReadOnly::open(paths)?;
+        Ok(storage)
+    }
+
     /// Unseal the key store and restart the coco service with the obtained key. Returns the auth
     /// token required to access the keystore.
     ///
@@ -174,6 +183,8 @@ pub struct Unsealed {
     pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
     /// Notification to shutdown the HTTP server
     pub shutdown: Arc<tokio::sync::Notify>,
+    pub paths: librad::paths::Paths,
+    pub signer: BoxedSigner,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -193,6 +204,7 @@ pub struct Sealed {
     pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
     pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
+    pub paths: librad::paths::Paths,
 }
 
 impl Unsealed {
@@ -211,9 +223,10 @@ impl Unsealed {
 
         let key = link_crypto::SecretKey::new();
         let signer = BoxedSigner::from(link_crypto::SomeSigner { signer: key });
+        let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let (peer_control, peer, run_handle) = {
-            let config = radicle_daemon::config::default(signer, tmp_dir.path())?;
+            let config = radicle_daemon::config::default(signer.clone(), tmp_dir.path())?;
             let disco = radicle_daemon::config::static_seed_discovery(&[]);
             let coco_peer = radicle_daemon::Peer::new(
                 config,
@@ -249,6 +262,8 @@ impl Unsealed {
                 auth_token: Arc::new(RwLock::new(None)),
                 keystore: Arc::new(keystore::memory()),
                 shutdown: Arc::new(tokio::sync::Notify::new()),
+                paths,
+                signer,
             },
             run_handle,
         ))

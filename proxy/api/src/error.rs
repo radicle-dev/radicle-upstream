@@ -52,4 +52,7 @@ pub enum Error {
 
     #[error("missing default branch")]
     MissingDefaultBranch,
+
+    #[error("Failed to open readonly Git storage")]
+    OpenReadOnlyGitStorage(#[from] librad::git::storage::read::error::Init),
 }

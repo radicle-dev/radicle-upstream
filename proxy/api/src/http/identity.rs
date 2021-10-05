@@ -50,13 +50,13 @@ fn get_remote_filter(
         .and(path::param::<Urn>())
         .and(warp::path::end())
         .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
+        .and(http::with_context(ctx))
         .and_then(handler::get_remote)
 }
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
-    use warp::{http::StatusCode, reject, reply, Rejection, Reply};
+    use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use link_identities::git::Urn;
 
@@ -96,10 +96,19 @@ mod handler {
     }
 
     /// Get the [`identity::Person`] for the given `id`.
-    pub async fn get_remote(id: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        match identity::get(&ctx.peer, id.clone()).await? {
-            Some(id) => Ok(reply::json(&id)),
-            None => Err(reject::not_found()),
+    #[allow(clippy::unused_async)]
+    pub async fn get_remote(id: Urn, ctx: context::Context) -> Result<impl Reply, Rejection> {
+        let storage = ctx.read_only_storage()?;
+        let user =
+            rad_identities::person::get(&storage, &id).map_err(http::error::Response::from)?;
+        match user {
+            Some(user) => Ok(reply::json(&identity::Person::from(user))),
+            None => Err(http::error::Response {
+                status_code: StatusCode::NOT_FOUND,
+                variant: "NOT_FOUND",
+                message: "Person not found".to_string(),
+            }
+            .into()),
         }
     }
 }
