@@ -43,6 +43,7 @@
 
   router.initialize();
   customProtocolHandler.register();
+  ethereum.initialize();
   org.initialize();
   transaction.initialize();
 

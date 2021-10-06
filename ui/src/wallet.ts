@@ -18,7 +18,6 @@ import {
   networkFromChainId,
 } from "ui/src/ethereum/environment";
 import { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
-import * as ethereumDebug from "ui/src/ethereum/debug";
 import { createWalletConnect, QrDisplay } from "ui/src/ethereum/walletConnect";
 
 export { radToken };
@@ -176,10 +175,9 @@ function build(environment: Environment, provider: ethereum.Provider): Wallet {
 
 export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
   ethereum.selectedEnvironment,
-  (environment, set) => {
+  (_, set) => {
+    const environment = ethereum.getEnvironment();
     const provider = ethereum.getProvider();
-    ethereumDebug.install(provider);
-
     const wallet = build(environment, provider);
     set(wallet);
     return () => wallet.destroy();

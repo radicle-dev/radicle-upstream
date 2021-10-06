@@ -15,6 +15,7 @@ import { INFURA_API_KEY_MAINNET, INFURA_API_KEY_RINKEBY } from "ui/src/config";
 
 import { Environment, Network, supportedNetwork } from "./environment";
 import * as contractAddresses from "./contractAddresses";
+import * as debug from "./debug";
 
 export { Environment, supportedNetwork, Network, contractAddresses };
 
@@ -52,6 +53,14 @@ export function getProvider(): Provider {
         "mainnet",
         INFURA_API_KEY_MAINNET
       );
+  }
+}
+
+export function initialize(): void {
+  if (!isCypressTestEnv) {
+    selectedEnvironment.subscribe(() => {
+      debug.install(getProvider());
+    });
   }
 }
 
