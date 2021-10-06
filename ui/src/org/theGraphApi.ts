@@ -58,9 +58,8 @@ export interface Org {
   timestamp: number;
 }
 
-export async function getOrgs(
-  walletOwnerAddress: string,
-  multiSigOwners: string[]
+export async function getOwnedOrgsSortedAscByTimestamp(
+  owners: string[]
 ): Promise<Org[]> {
   const orgsResponse = await orgsSubgraphClient().query<{
     orgs: Array<{
@@ -76,7 +75,7 @@ export async function getOrgs(
   }>({
     query: apolloCore.gql`
         query GetOrgs($owners: [String!]!) {
-          orgs(where: { owner_in: $owners }) {
+          orgs(where: { owner_in: $owners }, orderBy: timestamp, orderDirection: asc) {
             id
             owner
             creator
@@ -84,7 +83,7 @@ export async function getOrgs(
           }
         }
       `,
-    variables: { owners: [walletOwnerAddress, ...multiSigOwners] },
+    variables: { owners },
   });
 
   return orgsResponse.data.orgs.map(org => ({

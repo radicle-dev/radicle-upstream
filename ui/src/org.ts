@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
 import type { Org } from "./org/theGraphApi";
@@ -357,10 +356,11 @@ export async function fetchOrgs(): Promise<void> {
       walletStore.environment,
       walletAddress
     );
-    return lodash.sortBy(
-      await graph.getOrgs(walletAddress, gnosisSafeWallets),
-      org => org.timestamp
-    );
+
+    return await graph.getOwnedOrgsSortedAscByTimestamp([
+      walletAddress,
+      ...gnosisSafeWallets,
+    ]);
   });
 
   if (sortedOrgs) {
