@@ -135,14 +135,15 @@
                 style="margin-left: 0.5rem;"
                 value={org.id}
                 kind="ethAddress"
-                name="org address"
+                name="owner address"
                 showIcon={false} />
             </li>
             {#if owner.type === "gnosis-safe"}
               <li class="row">
                 <Icon.Proposals />
                 <p style="margin-left: .5rem;">
-                  {owner.threshold} of {owner.members.length} signatures required
+                  {owner.threshold} of {owner.members.length}
+                  {owner.threshold === 1 ? "signature" : "signatures"} required
                 </p>
               </li>
             {/if}
