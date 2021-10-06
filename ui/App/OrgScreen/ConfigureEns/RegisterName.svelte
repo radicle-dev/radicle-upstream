@@ -178,6 +178,7 @@
     const wallet_ = svelteStore.get(wallet.store);
     const walletAddress = wallet_.getAddress()?.toLowerCase();
     const commitment = svelteStore.get(ensRegistrar.commitmentStore);
+    const provider = ethereum.getProvider();
 
     if (
       commitment &&
@@ -198,9 +199,7 @@
         });
         let commitmentBlock;
         try {
-          const receipt = await wallet_.provider.waitForTransaction(
-            commitment.txHash
-          );
+          const receipt = await provider.waitForTransaction(commitment.txHash);
           commitmentBlock = receipt.blockNumber;
         } finally {
           commitNotification.remove();

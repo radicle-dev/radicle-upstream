@@ -11,7 +11,7 @@ import type { ContractTransaction } from "ethers";
 import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
-import { store as walletStore } from "./wallet";
+import * as ethereum from "ui/src/ethereum";
 
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
@@ -143,7 +143,7 @@ function txData(txc: ContractTransaction, date: number = Date.now()): TxData {
 
 function registerTxUpdateCallback(tx: Tx): void {
   if (tx.status === TxStatus.AwaitingInclusion) {
-    const provider = svelteStore.get(walletStore).provider;
+    const provider = ethereum.getProvider();
     provider
       .waitForTransaction(tx.hash)
       .then(txReceipt => {

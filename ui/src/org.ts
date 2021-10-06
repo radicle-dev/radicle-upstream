@@ -263,6 +263,7 @@ export async function createOrg(
   isMultiSig: boolean
 ): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
+  const provider = ethereum.getProvider();
   const confirmNotification = notification.info({
     message:
       "Waiting for you to confirm the org creation transaction in your connected wallet",
@@ -292,7 +293,7 @@ export async function createOrg(
     persist: true,
   });
 
-  const receipt = await walletStore.provider.waitForTransaction(response.hash);
+  const receipt = await provider.waitForTransaction(response.hash);
   const orgAddress = Contract.parseOrgCreatedReceipt(receipt);
 
   await svelteStore.waitUntil(orgSidebarStore, store => {
@@ -649,8 +650,8 @@ async function getClaimedIdentity(
 // Returns true if a given org at the given address is owned by a Gnosis safe.
 export const isMultiSig = memoizeLru(
   async (address: string): Promise<boolean> => {
-    const walletStore = svelteStore.get(wallet.store);
-    const code = await walletStore.provider.getCode(address);
+    const provider = ethereum.getProvider();
+    const code = await provider.getCode(address);
     // We’re not really checking that the address is the Gnosis Safe
     // contract. We’re just checking if it is _a_ contract.
     return code !== "0x";

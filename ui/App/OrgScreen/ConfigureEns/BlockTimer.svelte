@@ -8,14 +8,13 @@
 <script lang="typescript">
   import { onDestroy } from "svelte";
 
-  import * as svelteStore from "ui/src/svelteStore";
-  import * as wallet from "ui/src/wallet";
+  import * as ethereum from "ui/src/ethereum";
 
   export let commitmentBlock: number;
   export let minimumCommitmentAge: number;
   export let onFinish: () => void;
 
-  const walletStore = svelteStore.get(wallet.store);
+  const provider = ethereum.getProvider();
 
   // There seems to be an off-by-one error in the contract, because if we don't
   // wait for that one extra block we get an error saying that the commitment
@@ -28,7 +27,7 @@
 
     if (confirmedBlockCount >= requiredBlockCount) {
       onFinish();
-      walletStore.provider.off("block", onBlock);
+      provider.off("block", onBlock);
       // When we resume a saved commitment, it can happen that more blocks have
       // been included than the minimum required amount in the mean time.
       // We don't want to overflow the counter that we show to the user.
@@ -36,10 +35,10 @@
     }
   };
 
-  walletStore.provider.on("block", onBlock);
+  provider.on("block", onBlock);
 
   onDestroy(() => {
-    walletStore.provider.off("block", onBlock);
+    provider.off("block", onBlock);
   });
 </script>
 
