@@ -15,7 +15,7 @@
 
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
-  import Blob from "./FileView/Blob.svelte";
+  import FileSource from "./FileSource.svelte";
   import Root from "./FileView/Root.svelte";
 
   export let code: Readable<Code>;
@@ -32,7 +32,11 @@
 
 <div data-cy="file-view">
   {#if view.kind === ViewKind.Blob}
-    <Blob {view} on:root={onSelectRoot} on:select={onSelectCommit} />
+    <FileSource
+      blob={view.blob}
+      commit={view.blob.info.lastCommit}
+      on:root={onSelectRoot}
+      on:select={onSelectCommit} />
   {:else if view.kind === ViewKind.Root}
     <Root
       emptyRepo={$tree.entries.length === 0}
