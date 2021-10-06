@@ -154,7 +154,7 @@
             </li>
             {#if owner.type === "gnosis-safe"}
               <li class="row">
-                <Icon.Orgs />
+                <Icon.Proposals />
                 <p style="margin-left: .5rem;">
                   {owner.threshold} of {owner.members.length} signatures required
                 </p>

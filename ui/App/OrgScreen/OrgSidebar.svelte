@@ -90,7 +90,7 @@
   {#if members && threshold}
     <div class="row">
       <div class="row-title">
-        <Icon.Orgs />
+        <Icon.Proposals />
         <p class="typo-text-bold">Quorum</p>
       </div>
       {threshold} of {members.length}
