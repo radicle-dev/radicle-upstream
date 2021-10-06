@@ -97,11 +97,9 @@
   $: wallet = $store;
 
   function isMember() {
-    return members
-      .map(m => {
-        return m.ethereumAddress === wallet.getAddress();
-      })
-      .includes(true);
+    return members.some(
+      member => member.ethereumAddress === wallet.getAddress()
+    );
   }
 </script>
 
