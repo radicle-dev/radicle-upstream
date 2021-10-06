@@ -107,7 +107,7 @@ export async function getAllOrgs(): Promise<Org[]> {
   }>({
     query: apolloCore.gql`
     query GetOrgs {
-      orgs(first: 9) {
+      orgs(first: 9, orderBy: timestamp, orderDirection: desc) {
         id
         owner
         creator
