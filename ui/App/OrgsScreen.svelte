@@ -41,7 +41,6 @@
 
     resolvedOrgs = await Promise.all(
       unsortedOrgs.sort((a, b) => {
-        // Show members with claimed identities first.
         if (!a.org.registration?.domain && b.org.registration?.domain) {
           return 1;
         }
