@@ -62,6 +62,7 @@ export interface TransactionData {
 
 export async function signAndProposeTransaction(
   wallet: Wallet,
+  environment: Ethereum.Environment,
   safeAddress: string,
   tx: TransactionData
 ): Promise<void> {
@@ -69,7 +70,7 @@ export async function signAndProposeTransaction(
   safeAddress = ethers.utils.getAddress(safeAddress);
   tx = { ...tx, to: ethers.utils.getAddress(tx.to) };
 
-  const safeServiceClient = createSafeServiceClient(wallet.environment);
+  const safeServiceClient = createSafeServiceClient(environment);
   const estimation = await safeServiceClient.estimateSafeTransaction(
     ethers.utils.getAddress(safeAddress),
     tx

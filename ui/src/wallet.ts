@@ -40,7 +40,6 @@ export interface Connected {
 }
 
 export interface Wallet extends svelteStore.Readable<State> {
-  environment: Environment;
   connect(qrDisplay: QrDisplay): Promise<void>;
   disconnect(): Promise<void>;
   signer: WalletConnectSigner;
@@ -160,7 +159,6 @@ function build(environment: Environment, provider: ethereum.Provider): Wallet {
   }
 
   return {
-    environment,
     subscribe: stateStore.subscribe,
     connect,
     disconnect() {

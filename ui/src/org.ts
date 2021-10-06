@@ -128,24 +128,15 @@ export function gnosisSafeWebAppUrl(
   gnosisSafeAddress: string,
   view: "transactions" | "settings"
 ): string {
-  return Safe.appUrl(
-    svelteStore.get(wallet.store).environment,
-    gnosisSafeAddress,
-    view
-  );
+  return Safe.appUrl(ethereum.getEnvironment(), gnosisSafeAddress, view);
 }
 
 export const openOnEtherscan = (query: string): void => {
-  ipc.openUrl(
-    ethereum.etherscanUrl(svelteStore.get(wallet.store).environment, query)
-  );
+  ipc.openUrl(ethereum.etherscanUrl(ethereum.getEnvironment(), query));
 };
 
 export const etherscanUrl = (query: string): string => {
-  return ethereum.etherscanUrl(
-    svelteStore.get(wallet.store).environment,
-    query
-  );
+  return ethereum.etherscanUrl(ethereum.getEnvironment(), query);
 };
 
 export async function anchorProjectWithGnosis(
@@ -168,12 +159,17 @@ export async function anchorProjectWithGnosis(
   });
 
   try {
-    await Safe.signAndProposeTransaction(walletStore, safeAddress, {
-      to: orgAddress,
-      value: "0",
-      data: txData,
-      operation: OperationType.Call,
-    });
+    await Safe.signAndProposeTransaction(
+      walletStore,
+      ethereum.getEnvironment(),
+      safeAddress,
+      {
+        to: orgAddress,
+        value: "0",
+        data: txData,
+        operation: OperationType.Call,
+      }
+    );
   } finally {
     confirmNotification.remove();
   }
@@ -274,7 +270,7 @@ export async function createOrg(
   let response;
   try {
     response = await Contract.submitCreateOrgTx(
-      walletStore.environment,
+      ethereum.getEnvironment(),
       owner,
       walletStore.signer,
       isMultiSig
@@ -355,7 +351,7 @@ export async function fetchOrgs(): Promise<void> {
     const walletAddress = wallet_.connected.address;
 
     const gnosisSafeWallets = await Safe.getSafesByOwner(
-      walletStore.environment,
+      ethereum.getEnvironment(),
       walletAddress
     );
     return lodash.sortBy(
@@ -402,7 +398,6 @@ interface GnosisSafeOwner {
 // Determines the owner of an org at the given address.
 export async function getOwner(orgAddress: string): Promise<Owner> {
   const provider = ethereum.getProvider();
-  const environment = ethereum.getEnvironment();
   const address = await Contract.getOwner(orgAddress, provider);
   const ownerCode = await provider.getCode(address);
   // We’re not really checking that the address is the Gnosis Safe
@@ -411,7 +406,7 @@ export async function getOwner(orgAddress: string): Promise<Owner> {
   if (isSafe) {
     const { members, threshold } = await fetchMembers(
       provider,
-      environment,
+      ethereum.getEnvironment(),
       address
     );
     return { type: "gnosis-safe", address, members, threshold };
@@ -470,9 +465,8 @@ async function fetchPendingAnchors(
   gnosis: GnosisSafeOwner,
   registration?: ensResolver.Registration
 ): Promise<project.PendingAnchor[]> {
-  const walletStore = svelteStore.get(wallet.store);
   const txs = await Safe.getPendingTransactions(
-    walletStore.environment,
+    ethereum.getEnvironment(),
     gnosis.address
   );
   const isAnchor = (
@@ -666,7 +660,7 @@ export async function setNameSingleSig(
 ): Promise<Contract.TransactionResponse> {
   const walletStore = svelteStore.get(wallet.store);
 
-  const ensAddress = ethereum.ensAddress(walletStore.environment);
+  const ensAddress = ethereum.ensAddress(ethereum.getEnvironment());
 
   return Contract.setName(walletStore.signer, orgAddress, name, ensAddress);
 }
@@ -679,7 +673,7 @@ export async function proposeSetNameChange(
 ): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
 
-  const ensAddress = ethereum.ensAddress(walletStore.environment);
+  const ensAddress = ethereum.ensAddress(ethereum.getEnvironment());
 
   const data = await Contract.populateSetNameTransaction(
     orgAddress,
@@ -693,7 +687,12 @@ export async function proposeSetNameChange(
     data,
     operation: OperationType.Call,
   };
-  await Safe.signAndProposeTransaction(walletStore, ownerAddress, safeTx);
+  await Safe.signAndProposeTransaction(
+    walletStore,
+    ethereum.getEnvironment(),
+    ownerAddress,
+    safeTx
+  );
 }
 
 export async function openEnsConfiguration(

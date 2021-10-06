@@ -15,6 +15,7 @@
   import { lastClaimed } from "ui/src/attestation/lastClaimed";
   import * as Session from "ui/src/session";
   import { store as walletStore } from "ui/src/wallet";
+  import * as ethereum from "ui/src/ethereum";
   import * as identity from "ui/src/identity";
   import * as modal from "ui/src/modal";
 
@@ -32,7 +33,7 @@
     await identity.claimEthAddress(address);
     const claims = new ClaimsContract(
       $walletStore.signer,
-      claimsAddress($walletStore.environment)
+      claimsAddress(ethereum.getEnvironment())
     );
     await claims.claim(ident.urn);
   }

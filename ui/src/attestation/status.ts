@@ -14,6 +14,7 @@ import type { Wallet } from "ui/src/wallet";
 import { claimsAddress, ClaimsContract } from "./contract";
 import * as session from "ui/src/session";
 import * as urn from "ui/src/urn";
+import * as ethereum from "ui/src/ethereum";
 
 export enum AttestationStatus {
   Fetching = "Fetching",
@@ -40,7 +41,7 @@ export async function watchAttestationStatus(
   const wallet = svelteStore.get(walletStore);
   const claimWatcher = new ClaimWatcher(
     wallet.signer,
-    claimsAddress(wallet.environment)
+    claimsAddress(ethereum.getEnvironment())
   );
   await updateAttesttationStatus(walletStore, claimWatcher);
 

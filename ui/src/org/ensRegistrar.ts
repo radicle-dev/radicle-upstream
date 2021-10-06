@@ -32,7 +32,7 @@ function registrarAddress(network: ethereum.Environment): string {
 function registrar() {
   const wallet = svelteStore.get(Wallet.store);
   return RegistrarFactory.connect(
-    registrarAddress(wallet.environment),
+    registrarAddress(ethereum.getEnvironment()),
     wallet.signer
   );
 }
@@ -149,10 +149,11 @@ export async function permitSignature(
   deadline: ethers.BigNumberish
 ): Promise<ethers.Signature> {
   const wallet = svelteStore.get(Wallet.store);
-  const spenderAddr = registrarAddress(wallet.environment);
+  const environment = ethereum.getEnvironment();
+  const spenderAddr = registrarAddress(environment);
   const owner = wallet.signer;
 
-  const rad = Wallet.radToken.connect(wallet.signer, wallet.environment);
+  const rad = Wallet.radToken.connect(wallet.signer, environment);
 
   const ownerAddr = (await owner.getAddress()).toLowerCase();
   const nonce = await rad.nonces(ownerAddr);

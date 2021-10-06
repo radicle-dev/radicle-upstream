@@ -46,10 +46,10 @@
         }`;
         iconStatusColor = "var(--color-caution)";
       } else {
-        if (wallet.environment === ethereum.Environment.Mainnet) {
+        if ($selectedEnvironment === ethereum.Environment.Mainnet) {
           tooltipMessage = "Connected";
         } else {
-          tooltipMessage = `Connected to ${wallet.environment}`;
+          tooltipMessage = `Connected to ${$selectedEnvironment}`;
         }
         iconStatusColor = undefined;
       }
