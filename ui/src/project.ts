@@ -6,12 +6,13 @@
 
 import { get, writable } from "svelte/store";
 
+import * as proxy from "ui/src/proxy";
+import type { LocalState } from "ui/src/proxy/source";
 import type * as ensResolver from "./org/ensResolver";
 import * as error from "./error";
 import type * as identity from "./identity";
 import * as ipc from "./ipc";
 import * as remote from "./remote";
-import * as source from "./source";
 import * as validation from "./validation";
 import {
   Project as ProxyProject,
@@ -65,7 +66,7 @@ export interface User {
 const creationStore = remote.createStore<Project>();
 export const creation = creationStore.readable;
 
-const localStateStore = remote.createStore<source.LocalState>();
+const localStateStore = remote.createStore<LocalState>();
 export const localState = localStateStore.readable;
 
 export const clearLocalState = (): void => {
@@ -74,11 +75,7 @@ export const clearLocalState = (): void => {
 };
 
 const fetchLocalState = (path: string): void => {
-  localStateStore.loading();
-  source
-    .getLocalState(path)
-    .then(localStateStore.success)
-    .catch(err => localStateStore.error(error.fromUnknown(err)));
+  remote.fetch(localStateStore, proxy.client.source.localStateGet(path));
 };
 
 export const UPSTREAM_DEFAULT_BRANCH = "main";
@@ -114,9 +111,9 @@ const fetchBranches = async (path: string) => {
     return;
   }
 
-  let state: source.LocalState;
+  let state: LocalState;
   try {
-    state = await source.getLocalState(path);
+    state = await proxy.client.source.localStateGet(path);
   } catch (unknownErr: unknown) {
     const err = error.fromUnknown(
       unknownErr,
