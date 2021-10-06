@@ -6,8 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { CommitStats } from "ui/src/source";
-  import type { Diff } from "ui/src/source/diff";
+  import type { Diff, CommitStats } from "ui/src/proxy/commit";
 
   import Icon from "ui/DesignSystem/Icon";
 

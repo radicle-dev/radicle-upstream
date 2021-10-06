@@ -15,6 +15,7 @@ import * as remote from "ui/src/remote";
 import * as router from "ui/src/router";
 import * as source from "ui/src/source";
 import * as appearance from "ui/src/appearance";
+import * as proxy from "ui/src/proxy";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -282,7 +283,9 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
     } = screen;
 
     try {
-      commitStore.success(await source.fetchCommit(project.urn, sha1));
+      commitStore.success(
+        await proxy.client.source.commitGet({ projectUrn: project.urn, sha1 })
+      );
     } catch (err: unknown) {
       const e = error.fromUnknown(err);
       if (e.message.match("object not found")) {

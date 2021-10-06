@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import type { Sha1 } from "ui/src/source";
   import * as router from "ui/src/router";
 
   import { fetchTree } from "ui/src/source";
@@ -16,7 +15,7 @@
   import Remote from "ui/App/Remote.svelte";
   import Tree from "./SourceBrowser/Tree.svelte";
 
-  const onSelectCommit = (projectUrn: string, sha1: Sha1) => {
+  const onSelectCommit = (projectUrn: string, sha1: string) => {
     router.push({
       type: "project",
       params: {
