@@ -92,8 +92,7 @@ export function etherscanUrl(ethEnv: Environment, query: string): string {
 export function ensAddress(env: Environment): string {
   if (env === Environment.Local) {
     throw new error.Error({
-      code: error.Code.FeatureNotAvailableForGivenNetwork,
-      message: "ENS is not supported on the Local environment",
+      message: "ensAddress() is not implemented for ethereum.Environment.Local",
     });
   } else {
     // https://docs.ens.domains/ens-deployments

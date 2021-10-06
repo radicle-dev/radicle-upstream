@@ -19,8 +19,8 @@ function registrarAddress(network: ethereum.Environment): string {
   switch (network) {
     case ethereum.Environment.Local:
       throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "ENS Registrar not available on the Local testnet",
+        message:
+          "registrarAddress() is not implemented for ethereum.Environment.Local",
       });
     case ethereum.Environment.Rinkeby:
       return ethereum.contractAddresses.radicleEnsRegistrar.rinkeby;

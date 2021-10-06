@@ -35,8 +35,8 @@ function orgsSubgraphClient() {
   switch (walletStore.environment) {
     case ethereum.Environment.Local:
       throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Orgs is not available on the Local testnet.",
+        message:
+          "orgsSubgraphClient() is not implemented for ethereum.Environment.Local",
       });
     case ethereum.Environment.Rinkeby:
       uri =
