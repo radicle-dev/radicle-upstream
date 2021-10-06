@@ -84,7 +84,6 @@ export enum Code {
   FailedOrRejectedTransaction = "FailedOrRejectedTransaction",
   UnkownTransactionFailure = "UnkownTransactionFailure",
   InsufficientGas = "InsufficientGas",
-  FeatureNotAvailableForGivenNetwork = "FeatureNotAvailableForGivenNetwork",
 
   // Org related error codes
   OrgCreateCouldNotGenerateTx = "OrgCreateCouldNotGenerateTx",

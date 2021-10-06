@@ -110,8 +110,7 @@ export function appUrl(
   switch (ethEnv) {
     case Ethereum.Environment.Local:
       throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Gnosis Safe links are not supported on the Local testnet",
+        message: "appUrl() is not implemented for ethereum.Environment.Local",
       });
     case Ethereum.Environment.Rinkeby:
       domain = `rinkeby.gnosis-safe.io`;
@@ -130,8 +129,8 @@ function createSafeServiceClient(
   switch (ethEnv) {
     case Ethereum.Environment.Local:
       throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Orgs are not available in the Local environment.",
+        message:
+          "createSafeServiceClient() is not implemented for ethereum.Environment.Local",
       });
     case Ethereum.Environment.Rinkeby:
       uri = "https://safe-transaction.rinkeby.gnosis.io";
