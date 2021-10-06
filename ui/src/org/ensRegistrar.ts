@@ -156,7 +156,7 @@ export async function permitSignature(
 
   const ownerAddr = (await owner.getAddress()).toLowerCase();
   const nonce = await rad.nonces(ownerAddr);
-  const chainId = (await wallet.provider.getNetwork()).chainId;
+  const chainId = (await ethereum.getProvider().getNetwork()).chainId;
 
   const data = {
     domain: {

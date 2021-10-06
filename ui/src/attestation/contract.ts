@@ -50,8 +50,8 @@ const claimsContractCache = new LruCache<string, ClaimsContractCacheEntry>({
 export class ClaimsContract {
   contract: Claims;
 
-  constructor(signer: Signer, address: string) {
-    this.contract = ClaimsFactory.connect(address, signer);
+  constructor(signerOrProvider: Signer | ethereum.Provider, address: string) {
+    this.contract = ClaimsFactory.connect(address, signerOrProvider);
   }
 
   async claim(urn: string): Promise<void> {

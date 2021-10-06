@@ -45,7 +45,7 @@ export async function setRecords(
 ): Promise<TransactionResponse> {
   const wallet = svelteStore.get(Wallet.store);
 
-  const resolver = await wallet.provider.getResolver(domain);
+  const resolver = await ethereum.getProvider().getResolver(domain);
 
   // The type definitions of `ethers` are not correct. `getResolver()`
   // can return `null`.
@@ -120,8 +120,7 @@ export async function setRecords(
 export async function getRegistration(
   domain: string
 ): Promise<Registration | undefined> {
-  const wallet = svelteStore.get(Wallet.store);
-  const resolver = await wallet.provider.getResolver(domain);
+  const resolver = await ethereum.getProvider().getResolver(domain);
 
   // The type definitions of `ethers` are not correct. `getResolver()`
   // can return `null`.
@@ -162,10 +161,9 @@ export async function getRegistration(
 }
 
 async function getOwner(domain: string): Promise<string> {
-  const wallet = svelteStore.get(Wallet.store);
-  const ensAddr = ethereum.ensAddress(wallet.environment);
+  const ensAddr = ethereum.ensAddress(ethereum.getEnvironment());
 
-  const registry = EnsRegistryFactory.connect(ensAddr, wallet.signer);
+  const registry = EnsRegistryFactory.connect(ensAddr, ethereum.getProvider());
   const owner = await registry.owner(ethers.utils.namehash(domain));
 
   return owner;
@@ -191,8 +189,7 @@ export async function getCachedRegistrationByAddress(
   if (!invalidateCache && cached) {
     return cached.value;
   } else {
-    const wallet = svelteStore.get(Wallet.store);
-    const name = await wallet.provider.lookupAddress(normalisedAddress);
+    const name = await ethereum.getProvider().lookupAddress(normalisedAddress);
 
     // The type definitions of `ethers` are not correct. `lookupAddress()`
     // can return `null`.

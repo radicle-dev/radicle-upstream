@@ -8,7 +8,9 @@ import type {} from "native/preload";
 import qs from "qs";
 import * as zod from "zod";
 
+// This account is registered on igor.zuk@protonmail.com.
 export const INFURA_API_KEY_RINKEBY = "de5e2a8780c04964950e73b696d1bfb1";
+// This account is registered on rudolfs@osins.org.
 export const INFURA_API_KEY_MAINNET = "7a19a4bf0af84fcc86ffb693a257fad4";
 
 // Configuration values.

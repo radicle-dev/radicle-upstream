@@ -400,14 +400,19 @@ interface GnosisSafeOwner {
 
 // Determines the owner of an org at the given address.
 export async function getOwner(orgAddress: string): Promise<Owner> {
-  const walletStore = svelteStore.get(wallet.store);
-  const address = await Contract.getOwner(orgAddress, walletStore.provider);
-  const ownerCode = await walletStore.provider.getCode(address);
+  const provider = ethereum.getProvider();
+  const environment = ethereum.getEnvironment();
+  const address = await Contract.getOwner(orgAddress, provider);
+  const ownerCode = await provider.getCode(address);
   // We’re not really checking that the address is the Gnosis Safe
   // contract. We’re just checking if it is _a_ contract.
   const isSafe = ownerCode !== "0x";
   if (isSafe) {
-    const { members, threshold } = await fetchMembers(walletStore, address);
+    const { members, threshold } = await fetchMembers(
+      provider,
+      environment,
+      address
+    );
     return { type: "gnosis-safe", address, members, threshold };
   } else {
     return { type: "wallet", address };
@@ -425,18 +430,13 @@ export interface Member {
 }
 
 export async function fetchMembers(
-  wallet: wallet.Wallet,
+  provider: ethereum.Provider,
+  environment: ethereum.Environment,
   gnosisSafeAddress: string
 ): Promise<OrgMembers> {
-  const response = await Safe.getMetadata(
-    wallet.environment,
-    gnosisSafeAddress
-  );
+  const response = await Safe.getMetadata(environment, gnosisSafeAddress);
 
-  const contract = new ClaimsContract(
-    wallet.signer,
-    claimsAddress(wallet.environment)
-  );
+  const contract = new ClaimsContract(provider, claimsAddress(environment));
 
   const members = (
     await Promise.all(

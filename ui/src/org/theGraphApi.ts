@@ -14,7 +14,6 @@ import * as ethers from "ethers";
 
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
-import * as wallet from "ui/src/wallet";
 import * as contract from "./contract";
 
 function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
@@ -30,9 +29,9 @@ function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
 }
 
 function orgsSubgraphClient() {
-  const walletStore = svelteStore.get(wallet.store);
+  const environment = svelteStore.get(ethereum.selectedEnvironment);
   let uri;
-  switch (walletStore.environment) {
+  switch (environment) {
     case ethereum.Environment.Local:
       throw new error.Error({
         message:

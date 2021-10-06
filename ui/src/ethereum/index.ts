@@ -10,11 +10,15 @@ import * as ethers from "ethers";
 import * as browserStore from "ui/src/browserStore";
 import { config, isCypressTestEnv } from "ui/src/config";
 import * as error from "ui/src/error";
+import * as svelteStore from "ui/src/svelteStore";
+import { INFURA_API_KEY_MAINNET, INFURA_API_KEY_RINKEBY } from "ui/src/config";
 
 import { Environment, Network, supportedNetwork } from "./environment";
 import * as contractAddresses from "./contractAddresses";
 
 export { Environment, supportedNetwork, Network, contractAddresses };
+
+export type Provider = ethers.providers.Provider & ethers.providers.EnsProvider;
 
 export const selectedEnvironment = browserStore.create<Environment>(
   "radicle.ethereum.environment",
@@ -28,6 +32,27 @@ export const selectedEnvironment = browserStore.create<Environment>(
 
 if (isCypressTestEnv) {
   selectedEnvironment.set(Environment.Local);
+}
+
+export function getEnvironment(): Environment {
+  return svelteStore.get(selectedEnvironment);
+}
+
+export function getProvider(): Provider {
+  switch (getEnvironment()) {
+    case Environment.Local:
+      return new ethers.providers.JsonRpcProvider("http://localhost:8545");
+    case Environment.Rinkeby:
+      return ethers.providers.InfuraProvider.getWebSocketProvider(
+        "rinkeby",
+        INFURA_API_KEY_RINKEBY
+      );
+    case Environment.Mainnet:
+      return ethers.providers.InfuraProvider.getWebSocketProvider(
+        "mainnet",
+        INFURA_API_KEY_MAINNET
+      );
+  }
 }
 
 // EIP-20 token decimals for the tokens we operate with across

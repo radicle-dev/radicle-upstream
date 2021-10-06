@@ -4,8 +4,8 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type * as ethers from "ethers";
 import * as svelteStore from "svelte/store";
-import * as ethers from "ethers";
 
 import * as radToken from "./wallet/radToken";
 import * as error from "ui/src/error";
@@ -20,7 +20,6 @@ import {
 import { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
 import * as ethereumDebug from "ui/src/ethereum/debug";
 import { createWalletConnect, QrDisplay } from "ui/src/ethereum/walletConnect";
-import { INFURA_API_KEY_MAINNET, INFURA_API_KEY_RINKEBY } from "ui/src/config";
 
 export { radToken };
 
@@ -29,8 +28,6 @@ export enum Status {
   Connecting = "CONNECTING",
   NotConnected = "NOT_CONNECTED",
 }
-
-export type Provider = ethers.providers.Provider & ethers.providers.EnsProvider;
 
 export type State =
   | { status: Status.NotConnected; error?: globalThis.Error }
@@ -46,7 +43,6 @@ export interface Wallet extends svelteStore.Readable<State> {
   environment: Environment;
   connect(qrDisplay: QrDisplay): Promise<void>;
   disconnect(): Promise<void>;
-  provider: Provider;
   signer: WalletConnectSigner;
   // Returns the address of the wallet account if the wallet is
   // connected.
@@ -88,28 +84,9 @@ async function updateAccountBalances(
   }
 }
 
-function getProvider(environment: Environment): Provider {
-  switch (environment) {
-    case Environment.Local:
-      return new ethers.providers.JsonRpcProvider("http://localhost:8545");
-    case Environment.Rinkeby:
-      // This account is registered on igor.zuk@protonmail.com.
-      return ethers.providers.InfuraProvider.getWebSocketProvider(
-        "rinkeby",
-        INFURA_API_KEY_RINKEBY
-      );
-    case Environment.Mainnet:
-      // This account is registered on rudolfs@osins.org.
-      return ethers.providers.InfuraProvider.getWebSocketProvider(
-        "mainnet",
-        INFURA_API_KEY_MAINNET
-      );
-  }
-}
-
 const walletConnect = createWalletConnect();
 
-function build(environment: Environment, provider: Provider): Wallet {
+function build(environment: Environment, provider: ethereum.Provider): Wallet {
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
   });
@@ -189,7 +166,6 @@ function build(environment: Environment, provider: Provider): Wallet {
     disconnect() {
       return walletConnect.disconnect();
     },
-    provider,
     signer,
     getAddress,
     destroy() {
@@ -203,7 +179,7 @@ function build(environment: Environment, provider: Provider): Wallet {
 export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
   ethereum.selectedEnvironment,
   (environment, set) => {
-    const provider = getProvider(environment);
+    const provider = ethereum.getProvider();
     ethereumDebug.install(provider);
 
     const wallet = build(environment, provider);
