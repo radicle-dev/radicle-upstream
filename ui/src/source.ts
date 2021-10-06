@@ -19,10 +19,18 @@ import type {
   Person,
   CommitHeader,
 } from "./proxy/source";
-import { RevisionType } from "./proxy/source";
+import { RevisionType, Stats } from "./proxy/source";
 import type * as diff from "./source/diff";
 
-export type { Blob, RevisionSelector, Branch, Tag, Person, CommitHeader };
+export type {
+  Blob,
+  RevisionSelector,
+  Branch,
+  Tag,
+  Person,
+  CommitHeader,
+  Stats,
+};
 export { RevisionType };
 
 // TYPES
@@ -38,17 +46,6 @@ export interface Commit {
   header: CommitHeader;
   stats: CommitStats;
   changeset: Record<string, unknown>;
-}
-
-export interface Stats {
-  branches: number;
-  commits: number;
-  contributors: number;
-}
-
-interface Commits {
-  headers: CommitHeader[];
-  stats: Stats;
 }
 
 export interface CommitsHistory {
@@ -118,23 +115,6 @@ export const fetchBlob = async (
   );
 };
 
-export const fetchBranches = (
-  projectUrn: string,
-  peerId?: PeerId
-): Promise<Branch[]> => {
-  return api
-    .get<string[]>(`source/branches/${projectUrn}`, {
-      query: {
-        peerId,
-      },
-    })
-    .then(names =>
-      names.map(name => {
-        return { type: RevisionType.Branch, name };
-      })
-    );
-};
-
 export const fetchCommit = (
   projectUrn: string,
   sha1: Sha1
@@ -142,24 +122,21 @@ export const fetchCommit = (
   return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
 
-export const fetchCommits = (
+export async function fetchCommits(
   projectUrn: string,
   peerId: PeerId,
   revision: RevisionSelector
-): Promise<CommitsHistory> => {
-  return api
-    .get<Commits>(`source/commits/${projectUrn}/`, {
-      query: {
-        revision: { ...revision, peerId },
-      },
-    })
-    .then(response => {
-      return {
-        stats: response.stats,
-        history: response.headers,
-      };
-    });
-};
+): Promise<CommitsHistory> {
+  const { headers, stats } = await proxy.client.source.commitsGet({
+    projectUrn,
+    peerId,
+    revision,
+  });
+  return {
+    stats,
+    history: headers,
+  };
+}
 
 export const fetchReadme = async (
   projectUrn: string,
@@ -196,34 +173,30 @@ export const fetchReadme = async (
   }
 };
 
-export const fetchRevisions = (
+export async function fetchRevisions(
   projectUrn: string,
   peerId?: PeerId
-): Promise<Revisions> => {
-  return Promise.all([
-    fetchBranches(projectUrn, peerId),
-    fetchTags(projectUrn, peerId),
-  ]).then(([branches, tags]) => {
-    return { branches, tags };
-  });
-};
+): Promise<Revisions> {
+  const [branchNames, tagNames] = await Promise.all([
+    proxy.client.source.branchesGet({ projectUrn, peerId }),
+    proxy.client.source.tagsGet({ projectUrn, peerId }),
+  ]);
 
-export const fetchTags = (
-  projectUrn: string,
-  peerId?: PeerId
-): Promise<Tag[]> => {
-  return api
-    .get<string[]>(`source/tags/${projectUrn}`, {
-      query: {
-        peerId,
-      },
+  const branches = branchNames.map(
+    (name): Branch => ({
+      type: RevisionType.Branch,
+      name,
     })
-    .then(names =>
-      names.map(name => {
-        return { type: RevisionType.Tag, name };
-      })
-    );
-};
+  );
+
+  const tags = tagNames.map(
+    (name): Tag => ({
+      type: RevisionType.Tag,
+      name,
+    })
+  );
+  return { branches, tags };
+}
 
 export const fetchTree = (
   projectUrn: string,

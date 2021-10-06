@@ -96,12 +96,12 @@
   }
 
   async function loadCommitData(revisionData: RevisionData) {
-    const commits = await source.fetchCommits(
-      revisionData.project.urn,
-      revisionData.peerId,
-      revisionData.selectedRevision
-    );
-    commit = commits.history[0];
+    const commits = await proxy.client.source.commitsGet({
+      projectUrn: revisionData.project.urn,
+      peerId: revisionData.peerId,
+      revision: revisionData.selectedRevision,
+    });
+    commit = commits.headers[0];
   }
 
   async function createAnchor(): Promise<void> {
