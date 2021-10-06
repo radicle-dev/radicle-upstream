@@ -23,7 +23,6 @@
 
   async function fetchOrgs() {
     const unresolvedOrgs = await theGraphApi.getAllOrgs();
-    let unsortedOrgs: ResolvedOrg[] = [];
     await Promise.all(
       unresolvedOrgs.map(async org => {
         org.registration = await ensResolver.getCachedRegistrationByAddress(
@@ -32,22 +31,10 @@
       })
     );
 
-    unsortedOrgs = await Promise.all(
+    resolvedOrgs = await Promise.all(
       unresolvedOrgs.map(async org => {
         const owner = await Org.getOwner(org.id);
         return { owner, org };
-      })
-    );
-
-    resolvedOrgs = await Promise.all(
-      unsortedOrgs.sort((a, b) => {
-        if (!a.org.registration?.domain && b.org.registration?.domain) {
-          return 1;
-        }
-        if (a.org.registration?.domain && !b.org.registration?.domain) {
-          return -1;
-        }
-        return 0;
       })
     );
   }
