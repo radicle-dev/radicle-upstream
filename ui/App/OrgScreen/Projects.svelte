@@ -23,7 +23,7 @@
   export let ownerAddress: string;
   export let disableAnchorCreation = false;
   export let isMultiSig: boolean;
-  export let isMember: boolean | undefined = undefined;
+  export let showWriteActions: boolean;
 
   function isWaitingForExecution(anchors: org.OrgAnchors): boolean {
     if (anchors.pendingResolved.length > 0) {
@@ -133,19 +133,21 @@
     <UnresolvedAnchorList anchors={anchors.confirmedUnresolved} />
   {/if}
 
-  {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0 && isMember}
-    <EmptyState
-      emoji="🪴"
-      text="Get started by anchoring your org’s first project."
-      primaryActionText={isMultiSig
-        ? "Anchor with Gnosis Safe"
-        : "Anchor project"}
-      primaryActionDisabled={disableAnchorCreation}
-      primaryActionTooltipMessage="Create or follow a project first"
-      on:primaryAction={() => {
-        org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
-      }} />
-  {:else if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0 && !isMember}
-    <EmptyState emoji="🪴" text="This org doesn't have any anchors." />
+  {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0}
+    {#if showWriteActions}
+      <EmptyState
+        emoji="🪴"
+        text="Get started by anchoring your org’s first project."
+        primaryActionText={isMultiSig
+          ? "Anchor with Gnosis Safe"
+          : "Anchor project"}
+        primaryActionDisabled={disableAnchorCreation}
+        primaryActionTooltipMessage="Create or follow a project first"
+        on:primaryAction={() => {
+          org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
+        }} />
+    {:else}
+      <EmptyState emoji="🪴" text="This org doesn't have any anchors." />
+    {/if}
   {/if}
 </div>

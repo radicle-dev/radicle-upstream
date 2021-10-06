@@ -8,7 +8,6 @@
 <script lang="typescript">
   import type { Registration } from "ui/src/org/ensResolver";
 
-  import { store } from "ui/src/wallet";
   import * as ipc from "ui/src/ipc";
   import * as router from "ui/src/router";
   import * as org from "ui/src/org";
@@ -30,6 +29,7 @@
   export let projectCount: number;
   export let anchors: org.OrgAnchors;
   export let registration: Registration | undefined = undefined;
+  export let showWriteActions: boolean;
 
   const tabs = (address: string) => {
     return [
@@ -78,8 +78,6 @@
     (registration?.seedId && registration?.seedHost)
       ? true
       : false;
-
-  $: wallet = $store;
 </script>
 
 <style>
@@ -113,7 +111,7 @@
           <TabBar tabs={tabs(address)} />
         </div>
         <div slot="right">
-          {#if owner === wallet.getAddress()}
+          {#if showWriteActions}
             <ProjectsMenu
               isMultiSig={false}
               orgAddress={address}
@@ -129,6 +127,7 @@
         isMultiSig={false}
         {address}
         ownerAddress={owner}
+        {showWriteActions}
         disableAnchorCreation={projectCount === 0}
         {anchors} />
     </main>
