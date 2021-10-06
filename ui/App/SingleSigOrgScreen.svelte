@@ -71,13 +71,12 @@
     ];
   };
 
-  const showSidebar: boolean =
+  const showSidebar: boolean = !!(
     registration?.url ||
     registration?.github ||
     registration?.twitter ||
     (registration?.seedId && registration?.seedHost)
-      ? true
-      : false;
+  );
 </script>
 
 <style>
@@ -104,7 +103,7 @@
       <ThreeDotsMenu menuItems={menuItems(address)} />
     </div>
   </Header>
-  <div class={`sidebar-layout ${!showSidebar ? "single-column" : ""}`}>
+  <div class="sidebar-layout" class:single-column={!showSidebar}>
     <main>
       <ActionBar style="padding: 0; margin-top: 1rem;">
         <div slot="left">
