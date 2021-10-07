@@ -434,7 +434,7 @@ export async function fetchMembers(
   );
 
   const contract = new ClaimsContract(
-    wallet.signer,
+    wallet.provider,
     claimsAddress(wallet.environment)
   );
 
