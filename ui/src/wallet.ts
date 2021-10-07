@@ -20,7 +20,7 @@ import {
 import { WalletConnectSigner } from "ui/src/ethereum/walletConnectSigner";
 import { createWalletConnect, QrDisplay } from "ui/src/ethereum/walletConnect";
 
-export { radToken };
+export { radToken, WalletConnectSigner };
 
 export enum Status {
   Connected = "CONNECTED",

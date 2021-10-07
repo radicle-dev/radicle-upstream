@@ -5,14 +5,13 @@
 // LICENSE file.
 
 import type { TransactionResponse } from "./contract";
+import type * as wallet from "ui/src/wallet";
 
 import { ethers } from "ethers";
 import LruCache from "lru-cache";
 import { ENS__factory as EnsRegistryFactory } from "radicle-contracts/build/contract-bindings/ethers";
 
 import * as error from "ui/src/error";
-import * as svelteStore from "ui/src/svelteStore";
-import * as Wallet from "ui/src/wallet";
 import * as ethereum from "ui/src/ethereum";
 
 const resolverAbi = [
@@ -41,10 +40,9 @@ export interface Registration {
 
 export async function setRecords(
   domain: string,
-  records: EnsRecord[]
+  records: EnsRecord[],
+  signer: wallet.WalletConnectSigner
 ): Promise<TransactionResponse> {
-  const wallet = svelteStore.get(Wallet.store);
-
   const resolver = await ethereum.getProvider().getResolver(domain);
 
   // The type definitions of `ethers` are not correct. `getResolver()`
@@ -61,7 +59,7 @@ export async function setRecords(
   const resolverContract = new ethers.Contract(
     resolver.address,
     resolverAbi,
-    wallet.signer
+    signer
   );
   const node = ethers.utils.namehash(domain);
 

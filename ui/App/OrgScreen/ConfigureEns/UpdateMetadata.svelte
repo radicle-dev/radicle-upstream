@@ -11,8 +11,10 @@
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
+  import * as svelteStore from "ui/src/svelteStore";
   import * as transaction from "ui/src/transaction";
   import * as validation from "ui/src/validation";
+  import * as wallet from "ui/src/wallet";
 
   import { Button, TextInput, Tooltip } from "ui/DesignSystem";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
@@ -45,6 +47,7 @@
   }
 
   async function setRecords() {
+    const walletStore = svelteStore.get(wallet.store);
     setRecordsInProgress = true;
 
     let records: {
@@ -93,7 +96,8 @@
       try {
         tx = await ensResolver.setRecords(
           registration.domain,
-          records as ensResolver.EnsRecord[]
+          records as ensResolver.EnsRecord[],
+          walletStore.signer
         );
         transaction.add(transaction.updateEnsMetadata(tx));
         waitingForTxNotification = notification.info({
