@@ -6,12 +6,7 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import {
-    lineNumberL,
-    lineNumberR,
-    lineSign,
-    FileDiffType,
-  } from "ui/src/source/diff";
+  import { lineNumberL, lineNumberR, lineSign } from "ui/src/source/diff";
   import type { ModifiedFile } from "ui/src/source/diff";
 
   import Icon from "ui/DesignSystem/Icon";
@@ -113,7 +108,7 @@
     <p class="typo-text-bold">{file.path}</p>
   </header>
   <main>
-    {#if file.diff.type === FileDiffType.Plain && file.diff.hunks.length > 0}
+    {#if file.diff.type === "plain" && file.diff.hunks.length > 0}
       <table class="diff">
         {#each file.diff.hunks as hunk}
           <tr class="diff-line">

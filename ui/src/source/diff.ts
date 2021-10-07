@@ -4,34 +4,14 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-export type Line = string;
+import {
+  LineDiff,
+  LineDiffType,
+  ModifiedFile,
+  Diff,
+} from "ui/src/proxy/commit";
 
-export enum LineDiffType {
-  Addition = "addition",
-  Context = "context",
-  Deletion = "deletion",
-}
-
-export interface Addition {
-  type: LineDiffType.Addition;
-  line: Line;
-  lineNum: number;
-}
-
-export interface Context {
-  type: LineDiffType.Context;
-  line: Line;
-  lineNumNew: number;
-  lineNumOld: number;
-}
-
-export interface Deletion {
-  type: LineDiffType.Deletion;
-  line: Line;
-  lineNum: number;
-}
-
-export type LineDiff = Addition | Deletion | Context;
+export type { ModifiedFile, Diff };
 
 export const lineNumberR = (line: LineDiff): string | number => {
   switch (line.type) {
@@ -74,50 +54,3 @@ export const lineSign = (line: LineDiff): string => {
     }
   }
 };
-
-export interface Hunk {
-  header: Line;
-  lines: LineDiff[];
-}
-
-export enum FileDiffType {
-  Binary = "binary",
-  Plain = "plain",
-}
-
-export interface Binary {
-  type: FileDiffType.Binary;
-}
-
-export interface Plain {
-  type: FileDiffType.Plain;
-  hunks: Hunk[];
-}
-
-export type FileDiff = Binary | Plain;
-
-export interface CopiedFile {
-  newPath: string;
-  oldPath: string;
-}
-
-export type CreatedFile = string;
-export type DeletedFile = string;
-
-export interface ModifiedFile {
-  diff: FileDiff;
-  path: string;
-}
-
-export interface MovedFile {
-  newPath: string;
-  oldPath: string;
-}
-
-export interface Diff {
-  copied: CopiedFile[];
-  created: CreatedFile[];
-  deleted: DeletedFile[];
-  modified: ModifiedFile[];
-  moved: MovedFile[];
-}

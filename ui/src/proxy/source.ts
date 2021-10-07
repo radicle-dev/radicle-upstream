@@ -6,33 +6,15 @@
 
 import * as zod from "zod";
 import type { Fetcher, RequestOptions } from "./fetcher";
+import {
+  Commit,
+  CommitHeader,
+  Person,
+  commitHeaderSchema,
+  commitSchema,
+} from "./commit";
 
-export interface Person {
-  email: string;
-  name: string;
-}
-const personSchema: zod.Schema<Person> = zod.object({
-  email: zod.string(),
-  name: zod.string(),
-});
-
-export interface CommitHeader {
-  author: Person;
-  committer: Person;
-  committerTime: number;
-  description: string;
-  sha1: string;
-  summary: string;
-}
-
-const commitHeaderSchema: zod.Schema<CommitHeader> = zod.object({
-  author: personSchema,
-  committer: personSchema,
-  committerTime: zod.number(),
-  description: zod.string(),
-  sha1: zod.string(),
-  summary: zod.string(),
-});
+export type { CommitHeader, Person };
 
 export interface Stats {
   branches: number;
@@ -146,6 +128,11 @@ interface CommitsGetParams {
   revision: RevisionSelector;
 }
 
+interface CommitGetParams {
+  projectUrn: string;
+  sha1?: string;
+}
+
 export class Client {
   private fetcher: Fetcher;
 
@@ -224,6 +211,20 @@ export class Client {
         options,
       },
       commitSummarySchema
+    );
+  }
+
+  async commitGet(
+    params: CommitGetParams,
+    options?: RequestOptions
+  ): Promise<Commit> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `source/commit/${params.projectUrn}/${params.sha1}`,
+        options,
+      },
+      commitSchema
     );
   }
 }

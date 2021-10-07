@@ -9,20 +9,20 @@
   import { Avatar, Button, CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
-  import Remote from "ui/App/Remote.svelte";
   import TransactionButton from "./LinkAddressModal/TransactionButton.svelte";
 
   import { ClaimsContract, claimsAddress } from "ui/src/attestation/contract";
   import { lastClaimed } from "ui/src/attestation/lastClaimed";
-  import { session } from "ui/src/session";
+  import * as Session from "ui/src/session";
   import { store as walletStore } from "ui/src/wallet";
-
   import * as identity from "ui/src/identity";
   import * as modal from "ui/src/modal";
 
   function onCancel(): void {
     modal.hide();
   }
+
+  const session = Session.unsealed();
 
   $: address = $walletStore.getAddress() || "";
 
@@ -57,35 +57,36 @@
   }
 </style>
 
-<Remote store={session} let:data={it}>
-  <Modal emoji="🧦" title="Link your Radicle ID and Ethereum address">
-    <svelte:fragment slot="description">
-      An Ethereum transaction will be sent
-    </svelte:fragment>
+<Modal emoji="🧦" title="Link your Radicle ID and Ethereum address">
+  <svelte:fragment slot="description">
+    An Ethereum transaction will be sent
+  </svelte:fragment>
 
-    <div class="data">
-      <div style="display: flex;">
-        <Avatar
-          size="small"
-          kind={{ type: "userEmoji", uniqueIdentifier: it.identity.urn }}
-          style="margin-right: 0.625rem;" />
-        <p class="typo-text">{it.identity.metadata.handle}</p>
-      </div>
-      <Icon.ChevronUpDown />
-      <p class="address typo-text">
-        <CopyableIdentifier value={address} kind="ethAddress" />
-      </p>
+  <div class="data">
+    <div style="display: flex;">
+      <Avatar
+        size="small"
+        kind={{
+          type: "userEmoji",
+          uniqueIdentifier: session.identity.urn,
+        }}
+        style="margin-right: 0.625rem;" />
+      <p class="typo-text">{session.identity.metadata.handle}</p>
     </div>
+    <Icon.ChevronUpDown />
+    <p class="address typo-text">
+      <CopyableIdentifier value={address} kind="ethAddress" />
+    </p>
+  </div>
 
-    <svelte:fragment slot="buttons">
-      <Button variant="transparent" on:click={onCancel}>Cancel</Button>
+  <svelte:fragment slot="buttons">
+    <Button variant="transparent" on:click={onCancel}>Cancel</Button>
 
-      <TransactionButton
-        dataCy="confirm-button"
-        onClick={() => claim(it.identity)}
-        errorLabel="Failed to claim your Radicle ID on Ethereum">
-        Link your Radicle ID
-      </TransactionButton>
-    </svelte:fragment>
-  </Modal>
-</Remote>
+    <TransactionButton
+      dataCy="confirm-button"
+      onClick={() => claim(session.identity)}
+      errorLabel="Failed to claim your Radicle ID on Ethereum">
+      Link your Radicle ID
+    </TransactionButton>
+  </svelte:fragment>
+</Modal>

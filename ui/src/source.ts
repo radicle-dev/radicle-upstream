@@ -16,11 +16,9 @@ import type {
   Branch,
   Tag,
   SourceObject,
-  Person,
-  CommitHeader,
 } from "./proxy/source";
+import type { Person, CommitHeader, Commit } from "./proxy/commit";
 import { RevisionType, Stats } from "./proxy/source";
-import type * as diff from "./source/diff";
 
 export type {
   Blob,
@@ -29,24 +27,10 @@ export type {
   Tag,
   Person,
   CommitHeader,
+  Commit,
   Stats,
 };
 export { RevisionType };
-
-// TYPES
-export type Sha1 = string;
-export interface CommitStats {
-  additions: number;
-  deletions: number;
-}
-
-export interface Commit {
-  branches: string[];
-  diff: diff.Diff;
-  header: CommitHeader;
-  stats: CommitStats;
-  changeset: Record<string, unknown>;
-}
 
 export interface CommitsHistory {
   history: CommitHeader[];
@@ -113,13 +97,6 @@ export const fetchBlob = async (
     },
     { abort: signal }
   );
-};
-
-export const fetchCommit = (
-  projectUrn: string,
-  sha1: Sha1
-): Promise<Commit> => {
-  return api.get<Commit>(`source/commit/${projectUrn}/${sha1}`);
 };
 
 export async function fetchCommits(

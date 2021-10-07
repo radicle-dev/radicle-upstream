@@ -14,7 +14,7 @@
 
   export let name: string;
   export let urn: string;
-  export let description: string | undefined = undefined;
+  export let description: string | null = null;
   export let stats: Stats;
   export let onClick: (() => void) | undefined = undefined;
   export let latestAnchorTimestamp: number | undefined = undefined;
