@@ -165,7 +165,7 @@ async function getOwner(domain: string): Promise<string> {
   const wallet = svelteStore.get(Wallet.store);
   const ensAddr = ethereum.ensAddress(wallet.environment);
 
-  const registry = EnsRegistryFactory.connect(ensAddr, wallet.signer);
+  const registry = EnsRegistryFactory.connect(ensAddr, wallet.provider);
   const owner = await registry.owner(ethers.utils.namehash(domain));
 
   return owner;

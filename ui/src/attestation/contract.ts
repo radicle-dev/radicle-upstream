@@ -5,6 +5,8 @@
 // LICENSE file.
 
 import type { Signer } from "ethers";
+import type * as wallet from "ui/src/wallet";
+
 import LruCache from "lru-cache";
 import * as ethers from "ethers";
 
@@ -50,8 +52,8 @@ const claimsContractCache = new LruCache<string, ClaimsContractCacheEntry>({
 export class ClaimsContract {
   contract: Claims;
 
-  constructor(signer: Signer, address: string) {
-    this.contract = ClaimsFactory.connect(address, signer);
+  constructor(signerOrProvider: Signer | wallet.Provider, address: string) {
+    this.contract = ClaimsFactory.connect(address, signerOrProvider);
   }
 
   async claim(urn: string): Promise<void> {

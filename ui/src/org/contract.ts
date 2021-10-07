@@ -35,8 +35,8 @@ function orgFactoryAddress(network: ethereum.Environment): string {
   switch (network) {
     case ethereum.Environment.Local:
       throw new error.Error({
-        code: error.Code.FeatureNotAvailableForGivenNetwork,
-        message: "Orgs not available on the Local testnet",
+        message:
+          "orgFactoryAddress is not implemented for ethereum.Environment.Local",
       });
     case ethereum.Environment.Rinkeby:
       return "0xF3D04e874D07d680e8b26332eEae5b9B1c263121";
