@@ -143,7 +143,7 @@
                 <Icon.Proposals />
                 <p style="margin-left: .5rem;">
                   {owner.threshold} of {owner.members.length}
-                  {owner.threshold === 1 ? "signature" : "signatures"} required
+                  {owner.members.length === 1 ? "signature" : "signatures"} required
                 </p>
               </li>
             {/if}
