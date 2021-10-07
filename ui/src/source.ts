@@ -47,11 +47,6 @@ export enum ObjectType {
   Tree = "TREE",
 }
 
-export interface LocalState {
-  branches: string[];
-  managed: boolean;
-}
-
 export interface Tree extends SourceObject {
   entries: SourceObject[];
 }
@@ -185,12 +180,6 @@ export const fetchTree = (
   return api.get<Tree>(`source/tree/${projectUrn}`, {
     query: { peerId, revision: { ...revision, peerId }, prefix },
     signal,
-  });
-};
-
-export const getLocalState = (path: string): Promise<LocalState> => {
-  return api.get<LocalState>(`source/local-state`, {
-    query: { path },
   });
 };
 

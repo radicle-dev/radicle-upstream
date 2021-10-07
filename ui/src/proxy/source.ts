@@ -86,6 +86,14 @@ const blobContentSchema: zod.Schema<BlobContent> = zod.union([
 // See https://github.com/colinhacks/zod/issues/541
 const blobSchema = zod.intersection(sourceObjectSchema, blobContentSchema);
 
+export interface LocalState {
+  branches: string[];
+}
+
+const localStateSchema: zod.Schema<LocalState> = zod.object({
+  branches: zod.array(zod.string()),
+});
+
 export enum RevisionType {
   Branch = "branch",
   Tag = "tag",
@@ -225,6 +233,23 @@ export class Client {
         options,
       },
       commitSchema
+    );
+  }
+
+  async localStateGet(
+    path: string,
+    options?: RequestOptions
+  ): Promise<LocalState> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `source/local-state`,
+        query: {
+          path,
+        },
+        options,
+      },
+      localStateSchema
     );
   }
 }
