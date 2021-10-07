@@ -90,11 +90,11 @@
   {#if members && threshold}
     <div class="row">
       <div class="row-title">
-        <Icon.Orgs />
+        <Icon.Proposals />
         <p class="typo-text-bold">Quorum</p>
       </div>
       {threshold} of {members.length}
-      {threshold === 1 ? "signature" : "signatures"} required
+      {members.length === 1 ? "signature" : "signatures"} required
     </div>
   {/if}
   {#if seedId && seedHost}

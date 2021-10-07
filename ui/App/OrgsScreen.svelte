@@ -23,7 +23,6 @@
 
   async function fetchOrgs() {
     const unresolvedOrgs = await theGraphApi.getAllOrgs();
-    let unsortedOrgs: ResolvedOrg[] = [];
     await Promise.all(
       unresolvedOrgs.map(async org => {
         org.registration = await ensResolver.getCachedRegistrationByAddress(
@@ -32,23 +31,10 @@
       })
     );
 
-    unsortedOrgs = await Promise.all(
+    resolvedOrgs = await Promise.all(
       unresolvedOrgs.map(async org => {
         const owner = await Org.getOwner(org.id);
         return { owner, org };
-      })
-    );
-
-    resolvedOrgs = await Promise.all(
-      unsortedOrgs.sort((a, b) => {
-        // Show members with claimed identities first.
-        if (!a.org.registration?.domain && b.org.registration?.domain) {
-          return 1;
-        }
-        if (a.org.registration?.domain && !b.org.registration?.domain) {
-          return -1;
-        }
-        return 0;
       })
     );
   }
@@ -149,14 +135,15 @@
                 style="margin-left: 0.5rem;"
                 value={org.id}
                 kind="ethAddress"
-                name="org address"
+                name="owner address"
                 showIcon={false} />
             </li>
             {#if owner.type === "gnosis-safe"}
               <li class="row">
-                <Icon.Orgs />
+                <Icon.Proposals />
                 <p style="margin-left: .5rem;">
-                  {owner.threshold} of {owner.members.length} signatures required
+                  {owner.threshold} of {owner.members.length}
+                  {owner.members.length === 1 ? "signature" : "signatures"} required
                 </p>
               </li>
             {/if}

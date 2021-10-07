@@ -128,6 +128,7 @@
       address={$activeRouteStore.address}
       owner={$activeRouteStore.owner}
       projectCount={$activeRouteStore.projectCount}
+      showWriteActions={$activeRouteStore.showWriteActions}
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "multiSigOrg"}
     <OrgScreen
@@ -136,6 +137,7 @@
       address={$activeRouteStore.address}
       gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}
       threshold={$activeRouteStore.threshold}
+      showWriteActions={$activeRouteStore.showWriteActions}
       members={$activeRouteStore.members} />
   {:else if $activeRouteStore.type === "project"}
     <ProjectScreen

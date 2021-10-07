@@ -4,9 +4,10 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as org from "ui/src/org";
-import * as ensResolver from "ui/src/org/ensResolver";
 import { unreachable } from "ui/src/unreachable";
+import * as ensResolver from "ui/src/org/ensResolver";
+import * as org from "ui/src/org";
+import * as wallet from "ui/src/wallet";
 
 export interface Params {
   address: string;
@@ -38,6 +39,7 @@ interface MultiSigLoaded {
   view: MultiSigView;
   threshold: number;
   members: org.Member[];
+  showWriteActions: boolean;
 }
 
 interface SingleSigLoaded {
@@ -47,6 +49,7 @@ interface SingleSigLoaded {
   owner: string;
   projectCount: number;
   anchors: org.OrgAnchors;
+  showWriteActions: boolean;
 }
 
 export async function load(params: Params): Promise<LoadedRoute> {
@@ -61,8 +64,13 @@ export async function load(params: Params): Promise<LoadedRoute> {
     registration
   );
 
+  const walletAddress = wallet.walletAddress();
+
   switch (owner.type) {
     case "gnosis-safe": {
+      const showWriteActions =
+        !!walletAddress &&
+        owner.members.some(member => member.ethereumAddress === walletAddress);
       if (params.view === "projects") {
         return {
           type: "multiSigOrg",
@@ -71,6 +79,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
           gnosisSafeAddress: owner.address,
           members: owner.members,
           threshold: owner.threshold,
+          showWriteActions,
           view: {
             type: "projects",
             anchors,
@@ -86,6 +95,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
           gnosisSafeAddress: owner.address,
           members: owner.members,
           threshold: owner.threshold,
+          showWriteActions,
           view: {
             type: "members",
             members: owner.members,
@@ -102,6 +112,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
         registration,
         address: params.address,
         owner: owner.address,
+        showWriteActions: !!walletAddress && owner.address === walletAddress,
         projectCount,
         anchors,
       };

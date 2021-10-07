@@ -8,7 +8,6 @@
 <script lang="typescript">
   import type * as orgRoute from "./OrgScreen/route";
   import type { Registration } from "ui/src/org/ensResolver";
-  import { store } from "ui/src/wallet";
 
   import * as router from "ui/src/router";
   import * as ipc from "ui/src/ipc";
@@ -35,6 +34,7 @@
   export let members: org.Member[];
   export let threshold: number;
   export let registration: Registration | undefined = undefined;
+  export let showWriteActions: boolean;
 
   const tabs = (address: string, active: orgRoute.MultiSigView) => {
     return [
@@ -83,7 +83,7 @@
       },
     ];
 
-    if (isMember()) {
+    if (showWriteActions) {
       items.push({
         title: registration ? "Edit ENS name" : "Register ENS name",
         icon: Icon.Ethereum,
@@ -93,16 +93,6 @@
     }
     return items;
   };
-
-  $: wallet = $store;
-
-  function isMember() {
-    return members
-      .map(m => {
-        return m.ethereumAddress === wallet.getAddress();
-      })
-      .includes(true);
-  }
 </script>
 
 <style>
@@ -133,7 +123,7 @@
           <TabBar tabs={tabs(address, activeTab)} />
         </div>
         <div slot="right">
-          {#if isMember()}
+          {#if showWriteActions}
             {#if activeTab.type === "projects"}
               <ProjectsMenu
                 isMultiSig={true}
@@ -154,7 +144,7 @@
       {#if activeTab.type === "projects"}
         <ProjectsTab
           isMultiSig={true}
-          isMember={isMember()}
+          {showWriteActions}
           {address}
           ownerAddress={gnosisSafeAddress}
           disableAnchorCreation={activeTab.projectCount === 0}

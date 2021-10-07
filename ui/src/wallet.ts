@@ -219,6 +219,15 @@ export function isConnected(): boolean {
   return wallet.status === Status.Connected;
 }
 
+export function walletAddress(): string | undefined {
+  const walletStore = svelteStore.get(store);
+  const wallet = svelteStore.get(walletStore);
+
+  if (wallet.status === Status.Connected) {
+    return wallet.connected.address;
+  }
+}
+
 // Activate the store so that the wallet is never destroyed when all views
 // unsubscribe.
 store.subscribe(() => {});
