@@ -36,6 +36,9 @@ The storage bucket uses the following schema to store artifacts.
 
 We're running our own [Org Seed Node][os] for Upstream.
 
+You can connect to the seed node using the handle
+`hyncrnppok8iam6y5oemg4fkumj86mc4wsdiirp83z7tdxchk5dbn6@seed.upstream.radicle.xyz:8776`.
+
 The org node uses the following resources
 * GCE VM `org-node`
   * 4vCPI, 8GB RAM, 50GB SSD disk
@@ -44,7 +47,20 @@ The org node uses the following resources
   * reachable under `seed.upstream.radicle.xyz`
 * Firewall rule `org-node` to allow traffic to the `org-node` VM.
 
-To set up the org node follow these instructions.
+### Updating the deployment
+
+To update the deployment to a specific git reference log into the VM and run the
+following commands
+```bash
+sudo su orgnode
+cd ~/radicle-client-services
+git fetch
+git checkout <branch-to-deploy>
+docker-compose build
+docker-compose --env-file upstream-production-config.env -f docker-compose.yml up --detach
+```
+
+### Setup
 
 1. Create an external IP address
 ```bash
@@ -137,15 +153,14 @@ git clone https://github.com/radicle-dev/radicle-client-services.git
 cd radicle-client-services
 docker-compose pull
 
-tee -a .env << END
-DOCKER_TAG=latest
+tee upstream-production-config.env << END
 RADICLE_ORGS=0xe22450214b02C2416481aC2d3Be51536f7bb1fFf
 RADICLE_DOMAIN=seed.upstream.radicle.xyz
 ETH_RPC_URL=wss://mainnet.infura.io/ws/v3/7a19a4bf0af84fcc86ffb693a257fad4
-RADICLE_SEED_USER=0
+RADICLE_SEED_USER=$(id -u orgnode)
 END
 
-docker-compose -f docker-compose.yml up
+docker-compose --env-file upstream-production-config.env -f docker-compose.yml up --detach
 ```
 
 
