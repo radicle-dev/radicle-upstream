@@ -362,12 +362,16 @@ export async function fetchOrgs(): Promise<void> {
 
   if (sortedOrgs) {
     orgSidebarStore.set({ type: "fetched", orgs: sortedOrgs });
+    const provider = ethereum.getProvider();
+    const ensAddress = ethereum.getEnsAddress();
 
     const resolvedOrgs = await resolveOrgsExecutor.run(async () => {
       return await Promise.all(
         sortedOrgs.map(async org => {
           const registration = await ensResolver.getCachedRegistrationByAddress(
-            org.id
+            org.id,
+            provider,
+            ensAddress
           );
           if (registration) {
             org.registration = registration;
@@ -659,8 +663,7 @@ export async function setNameSingleSig(
   orgAddress: string
 ): Promise<Contract.TransactionResponse> {
   const walletStore = svelteStore.get(wallet.store);
-
-  const ensAddress = ethereum.ensAddress(ethereum.getEnvironment());
+  const ensAddress = ethereum.getEnsAddress();
 
   return Contract.setName(walletStore.signer, orgAddress, name, ensAddress);
 }
@@ -672,8 +675,7 @@ export async function proposeSetNameChange(
   ownerAddress: string
 ): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
-
-  const ensAddress = ethereum.ensAddress(ethereum.getEnvironment());
+  const ensAddress = ethereum.getEnsAddress();
 
   const data = await Contract.populateSetNameTransaction(
     orgAddress,

@@ -6,13 +6,13 @@
 
 import type { TransactionResponse } from "./contract";
 import type * as wallet from "ui/src/wallet";
+import type * as ethereum from "ui/src/ethereum";
 
 import { ethers } from "ethers";
 import LruCache from "lru-cache";
 import { ENS__factory as EnsRegistryFactory } from "radicle-contracts/build/contract-bindings/ethers";
 
 import * as error from "ui/src/error";
-import * as ethereum from "ui/src/ethereum";
 
 const resolverAbi = [
   "function multicall(bytes[] calldata data) returns(bytes[] memory results)",
@@ -41,9 +41,10 @@ export interface Registration {
 export async function setRecords(
   domain: string,
   records: EnsRecord[],
-  signer: wallet.WalletConnectSigner
+  signer: wallet.WalletConnectSigner,
+  provider: ethereum.Provider
 ): Promise<TransactionResponse> {
-  const resolver = await ethereum.getProvider().getResolver(domain);
+  const resolver = await provider.getResolver(domain);
 
   // The type definitions of `ethers` are not correct. `getResolver()`
   // can return `null`.
@@ -116,9 +117,11 @@ export async function setRecords(
 }
 
 export async function getRegistration(
-  domain: string
+  domain: string,
+  provider: ethereum.Provider,
+  ensAddress: string
 ): Promise<Registration | undefined> {
-  const resolver = await ethereum.getProvider().getResolver(domain);
+  const resolver = await provider.getResolver(domain);
 
   // The type definitions of `ethers` are not correct. `getResolver()`
   // can return `null`.
@@ -128,7 +131,7 @@ export async function getRegistration(
     return;
   }
 
-  const owner = await getOwner(domain);
+  const owner = await getOwner(domain, provider, ensAddress);
 
   const meta = await Promise.allSettled([
     resolver.getAddress(),
@@ -158,10 +161,12 @@ export async function getRegistration(
   };
 }
 
-async function getOwner(domain: string): Promise<string> {
-  const ensAddr = ethereum.ensAddress(ethereum.getEnvironment());
-
-  const registry = EnsRegistryFactory.connect(ensAddr, ethereum.getProvider());
+async function getOwner(
+  domain: string,
+  provider: ethereum.Provider,
+  ensAddress: string
+): Promise<string> {
+  const registry = EnsRegistryFactory.connect(ensAddress, provider);
   const owner = await registry.owner(ethers.utils.namehash(domain));
 
   return owner;
@@ -178,6 +183,8 @@ const registrationCache = new LruCache<string, RegistrationCacheEntry>({
 
 export async function getCachedRegistrationByAddress(
   address: string,
+  provider: ethereum.Provider,
+  ensAddress: string,
   invalidateCache: boolean = false
 ): Promise<Registration | undefined> {
   const normalisedAddress = address.toLowerCase();
@@ -187,7 +194,7 @@ export async function getCachedRegistrationByAddress(
   if (!invalidateCache && cached) {
     return cached.value;
   } else {
-    const name = await ethereum.getProvider().lookupAddress(normalisedAddress);
+    const name = await provider.lookupAddress(normalisedAddress);
 
     // The type definitions of `ethers` are not correct. `lookupAddress()`
     // can return `null`.
@@ -196,7 +203,7 @@ export async function getCachedRegistrationByAddress(
       return;
     }
 
-    const registration = await getRegistration(name);
+    const registration = await getRegistration(name, provider, ensAddress);
     registrationCache.set(normalisedAddress, { value: registration });
 
     return registration;

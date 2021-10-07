@@ -130,8 +130,12 @@
       };
     }
 
+    const provider = ethereum.getProvider();
+    const environment = ethereum.getEnvironment();
     const registration = await ensResolver.getRegistration(
-      `${name}.${ensResolver.DOMAIN}`
+      `${name}.${ensResolver.DOMAIN}`,
+      provider,
+      environment
     );
 
     const walletStore = svelteStore.get(wallet.store);

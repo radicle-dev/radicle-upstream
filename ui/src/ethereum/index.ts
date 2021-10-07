@@ -123,7 +123,8 @@ export function etherscanUrl(ethEnv: Environment, query: string): string {
   }
 }
 
-export function ensAddress(env: Environment): string {
+export function getEnsAddress(): string {
+  const env = getEnvironment();
   if (env === Environment.Local) {
     throw new error.Error({
       message: "ensAddress() is not implemented for ethereum.Environment.Local",

@@ -9,6 +9,7 @@
   import * as configureEns from "ui/src/org/configureEns";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as ethereum from "ui/src/ethereum";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as svelteStore from "ui/src/svelteStore";
@@ -93,11 +94,13 @@
       let tx: transaction.ContractTransaction | undefined = undefined;
       let waitingForTxNotification;
 
+      const provider = ethereum.getProvider();
       try {
         tx = await ensResolver.setRecords(
           registration.domain,
           records as ensResolver.EnsRecord[],
-          walletStore.signer
+          walletStore.signer,
+          provider
         );
         transaction.add(transaction.updateEnsMetadata(tx));
         waitingForTxNotification = notification.info({
@@ -122,9 +125,12 @@
         waitingForTxNotification.remove();
       }
 
+      const environment = ethereum.getEnvironment();
       await configureEns.updateScreenAndNotifyUser(
         orgAddress,
-        "Your org’s metadata has been updated"
+        "Your org’s metadata has been updated",
+        provider,
+        environment
       );
     } else {
       onSubmit();

@@ -8,10 +8,11 @@
 <script lang="typescript">
   import type * as ethers from "ethers";
 
-  import * as ensResolver from "ui/src/org/ensResolver";
-  import * as modal from "ui/src/modal";
-  import * as error from "ui/src/error";
   import { unreachable } from "ui/src/unreachable";
+  import * as ensResolver from "ui/src/org/ensResolver";
+  import * as error from "ui/src/error";
+  import * as ethereum from "ui/src/ethereum";
+  import * as modal from "ui/src/modal";
 
   import Intro from "./ConfigureEns/Intro.svelte";
   import LinkOrgToName from "./ConfigureEns/LinkOrgToName.svelte";
@@ -56,7 +57,13 @@
     } else {
       const domain = `${result.name}.${ensResolver.DOMAIN}`;
       // TODO(thomas): handle exception
-      registration = await ensResolver.getRegistration(domain);
+      const provider = ethereum.getProvider();
+      const environment = ethereum.getEnvironment();
+      registration = await ensResolver.getRegistration(
+        domain,
+        provider,
+        environment
+      );
 
       if (!registration) {
         throw new error.Error({

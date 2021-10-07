@@ -4,6 +4,8 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type * as ethereum from "ui/src/ethereum";
+
 import * as ensResolver from "ui/src/org/ensResolver";
 import * as notification from "ui/src/notification";
 import * as router from "ui/src/router";
@@ -20,10 +22,14 @@ import * as org from "ui/src/org";
 // In both cases also update the org list in the sidebar.
 export async function updateScreenAndNotifyUser(
   orgAddress: string,
-  message: string
+  message: string,
+  provider: ethereum.Provider,
+  ensAddress: string
 ): Promise<void> {
   const updatedRegistration = await ensResolver.getCachedRegistrationByAddress(
     orgAddress,
+    provider,
+    ensAddress,
     true
   );
   org.fetchOrgs();

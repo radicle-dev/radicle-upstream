@@ -8,6 +8,7 @@
 <script lang="typescript">
   import * as configureEns from "ui/src/org/configureEns";
   import * as error from "ui/src/error";
+  import * as ethereum from "ui/src/ethereum";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as org from "ui/src/org";
@@ -98,9 +99,13 @@
         waitingForTxNotification.remove();
       }
 
+      const provider = ethereum.getProvider();
+      const environment = ethereum.getEnvironment();
       await configureEns.updateScreenAndNotifyUser(
         orgAddress,
-        `Your org ${orgAddress} now points to ${domain}`
+        `Your org ${orgAddress} now points to ${domain}`,
+        provider,
+        environment
       );
     }
   }

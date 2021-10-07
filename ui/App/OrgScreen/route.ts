@@ -4,9 +4,10 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as org from "ui/src/org";
-import * as ensResolver from "ui/src/org/ensResolver";
 import { unreachable } from "ui/src/unreachable";
+import * as ensResolver from "ui/src/org/ensResolver";
+import * as ethereum from "ui/src/ethereum";
+import * as org from "ui/src/org";
 
 export interface Params {
   address: string;
@@ -52,8 +53,12 @@ interface SingleSigLoaded {
 export async function load(params: Params): Promise<LoadedRoute> {
   const owner = await org.getOwner(params.address);
   const projectCount = await org.getProjectCount();
+  const provider = ethereum.getProvider();
+  const ensAddress = ethereum.getEnsAddress();
   const registration = await ensResolver.getCachedRegistrationByAddress(
-    params.address
+    params.address,
+    provider,
+    ensAddress
   );
   const anchors = await org.resolveProjectAnchors(
     params.address,

@@ -6,9 +6,10 @@
 
 import type * as project from "ui/src/project";
 
-import * as lodash from "lodash";
+import lodash from "lodash";
 
 import * as ensResolver from "ui/src/org/ensResolver";
+import * as ethereum from "ui/src/ethereum";
 import * as theGraphApi from "ui/src/org/theGraphApi";
 import * as wallet from "ui/src/wallet";
 
@@ -45,10 +46,14 @@ export async function load(params: Params): Promise<LoadedRoute> {
       params.activeView.type === "anchors" ||
       params.activeView.type === "commit"
     ) {
+      const provider = ethereum.getProvider();
+      const ensAddress = ethereum.getEnsAddress();
       await Promise.all(
         anchors.map(async anchor => {
           const registration = await ensResolver.getCachedRegistrationByAddress(
-            anchor.orgAddress
+            anchor.orgAddress,
+            provider,
+            ensAddress
           );
           anchor.registration = registration;
           return anchor;
