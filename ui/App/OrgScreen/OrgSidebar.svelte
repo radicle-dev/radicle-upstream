@@ -28,17 +28,16 @@
   .row {
     padding: 1.5rem;
     color: var(--color-foreground-level-6);
-    border-bottom: 1px solid var(--color-foreground-level-2);
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
   }
 
-  .row:last-child {
-    border-bottom: none;
+  .row:not(:last-of-type) {
+    border-bottom: 1px solid var(--color-foreground-level-2);
   }
 
-  .row-title {
+  .title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -49,14 +48,14 @@
 <aside>
   <div class="row">
     {#if threshold}
-      <div class="row-title">
+      <div class="title">
         <Icon.Gnosis />
-        <p class="typo-text-bold">Gnosis safe</p>
+        <span class="typo-text-bold">Gnosis safe</span>
       </div>
     {:else}
-      <div class="row-title">
+      <div class="title">
         <Icon.Ethereum />
-        <p class="typo-text-bold">Owner address</p>
+        <span class="typo-text-bold">Owner address</span>
       </div>
     {/if}
     <CopyableIdentifier
@@ -67,9 +66,9 @@
   </div>
   {#if members && threshold}
     <div class="row">
-      <div class="row-title">
+      <div class="title">
         <Icon.Proposals />
-        <p class="typo-text-bold">Quorum</p>
+        <span class="typo-text-bold">Quorum</span>
       </div>
       {threshold} of {members.length}
       {members.length === 1 ? "signature" : "signatures"} required
@@ -77,9 +76,9 @@
   {/if}
   {#if registration?.seedId && registration?.seedHost}
     <div class="row">
-      <div class="row-title">
+      <div class="title">
         <Icon.Server />
-        <p class="typo-text-bold">Org node</p>
+        <span class="typo-text-bold">Org node</span>
       </div>
       <Copyable
         name="seed address"
@@ -92,9 +91,9 @@
   {/if}
   {#if registration?.github}
     <div class="row">
-      <div class="row-title">
+      <div class="title">
         <Icon.Github />
-        <p class="typo-text-bold">Github</p>
+        <span class="typo-text-bold">Github</span>
       </div>
       <a class="typo-link url" href={`http://github.com/${registration.github}`}
         >github.com/{registration.github}</a>
@@ -102,9 +101,9 @@
   {/if}
   {#if registration?.url}
     <div class="row">
-      <div class="row-title">
+      <div class="title">
         <Icon.Globe />
-        <p class="typo-text-bold">Website</p>
+        <span class="typo-text-bold">Website</span>
       </div>
       <a class="typo-link url" href={registration.url}
         >{registration.url.replace(/https?:\/\//, "")}</a>
@@ -112,9 +111,9 @@
   {/if}
   {#if registration?.twitter}
     <div class="row">
-      <div class="row-title">
+      <div class="title">
         <Icon.Twitter />
-        <p class="typo-text-bold">Twitter</p>
+        <span class="typo-text-bold">Twitter</span>
       </div>
       <a
         class="typo-link"
