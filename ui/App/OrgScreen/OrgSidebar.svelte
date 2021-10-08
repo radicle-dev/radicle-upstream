@@ -28,11 +28,6 @@
     });
   }
 
-  $: websiteUrl = registration?.url?.replace("https://", "");
-  $: githubUrl = registration?.github && `github.com/${registration.github}`;
-  $: twitterUrl =
-    registration?.twitter &&
-    `twitter.com/${registration.twitter.replace("@", "")}`;
   $: seedId = registration?.seedId;
   $: seedHost = registration?.seedHost;
 </script>
@@ -44,10 +39,14 @@
     margin-top: 1.5rem;
     height: fit-content;
   }
+
   .row {
     padding: 1.5rem;
     color: var(--color-foreground-level-6);
     border-bottom: 1px solid var(--color-foreground-level-2);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   .row:last-child {
@@ -59,12 +58,6 @@
     align-items: center;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
-  }
-  .url {
-    cursor: pointer;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
   }
 </style>
 
@@ -113,46 +106,38 @@
       </Tooltip>
     </div>
   {/if}
-  {#if githubUrl}
+  {#if registration?.github}
     <div class="row">
       <div class="row-title">
         <Icon.Github />
         <p class="typo-text-bold">Github</p>
       </div>
-      <div class="url">
-        <span
-          on:click={() => {
-            githubUrl && ipc.openUrl(githubUrl);
-          }}>{githubUrl}</span>
-      </div>
+      <a class="typo-link url" href={`http://github.com/${registration.github}`}
+        >github.com/{registration.github}</a>
     </div>
   {/if}
-  {#if websiteUrl}
+  {#if registration?.url}
     <div class="row">
       <div class="row-title">
         <Icon.Globe />
         <p class="typo-text-bold">Website</p>
       </div>
-      <div class="url">
-        <span
-          on:click={() => {
-            websiteUrl && ipc.openUrl(websiteUrl);
-          }}>{websiteUrl}</span>
-      </div>
+      <a class="typo-link url" href={registration.url}
+        >{registration.url.replace(/https?:\/\//, "")}</a>
     </div>
   {/if}
-  {#if twitterUrl}
+  {#if registration?.twitter}
     <div class="row">
       <div class="row-title">
         <Icon.Twitter />
         <p class="typo-text-bold">Twitter</p>
       </div>
-      <div class="url">
-        <span
-          on:click={() => {
-            twitterUrl && ipc.openUrl(twitterUrl);
-          }}>{twitterUrl}</span>
-      </div>
+      <a
+        class="typo-link"
+        href={`https://www.twitter.com/${registration.twitter.replace(
+          "@",
+          ""
+        )}`}>twitter.com/{registration.twitter.replace("@", "")}</a>
     </div>
   {/if}
 </aside>
