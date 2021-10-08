@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="typescript">
+  import lodash from "lodash";
+
   import * as theGraphApi from "ui/src/org/theGraphApi";
   import * as Org from "ui/src/org";
   import * as ensResolver from "ui/src/org/ensResolver";
@@ -37,6 +39,7 @@
         return { owner, org };
       })
     );
+    resolvedOrgs = lodash.orderBy(resolvedOrgs, "org.registration.domain");
   }
 
   fetchOrgs();
