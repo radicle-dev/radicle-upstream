@@ -18,8 +18,6 @@
 
   export let registration: ensResolver.Registration | undefined = undefined;
   export let orgAddress: string;
-
-  $: name = registration?.domain.replace(`.${ensResolver.DOMAIN}`, "");
 </script>
 
 <style>
@@ -54,29 +52,33 @@
       : { type: "orgEmoji", uniqueIdentifier: orgAddress }} />
 
   <div class="metadata">
-    <Copyable
-      name="org address"
-      clipboardContent={orgAddress}
-      tooltipStyle="width: fit-content;">
+    {#if registration?.domain}
       <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
-        {#if name}
-          {name}<span class="domain">.{ensResolver.DOMAIN}</span>
-        {:else}
-          {format.shortEthAddress(orgAddress)}
-        {/if}
+        {registration.domain.replace(`.${ensResolver.DOMAIN}`, "")}<span
+          class="domain">.{ensResolver.DOMAIN}</span>
       </h1>
-    </Copyable>
-    <div style="display: flex; gap: 1rem;">
-      <div>
-        <div class="row">
-          <Icon.Ethereum />
-          <CopyableIdentifier
-            value={orgAddress}
-            kind="ethAddress"
-            name="owner address"
-            showIcon={false} />
+
+      <div style="display: flex; gap: 1rem;">
+        <div>
+          <div class="row">
+            <Icon.Ethereum />
+            <CopyableIdentifier
+              value={orgAddress}
+              kind="ethAddress"
+              name="org address"
+              showIcon={false} />
+          </div>
         </div>
       </div>
-    </div>
+    {:else}
+      <Copyable
+        name="org address"
+        clipboardContent={orgAddress}
+        tooltipStyle="width: fit-content;">
+        <h1 data-cy="entity-name" class="typo-overflow-ellipsis name">
+          {format.shortEthAddress(orgAddress)}
+        </h1>
+      </Copyable>
+    {/if}
   </div>
 </div>
