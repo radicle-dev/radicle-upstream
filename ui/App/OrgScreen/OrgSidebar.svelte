@@ -9,27 +9,12 @@
   import type * as org from "ui/src/org";
   import type * as ensResolver from "ui/src/org/ensResolver";
 
-  import * as ipc from "ui/src/ipc";
-  import * as notification from "ui/src/notification";
-  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
-
-  import { CopyableIdentifier, Icon } from "ui/DesignSystem";
+  import { Copyable, CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   export let ownerAddress: string;
   export let threshold: number | undefined = undefined;
   export let members: org.Member[] | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
-
-  export function copy(): void {
-    const content = `${registration?.seedId}@${registration?.seedHost}:8776`;
-    ipc.copyToClipboard(content.trim());
-    notification.info({
-      message: "Org node address copied to your clipboard",
-    });
-  }
-
-  $: seedId = registration?.seedId;
-  $: seedHost = registration?.seedHost;
 </script>
 
 <style>
@@ -90,20 +75,19 @@
       {members.length === 1 ? "signature" : "signatures"} required
     </div>
   {/if}
-  {#if seedId && seedHost}
+  {#if registration?.seedId && registration?.seedHost}
     <div class="row">
       <div class="row-title">
         <Icon.Server />
         <p class="typo-text-bold">Org node</p>
       </div>
-      <Tooltip value="Copy org node address to clipboard" position="top">
-        <p
-          class="typo-overflow-ellipsis"
-          style="cursor: pointer;"
-          on:click|stopPropagation={copy}>
+      <Copyable
+        name="seed address"
+        clipboardContent={`${registration?.seedId}@${registration?.seedHost}:8776`}>
+        <span class="typo-overflow-ellipsis">
           {registration?.seedHost}
-        </p>
-      </Tooltip>
+        </span>
+      </Copyable>
     </div>
   {/if}
   {#if registration?.github}
