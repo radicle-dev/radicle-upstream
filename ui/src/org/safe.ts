@@ -28,10 +28,15 @@ export async function getPendingTransactions(
   return response.results || [];
 }
 
+export interface Metadata {
+  threshold: number;
+  members: string[];
+}
+
 export async function getMetadata(
   ethEnv: Ethereum.Environment,
   safeAddress: string
-): Promise<{ threshold: number; members: string[] }> {
+): Promise<Metadata> {
   safeAddress = ethers.utils.getAddress(safeAddress);
   const safeServiceClient = createSafeServiceClient(ethEnv);
   const response = await safeServiceClient.getSafeInfo(safeAddress);

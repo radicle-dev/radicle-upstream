@@ -37,7 +37,7 @@ interface MultiSigLoaded {
   gnosisSafeAddress: string;
   view: MultiSigView;
   threshold: number;
-  members: org.Member[];
+  memberCount: number;
 }
 
 interface SingleSigLoaded {
@@ -55,12 +55,6 @@ export async function load(params: Params): Promise<LoadedRoute> {
   const registration = await ensResolver.getCachedRegistrationByAddress(
     params.address
   );
-  const anchors = await org.resolveProjectAnchors(
-    params.address,
-    owner,
-    registration
-  );
-
   switch (owner.type) {
     case "gnosis-safe": {
       if (params.view === "projects") {
@@ -69,11 +63,15 @@ export async function load(params: Params): Promise<LoadedRoute> {
           registration,
           address: params.address,
           gnosisSafeAddress: owner.address,
-          members: owner.members,
-          threshold: owner.threshold,
+          memberCount: owner.metadata.members.length,
+          threshold: owner.metadata.threshold,
           view: {
             type: "projects",
-            anchors,
+            anchors: await org.resolveProjectAnchors(
+              params.address,
+              owner,
+              registration
+            ),
             gnosisSafeAddress: owner.address,
             projectCount,
           },
@@ -84,12 +82,12 @@ export async function load(params: Params): Promise<LoadedRoute> {
           registration,
           address: params.address,
           gnosisSafeAddress: owner.address,
-          members: owner.members,
-          threshold: owner.threshold,
+          memberCount: owner.metadata.members.length,
+          threshold: owner.metadata.threshold,
           view: {
             type: "members",
-            members: owner.members,
-            threshold: owner.threshold,
+            members: await org.resolveMemberIdentities(owner.metadata.members),
+            threshold: owner.metadata.threshold,
           },
         };
       } else {
@@ -103,7 +101,11 @@ export async function load(params: Params): Promise<LoadedRoute> {
         address: params.address,
         owner: owner.address,
         projectCount,
-        anchors,
+        anchors: await org.resolveProjectAnchors(
+          params.address,
+          owner,
+          registration
+        ),
       };
     }
   }

@@ -394,72 +394,45 @@ type Owner = { type: "wallet"; address: string } | GnosisSafeOwner;
 interface GnosisSafeOwner {
   type: "gnosis-safe";
   address: string;
-  members: Member[];
-  threshold: number;
+  metadata: Safe.Metadata;
 }
 
 // Determines the owner of an org at the given address.
 export async function getOwner(orgAddress: string): Promise<Owner> {
   const walletStore = svelteStore.get(wallet.store);
   const address = await Contract.getOwner(orgAddress, walletStore.provider);
-  const ownerCode = await walletStore.provider.getCode(address);
-  // We’re not really checking that the address is the Gnosis Safe
-  // contract. We’re just checking if it is _a_ contract.
-  const isSafe = ownerCode !== "0x";
-  if (isSafe) {
-    const { members, threshold } = await fetchMembers(walletStore, address);
-    return { type: "gnosis-safe", address, members, threshold };
+  if (await isMultiSig(address)) {
+    const metadata = await Safe.getMetadata(walletStore.environment, address);
+    return { type: "gnosis-safe", address, metadata };
   } else {
     return { type: "wallet", address };
   }
 }
 
-interface OrgMembers {
-  threshold: number;
-  members: Member[];
-}
-
 export interface Member {
   ethereumAddress: string;
+  // The identity is `undefined` if we tried to fetch it, but it didn't exist.
   identity: identity.RemoteIdentity | undefined;
 }
 
-export async function fetchMembers(
-  wallet: wallet.Wallet,
-  gnosisSafeAddress: string
-): Promise<OrgMembers> {
-  const response = await Safe.getMetadata(
-    wallet.environment,
-    gnosisSafeAddress
-  );
+export async function resolveMemberIdentities(
+  unresolvedMembers: string[]
+): Promise<Member[]> {
+  const walletStore = svelteStore.get(wallet.store);
 
   const contract = new ClaimsContract(
-    wallet.provider,
-    claimsAddress(wallet.environment)
+    walletStore.provider,
+    claimsAddress(walletStore.environment)
   );
 
-  const members = (
-    await Promise.all(
-      response.members.map(async ethereumAddress => {
-        const identity = await getClaimedIdentity(contract, ethereumAddress);
-        return { ethereumAddress, identity };
-      })
-    )
-  ).sort((a, b) => {
-    // Show members with claimed identities first.
-    if (!a.identity && b.identity) {
-      return 1;
-    }
-    if (a.identity && !b.identity) {
-      return -1;
-    }
-    return 0;
-  });
+  const members = await Promise.all(
+    unresolvedMembers.map(async unresolvedMember => {
+      const identity = await getClaimedIdentity(contract, unresolvedMember);
+      return { ethereumAddress: unresolvedMember, identity };
+    })
+  );
 
-  return {
-    threshold: response.threshold,
-    members,
-  };
+  return lodash.orderBy(members, "identity");
 }
 
 // Return all anchoring transactions that are pending for the given
@@ -491,7 +464,7 @@ async function fetchPendingAnchors(
           type: "pending",
           projectId: anchorData.projectId,
           commitHash: anchorData.commitHash,
-          threshold: gnosis.threshold,
+          threshold: gnosis.metadata.threshold,
           orgAddress: orgAddress,
           confirmations: tx.confirmations ? tx.confirmations.length : 0,
           timestamp: Date.parse(tx.submissionDate),

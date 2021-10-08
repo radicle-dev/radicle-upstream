@@ -30,7 +30,7 @@
   export let activeTab: orgRoute.MultiSigView;
   export let gnosisSafeAddress: string;
   export let address: string;
-  export let members: org.Member[];
+  export let memberCount: number;
   export let threshold: number;
   export let registration: Registration | undefined = undefined;
 
@@ -48,7 +48,7 @@
         title: "Members",
         icon: Icon.User,
         active: active.type === "members",
-        counter: members.length,
+        counter: memberCount,
         onClick: () => {
           router.push({ type: "org", params: { view: "members", address } });
         },

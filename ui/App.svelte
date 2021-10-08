@@ -135,7 +135,7 @@
       address={$activeRouteStore.address}
       gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}
       threshold={$activeRouteStore.threshold}
-      members={$activeRouteStore.members} />
+      memberCount={$activeRouteStore.memberCount} />
   {:else if $activeRouteStore.type === "project"}
     <ProjectScreen
       activeView={$activeRouteStore.activeView}
