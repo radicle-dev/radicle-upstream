@@ -58,12 +58,6 @@ export async function load(params: Params): Promise<LoadedRoute> {
   const registration = await ensResolver.getCachedRegistrationByAddress(
     params.address
   );
-  const anchors = await org.resolveProjectAnchors(
-    params.address,
-    owner,
-    registration
-  );
-
   const walletAddress = wallet.walletAddress();
 
   switch (owner.type) {
@@ -82,7 +76,11 @@ export async function load(params: Params): Promise<LoadedRoute> {
           showWriteActions,
           view: {
             type: "projects",
-            anchors,
+            anchors: await org.resolveProjectAnchors(
+              params.address,
+              owner,
+              registration
+            ),
             gnosisSafeAddress: owner.address,
             projectCount,
           },
@@ -98,7 +96,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
           showWriteActions,
           view: {
             type: "members",
-            members: owner.members,
+            members: await org.resolveMemberIdentities(owner.members),
             threshold: owner.threshold,
           },
         };
@@ -114,7 +112,11 @@ export async function load(params: Params): Promise<LoadedRoute> {
         owner: owner.address,
         showWriteActions: !!walletAddress && owner.address === walletAddress,
         projectCount,
-        anchors,
+        anchors: await org.resolveProjectAnchors(
+          params.address,
+          owner,
+          registration
+        ),
       };
     }
   }
