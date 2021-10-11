@@ -421,22 +421,26 @@ export interface Member {
   identity?: identity.RemoteIdentity;
 }
 
-export async function fetchMembers(
-  wallet: wallet.Wallet,
-  gnosisSafeAddress: string
-): Promise<OrgMembers> {
-  const response = await Safe.getMetadata(
-    wallet.environment,
-    gnosisSafeAddress
-  );
+const fetchMembers = memoizeLru(
+  async (
+    wallet: wallet.Wallet,
+    gnosisSafeAddress: string
+  ): Promise<OrgMembers> => {
+    const response = await Safe.getMetadata(
+      wallet.environment,
+      gnosisSafeAddress
+    );
 
-  return {
-    threshold: response.threshold,
-    members: response.members.map(address => {
-      return { ethereumAddress: address };
-    }),
-  };
-}
+    return {
+      threshold: response.threshold,
+      members: response.members.map(address => {
+        return { ethereumAddress: address };
+      }),
+    };
+  },
+  (_wallet, gnosisSafeAddress) => gnosisSafeAddress,
+  { maxAge: 15 * 60 * 1000 } // TTL 15 minutes
+);
 
 export async function resolveMemberIdentities(
   unresolvedMembers: Member[]
