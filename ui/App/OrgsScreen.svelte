@@ -136,7 +136,7 @@
               {/if}
               <CopyableIdentifier
                 style="margin-left: 0.5rem;"
-                value={org.id}
+                value={owner.address}
                 kind="ethAddress"
                 name="owner address"
                 showIcon={false} />
