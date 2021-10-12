@@ -85,7 +85,7 @@
   }
 
   .box {
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
     padding: 2rem;
     display: flex;
@@ -108,7 +108,6 @@
     flex-direction: column;
     text-overflow: ellipsis;
     overflow: hidden;
-    gap: 0.5rem;
   }
 
   .row {
@@ -157,7 +156,8 @@
                   {org.registration?.domain ? org.registration.domain : org.id}
                 </h3>
                 <Badge
-                  style="align-self: flex-start;"
+                  style="align-self: flex-start;
+                  margin-top: .5rem;"
                   caption={owner.type === "wallet"
                     ? "Single signer org"
                     : "Multi signer org"} />
@@ -179,10 +179,10 @@
               </li>
               {#if owner.type === "gnosis-safe"}
                 <li class="row">
-                  <Icon.Proposals />
+                  <Icon.User />
                   <p style="margin-left: .5rem;">
-                    {owner.threshold} of {owner.members.length}
-                    {owner.members.length === 1 ? "signature" : "signatures"} required
+                    {owner.members.length}
+                    {owner.members.length === 1 ? "member" : "members"}
                   </p>
                 </li>
               {/if}
