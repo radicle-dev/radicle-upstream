@@ -30,7 +30,7 @@
   import * as screen from "ui/src/screen";
   import * as wallet from "ui/src/wallet";
 
-  import { Icon } from "ui/DesignSystem";
+  import { Icon, Loading } from "ui/DesignSystem";
 
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
@@ -186,6 +186,15 @@
   }
 </script>
 
+<style>
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - var(--bigheader-height));
+  }
+</style>
+
 {#if $store.status === remote.Status.Success}
   <ActionBar>
     <div slot="left">
@@ -239,4 +248,8 @@
   {:else}
     {unreachable(activeView)}
   {/if}
+{:else if $store.status === remote.Status.Loading}
+  <div class="loading-container">
+    <Loading />
+  </div>
 {/if}

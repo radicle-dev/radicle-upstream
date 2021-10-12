@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import { Loading } from "ui/DesignSystem";
 </script>
 
 <style>
@@ -21,5 +21,5 @@
 </style>
 
 <div class="container">
-  <EmptyState headerText="Loading…" emoji="🕵️" />
+  <Loading />
 </div>
