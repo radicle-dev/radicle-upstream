@@ -11,6 +11,7 @@
   import { push } from "ui/src/router";
   import { unreachable } from "ui/src/unreachable";
   import * as Org from "ui/src/org";
+  import { store } from "ui/src/wallet";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as theGraphApi from "ui/src/org/theGraphApi";
@@ -67,6 +68,20 @@
   }
 
   loadScreen();
+
+  $: wallet = $store;
+
+  function role(owner: Org.Owner) {
+    if (owner.type === "gnosis-safe") {
+      return owner.members.some(
+        member => member.ethereumAddress === wallet.getAddress()
+      )
+        ? "member"
+        : "";
+    } else {
+      return owner.address === wallet.getAddress() ? "owner" : "";
+    }
+  }
 </script>
 
 <style>
@@ -155,12 +170,11 @@
                 <h3 class="typo-overflow-ellipsis">
                   {org.registration?.domain ? org.registration.domain : org.id}
                 </h3>
-                <Badge
-                  style="align-self: flex-start;
-                  margin-top: .5rem;"
-                  caption={owner.type === "wallet"
-                    ? "Single signer org"
-                    : "Multi signer org"} />
+                {#if role(owner) !== ""}
+                  <Badge
+                    style="align-self: flex-start; margin-top: .5rem;"
+                    caption={role(owner)} />
+                {/if}
               </div>
             </header>
             <ul class="metadata">
