@@ -16,7 +16,13 @@
   import * as error from "ui/src/error";
   import * as theGraphApi from "ui/src/org/theGraphApi";
 
-  import { Avatar, Badge, CopyableIdentifier, Icon } from "ui/DesignSystem";
+  import {
+    Avatar,
+    Badge,
+    CopyableIdentifier,
+    Loading,
+    Icon,
+  } from "ui/DesignSystem";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
 
@@ -112,13 +118,22 @@
   .row:not(:first-child) {
     margin-top: 0.5rem;
   }
+
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 95vh;
+  }
 </style>
 
 <ScreenLayout dataCy="network-page">
   <div class="container">
     <h1 style="padding: 0 0.75rem;">Explore orgs</h1>
     {#if state === "loading"}
-      <EmptyState emoji="⌛" text="Loading orgs…" />
+      <div class="loading">
+        <Loading />
+      </div>
     {:else if state === "loaded"}
       <div class="grid">
         {#each resolvedOrgs as { org, owner }}
@@ -175,7 +190,11 @@
         {/each}
       </div>
     {:else if state === "error"}
-      <EmptyState emoji="😬" text="Could not get org list." />
+      <EmptyState
+        emoji="😬"
+        text="Failed to load the orgs."
+        primaryActionText="Try again"
+        on:primaryAction={() => push({ type: "orgs" })} />
     {:else}
       {unreachable(state)}
     {/if}
