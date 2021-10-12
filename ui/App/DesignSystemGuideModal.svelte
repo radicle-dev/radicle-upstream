@@ -31,6 +31,7 @@
     CopyableIdentifier,
     Dropdown,
     FollowToggle,
+    Loading,
     Icon,
     IdentifierLink,
     Notification,
@@ -876,6 +877,10 @@
           <FollowToggle disabled style="margin-right: 1rem;" following />
           <FollowToggle style="margin-right: 1rem;" />
           <FollowToggle following />
+        </div>
+
+        <div class="swatch">
+          <Loading />
         </div>
       </Section>
     </div>

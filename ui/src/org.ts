@@ -4,6 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
 import type { Org } from "./org/theGraphApi";
@@ -402,11 +403,7 @@ interface GnosisSafeOwner {
 export async function getOwner(orgAddress: string): Promise<Owner> {
   const walletStore = svelteStore.get(wallet.store);
   const address = await Contract.getOwner(orgAddress, walletStore.provider);
-  const ownerCode = await walletStore.provider.getCode(address);
-  // We’re not really checking that the address is the Gnosis Safe
-  // contract. We’re just checking if it is _a_ contract.
-  const isSafe = ownerCode !== "0x";
-  if (isSafe) {
+  if (await isMultiSig(address)) {
     const { members, threshold } = await fetchMembers(walletStore, address);
     return { type: "gnosis-safe", address, members, threshold };
   } else {
@@ -421,45 +418,51 @@ interface OrgMembers {
 
 export interface Member {
   ethereumAddress: string;
-  identity: identity.RemoteIdentity | undefined;
+  identity?: identity.RemoteIdentity;
 }
 
-export async function fetchMembers(
-  wallet: wallet.Wallet,
-  gnosisSafeAddress: string
-): Promise<OrgMembers> {
-  const response = await Safe.getMetadata(
-    wallet.environment,
-    gnosisSafeAddress
-  );
+const fetchMembers = memoizeLru(
+  async (
+    wallet: wallet.Wallet,
+    gnosisSafeAddress: string
+  ): Promise<OrgMembers> => {
+    const response = await Safe.getMetadata(
+      wallet.environment,
+      gnosisSafeAddress
+    );
+
+    return {
+      threshold: response.threshold,
+      members: response.members.map(address => {
+        return { ethereumAddress: address };
+      }),
+    };
+  },
+  (_wallet, gnosisSafeAddress) => gnosisSafeAddress,
+  { maxAge: 15 * 60 * 1000 } // TTL 15 minutes
+);
+
+export async function resolveMemberIdentities(
+  unresolvedMembers: Member[]
+): Promise<Member[]> {
+  const walletStore = svelteStore.get(wallet.store);
 
   const contract = new ClaimsContract(
-    wallet.provider,
-    claimsAddress(wallet.environment)
+    walletStore.provider,
+    claimsAddress(walletStore.environment)
   );
 
-  const members = (
-    await Promise.all(
-      response.members.map(async ethereumAddress => {
-        const identity = await getClaimedIdentity(contract, ethereumAddress);
-        return { ethereumAddress, identity };
-      })
-    )
-  ).sort((a, b) => {
-    // Show members with claimed identities first.
-    if (!a.identity && b.identity) {
-      return 1;
-    }
-    if (a.identity && !b.identity) {
-      return -1;
-    }
-    return 0;
-  });
+  const members = await Promise.all(
+    unresolvedMembers.map(async unresolvedMember => {
+      const identity = await getClaimedIdentity(
+        contract,
+        unresolvedMember.ethereumAddress
+      );
+      return { ethereumAddress: unresolvedMember.ethereumAddress, identity };
+    })
+  );
 
-  return {
-    threshold: response.threshold,
-    members,
-  };
+  return lodash.orderBy(members, "identity");
 }
 
 // Return all anchoring transactions that are pending for the given

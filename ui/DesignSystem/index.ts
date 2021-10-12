@@ -19,6 +19,7 @@ import Icon from "./Icon";
 import IdentifierLink from "./IdentifierLink.svelte";
 import KeyHint from "./KeyHint.svelte";
 import List from "./List.svelte";
+import Loading from "./Loading.svelte";
 import Markdown from "./Markdown.svelte";
 import Notification from "./Notification.svelte";
 import Overlay from "./Overlay.svelte";
@@ -51,6 +52,7 @@ export {
   IdentifierLink,
   KeyHint,
   List,
+  Loading,
   Markdown,
   Notification,
   Overlay,
