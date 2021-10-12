@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="typescript">
-  import { onMount } from "svelte";
   import lodash from "lodash";
 
   import { push } from "ui/src/router";
@@ -35,7 +34,7 @@
     owner: Org.Owner;
   }
 
-  onMount(async () => {
+  async function loadScreen(): Promise<void> {
     state = "loading";
     try {
       resolvedOrgs = await fetchOrgs();
@@ -46,7 +45,7 @@
       );
       state = "error";
     }
-  });
+  }
 
   async function fetchOrgs(): Promise<ResolvedOrg[]> {
     const unresolvedOrgs = await theGraphApi.getAllOrgs();
@@ -66,6 +65,8 @@
     );
     return lodash.orderBy(resolvedOrgs, "org.registration.domain");
   }
+
+  loadScreen();
 </script>
 
 <style>
@@ -194,7 +195,7 @@
         emoji="😬"
         text="Failed to load the orgs."
         primaryActionText="Try again"
-        on:primaryAction={() => push({ type: "orgs" })} />
+        on:primaryAction={loadScreen} />
     {:else}
       {unreachable(state)}
     {/if}
