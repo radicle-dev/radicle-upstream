@@ -67,21 +67,26 @@
     return lodash.orderBy(resolvedOrgs, "org.registration.domain");
   }
 
-  loadScreen();
-
   $: wallet = $store;
+  $: walletAddress = wallet.getAddress();
 
-  function role(owner: Org.Owner) {
+  function role(owner: Org.Owner): "member" | "owner" | undefined {
     if (owner.type === "gnosis-safe") {
-      return owner.members.some(
-        member => member.ethereumAddress === wallet.getAddress()
-      )
-        ? "member"
-        : "";
+      if (
+        owner.members.some(member => member.ethereumAddress === walletAddress)
+      ) {
+        return "member";
+      }
+    } else if (owner.type === "wallet") {
+      if (owner.address === walletAddress) {
+        return "owner";
+      }
     } else {
-      return owner.address === wallet.getAddress() ? "owner" : "";
+      unreachable(owner);
     }
   }
+
+  loadScreen();
 </script>
 
 <style>
@@ -170,7 +175,7 @@
                 <h3 class="typo-overflow-ellipsis">
                   {org.registration?.domain ? org.registration.domain : org.id}
                 </h3>
-                {#if role(owner) !== ""}
+                {#if role(owner)}
                   <Badge
                     style="align-self: flex-start; margin-top: .5rem;"
                     caption={role(owner)} />
