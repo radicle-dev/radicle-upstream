@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
 

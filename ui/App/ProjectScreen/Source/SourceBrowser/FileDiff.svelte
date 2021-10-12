@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { lineNumberL, lineNumberR, lineSign } from "ui/src/source/diff";
   import type { ModifiedFile } from "ui/src/source/diff";
 

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as configureEns from "ui/src/org/configureEns";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";

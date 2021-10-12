@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type * as ethers from "ethers";
 
   import { Button, CopyableIdentifier, Icon, Tooltip } from "ui/DesignSystem";

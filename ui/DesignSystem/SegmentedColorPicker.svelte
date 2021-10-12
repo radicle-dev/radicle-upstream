@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { fly } from "svelte/transition";
   import { backOut } from "svelte/easing";
   import { createEventDispatcher } from "svelte";

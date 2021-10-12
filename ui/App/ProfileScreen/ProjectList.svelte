@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { Project } from "ui/src/project";
   import { isMaintainer } from "ui/src/project";
 

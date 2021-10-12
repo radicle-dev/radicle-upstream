@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as remote from "ui/src/remote";
   import type { Project } from "ui/src/project";
   import * as Session from "ui/src/session";

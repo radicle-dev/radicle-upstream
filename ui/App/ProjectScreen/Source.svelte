@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { Project, User, ConfirmedAnchor } from "ui/src/project";
   import type { Screen } from "ui/src/screen/project/source";
   import type { Branch, Tag } from "ui/src/source";

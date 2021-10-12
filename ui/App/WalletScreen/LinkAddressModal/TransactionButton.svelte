@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { Button } from "ui/DesignSystem";
 
   import * as notification from "ui/src/notification";

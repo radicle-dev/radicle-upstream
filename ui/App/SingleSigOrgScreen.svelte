@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { Registration } from "ui/src/org/ensResolver";
 
   import * as ipc from "ui/src/ipc";

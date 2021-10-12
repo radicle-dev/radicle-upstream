@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as router from "ui/src/router";
   import { unreachable } from "ui/src/unreachable";
   import { status as store } from "ui/src/localPeer";

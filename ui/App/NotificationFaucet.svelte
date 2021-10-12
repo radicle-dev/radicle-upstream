@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { fade, fly } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { store } from "ui/src/notification";

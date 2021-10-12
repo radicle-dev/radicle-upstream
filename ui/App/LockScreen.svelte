@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { tick as svelteTick } from "svelte";
   import * as screen from "ui/src/screen";
   import * as session from "ui/src/session";

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { unreachable } from "ui/src/unreachable";
   import * as format from "./lib/format";
   import Icon from "./Icon";

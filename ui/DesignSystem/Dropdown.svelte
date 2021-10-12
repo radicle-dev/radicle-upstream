@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import Option from "./Dropdown/Option.svelte";
   import Overlay from "./Overlay.svelte";
   import Icon from "./Icon";

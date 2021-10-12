@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as Wallet from "ui/src/wallet";
   import * as transaction from "ui/src/transaction";
   import * as ethereum from "ui/src/ethereum";

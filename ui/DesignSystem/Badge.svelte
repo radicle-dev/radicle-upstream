@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   export let variant: "maintainer" | "you" | "default" = "maintainer";
   export let style: string | undefined = undefined;
 

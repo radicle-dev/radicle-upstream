@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   export let active: boolean = false;
   export let indicator: boolean = false;
   export let dataCy: string | undefined = undefined;

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
 
   import { Button, Emoji, Tooltip } from "ui/DesignSystem";

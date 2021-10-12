@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { Position } from "ui/DesignSystem/Tooltip.svelte";
 
   import { copyToClipboard } from "ui/src/ipc";

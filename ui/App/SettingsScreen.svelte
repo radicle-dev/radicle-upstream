@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as svelteStore from "svelte/store";
 
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";

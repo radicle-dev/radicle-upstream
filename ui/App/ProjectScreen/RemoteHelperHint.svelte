@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript" context="module">
+<script lang="ts" context="module">
   import * as zod from "zod";
 
   import * as browserStore from "ui/src/browserStore";
@@ -17,7 +17,7 @@
   );
 </script>
 
-<script lang="typescript">
+<script lang="ts">
   import { Copyable, Hoverable, Icon } from "ui/DesignSystem";
 
   let hover = false;

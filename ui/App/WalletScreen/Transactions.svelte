@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import dayjs from "dayjs";
   import { store as transactions, TxStatus } from "ui/src/transaction";
   import type { Tx } from "ui/src/transaction";

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { activeRouteStore, push } from "ui/src/router";
 
   import type { Identity } from "ui/src/identity";

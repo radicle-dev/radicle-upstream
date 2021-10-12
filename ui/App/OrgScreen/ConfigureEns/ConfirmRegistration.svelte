@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type * as registerName from "./RegisterName.svelte";
 
   import * as ensRegistrar from "ui/src/org/ensRegistrar";
