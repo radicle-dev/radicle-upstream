@@ -8,6 +8,8 @@ import type { Registration } from "./ensResolver";
 import type * as ensResolver from "ui/src/org/ensResolver";
 import type * as project from "ui/src/project";
 
+import lodash from "lodash";
+
 import * as apolloCore from "@apollo/client/core";
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
@@ -56,6 +58,7 @@ export interface Org {
   registration?: Registration;
   creator: string;
   timestamp: number;
+  projectCount?: number;
 }
 
 export async function getOwnedOrgsSortedAscByTimestamp(
@@ -240,4 +243,34 @@ export function isUnavailableError(err: unknown): boolean {
     "statusCode" in err.networkError &&
     (err.networkError.statusCode === 502 || err.networkError.statusCode === 503)
   );
+}
+
+export async function resolveProjectCounts(orgs: Org[]): Promise<void> {
+  const response = (
+    await orgsSubgraphClient().query<{
+      projects: Array<{
+        org: {
+          // Org address.
+          id: string;
+        };
+      }>;
+    }>({
+      query: apolloCore.gql`
+        query GetProjectsOfOrgs($orgAddresses: [String!]!) {
+          projects(where: {org_in: $orgAddresses}) {
+            org {
+              id
+            }
+          }
+        }
+      `,
+      variables: {
+        orgAddresses: orgs.map(org => org.id.toLowerCase()),
+      },
+    })
+  ).data.projects;
+
+  const results = lodash.countBy(response, "org.id");
+
+  orgs.map(org => (org.projectCount = results[org.id]));
 }

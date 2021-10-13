@@ -58,6 +58,8 @@
       })
     );
 
+    await theGraphApi.resolveProjectCounts(unresolvedOrgs);
+
     const resolvedOrgs = await Promise.all(
       unresolvedOrgs.map(async org => {
         const owner = await Org.getOwner(org.id);
@@ -202,6 +204,16 @@
                   <p style="margin-left: .5rem;">
                     {owner.members.length}
                     {owner.members.length === 1 ? "member" : "members"}
+                  </p>
+                </li>
+              {/if}
+              {#if org.projectCount}
+                <li class="row">
+                  <Icon.Anchor />
+                  <p style="margin-left: .5rem;">
+                    {org.projectCount} anchored {org.projectCount === 1
+                      ? "project"
+                      : "projects"}
                   </p>
                 </li>
               {/if}
