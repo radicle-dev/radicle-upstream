@@ -5,11 +5,11 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript" context="module">
+<script lang="ts" context="module">
   export type Position = "top" | "right" | "bottom" | "left";
 </script>
 
-<script lang="typescript">
+<script lang="ts">
   type Offset = { top: number; left: number };
 
   export let style: string | undefined = undefined;

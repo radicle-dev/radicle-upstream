@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as modal from "ui/src/modal";
   import type { Tx } from "ui/src/transaction";
 

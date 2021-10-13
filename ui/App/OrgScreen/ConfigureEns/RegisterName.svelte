@@ -5,14 +5,14 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript" context="module">
+<script lang="ts" context="module">
   export interface Result {
     registration: ensResolver.Registration | undefined;
     name: string;
   }
 </script>
 
-<script lang="typescript">
+<script lang="ts">
   import type * as ethers from "ethers";
 
   import { sleep } from "ui/src/sleep";

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript" context="module">
+<script lang="ts" context="module">
   import { writable } from "svelte/store";
 
   const current = writable<HTMLDivElement | undefined>(undefined);
@@ -19,7 +19,7 @@
   };
 </script>
 
-<script lang="typescript">
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
 
   export let expanded: boolean;

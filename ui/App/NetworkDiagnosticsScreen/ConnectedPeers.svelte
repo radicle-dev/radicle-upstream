@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { StatusType, status } from "ui/src/localPeer";
 
   let isOnline = false;

@@ -5,8 +5,8 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+<script lang="ts">
+  import { Loading } from "ui/DesignSystem";
 </script>
 
 <style>
@@ -21,5 +21,5 @@
 </style>
 
 <div class="container">
-  <EmptyState headerText="Loading…" emoji="🕵️" />
+  <Loading />
 </div>

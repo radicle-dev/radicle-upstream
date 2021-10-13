@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as configureEns from "ui/src/org/configureEns";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";

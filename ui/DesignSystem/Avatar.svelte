@@ -5,8 +5,8 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
-  import { unreachable } from "ui/src/unreachable";
+<script lang="ts">
+  import { unreachable } from "./lib/unreachable";
   import * as radicleAvatar from "radicle-avatar";
   import Emoji from "./Emoji.svelte";
 

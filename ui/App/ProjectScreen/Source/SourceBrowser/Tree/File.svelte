@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import Icon from "ui/DesignSystem/Icon";
   import Spinner from "ui/DesignSystem/Spinner.svelte";
 

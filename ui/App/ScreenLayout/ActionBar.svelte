@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   let wrapper: Element;
   let scrollHeight: number;
   let scrollY = 0;

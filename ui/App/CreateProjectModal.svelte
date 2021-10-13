@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { onDestroy } from "svelte";
 
   import * as notification from "ui/src/notification";
@@ -44,7 +44,7 @@
   type RepoType = "new" | "existing";
 
   let currentSelection: RepoType;
-  let nameInput: HTMLInputElement;
+  let nameInput: TextInput;
 
   let startValidations = false;
 
@@ -268,7 +268,7 @@
         placeholder="Project name*"
         dataCy="name"
         bind:value={name}
-        bind:inputElement={nameInput}
+        bind:this={nameInput}
         validation={$nameValidation}
         disabled={isExisting} />
     </Tooltip>

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { CommitHeader } from "ui/src/source";
   import type { Root } from "ui/src/screen/project/source";
 

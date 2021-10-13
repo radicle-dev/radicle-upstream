@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { Project } from "ui/src/project";
 
   import { Avatar, Badge, CopyableIdentifier } from "ui/DesignSystem";
@@ -18,7 +18,7 @@
 
 <style>
   .project-card {
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
     padding: 2rem;
     height: 15rem;

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { lastClaimed } from "ui/src/attestation/lastClaimed";
   import { store as walletStore } from "ui/src/wallet";
   import * as modal from "ui/src/modal";

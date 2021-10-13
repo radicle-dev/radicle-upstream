@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { createEventDispatcher } from "svelte";
   export let style: string | undefined = undefined;
   const dispatch = createEventDispatcher();

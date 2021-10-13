@@ -23,7 +23,6 @@ import Loading from "./Loading.svelte";
 import Markdown from "./Markdown.svelte";
 import Notification from "./Notification.svelte";
 import Overlay from "./Overlay.svelte";
-import PasswordInput from "./PasswordInput.svelte";
 import RadicleLogo from "./RadicleLogo.svelte";
 import RadioOption from "./RadioOption.svelte";
 import SegmentedControl from "./SegmentedControl.svelte";
@@ -56,7 +55,6 @@ export {
   Markdown,
   Notification,
   Overlay,
-  PasswordInput,
   RadicleLogo,
   RadioOption,
   SegmentedControl,

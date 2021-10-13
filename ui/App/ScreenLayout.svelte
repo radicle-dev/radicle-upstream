@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import * as Session from "ui/src/session";
 
   import Sidebar from "./Sidebar.svelte";

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { Diff, CommitStats } from "ui/src/proxy/commit";
 
   import Icon from "ui/DesignSystem/Icon";

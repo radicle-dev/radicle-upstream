@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { Avatar, Button, CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";

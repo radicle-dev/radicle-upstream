@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type * as org from "ui/src/org";
   import type * as project from "ui/src/project";
   import * as userProfile from "ui/src/userProfile";

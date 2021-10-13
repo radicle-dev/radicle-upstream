@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import StateTable from "./StateTable.svelte";
   import { waitingRoomEventLog, waitingRoomState } from "ui/src/localPeer";
 </script>

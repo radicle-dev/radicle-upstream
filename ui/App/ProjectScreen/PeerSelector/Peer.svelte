@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { PeerRole, PeerType } from "ui/src/project";
   import type { User } from "ui/src/project";
 

@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import type { SvelteComponent } from "svelte";
   import type { Notification } from "ui/src/notification";
 

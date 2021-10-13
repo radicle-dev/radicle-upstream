@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { Avatar, CopyableIdentifier } from "ui/DesignSystem";
 
   export let name: string;

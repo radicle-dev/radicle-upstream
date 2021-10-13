@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { qrcode } from "pure-svg-code";
 
   import { Copyable, format } from "ui/DesignSystem";

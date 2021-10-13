@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import { isMarkdown } from "ui/src/source";
 
   import Icon from "ui/DesignSystem/Icon";
