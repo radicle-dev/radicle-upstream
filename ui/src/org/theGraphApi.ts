@@ -108,9 +108,11 @@ export async function getAllOrgs(): Promise<Org[]> {
       timestamp: string;
     }>;
   }>({
+    // TODO: add pagination. By default the Graph limits queries to 100
+    // results, we increase this limit to 1000 for now.
     query: apolloCore.gql`
     query GetOrgs {
-      orgs(orderBy: timestamp, orderDirection: desc) {
+      orgs(orderBy: timestamp, orderDirection: desc, first: 1000) {
         id
         owner
         creator
