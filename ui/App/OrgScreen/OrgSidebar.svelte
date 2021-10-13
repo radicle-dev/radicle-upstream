@@ -12,6 +12,7 @@
 
   export let ownerAddress: string;
   export let threshold: number | undefined = undefined;
+  export let memberCount: number | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
 </script>
 
@@ -62,14 +63,14 @@
       name="owner address"
       showIcon={false} />
   </div>
-  {#if threshold}
+  {#if memberCount && threshold}
     <div class="row">
       <div class="title">
         <Icon.Proposals />
         <span class="typo-text-bold">Quorum</span>
       </div>
-      {threshold}
-      {threshold === 1 ? "signature" : "signatures"} required
+      {threshold} of {memberCount}
+      {memberCount === 1 ? "signature" : "signatures"} required
     </div>
   {/if}
   {#if registration?.seedId && registration?.seedHost}
