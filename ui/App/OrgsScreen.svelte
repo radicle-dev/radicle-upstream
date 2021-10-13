@@ -177,7 +177,7 @@
                   : { type: "orgEmoji", uniqueIdentifier: org.id }} />
               <div class="title-meta">
                 <h3 class="typo-overflow-ellipsis">
-                  {org.registration?.domain ? org.registration.domain : org.id}
+                  {org.registration?.domain || org.id}
                 </h3>
                 {#if role(owner)}
                   <Badge
