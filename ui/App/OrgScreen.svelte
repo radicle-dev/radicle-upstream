@@ -155,10 +155,6 @@
         {unreachable(activeTab)}
       {/if}
     </main>
-    <OrgSidebar
-      {registration}
-      {threshold}
-      ownerAddress={gnosisSafeAddress}
-      {memberCount} />
+    <OrgSidebar {registration} {threshold} ownerAddress={gnosisSafeAddress} />
   </div>
 </ScreenLayout>
