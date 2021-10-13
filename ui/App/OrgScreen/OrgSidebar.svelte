@@ -5,15 +5,14 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
-  import type * as org from "ui/src/org";
+<script lang="ts">
   import type * as ensResolver from "ui/src/org/ensResolver";
 
   import { Copyable, CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   export let ownerAddress: string;
   export let threshold: number | undefined = undefined;
-  export let members: org.Member[] | undefined = undefined;
+  export let memberCount: number | undefined = undefined;
   export let registration: ensResolver.Registration | undefined = undefined;
 </script>
 
@@ -64,14 +63,14 @@
       name="owner address"
       showIcon={false} />
   </div>
-  {#if members && threshold}
+  {#if memberCount && threshold}
     <div class="row">
       <div class="title">
         <Icon.Proposals />
         <span class="typo-text-bold">Quorum</span>
       </div>
-      {threshold} of {members.length}
-      {members.length === 1 ? "signature" : "signatures"} required
+      {threshold} of {memberCount}
+      {memberCount === 1 ? "signature" : "signatures"} required
     </div>
   {/if}
   {#if registration?.seedId && registration?.seedHost}

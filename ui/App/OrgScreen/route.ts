@@ -38,8 +38,8 @@ interface MultiSigLoaded {
   gnosisSafeAddress: string;
   view: MultiSigView;
   threshold: number;
-  members: org.Member[];
   showWriteActions: boolean;
+  memberCount: number;
 }
 
 interface SingleSigLoaded {
@@ -64,15 +64,17 @@ export async function load(params: Params): Promise<LoadedRoute> {
     case "gnosis-safe": {
       const showWriteActions =
         !!walletAddress &&
-        owner.members.some(member => member.ethereumAddress === walletAddress);
+        owner.metadata.members.some(
+          memberAddress => memberAddress === walletAddress
+        );
       if (params.view === "projects") {
         return {
           type: "multiSigOrg",
           registration,
           address: params.address,
           gnosisSafeAddress: owner.address,
-          members: owner.members,
-          threshold: owner.threshold,
+          memberCount: owner.metadata.members.length,
+          threshold: owner.metadata.threshold,
           showWriteActions,
           view: {
             type: "projects",
@@ -91,13 +93,13 @@ export async function load(params: Params): Promise<LoadedRoute> {
           registration,
           address: params.address,
           gnosisSafeAddress: owner.address,
-          members: owner.members,
-          threshold: owner.threshold,
+          memberCount: owner.metadata.members.length,
+          threshold: owner.metadata.threshold,
           showWriteActions,
           view: {
             type: "members",
-            members: await org.resolveMemberIdentities(owner.members),
-            threshold: owner.threshold,
+            members: await org.resolveMemberIdentities(owner.metadata.members),
+            threshold: owner.metadata.threshold,
           },
         };
       } else {

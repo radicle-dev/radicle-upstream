@@ -5,7 +5,7 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="typescript">
+<script lang="ts">
   import lodash from "lodash";
 
   import { push } from "ui/src/router";
@@ -75,7 +75,9 @@
   function role(owner: Org.Owner): "member" | "owner" | undefined {
     if (owner.type === "gnosis-safe") {
       if (
-        owner.members.some(member => member.ethereumAddress === walletAddress)
+        owner.metadata.members.some(
+          memberAddress => memberAddress === walletAddress
+        )
       ) {
         return "member";
       }
@@ -202,8 +204,8 @@
                 <li class="row">
                   <Icon.User />
                   <p style="margin-left: .5rem;">
-                    {owner.members.length}
-                    {owner.members.length === 1 ? "member" : "members"}
+                    {owner.metadata.members.length}
+                    {owner.metadata.members.length === 1 ? "member" : "members"}
                   </p>
                 </li>
               {/if}
