@@ -69,8 +69,7 @@
         <Icon.Proposals />
         <span class="typo-text-bold">Quorum</span>
       </div>
-      {threshold} of {memberCount}
-      {memberCount === 1 ? "signature" : "signatures"} required
+      {threshold} out of {memberCount}
     </div>
   {/if}
   {#if registration?.seedId && registration?.seedHost}
