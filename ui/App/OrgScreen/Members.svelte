@@ -42,36 +42,42 @@
 <div class="container">
   <List items={members} let:item={member} on:select={openUserProfile}>
     <div class="list-item">
-      {#if member.identity}
-        <div style="display: flex">
-          <div style="display: flex;">
-            <Avatar
-              style="margin-right: 0.625rem;"
-              size="small"
-              kind={{
-                type: "userEmoji",
-                uniqueIdentifier: member.identity.urn,
-              }} />
-            <p class="typo-text">{member.identity.metadata.handle}</p>
+      <div>
+        {#if member.identity}
+          <div style="display: flex">
+            <div style="display: flex;">
+              <Avatar
+                style="margin-right: 0.625rem;"
+                size="small"
+                kind={{
+                  type: "userEmoji",
+                  uniqueIdentifier: member.identity.urn,
+                }} />
+              <p class="typo-text">{member.identity.metadata.handle}</p>
+            </div>
           </div>
-        </div>
-        <CopyableIdentifier
-          value={member.ethereumAddress}
-          kind="ethAddress"
-          showIcon={false}
-          tooltipPosition="left" />
-      {:else}
-        <div style="display: flex; align-items: center;">
-          <Avatar
-            style="margin-right: 10px"
-            size="small"
-            kind={{ type: "unknownUser" }} />
           <CopyableIdentifier
             value={member.ethereumAddress}
             kind="ethAddress"
-            showIcon={false} />
-        </div>
-      {/if}
+            showIcon={false}
+            tooltipPosition="left" />
+        {:else}
+          <div style="display: flex; align-items: center;">
+            <Avatar
+              style="margin-right: 10px"
+              size="small"
+              kind={{ type: "unknownUser" }} />
+            <CopyableIdentifier
+              value={member.ethereumAddress}
+              kind="ethAddress"
+              showIcon={false} />
+          </div>
+        {/if}
+      </div>
+      <a
+        class="typo-link url"
+        href={`https://etherscan.io/address/${member.ethereumAddress}`}
+        >View on etherscan</a>
     </div>
   </List>
 </div>
