@@ -9,7 +9,7 @@
   import { selectCommit, store } from "ui/src/screen/project/source";
   import type { CommitHeader } from "ui/src/source";
 
-  import Remote from "ui/App/Remote.svelte";
+  import Remote from "ui/App/SharedComponents/Remote.svelte";
 
   import History from "./SourceBrowser/History.svelte";
 

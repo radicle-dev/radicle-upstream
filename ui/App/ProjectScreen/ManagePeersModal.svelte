@@ -23,7 +23,7 @@
   import { Button, List, TextInput } from "ui/DesignSystem";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
-  import Remote from "ui/App/Remote.svelte";
+  import Remote from "ui/App/SharedComponents/Remote.svelte";
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
 

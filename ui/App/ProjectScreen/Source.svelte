@@ -33,11 +33,11 @@
   import { Icon, Loading } from "ui/DesignSystem";
 
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
+  import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
   import PatchButton from "./Source/PatchButton.svelte";
-  import RevisionSelector from "./Source/SourceBrowser/RevisionSelector.svelte";
 
   import Anchors from "./Source/Anchors.svelte";
   import CommitTab from "./Source/Commit.svelte";

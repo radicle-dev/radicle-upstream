@@ -20,7 +20,7 @@
     IdentifierLink,
   } from "ui/DesignSystem";
 
-  import OrgIdentity from "ui/App/OrgIdentity.svelte";
+  import OrgIdentity from "ui/App/SharedComponents/OrgIdentity.svelte";
 
   export let anchor: project.Anchor;
   export let replicated: boolean = false;

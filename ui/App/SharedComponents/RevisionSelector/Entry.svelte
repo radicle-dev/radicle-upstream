@@ -9,9 +9,7 @@
   import { RevisionType } from "ui/src/source";
   import type { Branch, Tag } from "ui/src/source";
 
-  import Badge from "ui/DesignSystem/Badge.svelte";
-  import Icon from "ui/DesignSystem/Icon";
-  import Spinner from "ui/DesignSystem/Spinner.svelte";
+  import { Badge, Icon, Spinner } from "ui/DesignSystem";
 
   export let loading: boolean = false;
   export let defaultBranch: boolean = false;

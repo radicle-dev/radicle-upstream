@@ -9,8 +9,7 @@
   import { PeerRole, PeerType } from "ui/src/project";
   import type { User } from "ui/src/project";
 
-  import Avatar from "ui/DesignSystem/Avatar.svelte";
-  import Badge from "ui/DesignSystem/Badge.svelte";
+  import { Avatar, Badge } from "ui/DesignSystem";
 
   export let peer: User;
 </script>

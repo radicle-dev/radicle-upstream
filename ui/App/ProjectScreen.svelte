@@ -32,7 +32,7 @@
   import Header from "ui/App/ScreenLayout/Header.svelte";
 
   import ManagePeersModal from "./ProjectScreen/ManagePeersModal.svelte";
-  import PeerSelector from "./ProjectScreen/PeerSelector.svelte";
+  import PeerSelector from "ui/App/SharedComponents/PeerSelector.svelte";
   import ProjectHeader from "./ProjectScreen/ProjectHeader.svelte";
   import Source from "./ProjectScreen/Source.svelte";
   import type * as projectRoute from "./ProjectScreen/route";
