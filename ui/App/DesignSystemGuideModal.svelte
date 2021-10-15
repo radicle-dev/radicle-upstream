@@ -623,6 +623,41 @@
         <div class="swatch">
           <Avatar
             style="margin-right: 16px"
+            size="large"
+            kind={{
+              type: "userImage",
+              url: "https://avatars.githubusercontent.com/u/4406983",
+            }} />
+          <Avatar
+            style="margin-right: 16px"
+            size="large"
+            kind={{
+              type: "userEmoji",
+              uniqueIdentifier: "rad:git:hnrk8cgbe4mgkubojmkdt6enka84ryfkdxhcy",
+            }} />
+          <Avatar
+            style="margin-right: 16px"
+            size="large"
+            kind={{
+              type: "orgImage",
+              url: "https://app.radicle.network/images/alt-clients.png",
+            }} />
+          <Avatar
+            style="margin-right: 16px"
+            size="large"
+            kind={{
+              type: "orgEmoji",
+              uniqueIdentifier: "0x8152237402E0f194176154c3a6eA1eB99b611482",
+            }} />
+          <Avatar
+            style="margin-right: 16px"
+            size="large"
+            kind={{ type: "pendingOrg" }} />
+        </div>
+
+        <div class="swatch">
+          <Avatar
+            style="margin-right: 16px"
             size="huge"
             kind={{
               type: "userImage",
