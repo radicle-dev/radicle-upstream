@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type * as org from "ui/src/org";
+  import * as org from "ui/src/org";
   import type * as project from "ui/src/project";
   import * as userProfile from "ui/src/userProfile";
 
@@ -74,9 +74,7 @@
           </div>
         {/if}
       </div>
-      <a
-        class="typo-link url"
-        href={`https://etherscan.io/address/${member.ethereumAddress}`}
+      <a class="typo-link url" href={org.etherscanUrl(member.ethereumAddress)}
         >View on etherscan</a>
     </div>
   </List>
