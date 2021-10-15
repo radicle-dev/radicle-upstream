@@ -81,7 +81,7 @@
   .circle.large {
     width: 4rem;
     height: 4rem;
-    border-radius: 1rem;
+    border-radius: 2rem;
   }
 
   .circle.huge {
@@ -143,7 +143,7 @@
   class="container"
   class:small={size === "small"}
   class:regular={size === "regular"}
-  class:large={size === "regular"}
+  class:large={size === "large"}
   class:huge={size === "huge"}
   {style}>
   {#if kind.type === "userImage"}
