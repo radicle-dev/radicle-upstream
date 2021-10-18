@@ -16,7 +16,6 @@
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
-  import Header from "ui/App/ScreenLayout/Header.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ProjectsTab from "ui/App/OrgScreen/Projects.svelte";
@@ -96,13 +95,13 @@
 </style>
 
 <ScreenLayout>
-  <Header>
+  <div slot="header" style="display: flex; gap: 1rem">
     <OrgHeader {registration} slot="left" orgAddress={address} />
-    <div slot="right" style="display: flex">
+    <div style="margin-left: auto; align-self: center; display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
       <ThreeDotsMenu menuItems={menuItems(address)} />
     </div>
-  </Header>
+  </div>
   <div class="sidebar-layout" class:single-column={!showSidebar}>
     <main>
       <ActionBar style="padding: 0; margin-top: 1rem;">

@@ -28,7 +28,6 @@
     CopyableIdentifier,
   } from "ui/DesignSystem";
 
-  import Header from "ui/App/ScreenLayout/Header.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
@@ -167,24 +166,23 @@
 </style>
 
 <ScreenLayout dataCy="profile-screen">
-  <Header>
+  <div slot="header" style="display: flex">
     <ProfileHeader
-      slot="left"
       urn={session.identity.urn}
       name={session.identity.metadata.handle}
       peerId={session.identity.peerId} />
 
     <Button
-      slot="right"
       dataCy="new-project-button"
       variant="outline"
       icon={Icon.Plus}
+      style="margin-left: auto; align-self: center"
       on:click={() => {
         modal.toggle(CreateProjectModal);
       }}>
       New project
     </Button>
-  </Header>
+  </div>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
     {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}

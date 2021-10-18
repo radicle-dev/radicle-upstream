@@ -13,7 +13,6 @@
   import * as router from "ui/src/router";
 
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
-  import Header from "ui/App/ScreenLayout/Header.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import UserProfileHeader from "./UserProfileScreen/UserProfileHeader.svelte";
@@ -38,7 +37,7 @@
     max-width: var(--content-max-width);
     min-width: var(--content-min-width);
     margin: 0 auto;
-    padding: 2rem var(--content-padding);
+    padding: var(--content-padding);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
@@ -46,9 +45,9 @@
 </style>
 
 <ScreenLayout dataCy="user-profile-screen">
-  <Header>
-    <UserProfileHeader slot="left" {user} />
-  </Header>
+  <div slot="header">
+    <UserProfileHeader {user} />
+  </div>
 
   {#if projects.length === 0}
     <EmptyState text="This peer doesn't have any projects." />

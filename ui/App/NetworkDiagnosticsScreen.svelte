@@ -14,7 +14,6 @@
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
-  import Header from "ui/App/ScreenLayout/Header.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ConnectedPeersTab from "./NetworkDiagnosticsScreen/ConnectedPeers.svelte";
@@ -48,20 +47,10 @@
     margin: 0 auto;
     padding: 2rem var(--content-padding);
   }
-
-  .title {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
 </style>
 
 <ScreenLayout>
-  <Header>
-    <div slot="left" class="title">
-      <h1>Status: {$store.type}</h1>
-    </div>
-  </Header>
+  <h1 slot="header">Status: {$store.type}</h1>
   <ActionBar>
     <div slot="left">
       <TabBar tabs={tabs(activeTab)} />

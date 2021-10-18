@@ -23,12 +23,33 @@
   .content {
     padding-bottom: 1rem;
   }
+
+  .header {
+    height: 12.5rem;
+    background-color: var(--color-foreground-level-1);
+    display: flex;
+  }
+
+  .header-content {
+    max-width: var(--content-max-width);
+    margin: auto;
+    flex-grow: 1;
+    padding: 0 var(--content-padding);
+  }
 </style>
 
 <div data-cy={dataCy}>
   <Sidebar />
 
   <div class="container">
+    {#if $$slots.header}
+      <div class="header" data-cy="header">
+        <div class="header-content">
+          <slot name="header" />
+        </div>
+      </div>
+    {/if}
+
     <div class="content">
       <slot />
     </div>
