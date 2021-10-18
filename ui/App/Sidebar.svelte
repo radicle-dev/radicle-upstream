@@ -7,9 +7,8 @@
 -->
 <script lang="ts">
   import { activeRouteStore, push } from "ui/src/router";
-
-  import type { Identity } from "ui/src/identity";
   import * as modal from "ui/src/modal";
+  import * as Session from "ui/src/session";
 
   import { Avatar, Icon, Tooltip } from "ui/DesignSystem";
 
@@ -20,7 +19,7 @@
   import SidebarItem from "./Sidebar/SidebarItem.svelte";
   import WalletStatusIndicator from "./Sidebar/WalletStatusIndicator.svelte";
 
-  export let identity: Identity;
+  const session = Session.unsealed();
 </script>
 
 <style>
@@ -68,7 +67,7 @@
 
 <div class="wrapper" data-cy="sidebar">
   <div class="top">
-    <Tooltip value={identity.metadata.handle}>
+    <Tooltip value={session.identity.metadata.handle}>
       <SidebarItem
         dataCy="profile"
         indicator
@@ -78,11 +77,11 @@
           size="regular"
           kind={{
             type: "userEmoji",
-            uniqueIdentifier: identity.urn,
+            uniqueIdentifier: session.identity.urn,
           }} />
       </SidebarItem>
     </Tooltip>
-    <OrgList {identity} />
+    <OrgList identity={session.identity} />
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">

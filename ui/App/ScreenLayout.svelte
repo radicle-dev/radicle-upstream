@@ -6,14 +6,10 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import * as Session from "ui/src/session";
-
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy: string | undefined = undefined;
   export let style: string | undefined = undefined;
-
-  const session = Session.unsealed();
 </script>
 
 <style>
@@ -31,7 +27,7 @@
 </style>
 
 <div data-cy={dataCy}>
-  <Sidebar identity={session.identity} />
+  <Sidebar />
 
   <div class="container">
     <div class="content" {style}>
