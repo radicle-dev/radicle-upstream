@@ -85,8 +85,6 @@
       if (owner.address === walletAddress) {
         return "owner";
       }
-    } else {
-      unreachable(owner);
     }
   }
 
