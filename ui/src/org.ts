@@ -358,10 +358,7 @@ export async function fetchOrgs(): Promise<void> {
       walletAddress
     );
 
-    return await graph.getOwnedOrgsSortedAscByTimestamp([
-      walletAddress,
-      ...gnosisSafeWallets,
-    ]);
+    return await graph.getOwnedOrgs([walletAddress, ...gnosisSafeWallets]);
   });
 
   if (sortedOrgs) {

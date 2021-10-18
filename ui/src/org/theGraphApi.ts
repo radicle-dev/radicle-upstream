@@ -61,9 +61,7 @@ export interface Org {
   projectCount?: number;
 }
 
-export async function getOwnedOrgsSortedAscByTimestamp(
-  owners: string[]
-): Promise<Org[]> {
+export async function getOwnedOrgs(owners: string[]): Promise<Org[]> {
   const orgsResponse = await orgsSubgraphClient().query<{
     orgs: Array<{
       // Org address.
