@@ -37,7 +37,19 @@ notice = "warn"
 # A list of advisory IDs to ignore. Note that ignored advisories will still
 # output a note when they are encountered.
 ignore = [
+  # Setting an environment variable and getting the current time in two
+  # different threads may result in a segfault. It’s highly unlikely
+  # that we are affected by this.
+  #
+  # This is blocked by
+  # * https://github.com/chronotope/chrono/pull/578
+  # * A new release of `headers`
+  # * `rust-crypto` not being maintained
+  #
+  # https://rustsec.org/advisories/RUSTSEC-2020-0071
+  "RUSTSEC-2020-0071",
   # "RUSTSEC-2021-0080"
+
 ]
 # Threshold for security vulnerabilities, any vulnerability with a CVSS score
 # lower than the range specified will be ignored. Note that ignored advisories
