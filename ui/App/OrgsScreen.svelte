@@ -145,7 +145,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 95vh;
+    height: 80vh;
   }
 </style>
 
