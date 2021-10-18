@@ -272,7 +272,7 @@ export async function resolveProjectCounts(orgs: Org[]): Promise<void> {
     })
   ).data.projects;
 
-  const results = lodash.countBy(response, "org.id");
+  const results = lodash.countBy(response, data => data.org.id);
 
   orgs.map(org => (org.projectCount = results[org.id]));
 }

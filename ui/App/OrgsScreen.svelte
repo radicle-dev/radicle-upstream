@@ -66,7 +66,7 @@
         return { owner, org };
       })
     );
-    return lodash.orderBy(resolvedOrgs, "org.registration.domain");
+    return lodash.orderBy(resolvedOrgs, data => data.org.registration?.domain);
   }
 
   $: wallet = $store;
