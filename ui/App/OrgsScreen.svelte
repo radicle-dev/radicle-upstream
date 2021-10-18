@@ -24,7 +24,7 @@
     Icon,
   } from "ui/DesignSystem";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   let resolvedOrgs: ResolvedOrg[] = [];
 
