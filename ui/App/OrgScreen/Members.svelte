@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type * as org from "ui/src/org";
+  import * as org from "ui/src/org";
   import type * as project from "ui/src/project";
   import * as userProfile from "ui/src/userProfile";
 
@@ -42,36 +42,41 @@
 <div class="container">
   <List items={members} let:item={member} on:select={openUserProfile}>
     <div class="list-item">
-      {#if member.identity}
-        <div style="display: flex">
-          <div style="display: flex;">
+      <div>
+        {#if member.identity}
+          <div style="display: flex">
+            <div style="display: flex; margin-right: 1rem;">
+              <Avatar
+                style="margin-right: 0.625rem;"
+                size="small"
+                kind={{
+                  type: "userEmoji",
+                  uniqueIdentifier: member.identity.urn,
+                }} />
+              <p class="typo-text">{member.identity.metadata.handle}</p>
+            </div>
+            <CopyableIdentifier
+              value={member.ethereumAddress}
+              kind="ethAddress"
+              showIcon={false} />
+          </div>
+        {:else}
+          <div style="display: flex; align-items: center;">
             <Avatar
               style="margin-right: 0.625rem;"
               size="small"
-              kind={{
-                type: "userEmoji",
-                uniqueIdentifier: member.identity.urn,
-              }} />
-            <p class="typo-text">{member.identity.metadata.handle}</p>
+              kind={{ type: "unknownUser" }} />
+            <CopyableIdentifier
+              value={member.ethereumAddress}
+              kind="ethAddress"
+              showIcon={false} />
           </div>
-        </div>
-        <CopyableIdentifier
-          value={member.ethereumAddress}
-          kind="ethAddress"
-          showIcon={false}
-          tooltipPosition="left" />
-      {:else}
-        <div style="display: flex; align-items: center;">
-          <Avatar
-            style="margin-right: 10px"
-            size="small"
-            kind={{ type: "unknownUser" }} />
-          <CopyableIdentifier
-            value={member.ethereumAddress}
-            kind="ethAddress"
-            showIcon={false} />
-        </div>
-      {/if}
+        {/if}
+      </div>
+      <a
+        on:click|stopPropagation
+        class="typo-link url"
+        href={org.etherscanUrl(member.ethereumAddress)}>View on Etherscan</a>
     </div>
   </List>
 </div>
