@@ -44,9 +44,9 @@
 
 <style>
   .container {
-    margin: 0 auto;
     min-width: var(--content-min-width);
-    padding: 0 var(--content-padding);
+    margin: 0 auto;
+    padding: 2rem var(--content-padding);
   }
 
   .title {
