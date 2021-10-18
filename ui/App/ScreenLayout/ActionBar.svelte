@@ -6,10 +6,11 @@
  LICENSE file.
 -->
 <script lang="ts">
+  export let style: string | undefined = undefined;
+
   let wrapper: Element;
   let scrollHeight: number;
   let scrollY = 0;
-  export let style: string = "";
 
   $: if (wrapper) {
     scrollHeight = wrapper.getBoundingClientRect().top;
