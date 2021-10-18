@@ -75,7 +75,7 @@
         {/if}
       </div>
       <a class="typo-link url" href={org.etherscanUrl(member.ethereumAddress)}
-        >View on etherscan</a>
+        >View on Etherscan</a>
     </div>
   </List>
 </div>
