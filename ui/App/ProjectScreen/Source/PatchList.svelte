@@ -12,7 +12,7 @@
   import type { Project } from "ui/src/project";
   import type { Patch } from "ui/src/project/patch";
   import { List, SegmentedControl } from "ui/DesignSystem";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import PatchCard from "./PatchCard.svelte";
 
   export let patches: Patch[];

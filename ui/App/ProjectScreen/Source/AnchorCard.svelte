@@ -14,7 +14,7 @@
   import * as router from "ui/src/router";
 
   import { Icon, IdentifierLink, format } from "ui/DesignSystem";
-  import OrgIdentity from "ui/App/OrgIdentity.svelte";
+  import OrgIdentity from "ui/App/SharedComponents/OrgIdentity.svelte";
 
   export let anchor: project.ConfirmedAnchor;
   export let showCommitHash: boolean = true;

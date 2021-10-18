@@ -15,7 +15,7 @@
     Overlay,
     Tooltip,
   } from "ui/DesignSystem";
-  import RemoteHelperHint from "../RemoteHelperHint.svelte";
+  import RemoteHelperHint from "ui/App/SharedComponents/RemoteHelperHint.svelte";
 
   // Whether this button should be displayed as a "Fork" button.
   export let fork: boolean = false;

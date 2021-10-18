@@ -16,7 +16,7 @@
   import { CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   import AnchorCard from "./AnchorCard.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
   import Changeset from "./SourceBrowser/Changeset.svelte";
 

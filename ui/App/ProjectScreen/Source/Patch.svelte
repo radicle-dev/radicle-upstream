@@ -12,7 +12,7 @@
   import type { PatchDetails } from "ui/src/project/patch";
   import * as patch from "ui/src/project/patch";
 
-  import Remote from "ui/App/Remote.svelte";
+  import Remote from "ui/App/SharedComponents/Remote.svelte";
 
   import PatchLoaded from "./PatchLoaded.svelte";
 

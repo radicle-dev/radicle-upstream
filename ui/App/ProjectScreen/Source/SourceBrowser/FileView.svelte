@@ -13,7 +13,7 @@
   import type { Code, View } from "ui/src/screen/project/source";
   import type { Tree } from "ui/src/source";
 
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   import Blob from "./FileView/Blob.svelte";
   import Root from "./FileView/Root.svelte";

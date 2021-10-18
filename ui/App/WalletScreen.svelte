@@ -32,7 +32,7 @@
   import { Icon } from "ui/DesignSystem";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   export let activeTab: router.WalletTab;
