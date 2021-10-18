@@ -19,7 +19,7 @@
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
   import Header from "ui/App/ScreenLayout/Header.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   import UserProfileHeader from "./UserProfileScreen/UserProfileHeader.svelte";
 

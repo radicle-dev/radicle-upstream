@@ -17,8 +17,8 @@
 
   import { Icon, IdentifierLink, format } from "ui/DesignSystem";
   import AnchorCard from "./AnchorCard.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
-  import OrgIdentity from "ui/App/OrgIdentity.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import OrgIdentity from "ui/App/SharedComponents/OrgIdentity.svelte";
 
   export let anchors: project.ConfirmedAnchor[];
 

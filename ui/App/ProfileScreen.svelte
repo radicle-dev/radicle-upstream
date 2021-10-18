@@ -35,7 +35,7 @@
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
   import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   const session = Session.unsealed();
 

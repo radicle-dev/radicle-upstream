@@ -9,10 +9,10 @@
   import type { CommitHeader } from "ui/src/source";
   import type { Root } from "ui/src/screen/project/source";
 
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import Readme from "../Readme.svelte";
 
-  import CommitTeaser from "../CommitTeaser.svelte";
+  import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
 
   export let commit: CommitHeader;
   export let view: Root;

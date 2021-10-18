@@ -12,7 +12,7 @@
   import { selectPath, store } from "ui/src/screen/project/source";
 
   import FileView from "./SourceBrowser/FileView.svelte";
-  import Remote from "ui/App/Remote.svelte";
+  import Remote from "ui/App/SharedComponents/Remote.svelte";
   import Tree from "./SourceBrowser/Tree.svelte";
 
   const onSelectCommit = (projectUrn: string, sha1: string) => {

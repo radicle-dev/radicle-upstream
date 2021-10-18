@@ -15,10 +15,10 @@
 
   import { Button, Dropdown } from "ui/DesignSystem";
 
-  import CommitTeaser from "ui/App/ProjectScreen/Source/SourceBrowser/CommitTeaser.svelte";
+  import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
-  import PeerSelector from "ui/App/ProjectScreen/PeerSelector.svelte";
-  import RevisionSelector from "ui/App/ProjectScreen/Source/SourceBrowser/RevisionSelector.svelte";
+  import PeerSelector from "ui/App/SharedComponents/PeerSelector.svelte";
+  import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
 
   export let projects: org.ProjectOption[];
   export let orgAddress: string;

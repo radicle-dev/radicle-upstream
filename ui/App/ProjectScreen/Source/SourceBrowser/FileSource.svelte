@@ -11,9 +11,9 @@
 
   import Icon from "ui/DesignSystem/Icon";
   import Markdown from "ui/DesignSystem/Markdown.svelte";
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
-  import CommitTeaser from "./CommitTeaser.svelte";
+  import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
 
   export let blob: Blob;
   export let commit: CommitHeader;

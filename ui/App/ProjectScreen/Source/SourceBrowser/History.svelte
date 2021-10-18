@@ -10,7 +10,7 @@
 
   import type { CommitHeader, GroupedCommitsHistory } from "ui/src/source";
 
-  import CommitTeaser from "./CommitTeaser.svelte";
+  import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
 
   export let history: GroupedCommitsHistory;
 

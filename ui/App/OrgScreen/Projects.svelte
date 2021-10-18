@@ -12,7 +12,7 @@
   import * as Session from "ui/src/session";
   import * as org from "ui/src/org";
 
-  import EmptyState from "ui/App/ScreenLayout/EmptyState.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import ProjectList from "ui/App/ProfileScreen/ProjectList.svelte";
   import UnresolvedAnchorList from "./UnresolvedAnchorList.svelte";
 

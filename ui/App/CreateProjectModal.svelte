@@ -38,7 +38,7 @@
     Tooltip,
   } from "ui/DesignSystem";
 
-  import RemoteHelperHint from "ui/App/ProjectScreen/RemoteHelperHint.svelte";
+  import RemoteHelperHint from "ui/App/SharedComponents/RemoteHelperHint.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   type RepoType = "new" | "existing";

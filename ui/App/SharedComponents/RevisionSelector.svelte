@@ -11,8 +11,7 @@
   import type { Branch, Tag } from "ui/src/source";
   import * as config from "ui/src/config";
 
-  import Icon from "ui/DesignSystem/Icon";
-  import Overlay from "ui/DesignSystem/Overlay.svelte";
+  import { Icon, Overlay } from "ui/DesignSystem";
 
   import Entry from "./RevisionSelector/Entry.svelte";
 
