@@ -9,7 +9,6 @@
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy: string | undefined = undefined;
-  export let style: string | undefined = undefined;
 </script>
 
 <style>
@@ -30,7 +29,7 @@
   <Sidebar />
 
   <div class="container">
-    <div class="content" {style}>
+    <div class="content">
       <slot />
     </div>
   </div>

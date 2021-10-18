@@ -166,7 +166,7 @@
   }
 </style>
 
-<ScreenLayout style="margin-top: 0;" dataCy="profile-screen">
+<ScreenLayout dataCy="profile-screen">
   <Header>
     <ProfileHeader
       slot="left"
