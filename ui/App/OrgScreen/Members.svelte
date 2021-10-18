@@ -58,8 +58,7 @@
             <CopyableIdentifier
               value={member.ethereumAddress}
               kind="ethAddress"
-              showIcon={false}
-              tooltipPosition="right" />
+              showIcon={false} />
           </div>
         {:else}
           <div style="display: flex; align-items: center;">
