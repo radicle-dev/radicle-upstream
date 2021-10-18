@@ -59,7 +59,7 @@
               value={member.ethereumAddress}
               kind="ethAddress"
               showIcon={false}
-              tooltipPosition="left" />
+              tooltipPosition="right" />
           </div>
         {:else}
           <div style="display: flex; align-items: center;">
