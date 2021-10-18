@@ -149,7 +149,7 @@
   }
 </style>
 
-<ScreenLayout dataCy="network-page">
+<ScreenLayout>
   <div class="container">
     <h1 style="padding: 0 0.75rem;">Explore orgs</h1>
     {#if state === "loading"}
