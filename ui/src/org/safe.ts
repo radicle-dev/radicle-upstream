@@ -10,6 +10,7 @@ import SafeServiceClient, {
   SafeMultisigTransactionResponse,
 } from "@gnosis.pm/safe-service-client";
 
+import { memoizeLru } from "ui/src/memoizeLru";
 import * as Ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import type { Wallet } from "ui/src/wallet";
@@ -33,19 +34,23 @@ export interface Metadata {
   members: string[];
 }
 
-export async function getMetadata(
-  ethEnv: Ethereum.Environment,
-  safeAddress: string
-): Promise<Metadata> {
-  safeAddress = ethers.utils.getAddress(safeAddress);
-  const safeServiceClient = createSafeServiceClient(ethEnv);
-  const response = await safeServiceClient.getSafeInfo(safeAddress);
+export const getMetadata = memoizeLru(
+  async (
+    ethEnv: Ethereum.Environment,
+    safeAddress: string
+  ): Promise<Metadata> => {
+    safeAddress = ethers.utils.getAddress(safeAddress);
+    const safeServiceClient = createSafeServiceClient(ethEnv);
+    const response = await safeServiceClient.getSafeInfo(safeAddress);
 
-  return {
-    threshold: response.threshold,
-    members: response.owners,
-  };
-}
+    return {
+      threshold: response.threshold,
+      members: response.owners,
+    };
+  },
+  (_ethEnv, safeAddress) => safeAddress,
+  { max: 1000, maxAge: 15 * 60 * 1000 } // TTL 15 minutes
+);
 
 export async function getSafesByOwner(
   ethEnv: Ethereum.Environment,

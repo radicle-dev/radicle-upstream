@@ -88,15 +88,14 @@
 
 <style>
   .container {
-    min-width: var(--content-min-width);
     max-width: var(--content-max-width);
-    padding: var(--content-padding);
+    min-width: var(--content-min-width);
     margin: 0 auto;
+    padding: 2rem var(--content-padding);
   }
   .content {
     display: grid;
     grid-template-columns: 20rem auto;
-    margin-top: 1.5rem;
     gap: 1.5rem;
   }
   .title {

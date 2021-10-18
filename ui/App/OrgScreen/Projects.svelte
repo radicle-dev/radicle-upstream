@@ -23,6 +23,7 @@
   export let ownerAddress: string;
   export let disableAnchorCreation = false;
   export let isMultiSig: boolean;
+  export let showWriteActions: boolean;
 
   function isWaitingForExecution(anchors: org.OrgAnchors): boolean {
     if (anchors.pendingResolved.length > 0) {
@@ -73,7 +74,7 @@
 
   .header {
     display: flex;
-    padding: 0.5rem 3rem 0.5rem;
+    padding: 0.75rem 0;
     width: 100%;
   }
 </style>
@@ -133,16 +134,20 @@
   {/if}
 
   {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0}
-    <EmptyState
-      emoji="🪴"
-      text="Get started by anchoring your org’s first project."
-      primaryActionText={isMultiSig
-        ? "Anchor with Gnosis Safe"
-        : "Anchor project"}
-      primaryActionDisabled={disableAnchorCreation}
-      primaryActionTooltipMessage="Create or follow a project first"
-      on:primaryAction={() => {
-        org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
-      }} />
+    {#if showWriteActions}
+      <EmptyState
+        emoji="🪴"
+        text="Get started by anchoring your org’s first project."
+        primaryActionText={isMultiSig
+          ? "Anchor with Gnosis Safe"
+          : "Anchor project"}
+        primaryActionDisabled={disableAnchorCreation}
+        primaryActionTooltipMessage="Create or follow a project first"
+        on:primaryAction={() => {
+          org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
+        }} />
+    {:else}
+      <EmptyState emoji="🪴" text="This org doesn't have any anchors." />
+    {/if}
   {/if}
 </div>

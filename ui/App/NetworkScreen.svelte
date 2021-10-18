@@ -80,7 +80,8 @@
   .container {
     max-width: var(--content-max-width);
     min-width: var(--content-min-width);
-    padding: 4rem var(--content-padding);
+    margin: 0 auto;
+    padding: 2rem var(--content-padding);
   }
 
   section {

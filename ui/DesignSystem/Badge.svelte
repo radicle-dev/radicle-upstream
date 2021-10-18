@@ -8,8 +8,7 @@
 <script lang="ts">
   export let variant: "maintainer" | "you" | "default" = "maintainer";
   export let style: string | undefined = undefined;
-
-  const caption = String(variant);
+  export let caption: string | undefined = String(variant);
 </script>
 
 <style>

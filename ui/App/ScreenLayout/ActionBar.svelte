@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="ts">
+  export let style: string | undefined = undefined;
+
   let wrapper: Element;
   let scrollHeight: number;
   let scrollY = 0;
@@ -45,7 +47,7 @@
   bind:this={wrapper}
   class="action-bar-wrapper"
   class:elevation={scrollY > scrollHeight}>
-  <div class="action-bar">
+  <div class="action-bar" {style}>
     <slot name="left" />
     <slot name="right" />
   </div>

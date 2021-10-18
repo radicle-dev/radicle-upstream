@@ -91,9 +91,9 @@
 <style>
   .container {
     max-width: var(--content-max-width);
-    margin: 4rem auto;
     min-width: var(--content-min-width);
-    padding: 0 var(--content-padding);
+    margin: 0 auto;
+    padding: 2rem var(--content-padding);
   }
 
   .sections {

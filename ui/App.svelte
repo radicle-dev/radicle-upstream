@@ -32,6 +32,7 @@
   import LockScreen from "ui/App/LockScreen.svelte";
   import NetworkDiagnosticsScreen from "ui/App/NetworkDiagnosticsScreen.svelte";
   import NetworkScreen from "ui/App/NetworkScreen.svelte";
+  import OrgsScreen from "ui/App/OrgsScreen.svelte";
   import OrgScreen from "ui/App/OrgScreen.svelte";
   import ProfileScreen from "ui/App/ProfileScreen.svelte";
   import ProjectScreen from "ui/App/ProjectScreen.svelte";
@@ -127,6 +128,7 @@
       address={$activeRouteStore.address}
       owner={$activeRouteStore.owner}
       projectCount={$activeRouteStore.projectCount}
+      showWriteActions={$activeRouteStore.showWriteActions}
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "multiSigOrg"}
     <OrgScreen
@@ -135,6 +137,7 @@
       address={$activeRouteStore.address}
       gnosisSafeAddress={$activeRouteStore.gnosisSafeAddress}
       threshold={$activeRouteStore.threshold}
+      showWriteActions={$activeRouteStore.showWriteActions}
       memberCount={$activeRouteStore.memberCount} />
   {:else if $activeRouteStore.type === "project"}
     <ProjectScreen
@@ -143,6 +146,8 @@
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "network"}
     <NetworkScreen />
+  {:else if $activeRouteStore.type === "orgs"}
+    <OrgsScreen />
   {:else if $activeRouteStore.type === "settings"}
     <SettingsScreen />
   {:else if $activeRouteStore.type === "wallet"}

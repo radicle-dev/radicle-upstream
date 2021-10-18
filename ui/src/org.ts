@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as lodash from "lodash";
+import lodash from "lodash";
 import { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 
 import type { Org } from "./org/theGraphApi";
@@ -357,10 +357,8 @@ export async function fetchOrgs(): Promise<void> {
       walletStore.environment,
       walletAddress
     );
-    return lodash.sortBy(
-      await graph.getOrgs(walletAddress, gnosisSafeWallets),
-      org => org.timestamp
-    );
+
+    return await graph.getOwnedOrgs([walletAddress, ...gnosisSafeWallets]);
   });
 
   if (sortedOrgs) {
@@ -389,7 +387,7 @@ export async function fetchOrgs(): Promise<void> {
 // Owner of an org that controlls the interaction with the org
 // contract. Maybe a simple wallet address that is controlled by one
 // private key or a Gnosis Safe.
-type Owner = { type: "wallet"; address: string } | GnosisSafeOwner;
+export type Owner = { type: "wallet"; address: string } | GnosisSafeOwner;
 
 interface GnosisSafeOwner {
   type: "gnosis-safe";

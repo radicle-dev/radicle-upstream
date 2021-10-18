@@ -67,6 +67,7 @@ import Orgs from "./Orgs.svelte";
 import Pen from "./Pen.svelte";
 import Plus from "./Plus.svelte";
 import PlusSmall from "./PlusSmall.svelte";
+import Proposals from "./Proposals.svelte";
 import Registered from "./Registered.svelte";
 import RegisteredSmall from "./RegisteredSmall.svelte";
 import Review from "./Review.svelte";
@@ -147,6 +148,7 @@ export default {
   Pen,
   Plus,
   PlusSmall,
+  Proposals,
   Registered,
   RegisteredSmall,
   Review,

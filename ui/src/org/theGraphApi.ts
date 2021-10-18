@@ -8,6 +8,8 @@ import type { Registration } from "./ensResolver";
 import type * as ensResolver from "ui/src/org/ensResolver";
 import type * as project from "ui/src/project";
 
+import lodash from "lodash";
+
 import * as apolloCore from "@apollo/client/core";
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
@@ -56,12 +58,10 @@ export interface Org {
   registration?: Registration;
   creator: string;
   timestamp: number;
+  projectCount?: number;
 }
 
-export async function getOrgs(
-  walletOwnerAddress: string,
-  multiSigOwners: string[]
-): Promise<Org[]> {
+export async function getOwnedOrgs(owners: string[]): Promise<Org[]> {
   const orgsResponse = await orgsSubgraphClient().query<{
     orgs: Array<{
       // Org address.
@@ -76,7 +76,7 @@ export async function getOrgs(
   }>({
     query: apolloCore.gql`
         query GetOrgs($owners: [String!]!) {
-          orgs(where: { owner_in: $owners }) {
+          orgs(where: { owner_in: $owners }, orderBy: timestamp, orderDirection: asc) {
             id
             owner
             creator
@@ -84,7 +84,40 @@ export async function getOrgs(
           }
         }
       `,
-    variables: { owners: [walletOwnerAddress, ...multiSigOwners] },
+    variables: { owners },
+  });
+
+  return orgsResponse.data.orgs.map(org => ({
+    ...org,
+    timestamp: Number.parseInt(org.timestamp),
+  }));
+}
+
+export async function getAllOrgs(): Promise<Org[]> {
+  const orgsResponse = await orgsSubgraphClient().query<{
+    orgs: Array<{
+      // Org address.
+      id: string;
+      // Owner address.
+      owner: string;
+      // Creator address.
+      creator: string;
+      // This is a UNIX seconds timestamp formatted as a string.
+      timestamp: string;
+    }>;
+  }>({
+    // TODO: add pagination. By default the Graph limits queries to 100
+    // results, we increase this limit to 1000 for now.
+    query: apolloCore.gql`
+    query GetOrgs {
+      orgs(orderBy: timestamp, orderDirection: desc, first: 1000) {
+        id
+        owner
+        creator
+        timestamp
+      }
+    }
+    `,
   });
 
   return orgsResponse.data.orgs.map(org => ({
@@ -210,4 +243,34 @@ export function isUnavailableError(err: unknown): boolean {
     "statusCode" in err.networkError &&
     (err.networkError.statusCode === 502 || err.networkError.statusCode === 503)
   );
+}
+
+export async function getProjectCounts(
+  orgIds: string[]
+): Promise<Record<string, number | undefined>> {
+  const response = (
+    await orgsSubgraphClient().query<{
+      projects: Array<{
+        org: {
+          // Org address.
+          id: string;
+        };
+      }>;
+    }>({
+      query: apolloCore.gql`
+        query GetProjectsOfOrgs($orgAddresses: [String!]!) {
+          projects(where: {org_in: $orgAddresses}) {
+            org {
+              id
+            }
+          }
+        }
+      `,
+      variables: {
+        orgAddresses: orgIds.map(org => org.toLowerCase()),
+      },
+    })
+  ).data.projects;
+
+  return lodash.countBy(response, data => data.org.id);
 }
