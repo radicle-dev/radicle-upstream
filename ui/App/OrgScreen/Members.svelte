@@ -64,7 +64,7 @@
         {:else}
           <div style="display: flex; align-items: center;">
             <Avatar
-              style="margin-right: 10px"
+              style="margin-right: 0.625rem;"
               size="small"
               kind={{ type: "unknownUser" }} />
             <CopyableIdentifier
