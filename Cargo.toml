@@ -19,10 +19,10 @@ rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
 git = "https://github.com/FintanH/thrussh.git"
 branch = "generic-agent"
 
-# See https://github.com/radicle-dev/radicle-link/blob/988fc7f5d98910a799920c39e822315944614350/link-crypto/Cargo.toml#L35-L38
+# See https://github.com/radicle-dev/radicle-link/blob/cycle/2021-10-26/link-crypto/Cargo.toml#L34
 [patch.crates-io.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore"
-rev = "53d4fba2fcdb9f8bb5a0a080bdcc30ca86820c57"
+rev = "00f8fb6135f8e4cd097a48e6f0700e08ce4abb04"
 features = [ "ssh-agent" ]
 
 # Uncomment the following lines to develop against a local copy of

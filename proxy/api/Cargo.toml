@@ -47,31 +47,31 @@ warp = { version = "0.3", default-features = false }
 
 [dependencies.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
+tag = "cycle/2021-10-26"
 
 [dependencies.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
+tag = "cycle/2021-10-26"
 
 [dependencies.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
+tag = "cycle/2021-10-26"
 
 [dependencies.rad-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
+tag = "cycle/2021-10-26"
 
 [dependencies.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
+tag = "cycle/2021-10-26"
 
 [dependencies.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
+tag = "cycle/2021-10-26"
 
 [dependencies.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "988fc7f5d98910a799920c39e822315944614350"
+tag = "cycle/2021-10-26"
 
 [dev-dependencies]
 bytes = "1.0"
