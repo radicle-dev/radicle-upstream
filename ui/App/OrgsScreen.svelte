@@ -58,7 +58,13 @@
       })
     );
 
-    await theGraphApi.resolveProjectCounts(unresolvedOrgs);
+    const projectCounts = await theGraphApi.getProjectCounts(
+      unresolvedOrgs.map(org => org.id)
+    );
+
+    unresolvedOrgs.forEach(org => {
+      org.projectCount = projectCounts[org.id];
+    });
 
     const resolvedOrgs = await Promise.all(
       unresolvedOrgs.map(async org => {

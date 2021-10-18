@@ -245,7 +245,9 @@ export function isUnavailableError(err: unknown): boolean {
   );
 }
 
-export async function resolveProjectCounts(orgs: Org[]): Promise<void> {
+export async function getProjectCounts(
+  orgIds: string[]
+): Promise<Record<string, number | undefined>> {
   const response = (
     await orgsSubgraphClient().query<{
       projects: Array<{
@@ -265,12 +267,10 @@ export async function resolveProjectCounts(orgs: Org[]): Promise<void> {
         }
       `,
       variables: {
-        orgAddresses: orgs.map(org => org.id.toLowerCase()),
+        orgAddresses: orgIds.map(org => org.toLowerCase()),
       },
     })
   ).data.projects;
 
-  const results = lodash.countBy(response, data => data.org.id);
-
-  orgs.map(org => (org.projectCount = results[org.id]));
+  return lodash.countBy(response, data => data.org.id);
 }
