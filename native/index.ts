@@ -157,6 +157,12 @@ class WindowManager {
 
     this.window.focus();
   }
+
+  close() {
+    if (this.window) {
+      this.window.close();
+    }
+  }
 }
 
 const windowManager = new WindowManager();
@@ -251,12 +257,14 @@ const openExternalLink = (url: string): void => {
 app.on("render-process-gone", (_event, _webContents, details) => {
   if (details.reason !== "clean-exit") {
     console.error(`Electron render process is gone. Reason: ${details.reason}`);
-    app.quit();
+    shutdown();
   }
 });
 
-app.on("will-quit", () => {
-  proxyProcessManager.kill();
+app.on("before-quit", event => {
+  windowManager.close();
+  event.preventDefault();
+  shutdown();
 });
 
 // Handle custom protocol on macOS
@@ -304,6 +312,14 @@ if (app.requestSingleInstanceLock()) {
   // initialization and is ready to create browser windows.
   // Some APIs can only be used after this event occurs.
   app.on("ready", () => {
+    process.on("SIGINT", () => {
+      shutdown();
+    });
+
+    process.on("SIGTERM", () => {
+      shutdown();
+    });
+
     proxyProcessManager.run().then(({ status, signal, output }) => {
       windowManager.sendMessage({
         kind: MainMessageKind.PROXY_ERROR,
@@ -330,7 +346,7 @@ app.on("window-all-closed", () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== "darwin") {
-    app.quit();
+    shutdown();
   }
 });
 
@@ -339,6 +355,18 @@ app.on("activate", () => {
     windowManager.open();
   }
 });
+
+let isShuttingDown = false;
+
+async function shutdown() {
+  if (isShuttingDown) {
+    return;
+  }
+
+  isShuttingDown = true;
+  await proxyProcessManager.shutdown().catch(e => console.error(e));
+  app.exit();
+}
 
 function execAsync(cmd: string): Promise<{ stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {

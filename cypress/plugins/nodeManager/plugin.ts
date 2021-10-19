@@ -7,7 +7,6 @@
 import * as stream from "stream";
 import { StringDecoder } from "string_decoder";
 import * as path from "path";
-import * as childProcess from "child_process";
 import exitHook from "exit-hook";
 import fetch from "node-fetch";
 import waitOn from "wait-on";
@@ -68,12 +67,12 @@ interface ConfiguredNode {
 
 interface StartedNode {
   kind: StateKind.Started;
-  process: childProcess.ChildProcess;
+  process: execa.ExecaChildProcess;
 }
 
 interface OnboardedNode {
   kind: StateKind.Onboarded;
-  process: childProcess.ChildProcess;
+  process: execa.ExecaChildProcess;
   authToken: AuthToken;
   peerAddress: PeerAddress;
   peerId: PeerId;
@@ -137,7 +136,7 @@ class Node {
 
     await fs.mkdirs(this.radHome);
 
-    const process = childProcess.spawn(
+    const process = execa(
       PROXY_BINARY_PATH,
       [
         "--http-listen",
@@ -173,13 +172,16 @@ class Node {
     const stderrLogPath = path.join(this.radHome, "stderr.log");
     this.logger.log(`writing output to ${stderrLogPath}`);
     const stderrLog = fs.createWriteStream(stderrLogPath);
-    process.stderr.pipe(stderrLog);
+    // We know that `stderr` is set because of the `stdio` spawn options
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const stderr = process.stderr!;
+    stderr.pipe(stderrLog);
 
     const combinedLogPath = path.join(this.dataDir, "combined-node.log");
     const combinedLog = fs.createWriteStream(combinedLogPath, { flags: "a" });
     const prependNodeId = new LinePrefix(`Node ${this.id}: `);
 
-    process.stderr.pipe(prependNodeId).pipe(combinedLog);
+    stderr.pipe(prependNodeId).pipe(combinedLog);
 
     this.state = { ...this.state, kind: StateKind.Started, process: process };
 
@@ -267,12 +269,13 @@ class Node {
     };
   }
 
-  stop(): void {
+  async stop(): Promise<void> {
     if (this.state.kind !== StateKind.Configured) {
       this.logger.log("stopping node");
       if (!this.state.process.kill()) {
         this.logger.log(`could not stop process ${this.state.process.pid}`);
       }
+      await this.state.process;
     } else {
       this.logger.log("ignoring stop node command, node wasn't running");
     }
@@ -353,9 +356,7 @@ class NodeManager implements NodeManagerPlugin {
   async stopAllNodes(): Promise<null> {
     this.logger.log("stopAllNodes");
 
-    this.managedNodes.forEach(node => {
-      node.stop();
-    });
+    await Promise.all(this.managedNodes.map(node => node.stop()));
 
     this.managedNodes = [];
 

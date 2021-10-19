@@ -123,24 +123,25 @@ impl Manager {
         }
     }
 
-    /// Get the current environment
-    pub fn environment(&mut self) -> Result<&Environment, Error> {
+    /// Get the current environment. If `None` is returned this indicates that the service was
+    /// asked to shut down.
+    pub fn environment(&mut self) -> Result<Option<&Environment>, Error> {
         while let Some(Some(message)) = self.message_receiver.recv().now_or_never() {
             match message {
                 Message::Reset => self.environment = Environment::new(&self.environment_config)?,
                 Message::SetSecretKey(key) => self.environment.key = Some(key),
                 Message::Seal => self.environment.key = None,
+                Message::Shutdown => return Ok(None),
             }
         }
 
-        Ok(&self.environment)
+        Ok(Some(&self.environment))
     }
 
     /// Returns a future that becomes ready when the service needs to restart because the
     /// environment has changed.
     pub fn notified_restart(&mut self) -> impl Future<Output = ()> + Send + 'static {
-        let reload_notify = Arc::new(Notify::new());
-        self.reload_notify = reload_notify.clone();
+        let reload_notify = self.reload_notify.clone();
         async move { reload_notify.notified().await }
     }
 }
@@ -154,6 +155,8 @@ enum Message {
     SetSecretKey(link_crypto::SecretKey),
     /// Seal the key store and reload the services
     Seal,
+    /// Shutdown the service and exit the process
+    Shutdown,
 }
 
 /// A handle to communicate with [`Manager`].
@@ -179,6 +182,11 @@ impl Handle {
     /// Seal the key store and reload the services
     pub fn seal(&mut self) {
         self.send_message(Message::Seal)
+    }
+
+    /// Shutdown the service and exit the process
+    pub fn shutdown(&mut self) {
+        self.send_message(Message::Shutdown)
     }
 
     /// Send [`Message`] to [`Manager`]

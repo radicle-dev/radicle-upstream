@@ -89,13 +89,40 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
                 }
             }
         });
+
+        let mut sigterm = signal(SignalKind::terminate())?;
+        let mut sigint = signal(SignalKind::interrupt())?;
+
+        let mut handle = service_manager.handle();
+        tokio::spawn(async move {
+            futures::future::select(Box::pin(sigterm.recv()), Box::pin(sigint.recv())).await;
+            tracing::info!(
+                "shutting down. send SIGINT or SIGTERM again in 5 seconds to force shutdown"
+            );
+            handle.shutdown();
+            let grace_period_start = std::time::Instant::now();
+            let grace_period = std::time::Duration::from_secs(5);
+            loop {
+                futures::future::select(Box::pin(sigterm.recv()), Box::pin(sigint.recv())).await;
+                let now = std::time::Instant::now();
+                if now - grace_period_start > grace_period {
+                    std::process::exit(5);
+                }
+            }
+        });
     }
 
     let auth_token = Arc::new(RwLock::new(None));
     loop {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
-        let environment = service_manager.environment()?;
+        let maybe_environment = service_manager.environment()?;
+        let environment = if let Some(environment) = maybe_environment {
+            environment
+        } else {
+            tracing::info!("process has shut down");
+            break;
+        };
         let rigging = rig(
             service_handle,
             environment,
@@ -113,6 +140,8 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
             Err(e) => return Err(e.into()),
         };
     }
+
+    Ok(())
 }
 
 /// Error running either the peer, the event tasks or the API.

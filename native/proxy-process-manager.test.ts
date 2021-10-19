@@ -60,7 +60,8 @@ it("returns the signal", async () => {
     lineLimit: 1,
   });
   const resultPromise = manager.run();
-  manager.kill();
+  const shutdownResult = await manager.shutdown().catch(e => e);
+  expect(shutdownResult.signal).toBe("SIGTERM");
   const result = await resultPromise;
   expect(result.signal).toBe("SIGTERM");
 });
