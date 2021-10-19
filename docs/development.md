@@ -367,7 +367,7 @@ build times. If you need to update this image, proceed as follows:
 1. Install [Google Cloud SDK][gc].
 
 2. Authenticate with Google Cloud: `gcloud auth configure-docker`, pick
-   `[1] opensourcecoin` when asked for which project to use.
+   `radicle-upstream` when asked for which project to use.
 
 3. Prepare a new docker image with all the necessary dependencies by editing:
    `ci/Dockerfile`.
@@ -377,17 +377,17 @@ build times. If you need to update this image, proceed as follows:
 
     ```sh
     cd ci
-    docker build . -t gcr.io/opensourcecoin/radicle-upstream:0.2.1
+    docker build . -t gcr.io/radicle-upstream/radicle-upstream-ci:15
     ```
 
 5. Push the new image version to Google Cloud:
 
-   `docker push gcr.io/opensourcecoin/radicle-upstream:0.2.1`
+   `docker push gcr.io/radicle-upstream/radicle-upstream-ci:15`
 
 6. Update the image version in `.buildkite/pipeline.yaml`:
 
    ```yaml
-   DOCKER_IMAGE: 'gcr.io/opensourcecoin/radicle-upstream:0.2.1'
+   DOCKER_IMAGE: 'gcr.io/radicle-upstream/radicle-upstream-ci:15'
    ```
 
 7. Update the image version in `.github/workflows/build.yaml`
