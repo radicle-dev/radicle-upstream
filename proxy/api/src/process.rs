@@ -327,10 +327,22 @@ async fn rig(
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
     let paths = environment.coco_profile.paths();
 
+    let seeds = session_seeds(&store, &args.default_seeds).await?;
+
+    let sealed = context::Sealed {
+        store: store.clone(),
+        test: environment.test_mode,
+        http_listen: args.http_listen,
+        default_seeds: args.default_seeds,
+        service_handle,
+        auth_token,
+        keystore: environment.keystore.clone(),
+        paths: paths.clone(),
+    };
+
     if let Some(key) = environment.key.clone() {
         let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
 
-        let seeds = session_seeds(&store, &args.default_seeds).await?;
         let (seeds_sender, seeds_receiver) = watch::channel(seeds);
 
         let config =
@@ -348,16 +360,9 @@ async fn rig(
         let ctx = context::Context::Unsealed(context::Unsealed {
             peer_control,
             peer: peer.peer.clone(),
-            store,
-            test: environment.test_mode,
-            http_listen: args.http_listen,
-            default_seeds: args.default_seeds,
-            service_handle: service_handle.clone(),
-            auth_token,
-            keystore: environment.keystore.clone(),
             shutdown: Arc::new(tokio::sync::Notify::new()),
-            paths: paths.clone(),
             signer,
+            rest: sealed,
         });
 
         Ok(Rigging {
@@ -366,16 +371,7 @@ async fn rig(
             seeds_sender: Some(seeds_sender),
         })
     } else {
-        let ctx = context::Context::Sealed(context::Sealed {
-            store,
-            test: environment.test_mode,
-            http_listen: args.http_listen,
-            default_seeds: args.default_seeds,
-            service_handle,
-            auth_token,
-            keystore: environment.keystore.clone(),
-            paths: paths.clone(),
-        });
+        let ctx = context::Context::Sealed(sealed);
         Ok(Rigging {
             ctx,
             peer: None,

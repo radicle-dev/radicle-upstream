@@ -70,7 +70,7 @@ mod handler {
 
     #[allow(clippy::unused_async)]
     pub async fn get_seeds(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let seeds = match session::get_current(&ctx.store)? {
+        let seeds = match session::get_current(&ctx.rest.store)? {
             None => vec![],
             Some(session) => session.settings.coco.seeds,
         };
@@ -83,7 +83,7 @@ mod handler {
         ctx: context::Unsealed,
         seeds: Vec<String>,
     ) -> Result<impl Reply, Rejection> {
-        session::update_seeds(&ctx.store, seeds)?;
+        session::update_seeds(&ctx.rest.store, seeds)?;
 
         Ok(warp::reply::with_status(reply(), StatusCode::NO_CONTENT))
     }

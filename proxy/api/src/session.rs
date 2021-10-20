@@ -118,7 +118,8 @@ pub async fn initialize_test(ctx: &crate::context::Unsealed, owner_handle: &str)
     .await
     .expect("cannot init owner identity");
     let identity = (ctx.peer.peer_id(), owner.into_inner().into_inner()).into();
-    initialize(&ctx.store, identity, &ctx.default_seeds).expect("failed to initialize session")
+    initialize(&ctx.rest.store, identity, &ctx.rest.default_seeds)
+        .expect("failed to initialize session")
 }
 
 /// Stores the session as the current session

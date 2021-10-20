@@ -67,7 +67,7 @@ mod handler {
         ctx: context::Unsealed,
         metadata: identity::Metadata,
     ) -> Result<impl Reply, Rejection> {
-        if session::get_current(&ctx.store)?.is_some() {
+        if session::get_current(&ctx.rest.store)?.is_some() {
             return Err(http::error::Response {
                 status_code: StatusCode::BAD_REQUEST,
                 variant: "SESSION_IN_USE",
@@ -78,7 +78,7 @@ mod handler {
 
         let id = identity::create(&ctx.peer, metadata).await?;
 
-        session::initialize(&ctx.store, id.clone(), &ctx.default_seeds)?;
+        session::initialize(&ctx.rest.store, id.clone(), &ctx.rest.default_seeds)?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
@@ -88,9 +88,9 @@ mod handler {
         ctx: context::Unsealed,
         metadata: identity::Metadata,
     ) -> Result<impl Reply, Rejection> {
-        session::get_current(&ctx.store)?.ok_or(http::error::Routing::NoSession)?;
+        session::get_current(&ctx.rest.store)?.ok_or(http::error::Routing::NoSession)?;
         let id = identity::update(&ctx.peer, metadata).await?;
-        session::update_identity(&ctx.store, id.clone())?;
+        session::update_identity(&ctx.rest.store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::OK))
     }
@@ -146,7 +146,7 @@ mod test {
             .await;
 
         let urn = {
-            let session = session::get_current(&ctx.store)?.expect("no session exists");
+            let session = session::get_current(&ctx.rest.store)?.expect("no session exists");
             session.identity.urn
         };
 
@@ -222,7 +222,7 @@ mod test {
             .await;
 
         let urn = {
-            let session = session::get_current(&ctx.store)?.expect("no session exists");
+            let session = session::get_current(&ctx.rest.store)?.expect("no session exists");
             session.identity.urn
         };
 
@@ -298,7 +298,7 @@ mod test {
             .await;
 
         let urn = {
-            let session = session::get_current(&ctx.store)?.expect("no session exists");
+            let session = session::get_current(&ctx.rest.store)?.expect("no session exists");
             session.identity.urn
         };
 
