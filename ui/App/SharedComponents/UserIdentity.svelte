@@ -59,7 +59,7 @@
     } else {
       router.push({
         type: "userProfile",
-        urn,
+        params: { urn },
       });
     }
   }

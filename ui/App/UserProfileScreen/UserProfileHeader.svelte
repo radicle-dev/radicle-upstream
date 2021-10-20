@@ -6,12 +6,10 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type * as identity from "ui/src/identity";
+  import type * as proxyIdentity from "proxy-client/identity";
   import { Avatar, CopyableIdentifier } from "ui/DesignSystem";
 
-  export let identityMetadata: identity.Metadata;
-  export let urn: string;
-  export let deviceIds: string[];
+  export let user: proxyIdentity.RemoteIdentity;
 </script>
 
 <style>
@@ -31,24 +29,24 @@
 <Avatar
   style="margin-right: 32px"
   size="huge"
-  kind={{ type: "userEmoji", uniqueIdentifier: urn }} />
+  kind={{ type: "userEmoji", uniqueIdentifier: user.urn }} />
 
 <div class="metadata">
   <h1
     data-cy="entity-name"
     class="typo-overflow-ellipsis"
-    title={identityMetadata.handle}>
-    {identityMetadata.handle}
+    title={user.metadata.handle}>
+    {user.metadata.handle}
   </h1>
 
-  {#if identityMetadata.ethereum?.address}
-    <div class="row" title={identityMetadata.ethereum?.address}>
+  {#if user.metadata.ethereum?.address}
+    <div class="row" title={user.metadata.ethereum?.address}>
       <CopyableIdentifier
-        value={identityMetadata.ethereum?.address}
+        value={user.metadata.ethereum?.address}
         kind="ethAddress" />
     </div>
   {/if}
-  {#each deviceIds as deviceId}
+  {#each user.peerIds as deviceId}
     <div class="row" title={deviceId}>
       <CopyableIdentifier value={deviceId} kind="deviceId" />
     </div>
