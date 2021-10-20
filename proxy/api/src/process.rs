@@ -38,6 +38,11 @@ pub struct Args {
     /// don’t install the git-remote-rad binary
     #[argh(switch)]
     pub skip_remote_helper_install: bool,
+    #[argh(option)]
+    /// passphrase to unlock the keystore
+    ///
+    /// If not provided the keystore must be unlocked via the HTTP API.
+    pub key_passphrase: Option<String>,
     #[cfg(feature = "unsafe-fast-keystore")]
     /// enables fast but unsafe encryption of the keystore for development builds
     #[argh(switch)]
@@ -61,7 +66,7 @@ struct Rigging {
 /// # Errors
 ///
 /// Errors when the setup or any of the services fatally fails.
-pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     if !args.skip_remote_helper_install {
@@ -73,6 +78,13 @@ pub async fn run(args: Args) -> Result<(), Box<dyn std::error::Error>> {
         #[cfg(feature = "unsafe-fast-keystore")]
         unsafe_fast_keystore: args.unsafe_fast_keystore,
     })?;
+
+    if let Some(passphrase) = &args.key_passphrase {
+        service_manager.unseal_keystore(radicle_keystore::pinentry::SecUtf8::from(
+            passphrase.clone(),
+        ))?;
+    }
+
     #[cfg(unix)]
     {
         use tokio::signal::unix::{signal, SignalKind};
@@ -317,7 +329,7 @@ async fn rig(
     environment: &service::Environment,
     auth_token: Arc<RwLock<Option<String>>>,
     args: Args,
-) -> Result<Rigging, Box<dyn std::error::Error>> {
+) -> Result<Rigging, anyhow::Error> {
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
         temp_dir.path().join("store")
     } else {
@@ -384,7 +396,7 @@ async fn rig(
 async fn session_seeds(
     store: &kv::Store,
     default_seeds: &[String],
-) -> Result<Vec<radicle_daemon::seed::Seed>, Box<dyn std::error::Error>> {
+) -> Result<Vec<radicle_daemon::seed::Seed>, anyhow::Error> {
     let seeds = session::seeds(store, default_seeds)?;
     Ok(radicle_daemon::seed::resolve(&seeds)
         .await

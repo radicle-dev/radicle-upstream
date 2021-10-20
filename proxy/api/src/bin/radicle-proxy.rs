@@ -5,7 +5,7 @@
 // LICENSE file.
 
 #[tokio::main]
-pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
+pub async fn main() -> Result<(), anyhow::Error> {
     api::env::set_if_unset("RUST_BACKTRACE", "full");
     api::env::set_if_unset("RUST_LOG", "info,quinn=warn");
 
