@@ -4,6 +4,46 @@ members = [
   "proxy/api",
 ]
 
+[patch.crates-io.librad]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-10-26"
+
+[patch.crates-io.link-crypto]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-10-26"
+
+[patch.crates-io.link-identities]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-10-26"
+
+[patch.crates-io.rad-identities]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-10-26"
+
+[patch.crates-io.radicle-daemon]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-10-26"
+
+[patch.crates-io.radicle-git-ext]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-10-26"
+
+[patch.crates-io.radicle-git-helpers]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-10-26"
+
+# Uncomment the following lines and comment out the radicle-link patches above
+# to develop against a local copy of `radicle-link`.
+
+# [patch.crates-io]
+# librad = { path = "../radicle-link/librad" }
+# link-crypto = { path = "../radicle-link/link-crypto" }
+# link-identities = { path = "../radicle-link/link-identities" }
+# radicle-daemon = { path = "../radicle-link/daemon" }
+# rad-identities = { path = "../radicle-link/rad-identities" }
+# radicle-git-ext = { path = "../radicle-link/git-ext" }
+# radicle-git-helpers = { path = "../radicle-link/git-helpers" }
+
 # These patches are the same as those listed in
 # https://github.com/radicle-dev/radicle-link/blob/master/Cargo.toml
 
@@ -24,14 +64,3 @@ branch = "generic-agent"
 git = "https://github.com/radicle-dev/radicle-keystore"
 rev = "00f8fb6135f8e4cd097a48e6f0700e08ce4abb04"
 features = [ "ssh-agent" ]
-
-# Uncomment the following lines to develop against a local copy of
-# `radicle-link`.
-
-# [patch.'https://github.com/radicle-dev/radicle-link']
-# librad = { path = "../radicle-link/librad" }
-# link-crypto = { path = "../radicle-link/link-crypto" }
-# link-identities = { path = "../radicle-link/link-identities" }
-# radicle-daemon = { path = "../radicle-link/daemon" }
-# radicle-git-ext = { path = "../radicle-link/git-ext" }
-# radicle-git-helpers = { path = "../radicle-link/git-helpers" }
