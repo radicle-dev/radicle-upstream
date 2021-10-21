@@ -6,10 +6,12 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Avatar, Icon } from "ui/DesignSystem";
-  import CompareBranches from "./CompareBranches.svelte";
-
   import type { Patch } from "ui/src/project/patch";
+
+  import { Icon } from "ui/DesignSystem";
+
+  import CompareBranches from "./CompareBranches.svelte";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let patch: Patch;
   export let defaultBranch: string;
@@ -52,7 +54,7 @@
   }
 
   .desc-row {
-    color: var(--color-foreground-level-6);
+    color: var(--color-foreground-level-5);
     display: flex;
     margin-top: 0.125rem;
     width: -webkit-fill-available;
@@ -70,18 +72,12 @@
           </p>
         </div>
         <div class="desc-row">
-          <p style="color: var(--color-foreground-level-5);">Opened by</p>
+          <p style="margin-right: 0.5rem;">Opened by</p>
           {#if patch.identity}
-            <div style="display: flex;">
-              <Avatar
-                kind={{
-                  type: "userEmoji",
-                  uniqueIdentifier: patch.identity.urn,
-                }}
-                size="small"
-                style="display: flex; justify-content: flex-start; margin-left: 0.5rem; margin-right: 0.625rem;" />
-              <p class="typo-text">{patch.identity.metadata.handle}</p>
-            </div>
+            <UserIdentity
+              modalStyle="top: 0.5rem; left: 3rem;"
+              urn={patch.identity.urn}
+              handle={patch.identity.metadata.handle} />
           {:else}
             <p style="margin-left: 0.5rem;">{patch.peerId}</p>
           {/if}

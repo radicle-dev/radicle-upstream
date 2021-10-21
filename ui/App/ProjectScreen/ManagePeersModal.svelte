@@ -17,9 +17,6 @@
     store,
   } from "ui/src/screen/project";
 
-  import * as userProfile from "ui/src/userProfile";
-  import * as modal from "ui/src/modal";
-
   import { Button, List, TextInput } from "ui/DesignSystem";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
@@ -107,10 +104,6 @@
       style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
       <Peer
         {peer}
-        on:userProfileClick={event => {
-          userProfile.openUserProfile(event.detail.urn);
-          modal.hide();
-        }}
         on:unfollow={event => {
           unfollowPeer(event.detail.projectUrn, event.detail.peerId);
         }}

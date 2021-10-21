@@ -8,8 +8,9 @@
 <script lang="ts">
   import type { Project } from "ui/src/project";
 
-  import { Avatar, Badge, CopyableIdentifier } from "ui/DesignSystem";
-  import ProjectAnchorPopover from "ui/App/OrgScreen/ProjectAnchorPopover.svelte";
+  import { Badge, CopyableIdentifier } from "ui/DesignSystem";
+  import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
   import ProjectStats from "./ProjectStats.svelte";
 
   export let project: Project;
@@ -65,7 +66,7 @@
     <div class="title-row">
       <h2 class="typo-overflow-ellipsis">{project.metadata.name}</h2>
       {#if isMaintainer}
-        <Badge style="margin-left: 0.5rem" variant="maintainer" />
+        <Badge style="margin-left: 0.5rem" text="maintainer" />
       {/if}
     </div>
     <CopyableIdentifier kind="radicleId" value={project.urn} />
@@ -73,19 +74,17 @@
       <p class="desc">{project.metadata.description}</p>
     {/if}
     {#if project.anchor}
-      <ProjectAnchorPopover anchor={project.anchor} replicated={true} />
+      <ProjectAnchorHovercard anchor={project.anchor} replicated={true} />
     {/if}
   </div>
   <div class="bottom">
     <ProjectStats
+      style="margin-right: 1rem;"
       branches={project.stats.branches}
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
-    <Avatar
-      size="small"
-      kind={{
-        type: "userEmoji",
-        uniqueIdentifier: project.metadata.maintainers[0],
-      }} />
+    <UserIdentity
+      urn={project.metadata.maintainers[0]}
+      modalStyle="top: -16rem; left: -17rem;" />
   </div>
 </div>

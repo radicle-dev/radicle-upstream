@@ -6,19 +6,13 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import type { User } from "ui/src/project";
   import { createEventDispatcher } from "svelte";
 
-  import type { User } from "ui/src/project";
+  import * as project from "ui/src/project";
 
-  import { PeerType, PeerRole } from "ui/src/project";
-
-  import {
-    Avatar,
-    Badge,
-    CopyableIdentifier,
-    FollowToggle,
-    Tooltip,
-  } from "ui/DesignSystem";
+  import { CopyableIdentifier, FollowToggle, Tooltip } from "ui/DesignSystem";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let peer: User;
   export let projectUrn: string;
@@ -38,39 +32,25 @@
     max-width: 22em;
     flex-direction: column;
   }
-  .user-profile {
-    display: inline-flex;
-    cursor: pointer;
-  }
 </style>
 
 <div class="peer" data-cy={`peer-${peer.identity.metadata.handle}`}>
   <div class="left">
-    <div
-      class="user-profile"
-      on:click={() => {
-        dispatch("userProfileClick", { urn: peer.identity.urn });
-      }}>
-      <Avatar
-        kind={{ type: "userEmoji", uniqueIdentifier: peer.identity.urn }}
-        size="small"
-        style="display: flex; justify-content: flex-start; margin-right: 0.5rem;" />
-      <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
-        {peer.identity.metadata.handle}
-      </p>
-      {#if peer.role === PeerRole.Maintainer}
-        <Badge style="margin-left: 0.5rem" variant="maintainer" />
-      {:else if peer.type === PeerType.Local}
-        <Badge style="margin-left: 0.5rem" variant="you" />
-      {/if}
-    </div>
+    <UserIdentity
+      urn={peer.identity.urn}
+      badge={peer.role === project.PeerRole.Maintainer
+        ? "maintainer"
+        : peer.type === project.PeerType.Local
+        ? "you"
+        : ""}
+      handle={peer.identity.metadata.handle} />
     <CopyableIdentifier
       value={peer.peerId}
       kind="deviceId"
       style="margin-top: 0.5rem;" />
   </div>
-  {#if peer.type !== PeerType.Local}
-    {#if peer.role === PeerRole.Maintainer}
+  {#if peer.type !== project.PeerType.Local}
+    {#if peer.role === project.PeerRole.Maintainer}
       <Tooltip position="top" value="Can't unfollow the maintainer's remote">
         <FollowToggle disabled following />
       </Tooltip>

@@ -154,7 +154,6 @@
   {#if projectData}
     <div class="revision-dropdown-container">
       <PeerSelector
-        showProfile={false}
         standalone={true}
         peers={projectData.peers}
         on:select={event => {

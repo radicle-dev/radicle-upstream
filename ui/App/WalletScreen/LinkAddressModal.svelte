@@ -6,17 +6,18 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Avatar, Button, CopyableIdentifier, Icon } from "ui/DesignSystem";
+  import { ClaimsContract, claimsAddress } from "ui/src/attestation/contract";
+  import { lastClaimed } from "ui/src/attestation/lastClaimed";
+  import { store as walletStore } from "ui/src/wallet";
+  import * as Session from "ui/src/session";
+  import * as identity from "ui/src/identity";
+  import * as modal from "ui/src/modal";
+
+  import { Button, CopyableIdentifier, Icon } from "ui/DesignSystem";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import TransactionButton from "./LinkAddressModal/TransactionButton.svelte";
-
-  import { ClaimsContract, claimsAddress } from "ui/src/attestation/contract";
-  import { lastClaimed } from "ui/src/attestation/lastClaimed";
-  import * as Session from "ui/src/session";
-  import { store as walletStore } from "ui/src/wallet";
-  import * as identity from "ui/src/identity";
-  import * as modal from "ui/src/modal";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   function onCancel(): void {
     modal.hide();
@@ -64,14 +65,9 @@
 
   <div class="data">
     <div style="display: flex;">
-      <Avatar
-        size="small"
-        kind={{
-          type: "userEmoji",
-          uniqueIdentifier: session.identity.urn,
-        }}
-        style="margin-right: 0.625rem;" />
-      <p class="typo-text">{session.identity.metadata.handle}</p>
+      <UserIdentity
+        urn={session.identity.urn}
+        handle={session.identity.metadata.handle} />
     </div>
     <Icon.ChevronUpDown />
     <p class="address typo-text">

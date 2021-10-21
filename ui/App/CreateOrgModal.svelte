@@ -8,19 +8,19 @@
 <script lang="ts">
   import type { Identity } from "ui/src/identity";
 
+  import * as ethereum from "ui/src/ethereum";
+  import * as modal from "ui/src/modal";
+  import * as org from "ui/src/org";
+  import * as validation from "ui/src/validation";
+
   import {
-    Avatar,
     Button,
     CopyableIdentifier,
     RadioOption,
     TextInput,
   } from "ui/DesignSystem";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
-
-  import * as ethereum from "ui/src/ethereum";
-  import * as modal from "ui/src/modal";
-  import * as org from "ui/src/org";
-  import * as validation from "ui/src/validation";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let identity: Identity;
   export let walletAddress: string;
@@ -132,13 +132,10 @@
         First member
       </p>
       <div class="member-box">
-        <div style="display: flex;">
-          <Avatar
-            style="margin-right: 0.625rem;"
-            size="small"
-            kind={{ type: "userEmoji", uniqueIdentifier: identity.urn }} />
-          <p class="typo-text">{identity.metadata.handle}</p>
-        </div>
+        <UserIdentity
+          urn={identity.urn}
+          handle={identity.metadata.handle}
+          modalStyle="top: -9rem; left: -17rem;" />
         <CopyableIdentifier value={walletAddress} kind="ethAddress" />
       </div>
     </div>

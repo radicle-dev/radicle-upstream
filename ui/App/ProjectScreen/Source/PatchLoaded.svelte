@@ -14,12 +14,14 @@
   import type { GroupedCommitsHistory } from "ui/src/source";
   import type { Patch } from "ui/src/project/patch";
 
-  import { Avatar, Icon, Markdown } from "ui/DesignSystem";
-  import CompareBranches from "./CompareBranches.svelte";
-  import History from "./SourceBrowser/History.svelte";
-  import CheckoutPatchButton from "./CheckoutPatchButton.svelte";
+  import { Icon, Markdown } from "ui/DesignSystem";
+
   import AcceptPatchButton from "./AcceptPatchButton.svelte";
   import BackButton from "../BackButton.svelte";
+  import CheckoutPatchButton from "./CheckoutPatchButton.svelte";
+  import CompareBranches from "./CompareBranches.svelte";
+  import History from "./SourceBrowser/History.svelte";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let project: Project;
   export let patch: Patch;
@@ -49,9 +51,9 @@
   }
 
   .metadata {
+    color: var(--color-foreground-level-5);
     display: flex;
     align-items: center;
-    color: var(--color-foreground-level-5);
   }
 
   .desc {
@@ -91,15 +93,12 @@
       </div>
     </div>
     <div class="metadata">
-      <span> Opened by </span>
+      <span style="margin-right: 0.5rem;">Opened by</span>
       {#if patch.identity}
-        <div style="display: flex;">
-          <Avatar
-            kind={{ type: "userEmoji", uniqueIdentifier: patch.identity.urn }}
-            size="small"
-            style="display: flex; justify-content: flex-start; margin-left: 0.5rem; margin-right: 0.625rem;" />
-          <p class="typo-text">{patch.identity.metadata.handle}</p>
-        </div>
+        <UserIdentity
+          modalStyle="top: 0.5rem; left: 3rem;"
+          urn={patch.identity.urn}
+          handle={patch.identity.metadata.handle} />
       {:else}
         <p style="margin-left: 0.5rem;">{patch.peerId}</p>
       {/if}

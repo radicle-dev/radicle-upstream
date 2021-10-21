@@ -15,7 +15,6 @@
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
-  import * as userProfile from "ui/src/userProfile";
   import type { User, Project, ConfirmedAnchor } from "ui/src/project";
   import { copyToClipboard } from "ui/src/ipc";
   import { isMaintainer, isContributor } from "ui/src/project";
@@ -76,9 +75,6 @@
     ];
   };
 
-  const onOpenPeer = ({ detail: peer }: { detail: User }) => {
-    userProfile.openUserProfile(peer.identity.urn);
-  };
   const onPeerModal = () => {
     modal.toggle(ManagePeersModal);
   };
@@ -102,6 +98,8 @@
   $: if ($store.status === remote.Status.Error) {
     error.show($store.error);
   }
+
+  let peerSelectorExpanded: boolean = false;
 </script>
 
 <ScreenLayout dataCy="project-screen">
@@ -124,11 +122,13 @@
           })} />
 
       <div slot="right" style="display: flex;">
-        <div style="display: flex;" class="button-transition">
+        <div
+          style="display: flex;"
+          class:button-transition={!peerSelectorExpanded}>
           <PeerSelector
+            bind:expanded={peerSelectorExpanded}
             peers={$store.data.peerSelection}
             on:modal={onPeerModal}
-            on:open={onOpenPeer}
             on:select={onSelectPeer}
             selected={$store.data.selectedPeer} />
           <Button
@@ -141,8 +141,8 @@
             on:mouseleave={mouseleave}
             style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         </div>
-        <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
       </div>
+      <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
     </Header>
     <Source
       {activeView}
