@@ -1,0 +1,100 @@
+name: dist
+on:
+  push:
+    branches:
+    - master
+    - release-candidate/**
+
+jobs:
+  build-dist-linux:
+    runs-on: ubuntu-latest
+    container:
+      image: "gcr.io/radicle-upstream/radicle-upstream-ci:14"
+    steps:
+      - uses: actions/checkout@master
+      - name: Cache Yarn
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/yarn
+            ~/cache/cypress
+          # Reuses cache from `build` workflow
+          key: build-linux-yarn-v3-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            build-linux-yarn-v3-
+      - name: Cache Rust
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/cargo
+            ./target
+          key: ${{ github.job }}-rust-v2-${{ hashFiles('Cargo.lock') }}
+      - run: ci/dist.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: linux-dist
+          path: |
+            dist/*.AppImage
+
+  build-dist-macos:
+    runs-on: macos-11
+    steps:
+      - run:  |
+          echo "CARGO_HOME=$HOME/cache/cargo" >> $GITHUB_ENV
+          echo "PATH=$HOME/cache/cargo/bin:$PATH" >> $GITHUB_ENV
+      - uses: actions/checkout@master
+      - name: Cache Yarn
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/yarn
+            ~/cache/cypress
+          # Reuses cache from `build` workflow
+          key: build-macos-yarn-v3-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            build-macos-yarn-v3-
+      - name: Cache Rust
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/cargo
+            ./target
+          key: ${{ github.job }}-rust-v2-${{ hashFiles('Cargo.lock') }}
+      - run: ci/dist.sh
+      - uses: actions/upload-artifact@v2
+        with:
+          name: macos-dist
+          path: |
+            dist/*.dmg
+
+
+  publish-artifacts:
+    needs:
+      - build-dist-linux
+      - build-dist-macos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: linux-dist
+          path: dist
+      - uses: actions/download-artifact@v2
+        with:
+          name: macos-dist
+          path: dist
+      - run: ls dist
+      - name: publish artifacts by commit
+        uses: google-github-actions/upload-cloud-storage@v0.4.0
+        with:
+          path: dist
+          destination: radicle-upstream-build-artifacts/v1/by-commit/${{ github.sha }}
+          credentials: ${{ secrets.GCP_SECRET_KEY }}
+          parent: false
+      - name: publish master artifacts
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: google-github-actions/upload-cloud-storage@v0.4.0
+        with:
+          path: dist
+          destination: radicle-upstream-build-artifacts/v1/master/
+          credentials: ${{ secrets.GCP_SECRET_KEY }}
+          parent: false

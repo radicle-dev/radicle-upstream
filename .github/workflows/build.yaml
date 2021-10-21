@@ -26,13 +26,12 @@ jobs:
             ~/cache/cargo
             ~/cache/proxy-target
           key: build-${{ runner.os }}-rust-v1-${{ hashFiles('Cargo.lock') }}
-      - run: ci/run.sh
+      - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-artifacts-linux
+          name: test-logs-linux
           path: |
-            dist/*.AppImage
             cypress/screenshots/**/*.png
             cypress/workspace/test-tmp/*/node-*/*.log
             cypress/workspace/test-tmp/*/combined-node.log
@@ -64,13 +63,12 @@ jobs:
         run: |
           rustup component add clippy rustfmt
           test -f $CARGO_HOME/bin/cargo-deny || cargo install cargo-deny
-      - run: ci/run.sh
+      - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-artifacts-macos
+          name: test-logs-macos
           path: |
-            dist/*.dmg
             cypress/screenshots/**/*.png
             cypress/workspace/test-tmp/*/node-*/*.log
             cypress/workspace/test-tmp/*/combined-node.log
