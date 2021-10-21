@@ -7,9 +7,9 @@
 import * as error from "./error";
 import * as proxy from "./proxy";
 import * as session from "./session";
-import type { Ethereum, Identity } from "./proxy/identity";
+import type { Ethereum, Identity, Metadata } from "proxy-client/identity";
 
-export type { Identity };
+export type { Identity, Metadata };
 
 // FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
 export type PeerId = string;

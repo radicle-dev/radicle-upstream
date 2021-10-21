@@ -6,9 +6,10 @@
 
 import { writable, Writable } from "svelte/store";
 
+import type { Request, Project } from "proxy-client/project";
+
 import * as proxy from "./proxy";
 import * as error from "./error";
-import type { Request, Project } from "./proxy/project";
 import * as remote from "./remote";
 
 // STATE

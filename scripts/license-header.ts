@@ -138,6 +138,7 @@ async function getPaths(): Promise<string[]> {
       "cypress/**/*.(js|ts)",
       "native/**/*.(js|ts)",
       "proxy/**/*.rs",
+      "proxy-client/**/*.ts",
       "public/**/*.css",
       "scripts/**/*",
       "ui/**/*",

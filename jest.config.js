@@ -11,6 +11,8 @@ module.exports = {
   },
   moduleNameMapper: {
     "^ui/(.*)$": "<rootDir>/ui/$1",
+    "^proxy-client/(.*)$": "<rootDir>/proxy-client/$1",
+    "^proxy-client$": "<rootDir>/proxy-client/index",
   },
   testEnvironment: "jsdom",
   testRegex: "(/__tests__/.*|(\\.|/)(test))\\.ts$",

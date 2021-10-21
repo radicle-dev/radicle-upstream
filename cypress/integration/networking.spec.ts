@@ -127,9 +127,11 @@ context("p2p networking", () => {
               .should("not.exist");
 
             cy.log("open maintainer's profile from the contributor's client");
-            commands
-              .pick("peer-dropdown-entry", "open-profile-rudolfs")
-              .click();
+            commands.pick("manage-remotes").click();
+            cy.get(
+              '[data-cy=followed-peers] [data-peer-handle="rudolfs"]'
+            ).trigger("mouseenter");
+            commands.pick("view-profile-button").click();
             commands.pick("user-profile-screen").should("exist");
             commands
               .pickWithContent(["entity-name"], "rudolfs")

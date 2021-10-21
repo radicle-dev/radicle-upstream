@@ -14,7 +14,7 @@ import {
   commitSchema,
 } from "./commit";
 
-export type { CommitHeader, Person };
+export type { Commit, CommitHeader, Person };
 
 export interface Stats {
   branches: number;

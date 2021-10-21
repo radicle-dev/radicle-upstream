@@ -20,7 +20,7 @@
     List,
   } from "ui/DesignSystem";
 
-  import ProjectAnchorPopover from "./ProjectAnchorPopover.svelte";
+  import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
 
   export let anchors: project.Anchor[];
 
@@ -62,7 +62,7 @@
     <div class="list-item" data-cy={`project-list-entry-${anchor.id}`}>
       <div class="typo-text anchor-row">
         <CopyableIdentifier value={anchor.projectId} kind="radicleId" />
-        <ProjectAnchorPopover {anchor} />
+        <ProjectAnchorHovercard {anchor} />
       </div>
       {#if hover}
         <div transition:fade|local={{ duration: 200 }}>

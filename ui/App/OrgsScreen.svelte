@@ -183,11 +183,9 @@
                 <h3 class="typo-overflow-ellipsis">
                   {org.registration?.domain || org.id}
                 </h3>
-                {#if role(owner)}
-                  <Badge
-                    style="align-self: flex-start; margin-top: .5rem;"
-                    caption={role(owner)} />
-                {/if}
+                <Badge
+                  style="align-self: flex-start; margin-top: .5rem;"
+                  text={role(owner)} />
               </div>
             </header>
             <ul class="metadata">

@@ -6,8 +6,6 @@
 
 import * as zod from "zod";
 
-import { config } from "ui/src/config";
-
 import * as identity from "./identity";
 import * as control from "./control";
 import * as project from "./project";
@@ -32,7 +30,7 @@ interface KeyStoreCreateParams {
   passphrase: string;
 }
 
-export class Client {
+export class ProxyClient {
   private fetcher: Fetcher;
 
   public control: control.Control;
@@ -117,5 +115,3 @@ export class Client {
     });
   }
 }
-
-export const client = new Client(`http://${config.proxyAddress}`);

@@ -9,7 +9,7 @@
   import type * as project from "ui/src/project";
 
   import { Badge } from "ui/DesignSystem";
-  import ProjectAnchorPopover from "ui/App/OrgScreen/ProjectAnchorPopover.svelte";
+  import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
 
   export let title: string;
 
@@ -50,10 +50,10 @@
   <div class="title-row">
     <p class="typo-text-bold typo-overflow-ellipsis" {title}>{title}</p>
     {#if showMaintainerBadge}
-      <Badge style="margin-left: 0.5rem" variant="maintainer" />
+      <Badge style="margin-left: 0.5rem" text="maintainer" />
     {/if}
     {#if anchor}
-      <ProjectAnchorPopover {anchor} replicated={true} />
+      <ProjectAnchorHovercard {anchor} replicated={true} />
     {/if}
   </div>
   {#if description}

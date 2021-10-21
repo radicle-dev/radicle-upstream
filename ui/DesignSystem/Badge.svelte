@@ -6,9 +6,8 @@
  LICENSE file.
 -->
 <script lang="ts">
-  export let variant: "maintainer" | "you" | "default" = "maintainer";
+  export let text: string | undefined = undefined;
   export let style: string | undefined = undefined;
-  export let caption: string | undefined = String(variant);
 </script>
 
 <style>
@@ -21,4 +20,6 @@
   }
 </style>
 
-<span {style} class="badge typo-text-small">{caption}</span>
+{#if text}
+  <span {style} class="badge typo-text-small">{text}</span>
+{/if}

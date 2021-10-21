@@ -4,9 +4,9 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { spawn, ChildProcess } from "child_process";
 import { CircularBuffer } from "mnemonist";
 import stripAnsi from "strip-ansi";
+import execa from "execa";
 
 export interface ProcessResult {
   status: number | null;
@@ -31,7 +31,8 @@ interface Options {
 // stderr of this process. The lines of both these streams are also
 // written to a circular buffer with a configurable line capacity.
 export class ProxyProcessManager {
-  private childProcess: ChildProcess | undefined;
+  private childProcess: execa.ExecaChildProcess | undefined;
+  private shutdownInProgress: boolean = false;
   private readonly options: Options;
 
   constructor(options: Options) {
@@ -50,7 +51,7 @@ export class ProxyProcessManager {
       this.options.lineLimit
     );
 
-    const childProcess = spawn(this.options.proxyPath, this.options.proxyArgs, {
+    const childProcess = execa(this.options.proxyPath, this.options.proxyArgs, {
       stdio: ["ignore", "pipe", "pipe"],
     });
 
@@ -113,10 +114,14 @@ export class ProxyProcessManager {
     };
   }
 
-  // Kill the process if it is running. Do nothing otherwise.
-  kill(): void {
+  // Shutdown the process with SIGTERM and wait for it to exit if it is running. Do nothing otherwise.
+  async shutdown(): Promise<void> {
     if (this.childProcess) {
-      this.childProcess.kill();
+      if (!this.shutdownInProgress) {
+        this.childProcess.kill("SIGTERM");
+        this.shutdownInProgress = true;
+      }
+      await this.childProcess;
     }
   }
 }

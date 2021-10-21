@@ -8,12 +8,12 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { PeerRole } from "ui/src/project";
+  import { PeerRole, PeerType } from "ui/src/project";
   import type { User } from "ui/src/project";
 
   import { Icon, Overlay, Tooltip } from "ui/DesignSystem";
 
-  import Peer from "./PeerSelector/Peer.svelte";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let expanded: boolean = false;
   // If `true`,  this component is used in a stand-alone context. This means it
@@ -23,8 +23,6 @@
   export let standalone: boolean = false;
   export let peers: User[];
   export let selected: User;
-  export let showProfile: boolean = true;
-  let dropdownHeight: number;
 
   const orderPeers = (peers: User[]): User[] => {
     return [selected].concat(
@@ -40,10 +38,6 @@
   };
 
   const dispatch = createEventDispatcher();
-  const onOpen = (peer: User) => {
-    hide();
-    dispatch("open", peer);
-  };
   const onSelect = (peer: User) => {
     if (peer.role === PeerRole.Tracker) {
       return;
@@ -102,23 +96,8 @@
     overflow: hidden;
   }
 
-  .action {
-    height: 1.5rem;
-    margin-left: 0.5rem;
-    width: 1.5rem;
-  }
-
-  .open-profile {
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-  }
-
   .rounded {
-    border-top-right-radius: 0.5rem;
-    border-bottom-right-radius: 0.5rem !important;
-    border-top-left-radius: 0.5rem;
-    border-bottom-left-radius: 0.5rem;
+    border-radius: 0.5rem;
     border: 1px solid var(--color-foreground-level-3);
   }
 
@@ -136,6 +115,7 @@
   .entry.enabled {
     color: var(--color-foreground-level-6);
   }
+
   .entry.enabled:hover {
     background-color: var(--color-foreground-level-2);
     cursor: pointer;
@@ -143,6 +123,10 @@
 
   .entry.selected {
     background-color: var(--color-foreground-level-2);
+  }
+
+  .rounded-bottom-right:last-child {
+    border-bottom-right-radius: 0.5rem;
   }
 </style>
 
@@ -157,7 +141,16 @@
     data-cy="peer-selector"
     hidden={expanded}
     on:click|stopPropagation={show}>
-    <Peer peer={selected} />
+    <UserIdentity
+      boldHandle={true}
+      urn={selected.identity.urn}
+      handle={selected.identity.metadata.handle}
+      badge={selected.role === PeerRole.Maintainer
+        ? "maintainer"
+        : selected.type === PeerType.Local
+        ? "you"
+        : ""}
+      disableHovercard={true} />
     <div class="selector-expand">
       <Icon.ChevronUpDown
         style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
@@ -165,40 +158,40 @@
   </div>
   <div class="peer-dropdown-container" data-cy="peer-dropdown-container">
     <div
-      bind:clientHeight={dropdownHeight}
       class="peer-dropdown"
       hidden={!expanded}
       class:rounded={standalone}
-      style={`border-bottom-right-radius: ${
-        dropdownHeight > 40 ? "0.5rem" : "0"
-      }`}>
+      class:rounded-bottom-right={!standalone && peers.length > 1}>
       {#each orderPeers(peers) as peer (peer.peerId)}
         <div
           data-cy="peer-dropdown-entry"
-          class="entry"
+          class="entry rounded-left"
+          class:rounded-right={standalone}
+          class:rounded-bottom-right={!standalone && peers.length > 1}
           class:enabled={peer.role !== PeerRole.Tracker}
           class:selected={peer.identity.peerId === selected.identity.peerId}
           on:click|stopPropagation={() => onSelect(peer)}>
           {#if peer.role === PeerRole.Tracker}
-            <Tooltip position="left" value="Remote has no changes">
-              <Peer {peer} />
+            <Tooltip position="top" value="Remote has no changes">
+              <UserIdentity
+                disableHovercard={true}
+                boldHandle={true}
+                urn={peer.identity.urn}
+                badge={peer.type === PeerType.Local ? "you" : ""}
+                handle={peer.identity.metadata.handle} />
             </Tooltip>
           {:else}
-            <Peer {peer} />
+            <UserIdentity
+              disableHovercard={true}
+              boldHandle={true}
+              urn={peer.identity.urn}
+              badge={peer.role === PeerRole.Maintainer
+                ? "maintainer"
+                : peer.type === PeerType.Local
+                ? "you"
+                : ""}
+              handle={peer.identity.metadata.handle} />
           {/if}
-
-          <div class="action">
-            {#if showProfile}
-              <Tooltip value="Go to profile" position="top">
-                <div
-                  class="open-profile"
-                  data-cy={`open-profile-${peer.identity.metadata.handle}`}
-                  on:click|stopPropagation={() => onOpen(peer)}>
-                  <Icon.ArrowBoxUpRight />
-                </div>
-              </Tooltip>
-            {/if}
-          </div>
         </div>
       {/each}
     </div>

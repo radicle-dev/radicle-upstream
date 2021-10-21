@@ -14,6 +14,7 @@ import DirectoryInput from "./DirectoryInput.svelte";
 import Dropdown from "./Dropdown.svelte";
 import Emoji from "./Emoji.svelte";
 import FollowToggle from "./FollowToggle.svelte";
+import Hovercard from "./Hovercard.svelte";
 import Hoverable from "./Hoverable.svelte";
 import Icon from "./Icon";
 import IdentifierLink from "./IdentifierLink.svelte";
@@ -46,6 +47,7 @@ export {
   Dropdown,
   Emoji,
   FollowToggle,
+  Hovercard,
   Hoverable,
   Icon,
   IdentifierLink,

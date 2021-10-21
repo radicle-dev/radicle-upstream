@@ -7,7 +7,7 @@
 import qs from "qs";
 
 import type { Config } from "ui/src/config";
-import * as proxy from "ui/src/proxy";
+import { ProxyClient } from "proxy-client";
 
 import { createPlugin } from "cypress/support/plugin";
 import {
@@ -17,7 +17,7 @@ import {
 } from "cypress/plugins/nodeManager/shared";
 
 interface NodeHandle extends NodeSession {
-  client: proxy.Client;
+  client: ProxyClient;
 }
 
 const nodeManagerPlugin = createPlugin<NodeManagerPlugin>(
@@ -42,7 +42,7 @@ function startAndOnboardNode(
     .then(
       (nodeSession): NodeHandle => ({
         ...nodeSession,
-        client: new proxy.Client(`http://localhost:${nodeSession.httpPort}`),
+        client: new ProxyClient(`http://localhost:${nodeSession.httpPort}`),
       })
     );
 }

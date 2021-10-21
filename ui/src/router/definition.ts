@@ -4,8 +4,9 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as projectRoute from "ui/App/ProjectScreen/route";
 import * as orgRoute from "ui/App/OrgScreen/route";
+import * as projectRoute from "ui/App/ProjectScreen/route";
+import * as userProfileRoute from "ui/App/UserProfileScreen/route";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
 export type ProfileTab = "projects" | "following";
@@ -19,7 +20,7 @@ export type Route =
   | { type: "org"; params: orgRoute.Params }
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
-  | { type: "userProfile"; urn: string }
+  | { type: "userProfile"; params: userProfileRoute.Params }
   | {
       type: "project";
       params: projectRoute.Params;
@@ -37,7 +38,7 @@ export type LoadedRoute =
   | orgRoute.LoadedRoute
   | { type: "profile"; activeTab: ProfileTab }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
-  | { type: "userProfile"; urn: string }
+  | userProfileRoute.LoadedRoute
   | projectRoute.LoadedRoute
   | { type: "wallet"; activeTab: WalletTab }
   | { type: "network" }
@@ -62,6 +63,8 @@ export async function loadRoute(route: Route): Promise<LoadedRoute> {
       return orgRoute.load(route.params);
     case "project":
       return projectRoute.load(route.params);
+    case "userProfile":
+      return userProfileRoute.load(route.params);
     default:
       return route;
   }

@@ -110,7 +110,7 @@
       items={filteredPatches}
       on:select={selectPatch}
       let:item={patch}
-      style="margin: 0 auto; overflow: visible;">
+      style="margin: 2rem; overflow: visible;">
       <div class="list-item" data-cy={`project-list-entry-${patch}`}>
         <PatchCard {defaultBranch} {patch} />
       </div>

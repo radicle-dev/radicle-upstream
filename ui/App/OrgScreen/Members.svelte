@@ -7,18 +7,11 @@
 -->
 <script lang="ts">
   import * as org from "ui/src/org";
-  import type * as project from "ui/src/project";
-  import * as userProfile from "ui/src/userProfile";
 
   import { Avatar, CopyableIdentifier, List } from "ui/DesignSystem";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let members: org.Member[];
-
-  function openUserProfile({ detail: member }: { detail: project.User }) {
-    if (member.identity) {
-      userProfile.openUserProfile(member.identity.urn);
-    }
-  }
 </script>
 
 <style>
@@ -40,20 +33,16 @@
 </style>
 
 <div class="container">
-  <List items={members} let:item={member} on:select={openUserProfile}>
+  <List items={members} let:item={member} styleHoverState={false}>
     <div class="list-item">
       <div>
         {#if member.identity}
           <div style="display: flex">
             <div style="display: flex; margin-right: 1rem;">
-              <Avatar
-                style="margin-right: 0.625rem;"
-                size="small"
-                kind={{
-                  type: "userEmoji",
-                  uniqueIdentifier: member.identity.urn,
-                }} />
-              <p class="typo-text">{member.identity.metadata.handle}</p>
+              <UserIdentity
+                urn={member.identity.urn}
+                handle={member.identity.metadata.handle}
+                modalStyle="top: 0.5rem; left: 4rem;" />
             </div>
             <CopyableIdentifier
               value={member.ethereumAddress}

@@ -119,7 +119,10 @@
   {:else if $activeRouteStore.type === "profile"}
     <ProfileScreen />
   {:else if $activeRouteStore.type === "userProfile"}
-    <UserProfileScreen urn={$activeRouteStore.urn} />
+    <UserProfileScreen
+      ownUserUrn={$activeRouteStore.ownUserUrn}
+      user={$activeRouteStore.user}
+      projects={$activeRouteStore.projects} />
   {:else if $activeRouteStore.type === "networkDiagnostics"}
     <NetworkDiagnosticsScreen activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "singleSigOrg"}

@@ -5,12 +5,12 @@
 // LICENSE file.
 
 import * as path from "path";
-import * as proxy from "ui/src/proxy";
+import * as ProxyClient from "proxy-client";
 import { sleep } from "ui/src/sleep";
 import { createPlugin } from "cypress/support/plugin";
 import * as ethereumDevNodeApi from "cypress/plugins/ethereumDevNode/api";
 
-const proxyClient = new proxy.Client("http://127.0.0.1:17246");
+const proxyClient = new ProxyClient.ProxyClient("http://127.0.0.1:17246");
 
 export const resetProxyState = (): void => {
   cy.then(async () => {
@@ -98,7 +98,7 @@ export const createProjectWithFixture = (
 };
 
 export function createEmptyProject(
-  client: proxy.Client,
+  client: ProxyClient.ProxyClient,
   name: string,
   path: string
 ): Cypress.Chainable<string> {
@@ -163,7 +163,7 @@ async function waitSealed() {
       await sleep(10);
     } catch (err: unknown) {
       if (
-        err instanceof proxy.ResponseError &&
+        err instanceof ProxyClient.ResponseError &&
         [404, 403].includes(err.response.status)
       ) {
         return;
