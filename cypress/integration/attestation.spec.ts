@@ -22,13 +22,13 @@ describe("attestation", () => {
     commands.pick("link-button").click();
     commands.pick("confirm-button").click();
     commands
-      .pickWithContent(["transaction"], "Claim Radicle Identity", {
+      .pickWithContent(["transaction"], "Claim Identity", {
         timeout: 8000,
       })
       .click();
     commands
       .pick("transaction-summary")
-      .should("contain", "Claim Radicle Identity");
+      .should("contain", "Claim Identity");
     commands
       .pick("transaction-summary", "transaction-status")
       .should("contain", "Included");
