@@ -49,7 +49,7 @@ context("routing", () => {
           it("opens the app on the profile screen", () => {
             cy.visit("./public/index.html");
             cy.location().should(loc => {
-              expect(loc.hash).to.eq("#/profile/projects");
+              expect(loc.hash).to.eq("#/profile");
             });
           });
         }

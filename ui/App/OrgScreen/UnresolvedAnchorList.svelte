@@ -26,7 +26,7 @@
 
   const onFollow = (projectId: string) => {
     search.requestProject(projectId);
-    router.push({ type: "profile", activeTab: "following" });
+    router.push({ type: "profile" });
     notification.info({
       message: `Added ${projectId} to the queue`,
       showIcon: true,

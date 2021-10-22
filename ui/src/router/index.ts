@@ -89,6 +89,9 @@ const setHistory = async (history: Route[]) => {
   window.history.replaceState(
     history,
     DOCUMENT_TITLE,
+    // This sets `window.location.href`. At the moment it's not used by
+    // Upstream, but when we switch to a browser environment it'll be
+    // displayed in the URL bar.
     routeToPath(targetRoute)
   );
 };

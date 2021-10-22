@@ -72,7 +72,7 @@
         dataCy="profile"
         indicator
         active={$activeRouteStore.type === "profile"}
-        onClick={() => push({ type: "profile", activeTab: "projects" })}>
+        onClick={() => push({ type: "profile" })}>
         <Avatar
           size="regular"
           kind={{

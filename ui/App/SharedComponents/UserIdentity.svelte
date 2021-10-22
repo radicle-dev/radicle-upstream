@@ -55,7 +55,7 @@
   function goToProfile(urn: string) {
     modal.hide();
     if (urn === session.unsealed().identity.urn) {
-      router.push({ type: "profile", activeTab: "projects" });
+      router.push({ type: "profile" });
     } else {
       router.push({
         type: "userProfile",

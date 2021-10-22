@@ -74,7 +74,7 @@
             $activeRouteStore.type === "lock" ||
             $activeRouteStore.type === "boot"
           ) {
-            router.push({ type: "profile", activeTab: "projects" });
+            router.push({ type: "profile" });
           }
         } else {
           unreachable(session.data);

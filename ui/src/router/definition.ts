@@ -9,7 +9,6 @@ import * as projectRoute from "ui/App/ProjectScreen/route";
 import * as userProfileRoute from "ui/App/UserProfileScreen/route";
 
 export type NetworkDiagnosticsTab = "peers" | "requests";
-export type ProfileTab = "projects" | "following";
 export type WalletTab = "transactions";
 
 export type Route =
@@ -18,7 +17,7 @@ export type Route =
   | { type: "lock" }
   | { type: "onboarding" }
   | { type: "org"; params: orgRoute.Params }
-  | { type: "profile"; activeTab: ProfileTab }
+  | { type: "profile" }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | { type: "userProfile"; params: userProfileRoute.Params }
   | {
@@ -36,7 +35,7 @@ export type LoadedRoute =
   | { type: "lock" }
   | { type: "onboarding" }
   | orgRoute.LoadedRoute
-  | { type: "profile"; activeTab: ProfileTab }
+  | { type: "profile" }
   | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
   | userProfileRoute.LoadedRoute
   | projectRoute.LoadedRoute
@@ -48,10 +47,14 @@ export type LoadedRoute =
 export function routeToPath(route: Route): string {
   let subRoute = "";
 
-  if (route.type === "profile" || route.type === "networkDiagnostics") {
+  if (route.type === "org") {
+    subRoute = `/${route.params.address}/${route.params.view}`;
+  } else if (route.type === "networkDiagnostics" || route.type === "wallet") {
     subRoute = `/${route.activeTab}`;
+  } else if (route.type === "userProfile") {
+    subRoute = `/${route.params.urn}`;
   } else if (route.type === "project") {
-    subRoute = `/${route.params.activeView.type}`;
+    subRoute = `/${route.params.urn}/${route.params.activeView.type}`;
   }
 
   return `#/${route.type}${subRoute}`;
