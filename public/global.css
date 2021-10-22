@@ -45,10 +45,6 @@ body {
   transition: transform 0.2s ease-in-out;
 }
 
-.button-transition:hover {
-  opacity: 0.75;
-}
-
 .button-transition:active {
   transform: scale(0.95);
   transition-duration: 0.1s;

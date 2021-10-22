@@ -16,6 +16,7 @@
 
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
+  import UserBadge from "ui/App/SharedComponents/UserBadge.svelte";
 
   export let peer: User;
   export let projectUrn: string;
@@ -39,14 +40,12 @@
 
 <div class="peer" data-cy={`peer-${peer.identity.metadata.handle}`}>
   <div class="left">
-    <UserIdentity
-      urn={peer.identity.urn}
-      badge={peer.role === project.PeerRole.Maintainer
-        ? "maintainer"
-        : peer.type === project.PeerType.Local
-        ? "you"
-        : ""}
-      handle={peer.identity.metadata.handle} />
+    <div style="display: flex; gap: 0.5rem;">
+      <UserIdentity
+        urn={peer.identity.urn}
+        handle={peer.identity.metadata.handle} />
+      <UserBadge user={peer} />
+    </div>
     <CopyableIdentifier
       value={peer.peerId}
       kind="deviceId"

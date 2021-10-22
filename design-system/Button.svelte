@@ -53,6 +53,10 @@
     fill: var(--color-foreground-level-6);
   }
 
+  .button:hover {
+    opacity: 0.75;
+  }
+
   .primary :global(svg),
   .destructive :global(svg) {
     fill: var(--color-background);

@@ -128,7 +128,7 @@
 
       <div style="display: flex; align-self: center; margin-left: 1.5rem;">
         <div
-          style="display: flex; align-items: center;"
+          style="display: flex; z-index: 10; align-items: center;"
           class:button-transition={!peerSelectorExpanded}>
           <PeerSelector
             bind:expanded={peerSelectorExpanded}

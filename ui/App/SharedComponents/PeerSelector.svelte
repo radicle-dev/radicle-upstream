@@ -8,7 +8,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { PeerRole, PeerType } from "ui/src/project";
+  import { PeerRole } from "ui/src/project";
   import type { User } from "ui/src/project";
 
   import ChevronUpDownIcon from "design-system/icons/ChevronUpDown.svelte";
@@ -17,6 +17,7 @@
   import Tooltip from "design-system/Tooltip.svelte";
 
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
+  import UserBadge from "ui/App/SharedComponents/UserBadge.svelte";
 
   export let expanded: boolean = false;
   // If `true`,  this component is used in a stand-alone context. This means it
@@ -48,6 +49,8 @@
     hide();
     dispatch("select", peer);
   };
+
+  let dropdownWidth: number;
 </script>
 
 <style>
@@ -64,6 +67,7 @@
     justify-content: space-between;
     background-color: var(--color-foreground-level-1);
     user-select: none;
+    gap: 0.5rem;
   }
 
   .peer-selector:hover {
@@ -72,10 +76,6 @@
 
   .peer-selector[hidden] {
     visibility: hidden;
-  }
-
-  .selector-expand {
-    margin-left: 0.5rem;
   }
 
   .peer-dropdown-container {
@@ -108,10 +108,10 @@
     align-items: center;
     background-color: var(--color-background);
     color: var(--color-foreground-level-3);
+    gap: 0.5rem;
     cursor: not-allowed;
     display: flex;
     height: 2.5rem;
-    justify-content: space-between;
     padding: 0 0.5em;
   }
 
@@ -138,31 +138,26 @@
   on:hide={hide}
   style="position: relative; user-select: none;">
   <div
-    class="peer-selector typo-overflow-ellipsis"
+    bind:clientWidth={dropdownWidth}
+    class="peer-selector"
     class:button-transition={standalone}
     class:rounded={standalone}
     data-cy="peer-selector"
     hidden={expanded}
     on:click|stopPropagation={show}>
     <UserIdentity
+      triggerStyle="max-width: 24rem;"
       boldHandle={true}
       urn={selected.identity.urn}
-      handle={selected.identity.metadata.handle}
-      badge={selected.role === PeerRole.Maintainer
-        ? "maintainer"
-        : selected.type === PeerType.Local
-        ? "you"
-        : ""}
-      disableHovercard={true} />
-    <div class="selector-expand">
-      <ChevronUpDownIcon
-        style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
-    </div>
+      handle={selected.identity.metadata.handle} />
+    <UserBadge user={selected} />
+    <ChevronUpDownIcon style="fill: var(--color-foreground-level-4);" />
   </div>
   <div class="peer-dropdown-container" data-cy="peer-dropdown-container">
     <div
       class="peer-dropdown"
       hidden={!expanded}
+      style={`min-width: ${dropdownWidth ? dropdownWidth : "0"}px;`}
       class:rounded={standalone}
       class:rounded-bottom-right={!standalone && peers.length > 1}>
       {#each orderPeers(peers) as peer (peer.peerId)}
@@ -180,20 +175,16 @@
                 disableHovercard={true}
                 boldHandle={true}
                 urn={peer.identity.urn}
-                badge={peer.type === PeerType.Local ? "you" : ""}
                 handle={peer.identity.metadata.handle} />
+              <UserBadge user={peer} />
             </Tooltip>
           {:else}
             <UserIdentity
               disableHovercard={true}
               boldHandle={true}
               urn={peer.identity.urn}
-              badge={peer.role === PeerRole.Maintainer
-                ? "maintainer"
-                : peer.type === PeerType.Local
-                ? "you"
-                : ""}
               handle={peer.identity.metadata.handle} />
+            <UserBadge user={peer} />
           {/if}
         </div>
       {/each}

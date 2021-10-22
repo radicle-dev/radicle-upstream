@@ -15,16 +15,15 @@
   import * as session from "ui/src/session";
 
   import Avatar from "design-system/Avatar.svelte";
-  import Badge from "design-system/Badge.svelte";
   import Hovercard from "design-system/Hovercard.svelte";
 
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let urn: string;
   export let handle: string | undefined = undefined;
-  export let badge: string | undefined = undefined;
   export let disableHovercard: boolean = false;
   export let modalStyle: string = "top: -2rem; left: -17rem;";
+  export let triggerStyle: string | undefined = undefined;
   export let boldHandle: boolean = false;
 
   let user: proxyIdentity.RemoteIdentity | undefined = undefined;
@@ -97,6 +96,15 @@
   .name {
     margin-left: 0.5rem;
   }
+
+  .handle-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+  }
 </style>
 
 <Hovercard
@@ -104,7 +112,7 @@
   {modalStyle}
   onHover={() => fetchUser(urn)}>
   <svelte:fragment slot="trigger">
-    <div class="user" data-peer-handle={handle}>
+    <div class="user" data-peer-handle={handle} style={triggerStyle}>
       <Avatar
         kind={{ type: "userEmoji", uniqueIdentifier: urn }}
         size="small" />
@@ -115,7 +123,6 @@
           {handle}
         </div>
       {/if}
-      <Badge text={badge} style="margin-left: 0.5rem;" />
     </div>
   </svelte:fragment>
 
@@ -131,7 +138,9 @@
 
       <div class="metadata">
         {#if user}
-          <h2>{user.metadata.handle}</h2>
+          <div class="handle-wrapper">
+            <h2 class="typo-overflow-ellipsis">{handle}</h2>
+          </div>
           {#if user.metadata.ethereum}
             <CopyableIdentifier
               kind="ethAddress"
