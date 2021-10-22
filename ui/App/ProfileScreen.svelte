@@ -221,8 +221,10 @@
             <div>
               <h2>Still looking...</h2>
               <p style="margin-top: 1rem;">
-                {projectCountText($profileProjectsStore.data.requests.length)} you’re
-                following haven’t been found yet.
+                {projectCountText($profileProjectsStore.data.requests.length)}
+                {$profileProjectsStore.data.requests.length > 1
+                  ? `you’re following haven’t been found yet.`
+                  : `you’re following hasn't been found yet.`}
               </p>
             </div>
             <Button
