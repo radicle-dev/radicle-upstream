@@ -7,9 +7,6 @@
 import multibase from "multibase";
 import * as error from "ui/src/error";
 
-// FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
-export type Urn = string;
-
 const VALID_URN_MATCH = /^rad:git:([1-9A-HJ-NP-Za-km-z]+)(?:\/.*)?/;
 
 export function extractSha1FromUrn(
