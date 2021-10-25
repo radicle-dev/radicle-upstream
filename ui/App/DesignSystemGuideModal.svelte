@@ -9,7 +9,6 @@
   import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
 
-  import { ValidationStatus } from "ui/src/validation";
   import {
     theme,
     themeOptions,
@@ -462,11 +461,11 @@
 
         <div class="swatch">
           <TextInput
-            placeholder="And I'm an input with a validation error."
+            placeholder="I'm an input with a validation error."
             style="flex: 1"
-            validation={{
-              status: ValidationStatus.Error,
-              message: "Well, that didn't go well...",
+            validationState={{
+              type: "invalid",
+              message: "That doesn't look good!",
             }} />
         </div>
 
@@ -475,14 +474,14 @@
             placeholder="Enter user name"
             style="width: 100%"
             showSuccessCheck
-            validation={{ status: ValidationStatus.Success }} />
+            validationState={{ type: "valid" }} />
         </div>
 
         <div class="swatch">
           <TextInput
             placeholder="Enter user name"
             style="width: 100%"
-            validation={{ status: ValidationStatus.Loading }}
+            validationState={{ type: "pending" }}
             value="user123" />
         </div>
 
@@ -505,8 +504,8 @@
             concealed={true}
             style="width: 100%;"
             value="too short"
-            validation={{
-              status: ValidationStatus.Error,
+            validationState={{
+              type: "invalid",
               message: "Password too short.",
             }} />
         </div>

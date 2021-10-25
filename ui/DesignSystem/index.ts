@@ -4,68 +4,36 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import Avatar from "./Avatar.svelte";
-import Badge from "./Badge.svelte";
-import Button from "./Button.svelte";
-import Checkbox from "./Checkbox.svelte";
-import Copyable from "./Copyable.svelte";
-import CopyableIdentifier from "./CopyableIdentifier.svelte";
-import DirectoryInput from "./DirectoryInput.svelte";
-import Dropdown from "./Dropdown.svelte";
-import Emoji from "./Emoji.svelte";
-import FollowToggle from "./FollowToggle.svelte";
-import Hovercard from "./Hovercard.svelte";
-import Hoverable from "./Hoverable.svelte";
-import Icon from "./Icon";
-import IdentifierLink from "./IdentifierLink.svelte";
-import KeyHint from "./KeyHint.svelte";
-import List from "./List.svelte";
-import Loading from "./Loading.svelte";
-import Markdown from "./Markdown.svelte";
-import Notification from "./Notification.svelte";
-import Overlay from "./Overlay.svelte";
-import RadicleLogo from "./RadicleLogo.svelte";
-import RadioOption from "./RadioOption.svelte";
-import SegmentedControl from "./SegmentedControl.svelte";
-import SegmentedColorPicker from "./SegmentedColorPicker.svelte";
-import Spinner from "./Spinner.svelte";
-import SupportButton from "./SupportButton.svelte";
-import TextInput from "./TextInput.svelte";
-import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
-import Tooltip from "./Tooltip.svelte";
+export type { TextInputValidationState } from "./TextInput";
 
-import * as format from "./lib/format";
+export * as format from "./lib/format";
 
-export {
-  Avatar,
-  Badge,
-  Button,
-  Checkbox,
-  Copyable,
-  CopyableIdentifier,
-  DirectoryInput,
-  Dropdown,
-  Emoji,
-  FollowToggle,
-  Hovercard,
-  Hoverable,
-  Icon,
-  IdentifierLink,
-  KeyHint,
-  List,
-  Loading,
-  Markdown,
-  Notification,
-  Overlay,
-  RadicleLogo,
-  RadioOption,
-  SegmentedControl,
-  SegmentedColorPicker,
-  Spinner,
-  SupportButton,
-  TextInput,
-  ThreeDotsMenu,
-  Tooltip,
-};
-
-export { format };
+export { default as Avatar } from "./Avatar.svelte";
+export { default as Badge } from "./Badge.svelte";
+export { default as Button } from "./Button.svelte";
+export { default as Checkbox } from "./Checkbox.svelte";
+export { default as Copyable } from "./Copyable.svelte";
+export { default as CopyableIdentifier } from "./CopyableIdentifier.svelte";
+export { default as DirectoryInput } from "./DirectoryInput.svelte";
+export { default as Dropdown } from "./Dropdown.svelte";
+export { default as Emoji } from "./Emoji.svelte";
+export { default as FollowToggle } from "./FollowToggle.svelte";
+export { default as Hoverable } from "./Hoverable.svelte";
+export { default as Hovercard } from "./Hovercard.svelte";
+export { default as Icon } from "./Icon";
+export { default as IdentifierLink } from "./IdentifierLink.svelte";
+export { default as KeyHint } from "./KeyHint.svelte";
+export { default as List } from "./List.svelte";
+export { default as Loading } from "./Loading.svelte";
+export { default as Markdown } from "./Markdown.svelte";
+export { default as Notification } from "./Notification.svelte";
+export { default as Overlay } from "./Overlay.svelte";
+export { default as RadicleLogo } from "./RadicleLogo.svelte";
+export { default as RadioOption } from "./RadioOption.svelte";
+export { default as SegmentedColorPicker } from "./SegmentedColorPicker.svelte";
+export { default as SegmentedControl } from "./SegmentedControl.svelte";
+export { default as Spinner } from "./Spinner.svelte";
+export { default as SupportButton } from "./SupportButton.svelte";
+export { default as TextInput } from "./TextInput.svelte";
+export { default as ThreeDotsMenu } from "./ThreeDotsMenu.svelte";
+export { default as Tooltip } from "./Tooltip.svelte";

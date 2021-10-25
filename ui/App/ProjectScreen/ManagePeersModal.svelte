@@ -83,7 +83,7 @@
           dataCy="peer-input"
           bind:value={newPeer}
           placeholder="Enter a Device ID here"
-          validation={$peerValidation}
+          validationState={$peerValidation}
           style="width: 100%; margin-right: .5rem;" />
         <Button
           dataCy="follow-button"
