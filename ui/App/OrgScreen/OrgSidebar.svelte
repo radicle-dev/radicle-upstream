@@ -20,7 +20,7 @@
   aside {
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
-    margin-top: 1.5rem;
+    margin-top: 1.75rem;
     height: fit-content;
   }
 

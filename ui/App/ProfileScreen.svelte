@@ -131,13 +131,10 @@
 
 <style>
   .grid {
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-    margin: 0 auto;
-    padding: 2rem var(--content-padding);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
+    margin-top: 2rem;
   }
 
   .box {

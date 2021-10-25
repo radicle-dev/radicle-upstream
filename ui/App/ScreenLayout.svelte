@@ -21,7 +21,10 @@
   }
 
   .content {
-    padding-bottom: 1rem;
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+    margin: 0 auto;
+    padding: 0 var(--content-padding) 1rem;
   }
 
   .header {
