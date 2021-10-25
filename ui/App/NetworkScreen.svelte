@@ -170,7 +170,7 @@
           bind:value={seedInputValue}
           placeholder="Enter a seed address here"
           style="min-width: 14rem; width: 100%;"
-          validation={$seedValidation} />
+          validationState={$seedValidation} />
         <Button
           dataCy="add-seed"
           on:click={addSeed}
