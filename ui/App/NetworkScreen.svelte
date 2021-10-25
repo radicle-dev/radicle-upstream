@@ -146,51 +146,6 @@
       </svg>
       <p>{$indicatorStatus.text}</p>
     </div>
-    <section>
-      <div class="info">
-        <p class="typo-text-bold">
-          Seeds help you find more projects and people on the network.
-        </p>
-        <p style="color: var(--color-foreground-level-6);">
-          Enter seed addresses that you’d like to connect to here.
-          <a
-            class="typo-link"
-            href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
-            >Learn more</a>
-        </p>
-      </div>
-      <form
-        class="seed-entry-form"
-        on:submit|preventDefault
-        data-cy="seed-entry-form">
-        <div class="seed-entry-field">
-          <TextInput
-            dataCy="seed-input"
-            bind:value={seedInputValue}
-            placeholder="Enter a seed address here"
-            style="min-width: 14rem; width: 100%;"
-            validationState={$seedValidation} />
-          <Button
-            dataCy="add-seed"
-            on:click={addSeed}
-            disabled={!seedInputValue || !loaded}
-            variant="outline">
-            Add
-          </Button>
-        </div>
-        <div class="seeds">
-          {#each seeds as seed, index (seed)}
-            <div class="seed">
-              <CopyableIdentifier value={seed} kind="seedAddress" />
-              <Icon.Cross
-                dataCy="remove-seed"
-                on:click={() => removeSeed(index)}
-                style="margin-left: 1.5rem; cursor:pointer;" />
-            </div>
-          {/each}
-        </div>
-      </form>
-    </section>
   </div>
   <section>
     <div class="info">
