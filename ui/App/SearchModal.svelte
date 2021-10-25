@@ -6,24 +6,20 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { onDestroy } from "svelte";
+  import type * as project from "ui/src/project";
+  import type * as proxyProject from "proxy-client/project";
 
+  import { fade } from "svelte/transition";
+
+  import { VALID_PEER_MATCH } from "ui/src/screen/project";
+
+  import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
-  import * as error from "ui/src/error";
-  import type { Project } from "ui/src/project";
+  import * as proxy from "ui/src/proxy";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
-  import {
-    inputStore,
-    projectRequest as request,
-    projectSearch as store,
-    reset,
-    requestProject,
-    searchProject,
-  } from "ui/src/search";
-  import { ValidationStatus } from "ui/src/validation";
-  import { urnValidationStore } from "ui/src/urn";
+  import * as urn from "ui/src/urn";
 
   import {
     CopyableIdentifier,
@@ -32,17 +28,14 @@
     TextInput,
   } from "ui/DesignSystem";
 
-  let value: string;
-  $: value = $inputStore.trim();
-  $: storeValue = $store;
+  import ProjectStats from "ui/App/SharedComponents/ProjectStats.svelte";
 
-  const urnValidation = urnValidationStore();
+  export let searchQuery: string = "";
 
-  onDestroy(() => {
-    $inputStore = "";
-  });
+  const projectRequestStore = remote.createStore<proxyProject.Request>();
+  const projectSearchStore = remote.createStore<proxyProject.Project>();
 
-  const navigateToProject = (project: Project) => {
+  function navigateToProject(project: project.Project) {
     reset();
     router.push({
       type: "project",
@@ -52,13 +45,14 @@
       },
     });
     modal.hide();
-  };
-  const onKeydown = (event: KeyboardEvent) => {
+  }
+
+  function onKeydown(event: KeyboardEvent) {
     switch (event.code) {
       case "Enter":
-        if (storeValue.status === remote.Status.Success) {
-          navigateToProject(storeValue.data);
-        } else if (storeValue.status === remote.Status.Error) {
+        if ($projectSearchStore.status === remote.Status.Success) {
+          navigateToProject($projectSearchStore.data);
+        } else if ($projectSearchStore.status === remote.Status.Error) {
           follow();
         }
         break;
@@ -67,29 +61,63 @@
         modal.hide();
         break;
     }
-  };
-  const follow = () => {
-    if ($urnValidation.status === ValidationStatus.Success) {
-      requestProject(value);
-    }
-  };
+  }
 
-  // Validate input entered, at the moment valid RadUrns are the only acceptable input.
-  $: if (value && value.length > 0) {
-    urnValidation.validate(value);
+  function reset(): void {
+    projectRequestStore.reset();
+    projectSearchStore.reset();
+  }
+
+  function follow() {
+    if (validationState.type === "valid") {
+      remote.fetch(
+        projectRequestStore,
+        proxy.client.project.requestSubmit(sanitizedSearchQuery)
+      );
+    }
+  }
+
+  let validationState:
+    | { type: "initial" }
+    | { type: "valid" }
+    | { type: "invalid"; message: string } = { type: "initial" };
+
+  $: sanitizedSearchQuery = searchQuery.trim();
+
+  // Validate input entered, at the moment valid RadUrns are the only
+  // acceptable input.
+  $: if (sanitizedSearchQuery.length > 0) {
+    const result = urn.extractSha1FromUrn(sanitizedSearchQuery);
+
+    if (result.isUrnValid) {
+      validationState = { type: "valid" };
+      // Load and show project metadata.
+      remote.fetch(
+        projectSearchStore,
+        proxy.client.project.get(sanitizedSearchQuery)
+      );
+    } else if (VALID_PEER_MATCH.test(sanitizedSearchQuery)) {
+      validationState = {
+        type: "invalid",
+        message:
+          "You’ve entered a Device ID instead of a Project ID. To collaborate with someone, add their Device ID as a remote directly to a project.",
+      };
+    } else {
+      validationState = {
+        type: "invalid",
+        message: "That’s not a valid Radicle ID.",
+      };
+    }
   } else {
-    urnValidation.reset();
+    validationState = { type: "initial" };
   }
-  // To support quick pasting, request the urn once valid to get tracking information.
-  $: if ($urnValidation.status === ValidationStatus.Success) {
-    searchProject(value);
-  }
+
   // Reset searches if the input became invalid.
-  $: if ($urnValidation.status !== ValidationStatus.Success) {
+  $: if (validationState.type !== "valid") {
     reset();
   }
-  // Fire notification when a request has been created.
-  $: if ($request.status === remote.Status.Success) {
+
+  $: if ($projectRequestStore.status === remote.Status.Success) {
     reset();
     router.push({ type: "profile" });
     notification.info({
@@ -98,40 +126,37 @@
     modal.hide();
   }
 
-  $: if ($request.status === remote.Status.Error) {
-    error.show($request.error);
+  $: if ($projectRequestStore.status === remote.Status.Error) {
+    error.show($projectRequestStore.error);
   }
-
-  $: tracked = $store.status === remote.Status.Success;
-  $: untracked = $store.status === remote.Status.Error;
 </script>
 
 <style>
   .container {
-    width: 26.5rem;
+    width: 30rem;
+    /* Fixed height prevents changing the position of the element when
+      `.result` is shown. */
+    height: 3rem;
   }
 
   .search-bar {
+    align-items: center;
+    background-color: var(--color-foreground-level-1);
+    border-radius: 0.5rem;
+    box-shadow: var(--color-shadows);
+    color: var(--color-foreground-level-6);
+    display: flex;
+    height: 3rem;
     margin-bottom: 1rem;
     position: relative;
-    border-radius: 0.5rem;
   }
 
   .result {
     background: var(--color-background);
     border-radius: 0.5rem;
-    height: 0;
-    overflow: hidden;
-    transition: height 0.3s linear;
     box-shadow: var(--color-shadows);
-  }
-
-  .tracked {
-    height: 5rem;
-  }
-
-  .untracked {
-    height: 11rem;
+    color: var(--color-foreground-level-6);
+    padding: 1.5rem;
   }
 
   .header {
@@ -142,8 +167,7 @@
     margin-bottom: 1rem;
   }
 
-  .id {
-    color: var(--color-foreground-level-6);
+  .project-name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -152,43 +176,56 @@
 
 <div class="container" data-cy="search-modal">
   <div class="search-bar">
+    <Icon.MagnifyingGlass style="margin-left: 0.5rem;" />
     <TextInput
-      autofocus
-      bind:value={$inputStore}
       dataCy="search-input"
-      inputStyle="height: 3rem; color: var(--color-foreground-level-6); border-radius: 0.5rem; border: 0; box-shadow: var(--color-shadows);"
+      style="flex: 1;"
+      inputStyle="border: 0; background: transparent;"
+      autofocus
+      bind:value={searchQuery}
       on:keydown={onKeydown}
       placeholder="Enter a project’s Radicle ID here…"
-      showLeftItem
-      validation={$urnValidation}>
-      <div slot="left">
-        <Icon.MagnifyingGlass />
-      </div>
-    </TextInput>
+      hint={validationState.type === "valid" ? "↵" : ""} />
   </div>
 
-  <div class="result" class:tracked class:untracked>
-    {#if $store.status === remote.Status.Success}
-      <div style="padding: 1.5rem;">
-        <div
-          data-cy="project-name"
-          class="header typo-header-3"
-          on:click={navigateToProject.bind(null, $store.data)}>
-          <span class="id">{$store.data.metadata.name}</span>
-        </div>
-      </div>
-    {:else if $store.status === remote.Status.Error}
-      <div style="padding: 1.5rem;">
-        <div class="header typo-header-3">
-          <CopyableIdentifier {value} kind="radicleId" showIcon={false} />
-          <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
-        </div>
+  {#if $projectSearchStore.status === remote.Status.Success}
+    <div class="result" out:fade|local={{ duration: 100 }}>
+      <h3
+        class="header"
+        data-cy="project-name"
+        on:click={navigateToProject.bind(null, $projectSearchStore.data)}>
+        <span class="project-name"
+          >{$projectSearchStore.data.metadata.name}</span>
+        <FollowToggle disabled following={true} />
+      </h3>
 
-        <p style="color: var(--color-foreground-level-6);">
-          You’re not following this project yet, so there’s nothing to show
-          here. Follow it and you’ll be notified as soon as it’s available.
-        </p>
-      </div>
-    {/if}
-  </div>
+      <p style="margin-bottom: 1rem;">
+        {$projectSearchStore.data.metadata.description}
+      </p>
+
+      <ProjectStats
+        branches={$projectSearchStore.data.stats.branches}
+        commits={$projectSearchStore.data.stats.commits}
+        contributors={$projectSearchStore.data.stats.contributors} />
+    </div>
+  {:else if $projectSearchStore.status === remote.Status.Error}
+    <div class="result" out:fade|local={{ duration: 100 }}>
+      <h3 class="header">
+        <CopyableIdentifier
+          value={sanitizedSearchQuery}
+          kind="radicleId"
+          showIcon={false} />
+        <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
+      </h3>
+
+      <p>
+        You’re not following this project yet, so there’s nothing to show here.
+        Follow it and you’ll be notified as soon as it’s available.
+      </p>
+    </div>
+  {:else if validationState.type === "invalid"}
+    <div class="result" out:fade|local={{ duration: 100 }}>
+      <p>{validationState.message}</p>
+    </div>
+  {/if}
 </div>

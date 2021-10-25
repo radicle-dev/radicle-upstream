@@ -11,7 +11,7 @@
   import { Badge, CopyableIdentifier } from "ui/DesignSystem";
   import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
-  import ProjectStats from "./ProjectStats.svelte";
+  import ProjectStats from "ui/App/SharedComponents/ProjectStats.svelte";
 
   export let project: Project;
   export let isMaintainer: boolean;

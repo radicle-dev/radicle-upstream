@@ -11,7 +11,7 @@
 
   import { List } from "ui/DesignSystem";
   import ProjectCard from "./ProjectCard.svelte";
-  import ProjectStats from "./ProjectStats.svelte";
+  import ProjectStats from "ui/App/SharedComponents/ProjectStats.svelte";
 
   export let projects: Project[];
   export let userUrn: string;

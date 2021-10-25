@@ -462,17 +462,6 @@
 
         <div class="swatch">
           <TextInput
-            style="flex: 1;"
-            value="I have a slot on the left side"
-            showLeftItem={true}>
-            <svelte:fragment slot="left">
-              <Icon.MagnifyingGlass />
-            </svelte:fragment>
-          </TextInput>
-        </div>
-
-        <div class="swatch">
-          <TextInput
             placeholder="And I'm an input with a validation error."
             style="flex: 1"
             validation={{

@@ -16,7 +16,6 @@
 
   export let autofocus: boolean = false;
   export let disabled: boolean = false;
-  export let showLeftItem: boolean = false;
   export let showSuccessCheck: boolean = false;
   export let concealed: boolean = false;
 
@@ -34,7 +33,6 @@
   };
 
   let inputElement: HTMLInputElement | undefined = undefined;
-  let inputHeight: number;
 
   // Can't use normal `autofocus` attribute on the `inputElement`: "Autofocus
   // processing was blocked because a document's URL has a fragment".
@@ -49,7 +47,7 @@
     inputElement.type = concealed ? "password" : "text";
   }
 
-  $: showHint = hint && value && value.length === 0;
+  let rightContainerWidth: number;
 </script>
 
 <style>
@@ -60,14 +58,12 @@
   }
 
   input {
-    border: 1px solid var(--color-foreground-level-3);
-    padding: 0.5rem;
-    border-radius: 0.5rem;
-    width: 100%;
-    height: 2.5rem;
-    line-height: 3rem;
-    padding: 0 0.75rem;
     background-color: var(--color-background);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-foreground-level-3);
+    height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    width: 100%;
   }
 
   input[disabled] {
@@ -84,19 +80,20 @@
     background-color: var(--color-foreground-level-1);
   }
 
+  .right-container {
+    height: 2.5rem;
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+  }
+
   .concealed {
     color: var(--color-foreground-level-6);
   }
 
   input::placeholder {
-    color: var(--color-foreground-level-5);
-  }
-
-  input.left-item {
-    padding-left: 2.5rem;
-  }
-
-  .suffix {
     color: var(--color-foreground-level-5);
   }
 
@@ -116,47 +113,27 @@
     background-position: right 0.875rem top 55%;
   }
 
-  input.padding {
-    padding-right: 2.375rem;
-  }
-
   input.invalid:focus {
     background: var(--color-foreground-level-1);
   }
 
   .validation-row {
-    display: flex;
     align-items: center;
-
-    margin: 0.75rem 0 0 0.75rem;
-  }
-
-  .validation-row p {
     color: var(--color-negative);
+    display: flex;
+    margin-top: 0.75rem;
+    margin-left: 0.75rem;
     text-align: left;
-  }
-
-  .left-item-wrapper {
-    left: 0px;
-    padding-left: 0.5rem;
-    position: absolute;
-    height: 1.5rem;
-  }
-
-  .hint {
-    justify-content: flex-start;
-    position: absolute;
-    right: 0.75rem;
   }
 </style>
 
 <div {style} class="wrapper">
-  <div bind:clientHeight={inputHeight} on:click>
+  <div on:click>
     <input
-      style={inputStyle}
+      style={`${inputStyle}; padding-right: ${
+        rightContainerWidth ? `${rightContainerWidth}px` : "auto"
+      };`}
       class:invalid={validation && validation.status === Status.Error}
-      class:padding={validation && validation.status !== Status.NotStarted}
-      class:left-item={showLeftItem}
       class:concealed
       data-cy={dataCy}
       {placeholder}
@@ -170,52 +147,32 @@
       on:keypress />
   </div>
 
-  {#if showLeftItem}
-    <div
-      class="left-item-wrapper"
-      style={`top: calc((${inputHeight}px - 24px)/2)`}>
-      <slot name="left" />
-    </div>
-  {/if}
+  <div class="right-container" bind:clientWidth={rightContainerWidth}>
+    {#if hint && (validation === undefined || validation.status === Status.Success)}
+      <KeyHint style="margin: 0 0.5rem;">{hint}</KeyHint>
+    {/if}
 
-  {#if showHint && !validation}
-    <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
-      <KeyHint>{hint}</KeyHint>
-    </div>
-  {/if}
+    {#if suffix}
+      <span style="color: var(--color-foreground-level-5); margin: 0 0.5rem;">
+        {suffix}
+      </span>
+    {/if}
 
-  {#if suffix}
-    <p
-      style="position: absolute; top: calc(({inputHeight}px - 24px)/2); right: {validation &&
-      validation.status !== Status.NotStarted
-        ? '38px'
-        : '10px'};"
-      class="suffix">
-      {suffix}
-    </p>
-  {/if}
-
-  {#if validation}
     {#if validation && validation.status === Status.Loading}
-      <Spinner
-        style="justify-content: flex-start; position: absolute; height: 100%;
-        right: 10px;" />
+      <Spinner style="margin: 0 0.5rem;" />
     {:else if validation && validation.status === Status.Success && showSuccessCheck}
       <Icon.CheckCircle
-        style="fill: var(--color-positive); justify-content: flex-start;
-        position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
+        style="fill: var(--color-positive); margin: 0 0.5rem;" />
     {:else if validation && validation.status === Status.Error}
       <Icon.ExclamationCircle
         dataCy="validation-error-icon"
-        style="fill: var(--color-negative); justify-content: flex-start;
-        position: absolute; top: calc(({inputHeight}px - 24px)/2); right: 10px;" />
-      <div class="validation-row">
-        <p>{validation.message}</p>
-      </div>
-    {:else if showHint}
-      <div class="hint" style={`top: calc((${inputHeight}px - 28px)/2)`}>
-        <KeyHint>{hint}</KeyHint>
-      </div>
+        style="fill: var(--color-negative); margin: 0 0.5rem;" />
     {/if}
+  </div>
+
+  {#if validation && validation.status === Status.Error}
+    <div class="validation-row">
+      {validation.message}
+    </div>
   {/if}
 </div>
