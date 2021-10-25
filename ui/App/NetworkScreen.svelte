@@ -78,8 +78,8 @@
 
 <style>
   section {
-    margin-bottom: 24px;
-    padding: 0 12px;
+    margin-bottom: 1.5rem;
+    padding: 0 0.75rem;
   }
 
   .seed-entry-form {
