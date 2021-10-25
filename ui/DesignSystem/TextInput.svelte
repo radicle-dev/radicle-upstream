@@ -6,27 +6,31 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { ValidationState } from "ui/src/validation";
-
-  import { ValidationStatus as Status } from "ui/src/validation";
+  import type { TextInputValidationState } from "./TextInput";
 
   import Icon from "./Icon";
   import KeyHint from "./KeyHint.svelte";
   import Spinner from "./Spinner.svelte";
 
   export let autofocus: boolean = false;
-  export let disabled: boolean = false;
-  export let showSuccessCheck: boolean = false;
   export let concealed: boolean = false;
+  export let disabled: boolean = false;
+  export let readonly: boolean = false;
+  export let showSuccessCheck: boolean = false;
 
   export let dataCy: string | undefined = undefined;
-  export let hint: string | undefined = undefined;
   export let inputStyle: string | undefined = undefined;
-  export let placeholder: string | undefined = undefined;
   export let style: string | undefined = undefined;
-  export let suffix: string | undefined = undefined;
-  export let validation: ValidationState | undefined = undefined;
+
   export let value: string | undefined = undefined;
+  export let placeholder: string | undefined = undefined;
+
+  export let hint: string | undefined = undefined;
+  export let suffix: string | undefined = undefined;
+
+  export let validationState: TextInputValidationState = {
+    type: "unvalidated",
+  };
 
   export const focus = (): void => {
     inputElement && inputElement.focus();
@@ -67,9 +71,9 @@
   }
 
   input[disabled] {
-    cursor: not-allowed;
-    color: var(--color-foreground-level-4);
     background-color: var(--color-foreground-level-1);
+    color: var(--color-foreground-level-4);
+    cursor: not-allowed;
   }
 
   input[disabled]::placeholder {
@@ -80,13 +84,17 @@
     background-color: var(--color-foreground-level-1);
   }
 
+  input[readonly]:hover {
+    cursor: pointer;
+  }
+
   .right-container {
+    align-items: center;
+    display: flex;
     height: 2.5rem;
     position: absolute;
-    top: 0;
     right: 0;
-    display: flex;
-    align-items: center;
+    top: 0;
   }
 
   .concealed {
@@ -99,56 +107,55 @@
 
   input:focus,
   input:hover {
-    outline: none;
-    border: 1px solid
-      var(--focus-outline-color, var(--color-foreground-level-3));
     background-color: var(--color-foreground-level-1);
+    border: 1px solid var(--color-foreground-level-3);
+    outline: none;
   }
 
   input.invalid:focus,
   input.invalid {
-    outline: none;
-    border: 1px solid var(--color-negative);
-    background: var(--color-background);
     background-position: right 0.875rem top 55%;
+    background: var(--color-background);
+    border: 1px solid var(--color-negative);
+    outline: none;
   }
 
   input.invalid:focus {
     background: var(--color-foreground-level-1);
   }
 
-  .validation-row {
+  .validation-message {
     align-items: center;
     color: var(--color-negative);
     display: flex;
-    margin-top: 0.75rem;
     margin-left: 0.75rem;
+    margin-top: 0.75rem;
     text-align: left;
   }
 </style>
 
 <div {style} class="wrapper">
-  <div on:click>
-    <input
-      style={`${inputStyle}; padding-right: ${
-        rightContainerWidth ? `${rightContainerWidth}px` : "auto"
-      };`}
-      class:invalid={validation && validation.status === Status.Error}
-      class:concealed
-      data-cy={dataCy}
-      {placeholder}
-      {disabled}
-      spellcheck={false}
-      bind:value
-      bind:this={inputElement}
-      on:change
-      on:input
-      on:keydown
-      on:keypress />
-  </div>
+  <input
+    style={`${inputStyle}; padding-right: ${
+      rightContainerWidth ? `${rightContainerWidth}px` : "auto"
+    };`}
+    class:invalid={validationState.type === "invalid"}
+    class:concealed
+    data-cy={dataCy}
+    {placeholder}
+    {disabled}
+    {readonly}
+    spellcheck={false}
+    bind:value
+    bind:this={inputElement}
+    on:change
+    on:click
+    on:input
+    on:keydown
+    on:keypress />
 
   <div class="right-container" bind:clientWidth={rightContainerWidth}>
-    {#if hint && (validation === undefined || validation.status === Status.Success)}
+    {#if hint && (validationState.type === "unvalidated" || validationState.type === "valid")}
       <KeyHint style="margin: 0 0.5rem;">{hint}</KeyHint>
     {/if}
 
@@ -158,21 +165,21 @@
       </span>
     {/if}
 
-    {#if validation && validation.status === Status.Loading}
+    {#if validationState.type === "pending"}
       <Spinner style="margin: 0 0.5rem;" />
-    {:else if validation && validation.status === Status.Success && showSuccessCheck}
+    {:else if showSuccessCheck && validationState.type === "valid"}
       <Icon.CheckCircle
         style="fill: var(--color-positive); margin: 0 0.5rem;" />
-    {:else if validation && validation.status === Status.Error}
+    {:else if validationState.type === "invalid"}
       <Icon.ExclamationCircle
         dataCy="validation-error-icon"
         style="fill: var(--color-negative); margin: 0 0.5rem;" />
     {/if}
   </div>
 
-  {#if validation && validation.status === Status.Error}
-    <div class="validation-row">
-      {validation.message}
+  {#if validationState.type === "invalid"}
+    <div class="validation-message">
+      {validationState.message}
     </div>
   {/if}
 </div>

@@ -162,7 +162,7 @@ export const addPeer = async (
   // async then the seed input form will have to be submitted twice to take any
   // effect.
   await peerValidation.validate(newRemote);
-  if (get(peerValidation).status !== validation.ValidationStatus.Success) {
+  if (get(peerValidation).type !== "valid") {
     return false;
   }
 

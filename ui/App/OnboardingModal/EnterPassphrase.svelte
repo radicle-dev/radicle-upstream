@@ -6,12 +6,10 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { ValidationState } from "ui/src/validation";
+  import type { TextInputValidationState } from "ui/DesignSystem";
 
   import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
-
-  import { ValidationStatus, getValidationState } from "ui/src/validation";
 
   import { Button, Icon, TextInput } from "ui/DesignSystem";
 
@@ -54,11 +52,25 @@
     },
   };
 
-  let passphraseValidation: ValidationState = {
-    status: ValidationStatus.NotStarted,
+  let passphraseValidationState: TextInputValidationState = {
+    type: "unvalidated",
   };
-  let repeatedPassphraseValidation: ValidationState = {
-    status: ValidationStatus.NotStarted,
+  let repeatedPassphraseValidationState: TextInputValidationState = {
+    type: "unvalidated",
+  };
+
+  const getValidationState = (
+    entity: string,
+    validationErrors: { [key: string]: string[] }
+  ): TextInputValidationState => {
+    if (validationErrors && validationErrors[entity]) {
+      return {
+        type: "invalid",
+        message: validationErrors[entity][0],
+      };
+    }
+
+    return { type: "valid" };
   };
 
   // The `dummy` argument allows us to encode reactive dependencies for
@@ -77,8 +89,8 @@
     );
 
     // @ts-expect-error: `validations` is guaranteed to be a validations object
-    passphraseValidation = getValidationState("passphrase", validations);
-    repeatedPassphraseValidation = getValidationState(
+    passphraseValidationState = getValidationState("passphrase", validations);
+    repeatedPassphraseValidationState = getValidationState(
       "repeatedPassphrase",
       // @ts-expect-error: `validations` is guaranteed to be a validations object
       validations
@@ -198,7 +210,7 @@
       placeholder="Enter a secure passphrase"
       hint="↵"
       style="margin-top: 1.5rem;"
-      validation={passphraseValidation}
+      validationState={passphraseValidationState}
       bind:value={passphrase}
       concealed={isPassphraseConcealed}
       {disabled} />
@@ -217,7 +229,7 @@
         dataCy="repeat-passphrase-input"
         placeholder="Repeat the secure passphrase"
         hint="↵"
-        validation={repeatedPassphraseValidation}
+        validationState={repeatedPassphraseValidationState}
         bind:value={repeatedPassphrase}
         concealed={isPassphraseConcealed}
         {disabled} />
