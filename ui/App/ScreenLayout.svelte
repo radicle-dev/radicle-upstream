@@ -9,6 +9,7 @@
   import Sidebar from "./Sidebar.svelte";
 
   export let dataCy: string | undefined = undefined;
+  export let contentStyle: string | undefined = undefined;
 </script>
 
 <style>
@@ -52,7 +53,7 @@
       </div>
     {/if}
 
-    <div class="content">
+    <div class="content" style={contentStyle}>
       <slot />
     </div>
   </div>
