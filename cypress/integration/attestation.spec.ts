@@ -26,9 +26,7 @@ describe("attestation", () => {
         timeout: 8000,
       })
       .click();
-    commands
-      .pick("transaction-summary")
-      .should("contain", "Claim Identity");
+    commands.pick("transaction-summary").should("contain", "Claim Identity");
     commands
       .pick("transaction-summary", "transaction-status")
       .should("contain", "Included");
