@@ -19,6 +19,7 @@ use crate::{config, context, git_helper, http, notification, service, session};
 
 /// Flags accepted by the proxy binary.
 #[derive(Clone, FromArgs)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Args {
     /// put proxy in test mode to use certain fixtures
     #[argh(switch)]
@@ -47,6 +48,10 @@ pub struct Args {
     /// enables fast but unsafe encryption of the keystore for development builds
     #[argh(switch)]
     pub unsafe_fast_keystore: bool,
+
+    /// enables more verbose logging for development
+    #[argh(switch)]
+    pub dev_log: bool,
 }
 
 /// Data required to run the peer and the API
@@ -67,6 +72,8 @@ struct Rigging {
 ///
 /// Errors when the setup or any of the services fatally fails.
 pub async fn run(args: Args) -> Result<(), anyhow::Error> {
+    setup_logging(&args);
+
     let proxy_path = config::proxy_path()?;
     let bin_dir = config::bin_dir()?;
     if !args.skip_remote_helper_install {
@@ -410,4 +417,56 @@ fn serve(
     })?;
 
     Ok(server)
+}
+
+fn setup_logging(args: &Args) {
+    if std::env::var("RUST_BACKTRACE").is_err() {
+        std::env::set_var("RUST_BACKTRACE", "full");
+    }
+
+    let env_filter = if let Ok(value) = std::env::var("RUST_LOG") {
+        tracing_subscriber::EnvFilter::new(value)
+    } else {
+        let mut env_filter = tracing_subscriber::EnvFilter::default();
+
+        let mut directives = vec!["info", "quinn=warn"];
+
+        if args.dev_log {
+            directives.extend([
+                "api=debug",
+                "radicle_daemon=debug",
+                "librad=debug",
+                // Silence some noisy debug statements
+                "librad::git::refs=info",
+                "librad::git::include=info",
+                "librad::git::identities::person=info",
+                "librad::git::identities::local=info",
+                "librad::net::protocol::membership::periodic=info",
+                "librad::git::tracking=info",
+            ])
+        }
+
+        for directive in directives {
+            env_filter = env_filter.add_directive(directive.parse().expect("invalid log directive"))
+        }
+
+        env_filter
+    };
+
+    let builder = tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
+        .with_env_filter(env_filter);
+
+    match std::env::var("TRACING_FMT").as_deref() {
+        Ok("pretty") => builder.pretty().init(),
+        Ok("compact") => builder.compact().init(),
+        Ok("json") => builder.json().init(),
+        _ => {
+            if args.dev_log {
+                builder.pretty().init()
+            } else {
+                builder.init()
+            }
+        },
+    };
 }

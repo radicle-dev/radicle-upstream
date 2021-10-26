@@ -39,12 +39,13 @@ if (isDev) {
     proxyArgs =
       process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(Boolean);
   }
-  proxyArgs.push("--default-seed");
   proxyArgs.push(
-    "hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345"
+    "--default-seed",
+    "hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345",
+    "--skip-remote-helper-install",
+    "--unsafe-fast-keystore",
+    "--dev-log"
   );
-  proxyArgs.push("--skip-remote-helper-install");
-  proxyArgs.push("--unsafe-fast-keystore");
 } else {
   // Packaged app, i.e. production.
   if (isWindows) {
