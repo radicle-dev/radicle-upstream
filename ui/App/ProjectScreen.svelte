@@ -119,10 +119,10 @@
             },
           })} />
 
-      <div style="width: 1.5rem; margin-left: auto" />
-      <div style="display: flex; align-self: center">
+      <div style="width: 1.5rem; margin-left: auto;" />
+      <div style="display: flex; align-self: center;">
         <div
-          style="display: flex;"
+          style="display: flex; align-items: center;"
           class:button-transition={!peerSelectorExpanded}>
           <PeerSelector
             bind:expanded={peerSelectorExpanded}
@@ -140,8 +140,8 @@
             on:mouseleave={mouseleave}
             style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         </div>
+        <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
       </div>
-      <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
     {/if}
   </div>
   {#if $store.status === remote.Status.Success}
