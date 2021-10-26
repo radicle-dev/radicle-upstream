@@ -34,7 +34,8 @@
   }
 
   .header-content {
-    max-width: calc(100vw - var(--sidebar-width));
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
     margin: auto;
     flex-grow: 1;
     padding: 0 var(--content-padding);
