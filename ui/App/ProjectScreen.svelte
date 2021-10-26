@@ -119,8 +119,7 @@
             },
           })} />
 
-      <div style="width: 1.5rem; margin-left: auto;" />
-      <div style="display: flex; align-self: center;">
+      <div style="display: flex; align-self: center; margin-left: 1.5rem;">
         <div
           style="display: flex; align-items: center;"
           class:button-transition={!peerSelectorExpanded}>
