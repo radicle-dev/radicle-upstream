@@ -272,10 +272,11 @@ class Node {
   async stop(): Promise<void> {
     if (this.state.kind !== StateKind.Configured) {
       this.logger.log("stopping node");
-      if (!this.state.process.kill()) {
+      // We don’t shutdown the process properly to make it faster. We don’t care
+      // about corrupted state because it has no impact on the test.
+      if (!this.state.process.kill("SIGKILL")) {
         this.logger.log(`could not stop process ${this.state.process.pid}`);
       }
-      await this.state.process;
     } else {
       this.logger.log("ignoring stop node command, node wasn't running");
     }

@@ -11,7 +11,7 @@
   import * as ethereum from "ui/src/ethereum";
   import * as modal from "ui/src/modal";
 
-  import { Button } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let fee: ethers.BigNumber;

@@ -6,23 +6,7 @@
 # with Radicle Linking Exception. For full terms see the included
 # LICENSE file.
 
-set -Eeou pipefail
-
-TIMEFORMAT='elapsed time: %R (user: %U, system: %S)'
-
-if [[ "${BUILDKITE:-}" = "true" ]]; then
-  source ci/setup-buildkite.sh
-elif [[ "${GITHUB_ACTIONS:-}" = "true" ]]; then
-  source ci/setup-github-actions.sh
-else
-  echo "Unknown CI platform"
-  exit 1
-fi
-
-export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
-export CARGO_HOME="$CACHE_FOLDER/cargo"
-export CYPRESS_CACHE_FOLDER="$CACHE_FOLDER/cypress"
-export PATH="$HOME/.cargo/bin:$PATH"
+source ci/env.sh
 
 log-group-start "Installing yarn dependencies"
 yarn install --immutable
@@ -39,7 +23,7 @@ mkdir -p "$cargo_deny_cache"
 mkdir -p ~/.cargo
 ln -sf "$cargo_deny_cache" ~/.cargo/advisory-db
 
-if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" ]]; then
+if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" && "${RUNNER_OS:-}" != "macOS" ]]; then
   free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
   min_free_cache_kb=$(( 2 * 1024 * 1024 )) # 2GiB is 25%
   echo "$(( free_cache_space_kb / 1024 )) MiB free space on /cache"
@@ -98,7 +82,7 @@ log-group-start "Run proxy tests"
 (
   export RUST_TEST_TIME_UNIT=2000,4000
   export RUST_TEST_TIME_INTEGRATION=2000,8000
-  timeout 6m cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
+  cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
 )
 log-group-end
 
@@ -116,8 +100,8 @@ time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
   "
 log-group-end
 
-if [[ "${BUILDKITE_BRANCH:-}" == "master" || "${BUILDKITE_BRANCH:-}" == release-candidate/v* || -n "${BUILDKITE_TAG:-}" ]]; then
-  if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" == "macos" ]]; then
+if [[ "${GITHUB_REF:-}" == "refs/heads/master" || "${GITHUB_REF:-}" == refs/heads/release-candidate/v* ]]; then
+  if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
     log-group-start "Packaging, notarizing and uploading app binaries"
     (
       export NOTARIZE=true

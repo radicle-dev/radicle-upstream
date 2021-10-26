@@ -7,7 +7,11 @@
 -->
 <script lang="ts">
   import * as org from "ui/src/org";
-  import { Button, Icon, Overlay } from "ui/DesignSystem";
+
+  import PlusIcon from "design-system/icons/Plus.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Overlay from "design-system/Overlay.svelte";
 
   export let gnosisSafeAddress: string;
 
@@ -54,7 +58,7 @@
     </Button>
   </div>
 
-  <Button variant="transparent" icon={Icon.Plus} on:click={toggleModal}>
+  <Button variant="transparent" icon={PlusIcon} on:click={toggleModal}>
     Add a member
   </Button>
 </Overlay>

@@ -14,11 +14,18 @@
   import * as org from "ui/src/org";
   import { unreachable } from "ui/src/unreachable";
 
-  import { FollowToggle, Icon, ThreeDotsMenu } from "ui/DesignSystem";
+  import AtIcon from "design-system/icons/At.svelte";
+  import ChevronLeftRightIcon from "design-system/icons/ChevronLeftRight.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+  import GlobeIcon from "design-system/icons/Globe.svelte";
+  import GnosisIcon from "design-system/icons/Gnosis.svelte";
+  import UserIcon from "design-system/icons/User.svelte";
+
+  import FollowToggle from "design-system/FollowToggle.svelte";
+  import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
-  import Header from "ui/App/ScreenLayout/Header.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ProjectsTab from "ui/App/OrgScreen/Projects.svelte";
@@ -40,7 +47,7 @@
     return [
       {
         title: "Anchored projects",
-        icon: Icon.ChevronLeftRight,
+        icon: ChevronLeftRightIcon,
         active: active.type === "projects",
         onClick: () => {
           router.push({ type: "org", params: { view: "projects", address } });
@@ -48,7 +55,7 @@
       },
       {
         title: "Members",
-        icon: Icon.User,
+        icon: UserIcon,
         active: active.type === "members",
         counter: memberCount,
         onClick: () => {
@@ -62,21 +69,21 @@
     const items = [
       {
         title: "View on Etherscan",
-        icon: Icon.At,
+        icon: AtIcon,
         event: () => {
           org.openOnEtherscan(address);
         },
       },
       {
         title: "View on Gnosis Safe",
-        icon: Icon.Gnosis,
+        icon: GnosisIcon,
         event: () => {
           org.openOnGnosisSafe(gnosisSafeAddress, "transactions");
         },
       },
       {
         title: "View in browser",
-        icon: Icon.Globe,
+        icon: GlobeIcon,
         event: () => {
           ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
         },
@@ -86,7 +93,7 @@
     if (showWriteActions) {
       items.push({
         title: registration ? "Edit ENS name" : "Register ENS name",
-        icon: Icon.Ethereum,
+        icon: EthereumIcon,
         event: () =>
           org.openEnsConfiguration(address, registration, gnosisSafeAddress),
       });
@@ -97,10 +104,6 @@
 
 <style>
   .sidebar-layout {
-    max-width: var(--content-max-width);
-    margin: 0 auto;
-    min-width: var(--content-min-width);
-    padding: 0 var(--content-padding);
     display: grid;
     grid-template-columns: auto 18rem;
     gap: 1.5rem;
@@ -108,13 +111,13 @@
 </style>
 
 <ScreenLayout>
-  <Header>
-    <OrgHeader {registration} slot="left" orgAddress={address} />
-    <div slot="right" style="display: flex">
+  <div slot="header" style="display: flex; gap: 1rem">
+    <OrgHeader {registration} orgAddress={address} />
+    <div style="margin-left: auto; align-self: center; display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
       <ThreeDotsMenu menuItems={menuItems(address, gnosisSafeAddress)} />
     </div>
-  </Header>
+  </div>
 
   <div class="sidebar-layout">
     <main>

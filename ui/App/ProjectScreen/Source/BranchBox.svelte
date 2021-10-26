@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Icon } from "ui/DesignSystem";
+  import BranchIcon from "design-system/icons/Branch.svelte";
 
   export let name: string;
   export let style: string | undefined = undefined;
@@ -24,7 +24,7 @@
 </style>
 
 <div class="branch" {style}>
-  <Icon.Branch />
+  <BranchIcon />
   <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
     {name}
   </p>

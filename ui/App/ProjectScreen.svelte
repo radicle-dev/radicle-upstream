@@ -25,10 +25,16 @@
     store,
   } from "ui/src/screen/project";
 
-  import { Button, Icon, ThreeDotsMenu, format } from "ui/DesignSystem";
+  import AtIcon from "design-system/icons/At.svelte";
+  import NetworkIcon from "design-system/icons/Network.svelte";
+  import PenIcon from "design-system/icons/Pen.svelte";
+
+  import * as format from "design-system/lib/format";
+
+  import Button from "design-system/Button.svelte";
+  import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import Header from "ui/App/ScreenLayout/Header.svelte";
 
   import ManagePeersModal from "./ProjectScreen/ManagePeersModal.svelte";
   import PeerSelector from "ui/App/SharedComponents/PeerSelector.svelte";
@@ -56,7 +62,7 @@
     return [
       {
         title: "Copy Radicle ID",
-        icon: Icon.At,
+        icon: AtIcon,
         event: () => {
           copyToClipboard(project.urn);
           notification.info({ message: "Radicle ID copied to your clipboard" });
@@ -65,7 +71,7 @@
       },
       {
         title: "Unfollow",
-        icon: Icon.Network,
+        icon: NetworkIcon,
         disabled: true,
         event: () => {},
         tooltip: isMaintainer(session.identity.urn, project)
@@ -102,11 +108,10 @@
   let peerSelectorExpanded: boolean = false;
 </script>
 
-<ScreenLayout dataCy="project-screen">
-  {#if $store.status === remote.Status.Success}
-    <Header>
+<ScreenLayout dataCy="project-screen" contentStyle="padding: 0 0 1rem 0;">
+  <div slot="header" style="display: flex">
+    {#if $store.status === remote.Status.Success}
       <ProjectHeader
-        slot="left"
         urn={$store.data.project.urn}
         name={$store.data.project.metadata.name}
         description={$store.data.project.metadata.description}
@@ -121,9 +126,9 @@
             },
           })} />
 
-      <div slot="right" style="display: flex;">
+      <div style="display: flex; align-self: center; margin-left: 1.5rem;">
         <div
-          style="display: flex;"
+          style="display: flex; align-items: center;"
           class:button-transition={!peerSelectorExpanded}>
           <PeerSelector
             bind:expanded={peerSelectorExpanded}
@@ -133,7 +138,7 @@
             selected={$store.data.selectedPeer} />
           <Button
             dataCy="manage-remotes"
-            icon={Icon.Pen}
+            icon={PenIcon}
             variant="outline"
             transition={false}
             on:click={onPeerModal}
@@ -141,9 +146,11 @@
             on:mouseleave={mouseleave}
             style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         </div>
+        <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
       </div>
-      <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
-    </Header>
+    {/if}
+  </div>
+  {#if $store.status === remote.Status.Success}
     <Source
       {activeView}
       project={$store.data.project}

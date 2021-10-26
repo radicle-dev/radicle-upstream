@@ -12,7 +12,8 @@
   import { ObjectType } from "ui/src/source";
   import type { SelectedPath, SelectedRevision, Tree } from "ui/src/source";
 
-  import Icon from "ui/DesignSystem/Icon";
+  import ChevronDownIcon from "design-system/icons/ChevronDown.svelte";
+  import ChevronRightIcon from "design-system/icons/ChevronRight.svelte";
 
   import File from "./File.svelte";
 
@@ -68,7 +69,7 @@
 <div class="folder" on:click={toggle}>
   <span style="height: 1.5rem">
     <svelte:component
-      this={expanded ? Icon.ChevronDown : Icon.ChevronRight}
+      this={expanded ? ChevronDownIcon : ChevronRightIcon}
       dataCy={`expand-${name}`} />
   </span>
   <span class="folder-name">{name}</span>

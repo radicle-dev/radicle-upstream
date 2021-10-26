@@ -6,7 +6,8 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Avatar, CopyableIdentifier } from "ui/DesignSystem";
+  import Avatar from "design-system/Avatar.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let name: string;
   export let peerId: string;

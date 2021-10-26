@@ -8,7 +8,6 @@ import * as ipc from "./ipc";
 import * as session from "./session";
 import * as modal from "./modal";
 import * as error from "./error";
-import { inputStore } from "./search";
 
 import SearchModal from "ui/App/SearchModal.svelte";
 
@@ -74,6 +73,5 @@ const handleMessage = (message: ipc.CustomProtocolInvocation): void => {
     return;
   }
 
-  inputStore.set(urn);
-  modal.show(SearchModal);
+  modal.show(SearchModal, () => {}, { searchQuery: urn });
 };

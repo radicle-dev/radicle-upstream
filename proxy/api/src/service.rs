@@ -6,6 +6,7 @@
 
 //! Utilities for changing the service environment used in [`crate::process`].
 
+use anyhow::Context as _;
 use futures::prelude::*;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Notify};
@@ -143,6 +144,24 @@ impl Manager {
     pub fn notified_restart(&mut self) -> impl Future<Output = ()> + Send + 'static {
         let reload_notify = self.reload_notify.clone();
         async move { reload_notify.notified().await }
+    }
+
+    /// Unseal the keystore with the given passphrase. Afterwards the `Environment` returned by
+    /// [`Self::environment`] contains the secret key.
+    pub fn unseal_keystore(
+        &mut self,
+        passphrase: radicle_keystore::pinentry::SecUtf8,
+    ) -> Result<(), anyhow::Error> {
+        let env = self
+            .environment()
+            .context("failed to load environment")?
+            .ok_or(anyhow::anyhow!("service has been shut down"))?;
+        let key = env
+            .keystore
+            .get(passphrase)
+            .context("failed to get key with passphrase")?;
+        self.handle().set_secret_key(key);
+        Ok(())
     }
 }
 

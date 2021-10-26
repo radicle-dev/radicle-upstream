@@ -5,7 +5,8 @@
     "native/**/*",
     "scripts/**/*.ts",
     "webpack.config.ts",
-    "proxy-client/*.ts"
+    "proxy-client/*.ts",
+    "design-system/*.ts"
   ],
   "exclude": ["native/bundle.js", "node_modules/*", "public/*"],
   "compilerOptions": {
@@ -82,6 +83,8 @@
       "cypress/*": ["cypress/*"],
       "proxy-client/*": ["proxy-client/*"],
       "proxy-client": ["proxy-client/index.ts"],
+      "design-system/*": ["design-system/*"],
+      "design-system": ["design-system/index.ts"],
       "*": ["./typings/*"]
     },
     /* List of root folders whose combined content represents the structure of the project at runtime. */

@@ -21,21 +21,20 @@
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as localPeer from "ui/src/localPeer";
 
-  import {
-    Button,
-    Icon,
-    FollowToggle,
-    CopyableIdentifier,
-  } from "ui/DesignSystem";
+  import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
+  import PlusIcon from "design-system/icons/Plus.svelte";
 
-  import Header from "ui/App/ScreenLayout/Header.svelte";
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import Button from "design-system/Button.svelte";
+  import FollowToggle from "design-system/FollowToggle.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
+  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
-  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   const session = Session.unsealed();
 
@@ -132,17 +131,14 @@
 
 <style>
   .grid {
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-    margin: 0 auto;
-    padding: 2rem var(--content-padding);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
+    margin-top: 2rem;
   }
 
   .box {
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
     padding: 2rem;
     height: 15rem;
@@ -167,24 +163,23 @@
 </style>
 
 <ScreenLayout dataCy="profile-screen">
-  <Header>
+  <div slot="header" style="display: flex">
     <ProfileHeader
-      slot="left"
       urn={session.identity.urn}
       name={session.identity.metadata.handle}
       peerId={session.identity.peerId} />
 
     <Button
-      slot="right"
       dataCy="new-project-button"
       variant="outline"
-      icon={Icon.Plus}
+      icon={PlusIcon}
+      style="margin-left: auto; align-self: center"
       on:click={() => {
         modal.toggle(CreateProjectModal);
       }}>
       New project
     </Button>
-  </Header>
+  </div>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
     {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
@@ -262,7 +257,7 @@
             on:click={() => {
               modal.toggle(SearchModal);
             }}
-            icon={Icon.MagnifyingGlass}
+            icon={MagnifyingGlassIcon}
             variant="outline">
             Look for a project
           </Button>

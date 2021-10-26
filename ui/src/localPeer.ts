@@ -15,7 +15,6 @@ import { config } from "./config";
 import * as notifiation from "./notification";
 import * as remote from "./remote";
 import * as session from "./session";
-import type * as urn from "./urn";
 import * as error from "./error";
 import * as bacon from "./bacon";
 import type { Event as RoomEvent, RoomState } from "./waitingRoom";
@@ -87,28 +86,28 @@ enum EventType {
 interface ProjectUpdated {
   type: EventType.ProjectUpdated;
   provider: identity.PeerId;
-  urn: urn.Urn;
+  urn: string;
 }
 
 interface RequestCreated {
   type: EventType.RequestCreated;
-  urn: urn.Urn;
+  urn: string;
 }
 
 interface RequestCloned {
   type: EventType.RequestCloned;
   peer: identity.PeerId;
-  urn: urn.Urn;
+  urn: string;
 }
 
 interface RequestQueried {
   type: EventType.RequestQueried;
-  urn: urn.Urn;
+  urn: string;
 }
 
 interface RequestTimedOut {
   type: EventType.RequestTimedOut;
-  urn: urn.Urn;
+  urn: string;
 }
 
 export interface WaitingRoomTransition {

@@ -5,16 +5,14 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="ts" context="module">
-  export type Position = "top" | "right" | "bottom" | "left";
-</script>
-
 <script lang="ts">
-  type Offset = { top: number; left: number };
+  import type { Position } from "./Tooltip";
 
   export let style: string | undefined = undefined;
   export let value: string | undefined = undefined;
   export let position: Position = "right";
+
+  type Offset = { top: number; left: number };
 
   let container: Element | null = null;
   let message: Element | null = null;

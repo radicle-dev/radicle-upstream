@@ -6,8 +6,14 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Button, Copyable, Icon, Overlay } from "ui/DesignSystem";
   import * as Patch from "ui/src/project/patch";
+
+  import MergeIcon from "design-system/icons/Merge.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Overlay from "design-system/Overlay.svelte";
+
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let patch: Patch.Patch;
   export let myPeerId: string;
@@ -74,7 +80,7 @@
   </div>
 
   <Button
-    icon={Icon.Merge}
+    icon={MergeIcon}
     on:click={toggleDropdown}
     dataCy="merge-patch-modal-toggle">
     Merge

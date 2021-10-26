@@ -11,21 +11,20 @@
   import type * as project from "ui/src/project";
 
   import * as notification from "ui/src/notification";
-  import * as search from "ui/src/search";
+  import * as proxy from "ui/src/proxy";
   import * as router from "ui/src/router";
-  import {
-    CopyableIdentifier,
-    FollowToggle,
-    Hoverable,
-    List,
-  } from "ui/DesignSystem";
 
+  import FollowToggle from "design-system/FollowToggle.svelte";
+  import Hoverable from "design-system/Hoverable.svelte";
+  import List from "design-system/List.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
 
   export let anchors: project.Anchor[];
 
   const onFollow = (projectId: string) => {
-    search.requestProject(projectId);
+    proxy.client.project.requestSubmit(projectId);
     router.push({ type: "profile" });
     notification.info({
       message: `Added ${projectId} to the queue`,

@@ -8,9 +8,14 @@
 <script lang="ts">
   import type * as ethers from "ethers";
 
-  import { Button, CopyableIdentifier, Icon, Tooltip } from "ui/DesignSystem";
-
   import * as ethereum from "ui/src/ethereum";
+
+  import CrossIcon from "design-system/icons/Cross.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let eth: ethers.BigNumber | null;
   export let rad: ethers.BigNumber | null;
@@ -92,7 +97,7 @@
         style="padding:0.5rem;"
         on:click={onDisconnect}
         variant="transparent">
-        <Icon.Cross />
+        <CrossIcon />
       </Button>
     </Tooltip>
   </div>

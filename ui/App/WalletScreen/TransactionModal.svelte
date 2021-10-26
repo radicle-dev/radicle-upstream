@@ -15,7 +15,9 @@
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
 
-  import { IdentifierLink, format } from "ui/DesignSystem";
+  import * as format from "design-system/lib/format";
+  import IdentifierLink from "design-system/IdentifierLink.svelte";
+
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let transactionHash: string;

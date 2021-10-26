@@ -12,7 +12,7 @@
   import { status } from "ui/src/localPeer";
   import { indicatorState } from "ui/src/network";
 
-  import { Tooltip } from "ui/DesignSystem";
+  import Tooltip from "design-system/Tooltip.svelte";
   import SidebarItem from "./SidebarItem.svelte";
 
   const indicatorStatus = svelteStore.derived(status, indicatorState);

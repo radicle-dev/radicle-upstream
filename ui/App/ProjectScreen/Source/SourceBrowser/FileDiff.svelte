@@ -6,10 +6,10 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { lineNumberL, lineNumberR, lineSign } from "ui/src/source/diff";
   import type { ModifiedFile } from "ui/src/source/diff";
+  import { lineNumberL, lineNumberR, lineSign } from "ui/src/source/diff";
 
-  import Icon from "ui/DesignSystem/Icon";
+  import FileIcon from "design-system/icons/File.svelte";
 
   export let file: ModifiedFile;
 </script>
@@ -104,7 +104,7 @@
 
 <article class="changeset-file">
   <header>
-    <Icon.File style="margin-right: 8px;" />
+    <FileIcon style="margin-right: 8px;" />
     <p class="typo-text-bold">{file.path}</p>
   </header>
   <main>

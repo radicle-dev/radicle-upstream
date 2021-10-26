@@ -6,8 +6,13 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Button, Copyable, Icon, Overlay } from "ui/DesignSystem";
   import * as patch from "ui/src/project/patch";
+
+  import RevisionIcon from "design-system/icons/Revision.svelte";
+  import Button from "design-system/Button.svelte";
+  import Overlay from "design-system/Overlay.svelte";
+
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let expanded = false;
   const hide = () => (expanded = false);
@@ -79,7 +84,7 @@
 
   <Button
     variant="transparent"
-    icon={Icon.Revision}
+    icon={RevisionIcon}
     on:click={toggleDropdown}
     dataCy="patch-modal-toggle">
     {caption}

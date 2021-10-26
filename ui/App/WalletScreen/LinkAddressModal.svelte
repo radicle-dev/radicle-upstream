@@ -13,8 +13,10 @@
   import * as identity from "ui/src/identity";
   import * as modal from "ui/src/modal";
 
-  import { Button, CopyableIdentifier, Icon } from "ui/DesignSystem";
+  import ChevronUpDownIcon from "design-system/icons/ChevronUpDown.svelte";
+  import Button from "design-system/Button.svelte";
 
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import TransactionButton from "./LinkAddressModal/TransactionButton.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
@@ -69,7 +71,7 @@
         urn={session.identity.urn}
         handle={session.identity.metadata.handle} />
     </div>
-    <Icon.ChevronUpDown />
+    <ChevronUpDownIcon />
     <p class="address typo-text">
       <CopyableIdentifier value={address} kind="ethAddress" />
     </p>

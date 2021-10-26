@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Icon } from "ui/DesignSystem";
+  import ArrowLeftIcon from "design-system/icons/ArrowLeft.svelte";
   import BranchBox from "./BranchBox.svelte";
 
   export let baseBranch: string;
@@ -24,6 +24,6 @@
 
 <div class="branches" data-cy="compare-branches">
   <BranchBox name={baseBranch} />
-  <Icon.ArrowLeft />
+  <ArrowLeftIcon />
   <BranchBox name={compareBranch} />
 </div>

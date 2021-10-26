@@ -7,18 +7,17 @@
 -->
 <script lang="ts">
   import type { Identity } from "ui/src/identity";
+  import type { TextInputValidationState } from "design-system/TextInput";
 
   import * as ethereum from "ui/src/ethereum";
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
-  import * as validation from "ui/src/validation";
 
-  import {
-    Button,
-    CopyableIdentifier,
-    RadioOption,
-    TextInput,
-  } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import RadioOption from "design-system/RadioOption.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
@@ -28,21 +27,18 @@
   let ownerAddress: string = walletAddress;
 
   let isMultiSig: boolean | undefined = undefined;
-  let ownerValidationState: validation.ValidationState;
-  let validOwnerAddress = false;
+  let ownerValidationState: TextInputValidationState;
 
   $: {
     if (ownerAddress.match(ethereum.VALID_ADDRESS_MATCH)) {
       ownerValidationState = {
-        status: validation.ValidationStatus.Success,
+        type: "valid",
       };
-      validOwnerAddress = true;
     } else {
       ownerValidationState = {
-        status: validation.ValidationStatus.Error,
+        type: "invalid",
         message: "This does not look like a valid Ethereum address",
       };
-      validOwnerAddress = false;
     }
   }
 
@@ -103,7 +99,7 @@
         bind:value={ownerAddress}
         placeholder="Enter owner address"
         showSuccessCheck
-        validation={ownerValidationState} />
+        validationState={ownerValidationState} />
     </div>
   </RadioOption>
 
@@ -144,7 +140,8 @@
   <svelte:fragment slot="buttons">
     <Button variant="transparent" on:click={() => modal.hide()}>Cancel</Button>
     <Button
-      disabled={isMultiSig === undefined || (!isMultiSig && !validOwnerAddress)}
+      disabled={isMultiSig === undefined ||
+        (!isMultiSig && ownerValidationState.type !== "valid")}
       on:click={() => createOrg()}>
       Confirm in your wallet
     </Button>

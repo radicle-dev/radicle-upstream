@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Loading } from "ui/DesignSystem";
+  import Loading from "design-system/Loading.svelte";
 </script>
 
 <style>

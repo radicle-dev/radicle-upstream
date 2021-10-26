@@ -8,7 +8,9 @@
 <script lang="ts">
   import { qrcode } from "pure-svg-code";
 
-  import { Copyable, format } from "ui/DesignSystem";
+  import * as format from "design-system/lib/format";
+
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let uri: string;

@@ -9,7 +9,8 @@
   import type { SvelteComponent } from "svelte";
   import type { Notification } from "ui/src/notification";
 
-  import Icon from "./Icon";
+  import ExclamationCircleIcon from "design-system/icons/ExclamationCircle.svelte";
+  import InfoCircleIcon from "design-system/icons/InfoCircle.svelte";
 
   export let notification: Notification;
   export let style: string | undefined = undefined;
@@ -19,10 +20,10 @@
   let icon: typeof SvelteComponent | null;
   switch (notification.icon) {
     case "InfoCircle":
-      icon = Icon.InfoCircle;
+      icon = InfoCircleIcon;
       break;
     case "ExclamationCircle":
-      icon = Icon.ExclamationCircle;
+      icon = ExclamationCircleIcon;
       break;
     case null:
       icon = null;

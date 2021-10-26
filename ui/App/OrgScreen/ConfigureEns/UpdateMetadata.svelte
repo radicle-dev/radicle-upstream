@@ -6,15 +6,19 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import type { TextInputValidationState } from "design-system/TextInput";
+
   import * as configureEns from "ui/src/org/configureEns";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
-  import * as validation from "ui/src/validation";
 
-  import { Button, TextInput, Tooltip } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
+
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let onSubmit: () => void;
@@ -30,16 +34,16 @@
 
   let setRecordsInProgress = false;
 
-  let orgAddressValidationStatus: validation.ValidationState = {
-    status: validation.ValidationStatus.NotStarted,
+  let orgAddressValidationState: TextInputValidationState = {
+    type: "unvalidated",
   };
 
   if (
     registration.address &&
     registration.address.toLowerCase() !== orgAddress.toLowerCase()
   ) {
-    orgAddressValidationStatus = {
-      status: validation.ValidationStatus.Error,
+    orgAddressValidationState = {
+      type: "invalid",
       message: `This name already points to your org with the address ${registration.address}. If you change this here, it will overwrite the existing metadata associated with this ENS name.`,
     };
   }
@@ -151,7 +155,7 @@
       style="margin-bottom: 24px"
       disabled
       value={orgAddress}
-      validation={orgAddressValidationStatus} />
+      validationState={orgAddressValidationState} />
   </Tooltip>
 
   <div class="label typo-text-bold">Website URL</div>

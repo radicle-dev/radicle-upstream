@@ -30,7 +30,12 @@
   import * as screen from "ui/src/screen";
   import * as wallet from "ui/src/wallet";
 
-  import { Icon, Loading } from "ui/DesignSystem";
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import CommitIcon from "design-system/icons/Commit.svelte";
+  import FileIcon from "design-system/icons/File.svelte";
+  import RevisionIcon from "design-system/icons/Revision.svelte";
+
+  import Loading from "design-system/Loading.svelte";
 
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
@@ -58,7 +63,7 @@
       {
         title: "Files",
         active: active.type === "files",
-        icon: Icon.File,
+        icon: FileIcon,
         onClick: () => {
           if (activeView.type === "files") {
             selectPath("");
@@ -76,7 +81,7 @@
       {
         title: "Commits",
         active: active.type === "commits",
-        icon: Icon.Commit,
+        icon: CommitIcon,
         counter: screen.history.stats.commits,
         onClick: () => {
           router.push({
@@ -91,7 +96,7 @@
       {
         title: "Patches",
         active: active.type === "patches",
-        icon: Icon.Revision,
+        icon: RevisionIcon,
         counter: screen.patches.filter(patch => !patch.merged).length,
         onClick: () => {
           router.push({
@@ -111,7 +116,7 @@
         {
           title: "Anchors",
           active: active.type === "anchors",
-          icon: Icon.Anchor,
+          icon: AnchorIcon,
           counter: anchors.length,
           onClick: () => {
             router.push({

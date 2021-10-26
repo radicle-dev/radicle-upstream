@@ -14,12 +14,11 @@
   import * as router from "ui/src/router";
   import * as session from "ui/src/session";
 
-  import {
-    Avatar,
-    Badge,
-    CopyableIdentifier,
-    Hovercard,
-  } from "ui/DesignSystem";
+  import Avatar from "design-system/Avatar.svelte";
+  import Badge from "design-system/Badge.svelte";
+  import Hovercard from "design-system/Hovercard.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let urn: string;
   export let handle: string | undefined = undefined;

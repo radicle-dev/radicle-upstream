@@ -8,7 +8,9 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { Button, Emoji, Tooltip } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import Emoji from "design-system/Emoji.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
   const dispatch = createEventDispatcher();
 

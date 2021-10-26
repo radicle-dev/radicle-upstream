@@ -10,7 +10,7 @@
   import { flip } from "svelte/animate";
   import { store } from "ui/src/notification";
 
-  import { Notification } from "ui/DesignSystem";
+  import Notification from "./NotificationFaucet/Notification.svelte";
 
   export let style: string | undefined = undefined;
 </script>

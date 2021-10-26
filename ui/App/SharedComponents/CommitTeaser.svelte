@@ -11,7 +11,8 @@
   import { formatCommitTime } from "ui/src/source";
   import type { CommitHeader } from "ui/src/source";
 
-  import { Icon, format } from "ui/DesignSystem";
+  import * as format from "design-system/lib/format";
+  import CommitIcon from "design-system/icons/Commit.svelte";
 
   export let commit: CommitHeader;
   export let style: string | undefined = undefined;
@@ -62,7 +63,7 @@
 
 <div class="container" {style} data-cy="commit-teaser">
   <div class="align-left">
-    <Icon.Commit style="fill: var(--color-primary)" />
+    <CommitIcon style="fill: var(--color-primary)" />
     <span class="commit-sha typo-text-small-mono" on:click={onSelect}>
       {format.shortCommitHash(commit.sha1)}
     </span>

@@ -10,11 +10,11 @@
   import { unreachable } from "ui/src/unreachable";
   import { status as store } from "ui/src/localPeer";
 
-  import { Icon } from "ui/DesignSystem";
+  import NetworkIcon from "design-system/icons/Network.svelte";
+  import RoadIcon from "design-system/icons/Road.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
-  import Header from "ui/App/ScreenLayout/Header.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ConnectedPeersTab from "./NetworkDiagnosticsScreen/ConnectedPeers.svelte";
@@ -26,7 +26,7 @@
     {
       title: "Peers",
       active: active === "peers",
-      icon: Icon.Network,
+      icon: NetworkIcon,
       onClick: () => {
         router.push({ type: "networkDiagnostics", activeTab: "peers" });
       },
@@ -34,7 +34,7 @@
     {
       title: "Requests",
       active: active === "requests",
-      icon: Icon.Road,
+      icon: RoadIcon,
       onClick: () => {
         router.push({ type: "networkDiagnostics", activeTab: "requests" });
       },
@@ -48,20 +48,10 @@
     margin: 0 auto;
     padding: 2rem var(--content-padding);
   }
-
-  .title {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
 </style>
 
 <ScreenLayout>
-  <Header>
-    <div slot="left" class="title">
-      <h1>Status: {$store.type}</h1>
-    </div>
-  </Header>
+  <h1 slot="header">Status: {$store.type}</h1>
   <ActionBar>
     <div slot="left">
       <TabBar tabs={tabs(activeTab)} />

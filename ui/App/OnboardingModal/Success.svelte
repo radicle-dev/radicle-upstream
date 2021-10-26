@@ -8,7 +8,8 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { Button, CopyableIdentifier } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let peerId: string;
 

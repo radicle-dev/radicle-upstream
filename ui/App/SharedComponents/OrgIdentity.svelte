@@ -6,8 +6,10 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Avatar, CopyableIdentifier } from "ui/DesignSystem";
   import type * as ensResolver from "ui/src/org/ensResolver";
+
+  import Avatar from "design-system/Avatar.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let orgAddress: string;
   export let registration: ensResolver.Registration | undefined = undefined;

@@ -13,12 +13,13 @@
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
 
-  import { CopyableIdentifier, Icon } from "ui/DesignSystem";
+  import BranchIcon from "design-system/icons/Branch.svelte";
 
   import AnchorCard from "./AnchorCard.svelte";
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
-  import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
+  import BackButton from "../BackButton.svelte";
   import Changeset from "./SourceBrowser/Changeset.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   export let commitHash: string;
   export let anchors: project.ConfirmedAnchor[];
@@ -93,7 +94,7 @@
           {#if $commit.data.branches.length > 0}
             <span style="margin-right: -1ch">to</span>
             <span class="branch typo-semi-bold">
-              <Icon.Branch
+              <BranchIcon
                 style="vertical-align: bottom; fill:
                 var(--color-foreground-level-6)" />
               <span data-cy="commit-branch" style="margin-left: -0.5ch"

@@ -13,9 +13,26 @@ The Upstream team owns the following infrastructure.
   * Certificates for the loadbalancers are automatically provisioned by GCP.
 * Provides a container registry under `gcr.io/radicle-upstream`.
 * Provides Org Seed Node service (see below)
+* Provides infra for Github Actions Artifacts (see below)
 
+## Github Actions Artifacts
 
-### Upstream Org Seed Node
+Infrastructure for storing public build artifacts at predictable locations
+
+* GCP service account `github-actions-radicle-upstream`
+  * Credentials are exposed as build secret `GCP_SECRET_KEY` in Github Actions
+* GCP storage bucket `radicle-upstream-build-artifacts` in region
+  `europe-west1`.
+    * `github-actions-radicle-upstream` has `storage.objectAdmin` role so it can
+      upload and overwrite files to the bucket.
+    * `allUsers` have `storage.objectViewer` role. This means public read access
+      to the bucket.
+
+The storage bucket uses the following schema to store artifacts.
+* `v1/by-commit/<commit-sha>/...` for artifacts build from a certain commit.
+* `v1/master/...` for artifacts build from the `master` branch.
+
+## Upstream Org Seed Node
 
 We're running our own [Org Seed Node][os] for Upstream.
 

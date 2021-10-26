@@ -16,15 +16,18 @@
   import * as error from "ui/src/error";
   import * as theGraphApi from "ui/src/org/theGraphApi";
 
-  import {
-    Avatar,
-    Badge,
-    CopyableIdentifier,
-    Loading,
-    Icon,
-  } from "ui/DesignSystem";
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+  import GnosisIcon from "design-system/icons/Gnosis.svelte";
+  import UserIcon from "design-system/icons/User.svelte";
+
+  import Avatar from "design-system/Avatar.svelte";
+  import Badge from "design-system/Badge.svelte";
+  import Loading from "design-system/Loading.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
   let resolvedOrgs: ResolvedOrg[] = [];
 
@@ -98,13 +101,6 @@
 </script>
 
 <style>
-  .container {
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-    margin: 0 auto;
-    padding: 2rem var(--content-padding);
-  }
-
   .grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -156,83 +152,81 @@
 </style>
 
 <ScreenLayout>
-  <div class="container">
-    <h1 style="padding: 0 0.75rem;">Explore orgs</h1>
-    {#if state === "loading"}
-      <div class="loading">
-        <Loading />
-      </div>
-    {:else if state === "loaded"}
-      <div class="grid">
-        {#each resolvedOrgs as { org, owner }}
-          <div
-            class="box"
-            on:click={() =>
-              push({
-                type: "org",
-                params: { address: org.id, view: "projects" },
-              })}>
-            <header class="row">
-              <Avatar
-                style="margin-right: 1rem;"
-                size="large"
-                kind={org.registration?.avatar
-                  ? { type: "orgImage", url: org.registration.avatar }
-                  : { type: "orgEmoji", uniqueIdentifier: org.id }} />
-              <div class="title-meta">
-                <h3 class="typo-overflow-ellipsis">
-                  {org.registration?.domain || org.id}
-                </h3>
-                <Badge
-                  style="align-self: flex-start; margin-top: .5rem;"
-                  text={role(owner)} />
-              </div>
-            </header>
-            <ul class="metadata">
-              <li class="row">
-                {#if owner.type === "gnosis-safe"}
-                  <Icon.Gnosis />
-                {:else}
-                  <Icon.Ethereum />
-                {/if}
-                <CopyableIdentifier
-                  style="margin-left: 0.5rem;"
-                  value={owner.address}
-                  kind="ethAddress"
-                  name="owner address"
-                  showIcon={false} />
-              </li>
+  <h1 style="padding: 2rem 0.75rem 0;">Explore orgs</h1>
+  {#if state === "loading"}
+    <div class="loading">
+      <Loading />
+    </div>
+  {:else if state === "loaded"}
+    <div class="grid">
+      {#each resolvedOrgs as { org, owner }}
+        <div
+          class="box"
+          on:click={() =>
+            push({
+              type: "org",
+              params: { address: org.id, view: "projects" },
+            })}>
+          <header class="row">
+            <Avatar
+              style="margin-right: 1rem;"
+              size="large"
+              kind={org.registration?.avatar
+                ? { type: "orgImage", url: org.registration.avatar }
+                : { type: "orgEmoji", uniqueIdentifier: org.id }} />
+            <div class="title-meta">
+              <h3 class="typo-overflow-ellipsis">
+                {org.registration?.domain || org.id}
+              </h3>
+              <Badge
+                style="align-self: flex-start; margin-top: .5rem;"
+                text={role(owner)} />
+            </div>
+          </header>
+          <ul class="metadata">
+            <li class="row">
               {#if owner.type === "gnosis-safe"}
-                <li class="row">
-                  <Icon.User />
-                  <p style="margin-left: .5rem;">
-                    {owner.metadata.members.length}
-                    {owner.metadata.members.length === 1 ? "member" : "members"}
-                  </p>
-                </li>
+                <GnosisIcon />
+              {:else}
+                <EthereumIcon />
               {/if}
-              {#if org.projectCount}
-                <li class="row">
-                  <Icon.Anchor />
-                  <p style="margin-left: .5rem;">
-                    {org.projectCount} anchored {org.projectCount === 1
-                      ? "project"
-                      : "projects"}
-                  </p>
-                </li>
-              {/if}
-            </ul>
-          </div>
-        {/each}
-      </div>
-    {:else if state === "error"}
-      <EmptyState
-        emoji="😬"
-        text="Failed to load the orgs."
-        primaryActionText="Try again"
-        on:primaryAction={loadScreen} />
-    {:else}
-      {unreachable(state)}
-    {/if}
-  </div>
+              <CopyableIdentifier
+                style="margin-left: 0.5rem;"
+                value={owner.address}
+                kind="ethAddress"
+                name="owner address"
+                showIcon={false} />
+            </li>
+            {#if owner.type === "gnosis-safe"}
+              <li class="row">
+                <UserIcon />
+                <p style="margin-left: .5rem;">
+                  {owner.metadata.members.length}
+                  {owner.metadata.members.length === 1 ? "member" : "members"}
+                </p>
+              </li>
+            {/if}
+            {#if org.projectCount}
+              <li class="row">
+                <AnchorIcon />
+                <p style="margin-left: .5rem;">
+                  {org.projectCount} anchored {org.projectCount === 1
+                    ? "project"
+                    : "projects"}
+                </p>
+              </li>
+            {/if}
+          </ul>
+        </div>
+      {/each}
+    </div>
+  {:else if state === "error"}
+    <EmptyState
+      emoji="😬"
+      text="Failed to load the orgs."
+      primaryActionText="Try again"
+      on:primaryAction={loadScreen} />
+  {:else}
+    {unreachable(state)}
+  {/if}
 </ScreenLayout>

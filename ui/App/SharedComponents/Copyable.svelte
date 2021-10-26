@@ -6,11 +6,12 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { Position } from "ui/DesignSystem/Tooltip.svelte";
+  import type { Position } from "design-system/Tooltip";
 
   import { copyToClipboard } from "ui/src/ipc";
   import * as notification from "ui/src/notification";
-  import Tooltip from "ui/DesignSystem/Tooltip.svelte";
+
+  import Tooltip from "design-system/Tooltip.svelte";
 
   export let style: string | undefined = undefined;
 

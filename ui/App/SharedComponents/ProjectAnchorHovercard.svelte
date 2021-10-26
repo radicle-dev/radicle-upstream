@@ -11,13 +11,16 @@
   import * as org from "ui/src/org";
   import * as router from "ui/src/router";
 
-  import {
-    CopyableIdentifier,
-    Hovercard,
-    Icon,
-    IdentifierLink,
-  } from "ui/DesignSystem";
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import AnchorSmallIcon from "design-system/icons/AnchorSmall.svelte";
+  import CommitIcon from "design-system/icons/Commit.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+  import PenIcon from "design-system/icons/Pen.svelte";
 
+  import Hovercard from "design-system/Hovercard.svelte";
+  import IdentifierLink from "design-system/IdentifierLink.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import OrgIdentity from "ui/App/SharedComponents/OrgIdentity.svelte";
 
   export let anchor: project.Anchor;
@@ -67,12 +70,12 @@
 
 <Hovercard style="display: inline-flex;">
   <svelte:fragment slot="trigger">
-    <Icon.AnchorSmall style={`fill: var(${anchorColor});`} />
+    <AnchorSmallIcon style={`fill: var(${anchorColor});`} />
   </svelte:fragment>
 
   <svelte:fragment slot="card">
     <div class="header">
-      <Icon.Anchor style={`fill: var(${anchorColor}); margin-right: 0.5rem;`} />
+      <AnchorIcon style={`fill: var(${anchorColor}); margin-right: 0.5rem;`} />
 
       {#if anchor.orgAddress}
         <span
@@ -88,7 +91,7 @@
     </div>
     {#if anchor.type === "pending"}
       <div class="meta">
-        <Icon.Pen style="margin-right: 0.5rem;" />
+        <PenIcon style="margin-right: 0.5rem;" />
         <span class="typo-text-bold" style="margin-right: 0.5rem;">
           Signed by {anchor.confirmations} of {anchor.threshold}
         </span>
@@ -97,7 +100,7 @@
 
     {#if anchor.type === "confirmed"}
       <div class="meta">
-        <Icon.Ethereum style="margin-right: 0.5rem;" />
+        <EthereumIcon style="margin-right: 0.5rem;" />
         <span class="typo-text-bold" style="margin-right: 0.5rem;">
           Transaction hash
         </span>
@@ -110,7 +113,7 @@
       </div>
     {/if}
     <div class="meta">
-      <Icon.Commit style="margin-right: 0.5rem;" />
+      <CommitIcon style="margin-right: 0.5rem;" />
       <span class="typo-text-bold" style="margin-right: 0.5rem;">
         Commit hash
       </span>

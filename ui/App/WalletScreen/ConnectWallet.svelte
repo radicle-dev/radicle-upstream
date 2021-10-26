@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import Button from "ui/DesignSystem/Button.svelte";
-  import Emoji from "ui/DesignSystem/Emoji.svelte";
+  import Button from "design-system/Button.svelte";
+  import Emoji from "design-system/Emoji.svelte";
 
   export let onConnect: () => void;
   export let connecting = false;

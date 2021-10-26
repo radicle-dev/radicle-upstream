@@ -26,13 +26,49 @@ jobs:
             ~/cache/cargo
             ~/cache/proxy-target
           key: build-${{ runner.os }}-rust-v1-${{ hashFiles('Cargo.lock') }}
-      - run: ci/run.sh
+      - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-artifacts
+          name: test-logs-linux
           path: |
-            dist/*.AppImage
+            cypress/screenshots/**/*.png
+            cypress/workspace/test-tmp/*/node-*/*.log
+            cypress/workspace/test-tmp/*/combined-node.log
+  build-macos:
+    runs-on: macos-11
+    if: github.event.pull_request
+    steps:
+      - run:  |
+          echo "CARGO_HOME=$HOME/cache/cargo" >> $GITHUB_ENV
+          echo "PATH=$HOME/cache/cargo/bin:$PATH" >> $GITHUB_ENV
+      - uses: actions/checkout@master
+      - name: Cache Yarn
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/yarn
+            ~/cache/cypress
+          key: build-${{ runner.os }}-yarn-v3-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            build-${{ runner.os }}-yarn-v3-
+      - name: Cache Rust
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/cargo
+            ~/cache/proxy-target
+          key: build-${{ runner.os }}-rust-v2-${{ hashFiles('Cargo.lock') }}
+      - name: Install toolchain
+        run: |
+          rustup component add clippy rustfmt
+          test -f $CARGO_HOME/bin/cargo-deny || cargo install cargo-deny
+      - run: ci/build.sh
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-logs-macos
+          path: |
             cypress/screenshots/**/*.png
             cypress/workspace/test-tmp/*/node-*/*.log
             cypress/workspace/test-tmp/*/combined-node.log

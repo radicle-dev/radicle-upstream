@@ -26,20 +26,17 @@
     repositoryPathValidationStore,
   } from "ui/src/project";
   import * as proxy from "ui/src/proxy";
-  import { ValidationStatus } from "ui/src/validation";
   import * as screen from "ui/src/screen";
 
-  import {
-    Button,
-    Dropdown,
-    DirectoryInput,
-    RadioOption,
-    TextInput,
-    Tooltip,
-  } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import Dropdown from "design-system/Dropdown.svelte";
+  import RadioOption from "design-system/RadioOption.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
-  import RemoteHelperHint from "ui/App/SharedComponents/RemoteHelperHint.svelte";
+  import DirectoryInput from "ui/App/SharedComponents/DirectoryInput.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
+  import RemoteHelperHint from "ui/App/SharedComponents/RemoteHelperHint.svelte";
 
   type RepoType = "new" | "existing";
 
@@ -145,18 +142,16 @@
   $: isExisting && (name = "");
 
   // The presence check is outside the validations since we don't want to show the validation error message for it.
-  $: validName =
-    name.length > 0 && $nameValidation.status === ValidationStatus.Success;
+  $: validName = name.length > 0 && $nameValidation.type === "valid";
 
   $: validDescription =
     description.length === 0 ||
-    (description.length > 0 &&
-      $descriptionValidation.status === ValidationStatus.Success);
+    (description.length > 0 && $descriptionValidation.type === "valid");
 
   $: disableSubmit =
     !validName ||
     !validDescription ||
-    $pathValidation.status !== ValidationStatus.Success ||
+    $pathValidation.type !== "valid" ||
     loading;
 
   $: localStateStore = $localState;
@@ -200,7 +195,7 @@
         <div slot="option-body">
           <DirectoryInput
             placeholder="Where to create the repository"
-            validation={$pathValidation}
+            validationState={$pathValidation}
             bind:path={newRepositoryPath}
             on:selected={() => nameInput.focus()} />
           <p
@@ -223,7 +218,7 @@
         <div slot="option-body">
           <DirectoryInput
             placeholder="Choose an existing repository"
-            validation={$pathValidation}
+            validationState={$pathValidation}
             bind:path={existingRepositoryPath} />
           <div class="default-branch-row">
             <p
@@ -269,7 +264,7 @@
         dataCy="name"
         bind:value={name}
         bind:this={nameInput}
-        validation={$nameValidation}
+        validationState={$nameValidation}
         disabled={isExisting} />
     </Tooltip>
 
@@ -277,7 +272,7 @@
       dataCy="description"
       style="margin-top: 1rem; margin-bottom: 1rem;"
       placeholder="Project description"
-      validation={$descriptionValidation}
+      validationState={$descriptionValidation}
       bind:value={description} />
   </div>
 

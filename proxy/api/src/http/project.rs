@@ -372,9 +372,9 @@ mod test {
             )
             .await?;
             session::initialize(
-                &ctx.store,
+                &ctx.rest.store,
                 (ctx.peer.peer_id(), owner.clone().into_inner().into_inner()).into(),
-                &ctx.default_seeds,
+                &ctx.rest.default_seeds,
             )?;
 
             let platinum_project = crate::control::replicate_platinum(
@@ -461,7 +461,7 @@ mod test {
             };
             let id = identity::create(&ctx.peer, metadata).await?;
 
-            session::initialize(&ctx.store, id, &ctx.default_seeds)?;
+            session::initialize(&ctx.rest.store, id, &ctx.rest.default_seeds)?;
         };
 
         let project = radicle_daemon::project::Create {
@@ -523,7 +523,7 @@ mod test {
                 ethereum: None,
             };
             let id = identity::create(&ctx.peer, metadata).await?;
-            session::initialize(&ctx.store, id, &ctx.default_seeds)?;
+            session::initialize(&ctx.rest.store, id, &ctx.rest.default_seeds)?;
         };
 
         let project = radicle_daemon::project::Create {

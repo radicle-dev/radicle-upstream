@@ -22,6 +22,12 @@
   } from "ui/src/attestation/status";
   import { store, Status, accountBalancesStore } from "ui/src/wallet";
 
+  import TransactionsIcon from "design-system/icons/Transactions.svelte";
+
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
+
   import ConnectWallet from "./WalletScreen/ConnectWallet.svelte";
   import LinkAddress from "./WalletScreen/LinkAddress.svelte";
   import QrCodeModal from "./WalletScreen/QrCodeModal.svelte";
@@ -29,19 +35,13 @@
   import WalletPanel from "./WalletScreen/WalletPanel.svelte";
   import WrongNetwork from "./WalletScreen/WrongNetwork.svelte";
 
-  import { Icon } from "ui/DesignSystem";
-
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
-  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
-
   export let activeTab: router.WalletTab;
 
   const tabs = (active: router.WalletTab) => {
     const items = [
       {
         title: "Transactions",
-        icon: Icon.Transactions,
+        icon: TransactionsIcon,
         active: active === "transactions",
         onClick: () => {
           router.push({ type: "wallet", activeTab: "transactions" });
@@ -87,16 +87,11 @@
 </script>
 
 <style>
-  .container {
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-    margin: 0 auto;
-    padding: 2rem var(--content-padding);
-  }
   .content {
     display: grid;
     grid-template-columns: 20rem auto;
     gap: 1.5rem;
+    margin-top: 2rem;
   }
   .title {
     padding-left: 0.75rem;
@@ -104,49 +99,47 @@
   }
 </style>
 
-<ScreenLayout>
-  <div class="container" data-cy="wallet">
-    {#if w.status === Status.Connected}
-      <div class="content">
-        <div>
-          <h1 class="title">Wallet</h1>
-          <WalletPanel
-            onDisconnect={wallet.disconnect}
-            eth={$accountBalancesStore.eth}
-            rad={$accountBalancesStore.rad}
-            address={w.connected.address} />
-        </div>
-        {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
-          {#if $attestationStatus === AttestationStatus.Fetching}
-            <EmptyState
-              text="Checking whether you have attested your Ethereum address…"
-              style="height: 30rem; margin-top: 3.75rem;"
-              emoji="🧦" />
-          {:else if $attestationStatus === AttestationStatus.Valid}
-            <div class="right-column">
-              <TabBar
-                slot="left"
-                tabs={tabs(activeTab)}
-                style="padding: 0.5rem 0; margin-bottom: 1rem;" />
-              {#if activeTab === "transactions"}
-                <Transactions />
-              {:else}
-                {unreachable(activeTab)}
-              {/if}
-            </div>
-          {:else}
-            <LinkAddress />
-          {/if}
-        {:else}
-          <WrongNetwork
-            walletNetwork={w.connected.network}
-            expectedNetwork={supportedNetwork($ethereumEnvironment)} />
-        {/if}
+<ScreenLayout dataCy="wallet">
+  {#if w.status === Status.Connected}
+    <div class="content">
+      <div>
+        <h1 class="title">Wallet</h1>
+        <WalletPanel
+          onDisconnect={wallet.disconnect}
+          eth={$accountBalancesStore.eth}
+          rad={$accountBalancesStore.rad}
+          address={w.connected.address} />
       </div>
-    {:else}
-      <ConnectWallet
-        onConnect={connectWallet}
-        connecting={$wallet.status === Status.Connecting} />
-    {/if}
-  </div>
+      {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
+        {#if $attestationStatus === AttestationStatus.Fetching}
+          <EmptyState
+            text="Checking whether you have attested your Ethereum address…"
+            style="height: 30rem; margin-top: 3.75rem;"
+            emoji="🧦" />
+        {:else if $attestationStatus === AttestationStatus.Valid}
+          <div class="right-column">
+            <TabBar
+              slot="left"
+              tabs={tabs(activeTab)}
+              style="padding: 0.5rem 0; margin-bottom: 1rem;" />
+            {#if activeTab === "transactions"}
+              <Transactions />
+            {:else}
+              {unreachable(activeTab)}
+            {/if}
+          </div>
+        {:else}
+          <LinkAddress />
+        {/if}
+      {:else}
+        <WrongNetwork
+          walletNetwork={w.connected.network}
+          expectedNetwork={supportedNetwork($ethereumEnvironment)} />
+      {/if}
+    </div>
+  {:else}
+    <ConnectWallet
+      onConnect={connectWallet}
+      connecting={$wallet.status === Status.Connecting} />
+  {/if}
 </ScreenLayout>

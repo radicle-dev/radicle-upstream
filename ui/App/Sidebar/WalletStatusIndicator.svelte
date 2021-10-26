@@ -10,7 +10,9 @@
   import * as transaction from "ui/src/transaction";
   import * as ethereum from "ui/src/ethereum";
 
-  import { Icon, Tooltip } from "ui/DesignSystem";
+  import WalletIcon from "design-system/icons/Wallet.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
+
   import SidebarItem from "./SidebarItem.svelte";
 
   const selectedEnvironment = ethereum.selectedEnvironment;
@@ -63,6 +65,6 @@
 
 <Tooltip value={`Wallet • ${tooltipMessage}`}>
   <SidebarItem dataCy="wallet" indicator {active} onClick={() => onClick()}>
-    <Icon.Wallet connected={iconConnected} statusColor={iconStatusColor} />
+    <WalletIcon connected={iconConnected} statusColor={iconStatusColor} />
   </SidebarItem>
 </Tooltip>

@@ -8,7 +8,8 @@ import type { SvelteComponent } from "svelte";
 import { Status, StatusType } from "ui/src/localPeer";
 import { unreachable } from "ui/src/unreachable";
 
-import { Icon } from "ui/DesignSystem";
+import NetworkIcon from "design-system/icons/Network.svelte";
+
 import SyncingIcon from "ui/App/Sidebar/ConnectionStatusIndicator/Syncing.svelte";
 import OfflineIcon from "ui/App/Sidebar/ConnectionStatusIndicator/Offline.svelte";
 
@@ -37,7 +38,7 @@ export const indicatorState = (status: Status): IndicatorState => {
     return {
       text: `You’re connected to ${connectedPeerCount(status.connectedPeers)}`,
       cy: "connection-status-online",
-      icon: Icon.Network,
+      icon: NetworkIcon,
       fill: "var(--color-positive)",
     };
   } else if (status.type === StatusType.Syncing) {

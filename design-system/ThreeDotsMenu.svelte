@@ -9,7 +9,7 @@
   import type { SvelteComponent } from "svelte";
   import { fade } from "svelte/transition";
 
-  import Icon from "./Icon";
+  import EllipsisIcon from "./icons/Ellipsis.svelte";
   import Overlay from "./Overlay.svelte";
   import Tooltip from "./Tooltip.svelte";
 
@@ -105,7 +105,7 @@
       on:click|stopPropagation={() => {
         expanded = !expanded;
       }}>
-      <Icon.Ellipsis />
+      <EllipsisIcon />
     </button>
     {#if expanded && menuItems.length > 0}
       <div

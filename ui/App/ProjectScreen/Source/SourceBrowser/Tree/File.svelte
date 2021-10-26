@@ -6,8 +6,8 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import Icon from "ui/DesignSystem/Icon";
-  import Spinner from "ui/DesignSystem/Spinner.svelte";
+  import FileIcon from "design-system/icons/File.svelte";
+  import Spinner from "design-system/Spinner.svelte";
 
   export let active: boolean;
   export let dataCy: string | undefined = undefined;
@@ -63,7 +63,7 @@
       <Spinner height={20} width={20} />
     </div>
   {:else}
-    <Icon.File />
+    <FileIcon />
   {/if}
   <span class="name">{name}</span>
 </div>

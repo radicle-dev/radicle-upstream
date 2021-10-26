@@ -8,7 +8,7 @@
 <script lang="ts">
   import type { Patch } from "ui/src/project/patch";
 
-  import { Icon } from "ui/DesignSystem";
+  import RevisionIcon from "design-system/icons/Revision.svelte";
 
   import CompareBranches from "./CompareBranches.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
@@ -63,7 +63,7 @@
 
 <div class="patch-card" data-cy={`patch-card-${patch.id}`}>
   <div class="left">
-    <Icon.Revision style={`margin-right: 0.5rem; fill: ${iconColor};`} />
+    <RevisionIcon style={`margin-right: 0.5rem; fill: ${iconColor};`} />
     <div>
       <div class="info-column">
         <div class="title-row">

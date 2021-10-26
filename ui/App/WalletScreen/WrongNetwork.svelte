@@ -7,8 +7,9 @@
 -->
 <script lang="ts">
   import * as router from "ui/src/router";
-  import Button from "ui/DesignSystem/Button.svelte";
-  import Emoji from "ui/DesignSystem/Emoji.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Emoji from "design-system/Emoji.svelte";
 
   export let expectedNetwork = "Mainnet";
   export let walletNetwork: string;

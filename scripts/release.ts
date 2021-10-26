@@ -19,6 +19,7 @@ import fetch from "node-fetch";
 
 const currentVersion: string = require("../package.json").version;
 const releaseBucket = "radicle-upstream-releases";
+const buildArtifactBucket = "radicle-upstream-build-artifacts";
 
 function main() {
   if (!semver.gte(process.version, "14.14.0")) {
@@ -140,27 +141,21 @@ const publishRcBinaries: yargs.CommandModule<unknown, unknown> = {
   describe: "Publish release candidate build artifacts",
   handler: async () => {
     const version = await getReleaseCandidateVersion();
-    const buildStatuses = await getBuildStatuses();
-    const linuxBuildUuid = getBuildkiteUuid(
-      "buildkite/radicle-upstream/test-and-package-app-on-linux",
-      buildStatuses
-    );
-    const macosBuildUuid = getBuildkiteUuid(
-      "buildkite/radicle-upstream/test-and-package-app-on-macos",
-      buildStatuses
-    );
+    const sha = await getCommitSha();
+
+    const buildArtifactPrefix = `gs://${buildArtifactBucket}/v1/by-commit/${sha}/radicle-upstream-${version}`;
 
     const linuxBinaryPath = `radicle-upstream-${version}-rc.AppImage`;
     await runVerbose("gsutil", [
       "cp",
-      `gs://builds.radicle.xyz/radicle-upstream/${linuxBuildUuid}/dist/radicle-upstream-${version}.AppImage`,
+      `${buildArtifactPrefix}.AppImage`,
       `gs://${releaseBucket}/${linuxBinaryPath}`,
     ]);
 
     const macosBinaryPath = `radicle-upstream-${version}-rc.dmg`;
     await runVerbose("gsutil", [
       "cp",
-      `gs://builds.radicle.xyz/radicle-upstream/${macosBuildUuid}/dist/radicle-upstream-${version}.dmg`,
+      `${buildArtifactPrefix}.dmg`,
       `gs://${releaseBucket}/${macosBinaryPath}`,
     ]);
 
@@ -283,63 +278,6 @@ const setLatestRelease: yargs.CommandModule<unknown, unknown> = {
   },
 };
 
-interface BuildStatus {
-  status: string;
-  id: string;
-  url: string;
-}
-
-// Return the Github build statuses for the current branch.
-async function getBuildStatuses(): Promise<BuildStatus[]> {
-  const result = await execa("hub", ["ci-status", "--format", "%S %t %U\n"], {
-    // hub ci-status returns exit code 1 or 2 when some of the statuses are
-    // pending or failed.
-    reject: false,
-  });
-
-  if (result.exitCode > 2 || result.signal) {
-    throw result;
-  }
-
-  const lines = result.stdout.split("\n");
-  return lines.map(line => {
-    const [status, id, url] = line.split(" ");
-    return { status, id, url };
-  });
-}
-
-// Return the Buildkite build UUID extracted from the build status with
-// the given ID. Throws an error when the build status is not
-// `success`.
-function getBuildkiteUuid(
-  buildId: string,
-  buildStatuses: BuildStatus[]
-): string {
-  const maybeBuildStatus = buildStatuses.find(
-    buildStatus => buildStatus.id === buildId
-  );
-  if (!maybeBuildStatus) {
-    throw new UserError(`Build status not found: ${buildId}`);
-  }
-
-  if (maybeBuildStatus.status !== "success") {
-    throw new UserError(
-      `Invalid build status ${maybeBuildStatus} for ${buildId}`
-    );
-  }
-
-  const urlRe = new RegExp(
-    "https://buildkite.com/monadic/radicle-upstream/builds/\\d+#([a-z0-9-]+)"
-  );
-  const match = maybeBuildStatus.url.match(urlRe);
-  if (!match) {
-    throw new Error(
-      `Failed to extract build UUID from URL ${maybeBuildStatus.url}`
-    );
-  }
-  return match[1];
-}
-
 // Ensure that we are on a release candidate branch and return the version
 // associated with that branch.
 async function getReleaseCandidateVersion(): Promise<string> {
@@ -352,6 +290,16 @@ async function getReleaseCandidateVersion(): Promise<string> {
     );
   }
   return match[1];
+}
+
+// Get the commit sha of the current HEAD
+async function getCommitSha(): Promise<string> {
+  const result = await execa("git", ["rev-parse", "HEAD"]);
+  const match = result.stdout.match(/^[0-9a-f]{40}$/);
+  if (!match) {
+    throw new Error(`Invalid commit SHA: ${result.stdout}`);
+  }
+  return result.stdout;
 }
 
 // Show `message` to the user and ask them to confirm. Throws an error

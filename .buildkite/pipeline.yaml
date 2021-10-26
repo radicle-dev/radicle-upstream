@@ -1,6 +1,6 @@
 .test-linux: &test-linux
   label: "Test and package app on Linux"
-  command: "ci/run.sh"
+  command: "ci/build.sh"
   agents:
     production: "true"
     platform: "linux"
@@ -27,7 +27,7 @@ steps:
       build.branch == 'master'
       || build.branch =~ /^release-candidate\//
       || build.tag != null
-    command: "ci/run.sh"
+    command: "ci/build.sh"
     agents:
       production: "false"
       platform: "macos"

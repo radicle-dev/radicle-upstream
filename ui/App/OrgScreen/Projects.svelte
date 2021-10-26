@@ -62,12 +62,6 @@
 </script>
 
 <style>
-  .container {
-    margin: 0 auto;
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-  }
-
   .pending {
     margin-bottom: 2rem;
   }
@@ -79,75 +73,73 @@
   }
 </style>
 
-<div class="container">
-  {#if anchors.pendingResolved.length !== 0 || anchors.pendingUnresolved.length !== 0}
-    <div class="pending">
-      <div class="header">
-        <p class="typo-text-bold">Pending</p>
-        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
-          {#if isWaitingForExecution(anchors)}
-            Waiting for a member to execute this anchor transaction.
-            <a
-              class="typo-link"
-              href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
-              >Execute transaction</a>
-          {:else}
-            Not enough members have confirmed this anchor transaction.
-            <a
-              class="typo-link"
-              href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
-              >Confirm transaction</a>
-          {/if}
-        </p>
-      </div>
-      <ProjectList
-        projects={anchors.pendingResolved}
-        userUrn={session.identity.urn}
-        on:select={select} />
-      <UnresolvedAnchorList anchors={anchors.pendingUnresolved} />
-    </div>
-  {/if}
-
-  {#if anchors.confirmedResolved.length !== 0}
-    {#if anchors.pendingResolved.length !== 0 || anchors.pendingUnresolved.length !== 0}
-      <div class="header">
-        <p class="typo-text-bold">Confirmed</p>
-        <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
-          These projects have been anchored in this org.
-        </p>
-      </div>
-    {/if}
-    <ProjectList
-      projects={anchors.confirmedResolved}
-      userUrn={session.identity.urn}
-      on:select={select} />
-  {/if}
-
-  {#if anchors.confirmedUnresolved.length !== 0}
+{#if anchors.pendingResolved.length !== 0 || anchors.pendingUnresolved.length !== 0}
+  <div class="pending">
     <div class="header">
-      <p style="color: var(--color-foreground-level-6);">
-        These anchored projects haven't been found in your network yet, try
-        following them.
+      <p class="typo-text-bold">Pending</p>
+      <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+        {#if isWaitingForExecution(anchors)}
+          Waiting for a member to execute this anchor transaction.
+          <a
+            class="typo-link"
+            href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+            >Execute transaction</a>
+        {:else}
+          Not enough members have confirmed this anchor transaction.
+          <a
+            class="typo-link"
+            href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+            >Confirm transaction</a>
+        {/if}
       </p>
     </div>
-    <UnresolvedAnchorList anchors={anchors.confirmedUnresolved} />
-  {/if}
+    <ProjectList
+      projects={anchors.pendingResolved}
+      userUrn={session.identity.urn}
+      on:select={select} />
+    <UnresolvedAnchorList anchors={anchors.pendingUnresolved} />
+  </div>
+{/if}
 
-  {#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0}
-    {#if showWriteActions}
-      <EmptyState
-        emoji="🪴"
-        text="Get started by anchoring your org’s first project."
-        primaryActionText={isMultiSig
-          ? "Anchor with Gnosis Safe"
-          : "Anchor project"}
-        primaryActionDisabled={disableAnchorCreation}
-        primaryActionTooltipMessage="Create or follow a project first"
-        on:primaryAction={() => {
-          org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
-        }} />
-    {:else}
-      <EmptyState emoji="🪴" text="This org doesn't have any anchors." />
-    {/if}
+{#if anchors.confirmedResolved.length !== 0}
+  {#if anchors.pendingResolved.length !== 0 || anchors.pendingUnresolved.length !== 0}
+    <div class="header">
+      <p class="typo-text-bold">Confirmed</p>
+      <p style="margin-left: .5rem; color: var(--color-foreground-level-6);">
+        These projects have been anchored in this org.
+      </p>
+    </div>
   {/if}
-</div>
+  <ProjectList
+    projects={anchors.confirmedResolved}
+    userUrn={session.identity.urn}
+    on:select={select} />
+{/if}
+
+{#if anchors.confirmedUnresolved.length !== 0}
+  <div class="header">
+    <p style="color: var(--color-foreground-level-6);">
+      These anchored projects haven't been found in your network yet, try
+      following them.
+    </p>
+  </div>
+  <UnresolvedAnchorList anchors={anchors.confirmedUnresolved} />
+{/if}
+
+{#if anchors.pendingResolved.length === 0 && anchors.confirmedResolved.length === 0 && anchors.pendingUnresolved.length === 0 && anchors.confirmedUnresolved.length === 0}
+  {#if showWriteActions}
+    <EmptyState
+      emoji="🪴"
+      text="Get started by anchoring your org’s first project."
+      primaryActionText={isMultiSig
+        ? "Anchor with Gnosis Safe"
+        : "Anchor project"}
+      primaryActionDisabled={disableAnchorCreation}
+      primaryActionTooltipMessage="Create or follow a project first"
+      on:primaryAction={() => {
+        org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
+      }} />
+  {:else}
+    <EmptyState emoji="🪴" text="This org doesn't have any anchors." />
+  {/if}
+{/if}

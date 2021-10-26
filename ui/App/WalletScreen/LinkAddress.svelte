@@ -10,7 +10,9 @@
   import { store as walletStore } from "ui/src/wallet";
   import * as modal from "ui/src/modal";
 
-  import { Button, Emoji } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import Emoji from "design-system/Emoji.svelte";
+
   import LinkAddressModal from "./LinkAddressModal.svelte";
 
   $: address = $walletStore.getAddress()?.toLowerCase();

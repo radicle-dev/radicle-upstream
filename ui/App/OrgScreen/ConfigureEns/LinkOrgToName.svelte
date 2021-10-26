@@ -13,7 +13,9 @@
   import * as org from "ui/src/org";
   import * as transaction from "ui/src/transaction";
 
-  import { Button, TextInput } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let onSubmit: () => void;

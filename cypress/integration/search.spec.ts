@@ -8,6 +8,7 @@ import * as commands from "cypress/support/commands";
 
 context("search", () => {
   const projectId = "hnrkfr9g6gxymefc3hto37bgmq3eo86sfckky";
+  const peerId = "hyd6gy5asxdf39a5thwt46ncfp3bzzhtk47ytmie51c9z7p8hc48mq";
 
   beforeEach(() => {
     commands.resetProxyState();
@@ -54,12 +55,22 @@ context("search", () => {
         );
 
         commands.pick("sidebar", "search").click();
-        commands.pasteInto(["search-input"], `invalid-project-id`);
+        commands.pasteInto(["search-input"], "invalid-project-id");
         cy.get("body").type("{enter}");
 
         commands
           .pick("search-modal")
-          .should("contain", "Not a valid Radicle ID");
+          .should("contain", "That’s not a valid Radicle ID.");
+
+        commands.pasteInto(["search-input"], peerId);
+        cy.get("body").type("{enter}");
+
+        commands
+          .pick("search-modal")
+          .should(
+            "contain",
+            "You’ve entered a Device ID instead of a Project ID."
+          );
 
         cy.get("@projectRequest").should("not.have.been.called");
       });
@@ -100,7 +111,7 @@ context("search", () => {
         commands.pick("profile-screen").should("exist");
 
         commands.pick("sidebar", "search").click();
-        commands.pick("search-input").type(urn);
+        commands.pasteInto(["search-input"], urn);
         commands
           .pick("search-modal", "project-name")
           .should("contain", "platinum");

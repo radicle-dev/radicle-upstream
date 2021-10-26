@@ -6,15 +6,14 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import {
-    Avatar,
-    Copyable,
-    CopyableIdentifier,
-    Icon,
-    format,
-  } from "ui/DesignSystem";
-
   import * as ensResolver from "ui/src/org/ensResolver";
+
+  import * as format from "design-system/lib/format";
+  import Avatar from "design-system/Avatar.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let registration: ensResolver.Registration | undefined = undefined;
   export let orgAddress: string;
@@ -61,7 +60,7 @@
       <div style="display: flex; gap: 1rem;">
         <div>
           <div class="row">
-            <Icon.Ethereum />
+            <EthereumIcon />
             <CopyableIdentifier
               value={orgAddress}
               kind="ethAddress"

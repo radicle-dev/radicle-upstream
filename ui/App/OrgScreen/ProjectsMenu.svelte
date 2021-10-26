@@ -7,7 +7,11 @@
 -->
 <script lang="ts">
   import * as org from "ui/src/org";
-  import { Button, Icon, Tooltip } from "ui/DesignSystem";
+
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
   export let orgAddress: string;
   export let gnosisSafeAddress: string;
@@ -35,7 +39,7 @@
   <Button
     {disabled}
     variant="transparent"
-    icon={Icon.Anchor}
+    icon={AnchorIcon}
     on:click={() =>
       org.openAnchorProjectModal(orgAddress, gnosisSafeAddress, isMultiSig)}>
     Anchor a project

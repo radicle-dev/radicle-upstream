@@ -31,7 +31,7 @@ impl Context {
     pub const fn test(&self) -> bool {
         match self {
             Self::Sealed(sealed) => sealed.test,
-            Self::Unsealed(unsealed) => unsealed.test,
+            Self::Unsealed(unsealed) => unsealed.rest.test,
         }
     }
 
@@ -39,7 +39,7 @@ impl Context {
     pub const fn http_listen(&self) -> SocketAddr {
         match self {
             Self::Sealed(sealed) => sealed.http_listen,
-            Self::Unsealed(unsealed) => unsealed.http_listen,
+            Self::Unsealed(unsealed) => unsealed.rest.http_listen,
         }
     }
 
@@ -47,7 +47,7 @@ impl Context {
     pub const fn default_seeds(&self) -> &Vec<String> {
         match self {
             Self::Sealed(sealed) => &sealed.default_seeds,
-            Self::Unsealed(unsealed) => &unsealed.default_seeds,
+            Self::Unsealed(unsealed) => &unsealed.rest.default_seeds,
         }
     }
 
@@ -55,7 +55,7 @@ impl Context {
     pub const fn store(&self) -> &kv::Store {
         match self {
             Self::Sealed(sealed) => &sealed.store,
-            Self::Unsealed(unsealed) => &unsealed.store,
+            Self::Unsealed(unsealed) => &unsealed.rest.store,
         }
     }
 
@@ -63,7 +63,7 @@ impl Context {
     pub fn auth_token(&self) -> Arc<RwLock<Option<String>>> {
         match self {
             Self::Sealed(sealed) => sealed.auth_token.clone(),
-            Self::Unsealed(unsealed) => unsealed.auth_token.clone(),
+            Self::Unsealed(unsealed) => unsealed.rest.auth_token.clone(),
         }
     }
 
@@ -71,14 +71,14 @@ impl Context {
     pub fn service_handle(&mut self) -> &mut service::Handle {
         match self {
             Self::Sealed(sealed) => &mut sealed.service_handle,
-            Self::Unsealed(unsealed) => &mut unsealed.service_handle,
+            Self::Unsealed(unsealed) => &mut unsealed.rest.service_handle,
         }
     }
 
     pub fn read_only_storage(&self) -> Result<librad::git::storage::ReadOnly, crate::error::Error> {
         let paths = match self {
             Self::Sealed(sealed) => &sealed.paths,
-            Self::Unsealed(unsealed) => &unsealed.paths,
+            Self::Unsealed(unsealed) => &unsealed.rest.paths,
         };
         let storage = librad::git::storage::ReadOnly::open(paths)?;
         Ok(storage)
@@ -127,7 +127,7 @@ impl Context {
     fn keystore(&self) -> Arc<dyn keystore::Keystore + Sync + Send> {
         match self {
             Self::Sealed(sealed) => sealed.keystore.clone(),
-            Self::Unsealed(unsealed) => unsealed.keystore.clone(),
+            Self::Unsealed(unsealed) => unsealed.rest.keystore.clone(),
         }
     }
 
@@ -167,24 +167,9 @@ pub struct Unsealed {
     pub peer_control: radicle_daemon::PeerControl,
     /// [`radicle_daemon::net::peer::Peer`] to operate on the local monorepo.
     pub peer: radicle_daemon::net::peer::Peer<BoxedSigner>,
-    /// [`kv::Store`] used for session state and cache.
-    pub store: kv::Store,
-    /// Flag to control if the stack is set up in test mode.
-    pub test: bool,
-    /// Flag to run the HTTP API on the specified address:port.
-    pub http_listen: SocketAddr,
-    /// Default seeds that will be written to the settings kv store.
-    pub default_seeds: Vec<String>,
-    /// Handle to control the service configuration.
-    pub service_handle: service::Handle,
-    /// Cookie set on unsealing the key store.
-    pub auth_token: Arc<RwLock<Option<String>>>,
-    /// Reference to the key store.
-    pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
-    /// Notification to shutdown the HTTP server
     pub shutdown: Arc<tokio::sync::Notify>,
-    pub paths: librad::paths::Paths,
     pub signer: BoxedSigner,
+    pub rest: Sealed,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -254,16 +239,18 @@ impl Unsealed {
             Self {
                 peer_control,
                 peer,
-                store,
-                test: false,
-                http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
-                default_seeds: vec![],
-                service_handle: service::Handle::dummy(),
-                auth_token: Arc::new(RwLock::new(None)),
-                keystore: Arc::new(keystore::memory()),
-                shutdown: Arc::new(tokio::sync::Notify::new()),
-                paths,
                 signer,
+                shutdown: Arc::new(tokio::sync::Notify::new()),
+                rest: Sealed {
+                    store,
+                    test: false,
+                    http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
+                    default_seeds: vec![],
+                    service_handle: service::Handle::dummy(),
+                    auth_token: Arc::new(RwLock::new(None)),
+                    keystore: Arc::new(keystore::memory()),
+                    paths,
+                },
             },
             run_handle,
         ))

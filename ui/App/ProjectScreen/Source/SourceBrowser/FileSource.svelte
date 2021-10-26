@@ -6,14 +6,15 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { isMarkdown } from "ui/src/source";
   import type { Blob, CommitHeader } from "ui/src/source";
 
-  import Icon from "ui/DesignSystem/Icon";
-  import Markdown from "ui/DesignSystem/Markdown.svelte";
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import { isMarkdown } from "ui/src/source";
+
+  import FileIcon from "design-system/icons/File.svelte";
+  import Markdown from "design-system/Markdown.svelte";
 
   import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   export let blob: Blob;
   export let commit: CommitHeader | null;
@@ -81,7 +82,7 @@
 <div class="file-source">
   <header>
     <div class="file-header typo-semi-bold" data-cy="file-header">
-      <Icon.File />
+      <FileIcon />
       <span class="file-name">
         <span>{blob.path.split("/").join(" / ")}</span>
       </span>

@@ -8,7 +8,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { Icon } from "ui/DesignSystem";
+  import ArrowLeftIcon from "design-system/icons/ArrowLeft.svelte";
 
   const dispatch = createEventDispatcher();
   const onArrowClick = () => {
@@ -55,7 +55,7 @@
     class="back-button"
     data-cy="back-button"
     on:click={() => onArrowClick()}>
-    <Icon.ArrowLeft />
+    <ArrowLeftIcon />
   </div>
   <slot />
 </header>

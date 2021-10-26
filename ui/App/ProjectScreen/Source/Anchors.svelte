@@ -15,7 +15,10 @@
   import * as org from "ui/src/org";
   import * as router from "ui/src/router";
 
-  import { Icon, IdentifierLink, format } from "ui/DesignSystem";
+  import * as format from "design-system/lib/format";
+  import InfoCircleIcon from "design-system/icons/InfoCircle.svelte";
+  import IdentifierLink from "design-system/IdentifierLink.svelte";
+
   import AnchorCard from "./AnchorCard.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import OrgIdentity from "ui/App/SharedComponents/OrgIdentity.svelte";
@@ -96,7 +99,7 @@
 <div class="container">
   {#if $isAnchorHintVisible}
     <div class="banner">
-      <Icon.InfoCircle
+      <InfoCircleIcon
         style="fill: var(--color-primary); margin-right: 0.25rem;" />
       <div>
         Anchors are commits from this project anchored on the Ethereum network,

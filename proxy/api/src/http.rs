@@ -110,7 +110,7 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(radicle_daemon::Local
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {
             let session =
-                crate::session::get_current(&ctx.store)?.ok_or(error::Routing::NoSession)?;
+                crate::session::get_current(&ctx.rest.store)?.ok_or(error::Routing::NoSession)?;
 
             let user = radicle_daemon::state::get_local(&ctx.peer, session.identity.urn)
                 .await
