@@ -80,10 +80,6 @@
 
 <style>
   .sidebar-layout {
-    max-width: var(--content-max-width);
-    margin: 0 auto;
-    min-width: var(--content-min-width);
-    padding: 0 var(--content-padding);
     display: grid;
     grid-template-columns: auto 18rem;
     gap: 1.5rem;

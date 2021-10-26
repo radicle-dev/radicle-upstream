@@ -101,7 +101,7 @@
   let peerSelectorExpanded: boolean = false;
 </script>
 
-<ScreenLayout dataCy="project-screen">
+<ScreenLayout dataCy="project-screen" contentStyle="padding: 0 0 1rem 0;">
   <div slot="header" style="display: flex">
     {#if $store.status === remote.Status.Success}
       <ProjectHeader
@@ -119,10 +119,9 @@
             },
           })} />
 
-      <div style="width: 1.5rem; margin-left: auto" />
-      <div style="display: flex; align-self: center">
+      <div style="display: flex; align-self: center; margin-left: 1.5rem;">
         <div
-          style="display: flex;"
+          style="display: flex; align-items: center;"
           class:button-transition={!peerSelectorExpanded}>
           <PeerSelector
             bind:expanded={peerSelectorExpanded}
@@ -140,8 +139,8 @@
             on:mouseleave={mouseleave}
             style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         </div>
+        <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
       </div>
-      <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
     {/if}
   </div>
   {#if $store.status === remote.Status.Success}

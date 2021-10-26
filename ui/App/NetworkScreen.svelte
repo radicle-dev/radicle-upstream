@@ -77,16 +77,9 @@
 </script>
 
 <style>
-  .container {
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-    margin: 0 auto;
-    padding: 2rem var(--content-padding);
-  }
-
   section {
-    margin-bottom: 24px;
-    padding: 0 12px;
+    margin-bottom: 1.5rem;
+    padding: 0 0.75rem;
   }
 
   .seed-entry-form {
@@ -126,7 +119,7 @@
   .title {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 2rem;
+    margin: 2rem 0;
     align-items: flex-end;
     padding: 0 0.75rem;
   }
@@ -140,66 +133,63 @@
 </style>
 
 <ScreenLayout dataCy="network-page">
-  <div class="container">
-    <div class="title">
-      <h1>Network</h1>
-      <div class="status">
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="4" fill={$indicatorStatus.fill} />
-        </svg>
-        <p>{$indicatorStatus.text}</p>
-      </div>
+  <div class="title">
+    <h1>Network</h1>
+    <div class="status">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="4" fill={$indicatorStatus.fill} />
+      </svg>
+      <p>{$indicatorStatus.text}</p>
     </div>
-    <section>
-      <div class="info">
-        <p class="typo-text-bold">
-          Seeds help you find more projects and people on the network.
-        </p>
-        <p style="color: var(--color-foreground-level-6);">
-          Enter seed addresses that you’d like to connect to here.
-          <a
-            class="typo-link"
-            href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
-            >Learn more</a>
-        </p>
-      </div>
-      <form
-        class="seed-entry-form"
-        on:submit|preventDefault
-        data-cy="seed-entry-form">
-        <div class="seed-entry-field">
-          <TextInput
-            dataCy="seed-input"
-            bind:value={seedInputValue}
-            placeholder="Enter a seed address here"
-            style="min-width: 14rem; width: 100%;"
-            validationState={$seedValidation} />
-          <Button
-            dataCy="add-seed"
-            on:click={addSeed}
-            disabled={!seedInputValue || !loaded}
-            variant="outline">
-            Add
-          </Button>
-        </div>
-
-        <div class="seeds">
-          {#each seeds as seed, index (seed)}
-            <div class="seed">
-              <CopyableIdentifier value={seed} kind="seedAddress" />
-              <Icon.Cross
-                dataCy="remove-seed"
-                on:click={() => removeSeed(index)}
-                style="margin-left: 1.5rem; cursor:pointer;" />
-            </div>
-          {/each}
-        </div>
-      </form>
-    </section>
   </div>
+  <section>
+    <div class="info">
+      <p class="typo-text-bold">
+        Seeds help you find more projects and people on the network.
+      </p>
+      <p style="color: var(--color-foreground-level-6);">
+        Enter seed addresses that you’d like to connect to here.
+        <a
+          class="typo-link"
+          href="https://docs.radicle.xyz/docs/understanding-radicle/glossary#seed"
+          >Learn more</a>
+      </p>
+    </div>
+    <form
+      class="seed-entry-form"
+      on:submit|preventDefault
+      data-cy="seed-entry-form">
+      <div class="seed-entry-field">
+        <TextInput
+          dataCy="seed-input"
+          bind:value={seedInputValue}
+          placeholder="Enter a seed address here"
+          style="min-width: 14rem; width: 100%;"
+          validationState={$seedValidation} />
+        <Button
+          dataCy="add-seed"
+          on:click={addSeed}
+          disabled={!seedInputValue || !loaded}
+          variant="outline">
+          Add
+        </Button>
+      </div>
+      <div class="seeds">
+        {#each seeds as seed, index (seed)}
+          <div class="seed">
+            <CopyableIdentifier value={seed} kind="seedAddress" />
+            <Icon.Cross
+              dataCy="remove-seed"
+              on:click={() => removeSeed(index)}
+              style="margin-left: 1.5rem; cursor:pointer;" />
+          </div>
+        {/each}
+      </div>
+    </form>
+  </section>
 </ScreenLayout>

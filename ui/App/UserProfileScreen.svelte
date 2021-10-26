@@ -34,18 +34,15 @@
 
 <style>
   .grid {
-    max-width: var(--content-max-width);
-    min-width: var(--content-min-width);
-    margin: 0 auto;
-    padding: var(--content-padding);
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
+    margin-top: 2rem;
   }
 </style>
 
 <ScreenLayout dataCy="user-profile-screen">
-  <div slot="header">
+  <div slot="header" style="display: flex">
     <UserProfileHeader {user} />
   </div>
 
