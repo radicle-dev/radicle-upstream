@@ -77,8 +77,6 @@ impl warp::reject::Reject for Response {}
 
 #[allow(clippy::unused_async)]
 pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallible> {
-    tracing::error!(?err, "request error");
-
     let error_response = if err.is_not_found() {
         Response {
             status_code: StatusCode::NOT_FOUND,
@@ -98,6 +96,10 @@ pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallibl
             message: "Something went wrong".to_string(),
         }
     };
+
+    if error_response.status_code == StatusCode::INTERNAL_SERVER_ERROR {
+        tracing::error!(message = %error_response.message, variant = %error_response.variant, ?err, "internal server error");
+    }
 
     let body = serde_json::json!({
         "message": error_response.message,
