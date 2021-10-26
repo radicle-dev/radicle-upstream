@@ -13,7 +13,14 @@
   import * as org from "ui/src/org";
   import * as router from "ui/src/router";
 
-  import { Icon, IdentifierLink, format } from "ui/DesignSystem";
+  import * as format from "design-system/lib/format";
+
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import CommitIcon from "design-system/icons/Commit.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+
+  import IdentifierLink from "design-system/IdentifierLink.svelte";
+
   import OrgIdentity from "ui/App/SharedComponents/OrgIdentity.svelte";
 
   export let anchor: project.ConfirmedAnchor;
@@ -66,7 +73,7 @@
 <div class="anchor" {style}>
   <div class="header">
     <div style="display: flex;">
-      <Icon.Anchor />
+      <AnchorIcon />
       <span
         class="typo-text-bold"
         style="color: var(--color-foreground-level-6); margin: 0 0.5rem 0 0.5rem;">
@@ -82,7 +89,7 @@
   </div>
   {#if showCommitHash}
     <div class="metadata">
-      <Icon.Commit />
+      <CommitIcon />
       <span class="typo-text-bold">Commit hash</span>
       <IdentifierLink
         params={{
@@ -95,7 +102,7 @@
     </div>
   {/if}
   <div class="metadata">
-    <Icon.Ethereum />
+    <EthereumIcon />
     <span class="typo-text-bold">Transaction hash</span>
     <IdentifierLink
       params={{

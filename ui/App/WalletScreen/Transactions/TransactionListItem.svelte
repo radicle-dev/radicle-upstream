@@ -12,23 +12,27 @@
   import dayjs from "dayjs";
 
   import { TxKind } from "ui/src/transaction";
-  import { Icon } from "ui/DesignSystem";
+
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+  import OrgsIcon from "design-system/icons/Orgs.svelte";
+  import RegisteredIcon from "design-system/icons/Registered.svelte";
 
   export let tx: Tx;
 
   function txIcon(tx: Tx): typeof SvelteComponent {
     switch (tx.kind) {
       case TxKind.ClaimRadicleIdentity:
-        return Icon.Registered;
+        return RegisteredIcon;
       case TxKind.CommitEnsName:
       case TxKind.LinkEnsNameToOrg:
       case TxKind.RegisterEnsName:
       case TxKind.UpdateEnsMetadata:
-        return Icon.Ethereum;
+        return EthereumIcon;
       case TxKind.CreateOrg:
-        return Icon.Orgs;
+        return OrgsIcon;
       case TxKind.AnchorProject:
-        return Icon.Anchor;
+        return AnchorIcon;
     }
   }
 </script>

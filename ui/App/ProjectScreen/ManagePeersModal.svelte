@@ -17,7 +17,9 @@
     store,
   } from "ui/src/screen/project";
 
-  import { Button, List, TextInput } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import List from "design-system/List.svelte";
+  import TextInput from "design-system/TextInput.svelte";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import Remote from "ui/App/SharedComponents/Remote.svelte";

@@ -11,7 +11,8 @@
   import type { Branch, Tag } from "ui/src/source";
   import * as config from "ui/src/config";
 
-  import { Icon, Overlay } from "ui/DesignSystem";
+  import ChevronUpDownIcon from "design-system/icons/ChevronUpDown.svelte";
+  import Overlay from "design-system/Overlay.svelte";
 
   import Entry from "./RevisionSelector/Entry.svelte";
 
@@ -125,7 +126,7 @@
           revision={selected}
           defaultBranch={selected.name === defaultBranch} />
       </div>
-      <Icon.ChevronUpDown
+      <ChevronUpDownIcon
         style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
     </div>
     <div class="revision-dropdown-container">

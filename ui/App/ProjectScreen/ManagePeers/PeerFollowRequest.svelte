@@ -6,11 +6,12 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-
   import type { User } from "ui/src/project";
 
-  import { CopyableIdentifier, FollowToggle } from "ui/DesignSystem";
+  import { createEventDispatcher } from "svelte";
+
+  import FollowToggle from "design-system/FollowToggle.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let peer: User;
   export let projectUrn: string;

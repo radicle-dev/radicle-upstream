@@ -8,7 +8,7 @@
 <script lang="ts">
   import type { Diff, CommitStats } from "proxy-client/commit";
 
-  import Icon from "ui/DesignSystem/Icon";
+  import FileIcon from "design-system/icons/File.svelte";
 
   import FileDiff from "./FileDiff.svelte";
 
@@ -75,14 +75,14 @@
 <div>
   {#each diff.created as path (path)}
     <header class="file-header">
-      <Icon.File style="margin-right: 8px;" />
+      <FileIcon style="margin-right: 8px;" />
       <p class="typo-text-bold">{path}</p>
       <span class="diff-type created">created</span>
     </header>
   {/each}
   {#each diff.deleted as path (path)}
     <header class="file-header">
-      <Icon.File style="margin-right: 8px;" />
+      <FileIcon style="margin-right: 8px;" />
       <p class="typo-text-bold">{path}</p>
       <span class="diff-type deleted">deleted</span>
     </header>

@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Copyable } from "ui/DesignSystem";
+  import Tooltip from "design-system/Tooltip.svelte";
 
   export let style: string | undefined = undefined;
   export let color: string;
@@ -27,10 +27,10 @@
 </style>
 
 <div class="wrapper" {style}>
-  <Copyable name={`"var(${color})"`} clipboardContent={`var(${color});`}>
+  <Tooltip value={`var(${color})`}>
     <div
       class:border={color === "--color-background"}
       class="color"
       style={`background-color: var(${color});`} />
-  </Copyable>
+  </Tooltip>
 </div>

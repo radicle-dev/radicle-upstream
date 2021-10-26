@@ -9,7 +9,8 @@
   import type { Project } from "ui/src/project";
   import { isMaintainer } from "ui/src/project";
 
-  import { List } from "ui/DesignSystem";
+  import List from "design-system/List.svelte";
+
   import ProjectCard from "./ProjectCard.svelte";
   import ProjectStats from "ui/App/SharedComponents/ProjectStats.svelte";
 

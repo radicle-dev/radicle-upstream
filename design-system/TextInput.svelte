@@ -8,7 +8,9 @@
 <script lang="ts">
   import type { TextInputValidationState } from "./TextInput";
 
-  import Icon from "./Icon";
+  import CheckCircleIcon from "./icons/CheckCircle.svelte";
+  import ExclamationCircleIcon from "./icons/ExclamationCircle.svelte";
+
   import KeyHint from "./KeyHint.svelte";
   import Spinner from "./Spinner.svelte";
 
@@ -168,10 +170,9 @@
     {#if validationState.type === "pending"}
       <Spinner style="margin: 0 0.5rem;" />
     {:else if showSuccessCheck && validationState.type === "valid"}
-      <Icon.CheckCircle
-        style="fill: var(--color-positive); margin: 0 0.5rem;" />
+      <CheckCircleIcon style="fill: var(--color-positive); margin: 0 0.5rem;" />
     {:else if validationState.type === "invalid"}
-      <Icon.ExclamationCircle
+      <ExclamationCircleIcon
         dataCy="validation-error-icon"
         style="fill: var(--color-negative); margin: 0 0.5rem;" />
     {/if}

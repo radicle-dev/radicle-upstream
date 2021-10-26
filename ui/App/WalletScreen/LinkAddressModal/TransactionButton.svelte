@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Button } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
 
   import * as notification from "ui/src/notification";
   import * as error from "ui/src/error";

@@ -15,7 +15,7 @@
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
 
-  import { Button } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   import BlockTimer from "./BlockTimer.svelte";

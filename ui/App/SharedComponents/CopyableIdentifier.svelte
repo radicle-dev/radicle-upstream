@@ -13,12 +13,17 @@
     | "ethAddress"
     | "commitHash";
 
+  import type { Position } from "design-system/Tooltip";
   import type { SvelteComponent } from "svelte";
-  import type { Position } from "./Tooltip.svelte";
-  import * as format from "./lib/format";
 
-  import Copyable from "./Copyable.svelte";
-  import Icon from "./Icon";
+  import * as format from "design-system/lib/format";
+
+  import AtIcon from "design-system/icons/At.svelte";
+  import ComputerIcon from "design-system/icons/Computer.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+  import ServerIcon from "design-system/icons/Server.svelte";
+
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let style: string | undefined = undefined;
   export let value: string;
@@ -45,13 +50,13 @@
   function kindToIcon(kind: Kind): typeof SvelteComponent | undefined {
     switch (kind) {
       case "radicleId":
-        return Icon.At;
+        return AtIcon;
       case "deviceId":
-        return Icon.Computer;
+        return ComputerIcon;
       case "seedAddress":
-        return Icon.Server;
+        return ServerIcon;
       case "ethAddress":
-        return Icon.Ethereum;
+        return EthereumIcon;
       case "commitHash":
         return undefined;
     }

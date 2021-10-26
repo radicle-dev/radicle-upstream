@@ -14,13 +14,11 @@
   import * as proxy from "ui/src/proxy";
   import * as router from "ui/src/router";
 
-  import {
-    CopyableIdentifier,
-    FollowToggle,
-    Hoverable,
-    List,
-  } from "ui/DesignSystem";
+  import FollowToggle from "design-system/FollowToggle.svelte";
+  import Hoverable from "design-system/Hoverable.svelte";
+  import List from "design-system/List.svelte";
 
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
 
   export let anchors: project.Anchor[];

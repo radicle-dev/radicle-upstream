@@ -8,7 +8,7 @@
 <script lang="ts">
   import type * as project from "ui/src/project";
 
-  import { Badge } from "ui/DesignSystem";
+  import Badge from "design-system/Badge.svelte";
   import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
 
   export let title: string;

@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Emoji } from "ui/DesignSystem";
+  import Emoji from "design-system/Emoji.svelte";
 
   export let dataCy: string | undefined = undefined;
   export let style: string | undefined = undefined;

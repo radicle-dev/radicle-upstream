@@ -9,7 +9,7 @@
   import { createEventDispatcher } from "svelte";
 
   import Button from "./Button.svelte";
-  import Icon from "./Icon";
+  import NetworkIcon from "./icons/Network.svelte";
 
   export let disabled: boolean = false;
   export let following: boolean = false;
@@ -53,7 +53,7 @@
   {disabled}
   {style}
   {variant}
-  icon={Icon.Network}
+  icon={NetworkIcon}
   on:click={click}
   on:mouseenter={mouseenter}
   on:mouseleave={mouseleave}>

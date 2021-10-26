@@ -13,7 +13,8 @@
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
 
-  import { Button, Dropdown } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import Dropdown from "design-system/Dropdown.svelte";
 
   import CommitTeaser from "ui/App/SharedComponents/CommitTeaser.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";

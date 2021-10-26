@@ -11,7 +11,10 @@
 
   import * as project from "ui/src/project";
 
-  import { CopyableIdentifier, FollowToggle, Tooltip } from "ui/DesignSystem";
+  import FollowToggle from "design-system/FollowToggle.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let peer: User;

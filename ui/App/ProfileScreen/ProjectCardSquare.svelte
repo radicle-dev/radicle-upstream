@@ -8,10 +8,12 @@
 <script lang="ts">
   import type { Project } from "ui/src/project";
 
-  import { Badge, CopyableIdentifier } from "ui/DesignSystem";
+  import Badge from "design-system/Badge.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import ProjectAnchorHovercard from "ui/App/SharedComponents/ProjectAnchorHovercard.svelte";
-  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
   import ProjectStats from "ui/App/SharedComponents/ProjectStats.svelte";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let project: Project;
   export let isMaintainer: boolean;

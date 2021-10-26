@@ -6,8 +6,14 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Button, Copyable, Icon, Overlay } from "ui/DesignSystem";
   import * as Patch from "ui/src/project/patch";
+
+  import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Overlay from "design-system/Overlay.svelte";
+
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let patch: Patch.Patch;
   export let myPeerId: string;
@@ -79,7 +85,7 @@
 
   <Button
     variant="transparent"
-    icon={Icon.ArrowBoxUpRight}
+    icon={ArrowBoxUpRightIcon}
     on:click={toggleDropdown}
     dataCy="checkout-patch-modal-toggle">
     Checkout

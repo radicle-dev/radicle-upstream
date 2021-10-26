@@ -10,7 +10,12 @@
   import * as modal from "ui/src/modal";
   import * as Session from "ui/src/session";
 
-  import { Avatar, Icon, Tooltip } from "ui/DesignSystem";
+  import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
+  import OrgsIcon from "design-system/icons/Orgs.svelte";
+  import SettingsIcon from "design-system/icons/Settings.svelte";
+
+  import Avatar from "design-system/Avatar.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
   import SearchModal from "ui/App/SearchModal.svelte";
 
@@ -89,7 +94,7 @@
         dataCy="search"
         indicator
         onClick={() => modal.toggle(SearchModal)}>
-        <Icon.MagnifyingGlass />
+        <MagnifyingGlassIcon />
       </SidebarItem>
     </Tooltip>
     <Tooltip value="Orgs">
@@ -97,7 +102,7 @@
         indicator
         active={$activeRouteStore.type === "orgs"}
         onClick={() => push({ type: "orgs" })}>
-        <Icon.Orgs />
+        <OrgsIcon />
       </SidebarItem>
     </Tooltip>
     <WalletStatusIndicator
@@ -110,7 +115,7 @@
         indicator
         active={$activeRouteStore.type === "settings"}
         onClick={() => push({ type: "settings" })}>
-        <Icon.Settings />
+        <SettingsIcon />
       </SidebarItem>
     </Tooltip>
   </div>

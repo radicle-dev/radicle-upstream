@@ -8,13 +8,14 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import {
-    Button,
-    DirectoryInput,
-    Icon,
-    Overlay,
-    Tooltip,
-  } from "ui/DesignSystem";
+  import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
+  import ForkIcon from "design-system/icons/Fork.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Overlay from "design-system/Overlay.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
+
+  import DirectoryInput from "ui/App/SharedComponents/DirectoryInput.svelte";
   import RemoteHelperHint from "ui/App/SharedComponents/RemoteHelperHint.svelte";
 
   // Whether this button should be displayed as a "Fork" button.
@@ -89,7 +90,7 @@
 
   <Button
     variant="transparent"
-    icon={fork ? Icon.Fork : Icon.ArrowBoxUpRight}
+    icon={fork ? ForkIcon : ArrowBoxUpRightIcon}
     on:click={toggleDropdown}
     dataCy="checkout-modal-toggle">
     {caption}

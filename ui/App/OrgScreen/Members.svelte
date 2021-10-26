@@ -8,7 +8,10 @@
 <script lang="ts">
   import * as org from "ui/src/org";
 
-  import { Avatar, CopyableIdentifier, List } from "ui/DesignSystem";
+  import Avatar from "design-system/Avatar.svelte";
+  import List from "design-system/List.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let members: org.Member[];

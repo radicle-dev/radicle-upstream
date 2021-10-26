@@ -11,7 +11,10 @@
   import { PeerRole, PeerType } from "ui/src/project";
   import type { User } from "ui/src/project";
 
-  import { Icon, Overlay, Tooltip } from "ui/DesignSystem";
+  import ChevronUpDownIcon from "design-system/icons/ChevronUpDown.svelte";
+
+  import Overlay from "design-system/Overlay.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
@@ -152,7 +155,7 @@
         : ""}
       disableHovercard={true} />
     <div class="selector-expand">
-      <Icon.ChevronUpDown
+      <ChevronUpDownIcon
         style="vertical-align: bottom; fill: var(--color-foreground-level-4)" />
     </div>
   </div>

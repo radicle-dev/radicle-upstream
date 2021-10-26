@@ -16,15 +16,18 @@
   import * as error from "ui/src/error";
   import * as theGraphApi from "ui/src/org/theGraphApi";
 
-  import {
-    Avatar,
-    Badge,
-    CopyableIdentifier,
-    Loading,
-    Icon,
-  } from "ui/DesignSystem";
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import EthereumIcon from "design-system/icons/Ethereum.svelte";
+  import GnosisIcon from "design-system/icons/Gnosis.svelte";
+  import UserIcon from "design-system/icons/User.svelte";
+
+  import Avatar from "design-system/Avatar.svelte";
+  import Badge from "design-system/Badge.svelte";
+  import Loading from "design-system/Loading.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
   let resolvedOrgs: ResolvedOrg[] = [];
 
@@ -183,9 +186,9 @@
           <ul class="metadata">
             <li class="row">
               {#if owner.type === "gnosis-safe"}
-                <Icon.Gnosis />
+                <GnosisIcon />
               {:else}
-                <Icon.Ethereum />
+                <EthereumIcon />
               {/if}
               <CopyableIdentifier
                 style="margin-left: 0.5rem;"
@@ -196,7 +199,7 @@
             </li>
             {#if owner.type === "gnosis-safe"}
               <li class="row">
-                <Icon.User />
+                <UserIcon />
                 <p style="margin-left: .5rem;">
                   {owner.metadata.members.length}
                   {owner.metadata.members.length === 1 ? "member" : "members"}
@@ -205,7 +208,7 @@
             {/if}
             {#if org.projectCount}
               <li class="row">
-                <Icon.Anchor />
+                <AnchorIcon />
                 <p style="margin-left: .5rem;">
                   {org.projectCount} anchored {org.projectCount === 1
                     ? "project"

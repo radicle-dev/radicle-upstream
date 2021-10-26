@@ -6,7 +6,9 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Icon } from "ui/DesignSystem";
+  import BranchIcon from "design-system/icons/Branch.svelte";
+  import CommitIcon from "design-system/icons/Commit.svelte";
+  import UserIcon from "design-system/icons/User.svelte";
 
   export let contributors: number;
   export let branches: number;
@@ -15,9 +17,9 @@
   export let style: string | undefined = undefined;
 
   $: formattedStats = [
-    { icon: Icon.Branch, count: branches },
-    { icon: Icon.Commit, count: commits },
-    { icon: Icon.User, count: contributors },
+    { icon: BranchIcon, count: branches },
+    { icon: CommitIcon, count: commits },
+    { icon: UserIcon, count: contributors },
   ];
 </script>
 

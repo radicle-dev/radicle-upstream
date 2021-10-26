@@ -9,7 +9,11 @@
   import type * as svelteStore from "svelte/store";
   import type { SvelteComponent } from "svelte";
 
-  import { Button, Emoji, Icon } from "ui/DesignSystem";
+  import CheckIcon from "design-system/icons/Check.svelte";
+  import CopyIcon from "design-system/icons/Copy.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Emoji from "design-system/Emoji.svelte";
 
   import * as error from "ui/src/error";
   import * as ipc from "ui/src/ipc";
@@ -22,7 +26,7 @@
 
   let copied = false;
   let copyIcon: typeof SvelteComponent;
-  $: copyIcon = copied ? Icon.Check : Icon.Copy;
+  $: copyIcon = copied ? CheckIcon : CopyIcon;
 
   const copyToClipboard = (text: string) => {
     ipc.copyToClipboard(text);

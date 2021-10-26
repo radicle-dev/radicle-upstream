@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Icon } from "ui/DesignSystem";
+  import ExclamationCircleIcon from "design-system/icons/ExclamationCircle.svelte";
 
   export let message = "Something went wrong";
 </script>
@@ -29,6 +29,6 @@
 </style>
 
 <div class="error">
-  <Icon.ExclamationCircle style="fill: white" />
+  <ExclamationCircleIcon style="fill: white" />
   <p>Error: {message}</p>
 </div>

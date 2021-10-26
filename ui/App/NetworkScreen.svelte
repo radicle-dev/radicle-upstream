@@ -14,8 +14,12 @@
   import { createValidationStore } from "ui/src/validation";
   import { VALID_SEED_MATCH } from "ui/src/session";
 
-  import { Button, CopyableIdentifier, Icon, TextInput } from "ui/DesignSystem";
+  import CrossIcon from "design-system/icons/Cross.svelte";
 
+  import Button from "design-system/Button.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
   const indicatorStatus = svelteStore.derived(status, indicatorState);
@@ -183,7 +187,7 @@
         {#each seeds as seed, index (seed)}
           <div class="seed">
             <CopyableIdentifier value={seed} kind="seedAddress" />
-            <Icon.Cross
+            <CrossIcon
               dataCy="remove-seed"
               on:click={() => removeSeed(index)}
               style="margin-left: 1.5rem; cursor:pointer;" />

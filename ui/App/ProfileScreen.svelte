@@ -21,20 +21,20 @@
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as localPeer from "ui/src/localPeer";
 
-  import {
-    Button,
-    Icon,
-    FollowToggle,
-    CopyableIdentifier,
-  } from "ui/DesignSystem";
+  import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
+  import PlusIcon from "design-system/icons/Plus.svelte";
 
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import Button from "design-system/Button.svelte";
+  import FollowToggle from "design-system/FollowToggle.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
+  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
-  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   const session = Session.unsealed();
 
@@ -172,7 +172,7 @@
     <Button
       dataCy="new-project-button"
       variant="outline"
-      icon={Icon.Plus}
+      icon={PlusIcon}
       style="margin-left: auto; align-self: center"
       on:click={() => {
         modal.toggle(CreateProjectModal);
@@ -257,7 +257,7 @@
             on:click={() => {
               modal.toggle(SearchModal);
             }}
-            icon={Icon.MagnifyingGlass}
+            icon={MagnifyingGlassIcon}
             variant="outline">
             Look for a project
           </Button>

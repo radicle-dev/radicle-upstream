@@ -12,7 +12,12 @@
   import * as error from "ui/src/error";
   import * as notification from "ui/src/notification";
 
-  import { Button, Emoji, Icon, TextInput } from "ui/DesignSystem";
+  import EyeOpenIcon from "design-system/icons/EyeOpen.svelte";
+  import EyeClosedIcon from "design-system/icons/EyeClosed.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import Emoji from "design-system/Emoji.svelte";
+  import TextInput from "design-system/TextInput.svelte";
 
   let passphrase = "";
   let unlockInProgress = false;
@@ -123,7 +128,7 @@
     <div class="buttons">
       <Button
         variant="transparent"
-        icon={isPassphraseConcealed ? Icon.EyeOpen : Icon.EyeClosed}
+        icon={isPassphraseConcealed ? EyeOpenIcon : EyeClosedIcon}
         on:click={() => (isPassphraseConcealed = !isPassphraseConcealed)}>
         {isPassphraseConcealed ? "Show" : "Hide"} Passphrase
       </Button>

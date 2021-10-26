@@ -7,18 +7,17 @@
 -->
 <script lang="ts">
   import type { Identity } from "ui/src/identity";
-  import type { TextInputValidationState } from "ui/DesignSystem";
+  import type { TextInputValidationState } from "design-system/TextInput";
 
   import * as ethereum from "ui/src/ethereum";
   import * as modal from "ui/src/modal";
   import * as org from "ui/src/org";
 
-  import {
-    Button,
-    CopyableIdentifier,
-    RadioOption,
-    TextInput,
-  } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import RadioOption from "design-system/RadioOption.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 

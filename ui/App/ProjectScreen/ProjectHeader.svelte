@@ -10,7 +10,11 @@
 
   import dayjs from "dayjs";
 
-  import { Icon, CopyableIdentifier } from "ui/DesignSystem";
+  import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import BranchIcon from "design-system/icons/Branch.svelte";
+  import UserIcon from "design-system/icons/User.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let name: string;
   export let urn: string;
@@ -85,7 +89,7 @@
   <div class="stats" data-cy="project-stats">
     {#if stats.branches > 0}
       <div class="stat-item">
-        <Icon.Branch />
+        <BranchIcon />
         <span>
           {stats.branches === 1 ? `1 Branch` : `${stats.branches} Branches`}
         </span>
@@ -94,7 +98,7 @@
 
     {#if stats.contributors > 0}
       <div class="stat-item">
-        <Icon.User />
+        <UserIcon />
         <span>
           {stats.contributors === 1
             ? `1 Contributor`
@@ -105,7 +109,7 @@
 
     {#if latestAnchorTimestamp}
       <div class="stat-item">
-        <Icon.Anchor />
+        <AnchorIcon />
         <span>
           Last anchored {dayjs().to(dayjs.unix(latestAnchorTimestamp))}
         </span>

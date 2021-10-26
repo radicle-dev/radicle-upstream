@@ -13,6 +13,8 @@ module.exports = {
     "^ui/(.*)$": "<rootDir>/ui/$1",
     "^proxy-client/(.*)$": "<rootDir>/proxy-client/$1",
     "^proxy-client$": "<rootDir>/proxy-client/index",
+    "^design-system/(.*)$": "<rootDir>/design-system/$1",
+    "^design-system$": "<rootDir>/design-system/index",
   },
   testEnvironment: "jsdom",
   testRegex: "(/__tests__/.*|(\\.|/)(test))\\.ts$",

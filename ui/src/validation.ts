@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { TextInputValidationState } from "ui/DesignSystem/TextInput";
+import type { TextInputValidationState } from "design-system/TextInput";
 
 import validatejs from "validate.js";
 import { writable, Writable, Readable, get } from "svelte/store";

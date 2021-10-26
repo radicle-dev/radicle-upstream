@@ -25,7 +25,14 @@
     store,
   } from "ui/src/screen/project";
 
-  import { Button, Icon, ThreeDotsMenu, format } from "ui/DesignSystem";
+  import AtIcon from "design-system/icons/At.svelte";
+  import NetworkIcon from "design-system/icons/Network.svelte";
+  import PenIcon from "design-system/icons/Pen.svelte";
+
+  import * as format from "design-system/lib/format";
+
+  import Button from "design-system/Button.svelte";
+  import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
@@ -55,7 +62,7 @@
     return [
       {
         title: "Copy Radicle ID",
-        icon: Icon.At,
+        icon: AtIcon,
         event: () => {
           copyToClipboard(project.urn);
           notification.info({ message: "Radicle ID copied to your clipboard" });
@@ -64,7 +71,7 @@
       },
       {
         title: "Unfollow",
-        icon: Icon.Network,
+        icon: NetworkIcon,
         disabled: true,
         event: () => {},
         tooltip: isMaintainer(session.identity.urn, project)
@@ -131,7 +138,7 @@
             selected={$store.data.selectedPeer} />
           <Button
             dataCy="manage-remotes"
-            icon={Icon.Pen}
+            icon={PenIcon}
             variant="outline"
             transition={false}
             on:click={onPeerModal}

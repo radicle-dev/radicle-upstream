@@ -8,7 +8,8 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
 
-  import { Button, RadicleLogo } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import RadicleLogo from "design-system/RadicleLogo.svelte";
 
   const dispatch = createEventDispatcher();
 

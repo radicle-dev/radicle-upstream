@@ -8,7 +8,7 @@
 <script lang="ts">
   import * as hotkeys from "ui/src/hotkeys";
 
-  import { KeyHint } from "ui/DesignSystem";
+  import KeyHint from "design-system/KeyHint.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   const shortcuts = [...hotkeys.shortcuts, hotkeys.escape];

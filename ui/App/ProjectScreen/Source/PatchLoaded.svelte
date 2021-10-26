@@ -14,7 +14,8 @@
   import type { GroupedCommitsHistory } from "ui/src/source";
   import type { Patch } from "ui/src/project/patch";
 
-  import { Icon, Markdown } from "ui/DesignSystem";
+  import RevisionIcon from "design-system/icons/Revision.svelte";
+  import Markdown from "design-system/Markdown.svelte";
 
   import AcceptPatchButton from "./AcceptPatchButton.svelte";
   import BackButton from "../BackButton.svelte";
@@ -84,7 +85,7 @@
     on:arrowClick={() => router.pop()}>
     <div>
       <div class="title" data-cy="patch-title">
-        <Icon.Revision style={`fill: ${iconColor};`} />
+        <RevisionIcon style={`fill: ${iconColor};`} />
         {#if patch}
           <h2>
             {#if patch.title}{patch.title}{:else}{patch.id}{/if}

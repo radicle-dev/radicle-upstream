@@ -14,7 +14,7 @@
 
 <script lang="ts">
   import type * as ethers from "ethers";
-  import type { TextInputValidationState } from "ui/DesignSystem";
+  import type { TextInputValidationState } from "design-system/TextInput";
 
   import { sleep } from "ui/src/sleep";
   import { unreachable } from "ui/src/unreachable";
@@ -29,7 +29,8 @@
   import * as transaction from "ui/src/transaction";
   import * as wallet from "ui/src/wallet";
 
-  import { Button, TextInput } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import TextInput from "design-system/TextInput.svelte";
 
   import ConfirmRegistration from "./ConfirmRegistration.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";

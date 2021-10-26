@@ -10,7 +10,8 @@
   import { unreachable } from "ui/src/unreachable";
   import { status as store } from "ui/src/localPeer";
 
-  import { Icon } from "ui/DesignSystem";
+  import NetworkIcon from "design-system/icons/Network.svelte";
+  import RoadIcon from "design-system/icons/Road.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
@@ -25,7 +26,7 @@
     {
       title: "Peers",
       active: active === "peers",
-      icon: Icon.Network,
+      icon: NetworkIcon,
       onClick: () => {
         router.push({ type: "networkDiagnostics", activeTab: "peers" });
       },
@@ -33,7 +34,7 @@
     {
       title: "Requests",
       active: active === "requests",
-      icon: Icon.Road,
+      icon: RoadIcon,
       onClick: () => {
         router.push({ type: "networkDiagnostics", activeTab: "requests" });
       },

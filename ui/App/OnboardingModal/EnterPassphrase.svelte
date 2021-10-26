@@ -6,12 +6,16 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { TextInputValidationState } from "ui/DesignSystem";
+  import type { TextInputValidationState } from "design-system/TextInput";
 
   import { createEventDispatcher } from "svelte";
   import validatejs from "validate.js";
 
-  import { Button, Icon, TextInput } from "ui/DesignSystem";
+  import EyeClosedIcon from "design-system/icons/EyeClosed.svelte";
+  import EyeOpenIcon from "design-system/icons/EyeOpen.svelte";
+
+  import Button from "design-system/Button.svelte";
+  import TextInput from "design-system/TextInput.svelte";
 
   export let disabled = false;
 
@@ -244,7 +248,7 @@
         style={`margin-right: 1rem; ${
           passphrase.length === 0 ? "visibility:hidden;" : ""
         }`}
-        icon={isPassphraseConcealed ? Icon.EyeOpen : Icon.EyeClosed}
+        icon={isPassphraseConcealed ? EyeOpenIcon : EyeClosedIcon}
         on:click={() => (isPassphraseConcealed = !isPassphraseConcealed)}>
         {isPassphraseConcealed ? "Show" : "Hide"} Passphrase
       </Button>

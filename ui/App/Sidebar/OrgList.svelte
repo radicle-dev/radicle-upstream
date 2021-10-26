@@ -19,7 +19,12 @@
   const ethereumEnvironment = ethereum.selectedEnvironment;
   const walletStore = Wallet.store;
 
-  import { Avatar, Icon, Tooltip, format } from "ui/DesignSystem";
+  import * as format from "design-system/lib/format";
+
+  import PlusIcon from "design-system/icons/Plus.svelte";
+
+  import Avatar from "design-system/Avatar.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
   import CreateOrgModal from "ui/App/CreateOrgModal.svelte";
   import SidebarItem from "./SidebarItem.svelte";
@@ -77,7 +82,7 @@
               ? $wallet.connected.address
               : null,
         })}>
-      <Icon.Plus />
+      <PlusIcon />
     </SidebarItem>
   </Tooltip>
 {:else}
@@ -87,7 +92,7 @@
       onClick={() => {
         push({ type: "wallet", activeTab: "transactions" });
       }}>
-      <Icon.Plus />
+      <PlusIcon />
     </SidebarItem>
   </Tooltip>
 {/if}

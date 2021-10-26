@@ -7,7 +7,9 @@
 -->
 <script lang="ts">
   import type * as proxyIdentity from "proxy-client/identity";
-  import { Avatar, CopyableIdentifier } from "ui/DesignSystem";
+
+  import Avatar from "design-system/Avatar.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let user: proxyIdentity.RemoteIdentity;
 </script>

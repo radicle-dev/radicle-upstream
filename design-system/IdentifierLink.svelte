@@ -8,7 +8,9 @@
 <script lang="ts">
   import { unreachable } from "./lib/unreachable";
   import * as format from "./lib/format";
-  import Icon from "./Icon";
+
+  import CommitIcon from "./icons/Commit.svelte";
+  import EthereumIcon from "./icons/Ethereum.svelte";
 
   export let params:
     | { type: "commitHash"; hash: string; onClick: () => void }
@@ -26,14 +28,14 @@
 <div style="display: flex;">
   {#if params.type === "commitHash"}
     {#if showIcon}
-      <Icon.Commit />
+      <CommitIcon />
     {/if}
     <span class="typo-link" on:click={params.onClick}>
       {format.shortCommitHash(params.hash)}
     </span>
   {:else if params.type === "transactionHash"}
     {#if showIcon}
-      <Icon.Ethereum />
+      <EthereumIcon />
     {/if}
     <a class="typo-link" href={params.url}>{format.shortEthTx(params.hash)}</a>
   {:else}

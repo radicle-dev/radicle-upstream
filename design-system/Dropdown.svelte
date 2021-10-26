@@ -8,7 +8,7 @@
 <script lang="ts">
   import Option from "./Dropdown/Option.svelte";
   import Overlay from "./Overlay.svelte";
-  import Icon from "./Icon";
+  import ChevronUpDownIcon from "./icons/ChevronUpDown.svelte";
 
   type OptionT = { value: string; title: string };
 
@@ -132,7 +132,7 @@
           {placeholder}
         </p>
       {/if}
-      <Icon.ChevronUpDown
+      <ChevronUpDownIcon
         style={`position: absolute; top: 8px; right: 8px; fill: ${disabledColor()};`} />
     </div>
 

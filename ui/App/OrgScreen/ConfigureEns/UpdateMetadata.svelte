@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { TextInputValidationState } from "ui/DesignSystem";
+  import type { TextInputValidationState } from "design-system/TextInput";
 
   import * as configureEns from "ui/src/org/configureEns";
   import * as ensResolver from "ui/src/org/ensResolver";
@@ -15,7 +15,10 @@
   import * as notification from "ui/src/notification";
   import * as transaction from "ui/src/transaction";
 
-  import { Button, TextInput, Tooltip } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
+
   import Modal from "ui/App/ModalLayout/Modal.svelte";
 
   export let onSubmit: () => void;

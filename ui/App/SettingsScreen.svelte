@@ -26,13 +26,11 @@
   import * as modal from "ui/src/modal";
   import * as Session from "ui/src/session";
 
-  import {
-    Button,
-    CopyableIdentifier,
-    SegmentedControl,
-    SegmentedColorPicker,
-  } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import SegmentedColorPicker from "design-system/SegmentedColorPicker.svelte";
+  import SegmentedControl from "design-system/SegmentedControl.svelte";
 
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
 

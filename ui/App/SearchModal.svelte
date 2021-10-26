@@ -21,13 +21,12 @@
   import * as router from "ui/src/router";
   import * as urn from "ui/src/urn";
 
-  import {
-    CopyableIdentifier,
-    FollowToggle,
-    Icon,
-    TextInput,
-  } from "ui/DesignSystem";
+  import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
 
+  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import ProjectStats from "ui/App/SharedComponents/ProjectStats.svelte";
 
   export let searchQuery: string = "";
@@ -176,7 +175,7 @@
 
 <div class="container" data-cy="search-modal">
   <div class="search-bar">
-    <Icon.MagnifyingGlass style="margin-left: 0.5rem;" />
+    <MagnifyingGlassIcon style="margin-left: 0.5rem;" />
     <TextInput
       dataCy="search-input"
       style="flex: 1;"

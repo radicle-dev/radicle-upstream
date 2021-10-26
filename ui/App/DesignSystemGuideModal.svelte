@@ -6,7 +6,6 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
 
   import {
@@ -21,26 +20,26 @@
     primaryColorHex,
   } from "ui/src/appearance";
 
-  import {
-    Avatar,
-    Button,
-    Checkbox,
-    SegmentedColorPicker,
-    Copyable,
-    CopyableIdentifier,
-    Dropdown,
-    FollowToggle,
-    Loading,
-    Icon,
-    IdentifierLink,
-    Notification,
-    SegmentedControl,
-    Spinner,
-    SupportButton,
-    TextInput,
-    ThreeDotsMenu,
-    Tooltip,
-  } from "ui/DesignSystem";
+  import CheckIcon from "design-system/icons/Check.svelte";
+  import CrossIcon from "design-system/icons/Cross.svelte";
+  import ForkIcon from "design-system/icons/Fork.svelte";
+  import MinusIcon from "design-system/icons/Minus.svelte";
+  import PlusIcon from "design-system/icons/Plus.svelte";
+  import ArrowUpIcon from "design-system/icons/ArrowUp.svelte";
+
+  import Avatar from "design-system/Avatar.svelte";
+  import Button from "design-system/Button.svelte";
+  import Checkbox from "design-system/Checkbox.svelte";
+  import Dropdown from "design-system/Dropdown.svelte";
+  import FollowToggle from "design-system/FollowToggle.svelte";
+  import IdentifierLink from "design-system/IdentifierLink.svelte";
+  import Loading from "design-system/Loading.svelte";
+  import SegmentedColorPicker from "design-system/SegmentedColorPicker.svelte";
+  import SegmentedControl from "design-system/SegmentedControl.svelte";
+  import SupportButton from "design-system/SupportButton.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+  import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
   import Section from "./DesignSystemGuideModal/Section.svelte";
   import TypographySwatch from "./DesignSystemGuideModal/TypographySwatch.svelte";
@@ -103,13 +102,6 @@
       router.pop();
     }
   }
-
-  // TODO: fix types on this.
-  function getIconComponent(name: string) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    return Icon[name];
-  }
 </script>
 
 <style>
@@ -154,13 +146,6 @@
     align-items: flex-end;
   }
 
-  .icon-swatch {
-    display: grid;
-    grid-template-columns: repeat(10, 1.5rem);
-    grid-gap: 1.5rem;
-    margin-bottom: 34px;
-  }
-
   .settings {
     right: 132px;
     top: 24px;
@@ -180,7 +165,7 @@
       router.pop();
     }}
     variant="transparent">
-    <Icon.Cross />
+    <CrossIcon />
   </Button>
 </div>
 
@@ -302,22 +287,6 @@
         </TypographySwatch>
       </Section>
 
-      <Section title="Icons" subTitle="Icons at 24px width and height">
-        <div class="icon-swatch">
-          {#each Object.keys(Icon) as iconName}
-            <Copyable
-              name={`"<Icon.${iconName} />"`}
-              clipboardContent={`<Icon.${iconName} />`}>
-              <svelte:component this={getIconComponent(iconName)} />
-            </Copyable>
-          {/each}
-        </div>
-
-        <div class="swatch">
-          <Spinner />
-        </div>
-      </Section>
-
       <Section
         title="Buttons"
         subTitle="Vanilla, Primary, Cancel, disabled state">
@@ -346,10 +315,10 @@
               <Button variant="primary" disabled>Primary</Button>
             </td>
             <td>
-              <Button icon={Icon.Minus} variant="primary">Primary</Button>
+              <Button icon={MinusIcon} variant="primary">Primary</Button>
             </td>
             <td>
-              <Button icon={Icon.Minus} variant="primary" disabled>
+              <Button icon={MinusIcon} variant="primary" disabled>
                 Primary
               </Button>
             </td>
@@ -362,10 +331,10 @@
               <Button variant="vanilla" disabled>Vanilla</Button>
             </td>
             <td>
-              <Button icon={Icon.Plus} variant="vanilla">Vanilla</Button>
+              <Button icon={PlusIcon} variant="vanilla">Vanilla</Button>
             </td>
             <td>
-              <Button icon={Icon.Plus} variant="vanilla" disabled
+              <Button icon={PlusIcon} variant="vanilla" disabled
                 >Vanilla</Button>
             </td>
           </tr>
@@ -377,10 +346,10 @@
               <Button variant="outline" disabled>Outline</Button>
             </td>
             <td>
-              <Button icon={Icon.Fork} variant="outline">Outline</Button>
+              <Button icon={ForkIcon} variant="outline">Outline</Button>
             </td>
             <td>
-              <Button icon={Icon.Fork} variant="outline" disabled
+              <Button icon={ForkIcon} variant="outline" disabled
                 >Outline</Button>
             </td>
           </tr>
@@ -392,11 +361,11 @@
               <Button variant="transparent" disabled>Transparent</Button>
             </td>
             <td>
-              <Button icon={Icon.Check} variant="transparent"
+              <Button icon={CheckIcon} variant="transparent"
                 >Transparent</Button>
             </td>
             <td>
-              <Button icon={Icon.Check} variant="transparent" disabled>
+              <Button icon={CheckIcon} variant="transparent" disabled>
                 Transparent
               </Button>
             </td>
@@ -409,11 +378,11 @@
               <Button variant="destructive" disabled>Destructive</Button>
             </td>
             <td>
-              <Button icon={Icon.Cross} variant="destructive"
+              <Button icon={CrossIcon} variant="destructive"
                 >Destructive</Button>
             </td>
             <td>
-              <Button icon={Icon.Cross} variant="destructive" disabled>
+              <Button icon={CrossIcon} variant="destructive" disabled>
                 Destructive
               </Button>
             </td>
@@ -680,76 +649,6 @@
         </div>
       </Section>
 
-      <Section title="Notifications" subTitle="Info, Warnings and Errors">
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Info, {
-              message: "Snackbar",
-            })} />
-        </div>
-
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Info, {
-              message: "Info with icon",
-              showIcon: true,
-            })} />
-        </div>
-
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Info, {
-              message: "Info without default action",
-              actions: [],
-            })} />
-        </div>
-
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Error, {
-              message: "Just plain error",
-            })} />
-        </div>
-
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Error, {
-              message: "Error with icon",
-              showIcon: true,
-            })} />
-        </div>
-
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Error, {
-              message: "Error with one action",
-              actions: [{ label: "Action", handler: () => {} }],
-            })} />
-        </div>
-
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Error, {
-              message: "Error with two actions",
-              actions: [
-                { label: "Action 1", handler: () => {} },
-                { label: "Action 2", handler: () => {} },
-              ],
-            })} />
-        </div>
-
-        <div class="swatch">
-          <Notification
-            notification={notification.create(notification.Variant.Primary, {
-              message: "Primary notification",
-              actions: [
-                { label: "Action 1", handler: () => {} },
-                { label: "Action 2", handler: () => {} },
-              ],
-            })} />
-        </div>
-      </Section>
-
       <Section title="Tooltips" subTitle="Top, Right, Bottom, Left">
         <div class="swatch">
           <Tooltip value="Top" position="top">
@@ -777,46 +676,6 @@
       </Section>
 
       <Section
-        title="Copyable identifiers"
-        subTitle="Various Radicle and Ethereum identifiers that can be copied to clipboard">
-        <div class="swatch">
-          <CopyableIdentifier
-            kind="radicleId"
-            value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr"
-            showIcon={false} />
-        </div>
-
-        <div class="swatch">
-          <CopyableIdentifier
-            style="margin-right: 1rem;"
-            kind="radicleId"
-            value="rad:git:hwd1yre8ttugonm77udfkti4ou89p4e37gdebmj3o544hzrg3r8dupn8hmr" />
-
-          <CopyableIdentifier
-            style="margin-right: 1rem;"
-            kind="deviceId"
-            value="hyyo6u8rhnuswory4c6symx471yseke74oq1myfesoig7zggcixejy" />
-
-          <CopyableIdentifier
-            style="margin-right: 1rem;"
-            kind="ethAddress"
-            value="0xA66A5686D5c3A42C0b6c76FEd05e58C6bc851E9f" />
-        </div>
-
-        <div class="swatch">
-          <CopyableIdentifier
-            kind="seedAddress"
-            value="hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345" />
-        </div>
-
-        <div class="swatch">
-          <CopyableIdentifier
-            kind="commitHash"
-            value="20436154e1118b39f1b2bf3c049ab040ca910846" />
-        </div>
-      </Section>
-
-      <Section
         title="Identifier links"
         subTitle="Various Radicle and Ethereum identifiers that link within Upstream or to external resources">
         <div class="swatch">
@@ -837,29 +696,6 @@
         </div>
       </Section>
 
-      <Section title="Copyable" subTitle="Copy to clipboard">
-        <div class="swatch">
-          <Copyable name="command" clipboardContent="git push rad">
-            <pre
-              style="typo-text-mono">
-              git push rad
-            </pre>
-          </Copyable>
-        </div>
-
-        <div class="swatch">
-          <Copyable
-            name="WalletConnect link"
-            clipboardContent="wc:ca1716bb-aeb0-4420-aee9-8ee15e577740@1?bridge=https%3A%2F%2Fe.bridge.walletconnect.org&key=199be30aedc8fff6e19019ea3a7a9a7f998a499b7f50ba89f06bf918fc2dab39">
-            wc:ca171…dab39
-          </Copyable>
-        </div>
-
-        <div class="swatch">
-          <Copyable>when no props are supplied</Copyable>
-        </div>
-      </Section>
-
       <Section title="Misc" subTitle="Everything else">
         <div class="swatch">
           <ThreeDotsMenu
@@ -867,13 +703,13 @@
             menuItems={[
               {
                 title: "Add something",
-                icon: Icon.Plus,
+                icon: PlusIcon,
                 event: () => {},
                 tooltip: "Here be tooltip",
               },
               {
                 title: "Send something",
-                icon: Icon.ArrowUp,
+                icon: ArrowUpIcon,
                 event: () => {},
                 disabled: true,
               },

@@ -22,6 +22,12 @@
   } from "ui/src/attestation/status";
   import { store, Status, accountBalancesStore } from "ui/src/wallet";
 
+  import TransactionsIcon from "design-system/icons/Transactions.svelte";
+
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import ScreenLayout from "ui/App/ScreenLayout.svelte";
+  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
+
   import ConnectWallet from "./WalletScreen/ConnectWallet.svelte";
   import LinkAddress from "./WalletScreen/LinkAddress.svelte";
   import QrCodeModal from "./WalletScreen/QrCodeModal.svelte";
@@ -29,19 +35,13 @@
   import WalletPanel from "./WalletScreen/WalletPanel.svelte";
   import WrongNetwork from "./WalletScreen/WrongNetwork.svelte";
 
-  import { Icon } from "ui/DesignSystem";
-
-  import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
-  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
-
   export let activeTab: router.WalletTab;
 
   const tabs = (active: router.WalletTab) => {
     const items = [
       {
         title: "Transactions",
-        icon: Icon.Transactions,
+        icon: TransactionsIcon,
         active: active === "transactions",
         onClick: () => {
           router.push({ type: "wallet", activeTab: "transactions" });

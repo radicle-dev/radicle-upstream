@@ -11,7 +11,10 @@
 
   import type { Project } from "ui/src/project";
   import type { Patch } from "ui/src/project/patch";
-  import { List, SegmentedControl } from "ui/DesignSystem";
+
+  import List from "design-system/List.svelte";
+  import SegmentedControl from "design-system/SegmentedControl.svelte";
+
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import PatchCard from "./PatchCard.svelte";
 

@@ -7,7 +7,8 @@
 -->
 <script lang="ts">
   import type { RoomState } from "ui/src/waitingRoom";
-  import { CopyableIdentifier } from "ui/DesignSystem";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let state: RoomState;
 </script>

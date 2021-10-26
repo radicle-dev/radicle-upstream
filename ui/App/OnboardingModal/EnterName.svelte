@@ -10,7 +10,9 @@
 
   import * as onboarding from "ui/src/onboarding";
 
-  import { Button, Emoji, TextInput } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import Emoji from "design-system/Emoji.svelte";
+  import TextInput from "design-system/TextInput.svelte";
 
   const dispatch = createEventDispatcher();
 

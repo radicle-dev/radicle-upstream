@@ -8,8 +8,8 @@
 <script lang="ts">
   import { isMarkdown } from "ui/src/source";
 
-  import Icon from "ui/DesignSystem/Icon";
-  import Markdown from "ui/DesignSystem/Markdown.svelte";
+  import FileIcon from "design-system/icons/File.svelte";
+  import Markdown from "design-system/Markdown.svelte";
 
   export let content: string;
   export let path: string;
@@ -48,7 +48,7 @@
 <div class="readme">
   <header>
     <div class="file-header typo-text-bold">
-      <Icon.File />
+      <FileIcon />
       <span class="file-name">{path}</span>
     </div>
   </header>

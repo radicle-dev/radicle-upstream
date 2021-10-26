@@ -28,17 +28,15 @@
   import * as proxy from "ui/src/proxy";
   import * as screen from "ui/src/screen";
 
-  import {
-    Button,
-    Dropdown,
-    DirectoryInput,
-    RadioOption,
-    TextInput,
-    Tooltip,
-  } from "ui/DesignSystem";
+  import Button from "design-system/Button.svelte";
+  import Dropdown from "design-system/Dropdown.svelte";
+  import RadioOption from "design-system/RadioOption.svelte";
+  import TextInput from "design-system/TextInput.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
 
-  import RemoteHelperHint from "ui/App/SharedComponents/RemoteHelperHint.svelte";
+  import DirectoryInput from "ui/App/SharedComponents/DirectoryInput.svelte";
   import Modal from "ui/App/ModalLayout/Modal.svelte";
+  import RemoteHelperHint from "ui/App/SharedComponents/RemoteHelperHint.svelte";
 
   type RepoType = "new" | "existing";
 

@@ -18,7 +18,9 @@
 </script>
 
 <script lang="ts">
-  import { Copyable, Hoverable, Icon } from "ui/DesignSystem";
+  import CrossSmallIcon from "design-system/icons/CrossSmall.svelte";
+  import Hoverable from "design-system/Hoverable.svelte";
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   let hover = false;
 </script>
@@ -52,7 +54,7 @@
       on:click={() => {
         $isRemoteHelperHintVisible = false;
       }}>
-      <Icon.CrossSmall />
+      <CrossSmallIcon />
     </div>
     <p class="description">
       To publish code to Radicle, you need to add this to your shell

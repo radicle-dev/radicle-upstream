@@ -6,13 +6,13 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { TextInputValidationState } from "./TextInput";
+  import type { TextInputValidationState } from "design-system/TextInput";
 
   import { createEventDispatcher } from "svelte";
   import { getDirectoryPath } from "ui/src/ipc";
 
-  import Button from "./Button.svelte";
-  import TextInput from "./TextInput.svelte";
+  import Button from "design-system/Button.svelte";
+  import TextInput from "design-system/TextInput.svelte";
 
   export let placeholder: string | undefined = undefined;
   export let style: string | undefined = undefined;
