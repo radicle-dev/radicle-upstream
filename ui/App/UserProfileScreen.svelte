@@ -42,7 +42,7 @@
 </style>
 
 <ScreenLayout dataCy="user-profile-screen">
-  <div slot="header">
+  <div slot="header" style="display: flex">
     <UserProfileHeader {user} />
   </div>
 
