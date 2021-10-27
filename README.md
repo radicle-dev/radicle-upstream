@@ -1,6 +1,7 @@
 # Upstream
 
-[![Build status][ba]][st]
+[![build][bb]][bu]
+[![dist][db]][dd]
 
 Upstream is a cross-platform desktop client for the radicle code collaboration
 protocol.
@@ -48,8 +49,11 @@ Upstream uses:
   - [Source Code Pro font family by Adobe][so]
 
 
-[ba]: https://badge.buildkite.com/4fb43c6b471ab7cc26509eae235b0e4bbbaace11cc1848eae6.svg?branch=master
+[bb]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/build.yaml/badge.svg
+[bu]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/build.yaml
 [co]: docs/contributing.md
+[db]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/dist.yaml/badge.svg
+[dd]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/dist.yaml
 [de]: docs/development.md
 [pr]: proxy
 [ra]: https://rsms.me/inter
