@@ -40,6 +40,7 @@ mod context;
 mod control;
 pub mod env;
 mod error;
+mod shutdown_runner;
 mod ethereum {
     pub mod address;
     pub mod claim_ext;

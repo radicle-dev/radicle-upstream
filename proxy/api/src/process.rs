@@ -8,7 +8,7 @@
 // Otherwise clippy complains about FromArgs
 #![allow(clippy::default_trait_access)]
 
-use std::{future::Future, net, sync::Arc, time::Duration};
+use std::{net, sync::Arc, time::Duration};
 
 use argh::FromArgs;
 use futures::prelude::*;
@@ -151,11 +151,9 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
         .await?;
         let result = run_rigging(rigging, notified_restart).await;
         match result {
-            // We've been shut down, ignore
-            Err(RunError::Peer(radicle_daemon::peer::Error::Join(_))) | Ok(()) => {
-                tracing::debug!("aborted");
+            Ok(()) => {
+                tracing::info!("reloading");
             },
-            // Actual error, abort the process
             Err(e) => return Err(e.into()),
         };
     }
@@ -189,10 +187,6 @@ async fn run_rigging(
     // Required for `tokio::select`. We can’t put it on the element directly, though.
     #![allow(clippy::mut_mut)]
 
-    let restart_signal = restart_signal.shared();
-
-    let (restart_server_signal_tx, restart_server_signal_rx) = tokio::sync::oneshot::channel();
-
     let Rigging {
         ctx,
         peer,
@@ -201,57 +195,59 @@ async fn run_rigging(
 
     let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
 
-    tracing::info!("starting API");
-    let server = serve(
-        ctx.clone(),
-        peer_events_sender.clone(),
-        futures::future::select(
-            restart_signal.clone().boxed(),
-            restart_server_signal_rx.boxed(),
-        )
-        .map(|_| ()),
-    )?
-    .map(Ok);
+    let mut shutdown_runner = crate::shutdown_runner::ShutdownRunner::new();
+
+    // Trigger a shutdown when the restart signal resolves
+    shutdown_runner.add_without_shutdown(restart_signal.map(Ok));
+
+    shutdown_runner.add_with_shutdown({
+        let ctx = ctx.clone();
+        let peer_events_sender = peer_events_sender.clone();
+        move |shutdown_signal| serve(ctx, peer_events_sender, shutdown_signal).boxed()
+    });
 
     if let Some(peer) = peer {
-        let mut tasks = vec![restart_signal.clone().boxed()];
+        let mut tasks = vec![send_peer_events(peer.subscribe(), peer_events_sender).boxed()];
 
         if let Some(seeds_sender) = seeds_sender {
-            tasks.push(send_seeds(&ctx, peer.control(), seeds_sender).boxed());
+            tasks.push(send_seeds(ctx.clone(), peer.control(), seeds_sender).boxed());
         }
 
-        tasks.push(send_peer_events(peer.subscribe(), peer_events_sender).boxed());
-
-        let mut tasks = futures::future::select_all(tasks).fuse();
+        shutdown_runner.add_without_shutdown(async move {
+            futures::future::select_all(tasks).await;
+            Ok(())
+        });
 
         tracing::info!("starting peer");
-        let (peer_shutdown, peer_run) = peer.start();
+        shutdown_runner.add_with_shutdown(move |shutdown_signal| {
+            let (peer_shutdown, peer_run) = peer.start();
+            let peer_run = peer_run.fuse();
+            let mut shutdown_signal = shutdown_signal.fuse();
+            async move {
+                futures::pin_mut!(peer_run);
+                let result = futures::select! {
+                    _ = shutdown_signal => {
+                        drop(peer_shutdown);
+                        peer_run.await
+                    }
+                    result = peer_run => {
+                        result
+                    }
+                };
 
-        let peer_run = peer_run.fuse();
-        futures::pin_mut!(peer_run);
-        futures::pin_mut!(server);
-        futures::select! {
-            _ = tasks => {
-                let _ = restart_server_signal_tx.send(());
-                server.await?;
-                drop(peer_shutdown);
-                peer_run.await?;
-                Ok(())
+                result.map_err(RunError::from)
             }
-            result = server => {
-                drop(peer_shutdown);
-                peer_run.await?;
-                result
-            }
-            result = peer_run => {
-                let _ = restart_server_signal_tx.send(());
-                server.await?;
-                result.map_err(RunError::Peer)
-            }
-        }
-    } else {
-        server.await
+            .boxed()
+        });
     }
+
+    let results = shutdown_runner.run().await;
+
+    for result in results {
+        result?
+    }
+
+    Ok(())
 }
 
 /// Create [`Rigging`] to run the peer and API.
@@ -365,7 +361,7 @@ async fn send_peer_events(
 }
 
 async fn send_seeds(
-    ctx: &context::Context,
+    ctx: context::Context,
     mut peer_control: radicle_daemon::peer::Control,
     seeds_sender: watch::Sender<Vec<radicle_daemon::seed::Seed>>,
 ) {
@@ -400,23 +396,25 @@ fn serve(
     ctx: context::Context,
     peer_events_sender: broadcast::Sender<notification::Notification>,
     restart_signal: impl Future<Output = ()> + Send + 'static,
-) -> Result<impl Future<Output = ()>, RunError> {
+) -> impl Future<Output = Result<(), RunError>> {
     let ctx_shutdown = match ctx {
         context::Context::Sealed(_) => None,
         context::Context::Unsealed(ref unsealed) => Some(unsealed.shutdown.clone()),
     };
     let listen_addr = ctx.http_listen();
     let api = http::api(ctx, peer_events_sender);
-    let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(listen_addr, {
-        async move {
-            restart_signal.await;
-            if let Some(ctx_shutdown) = ctx_shutdown {
-                ctx_shutdown.notify_waiters()
+    async move {
+        let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(listen_addr, {
+            async move {
+                restart_signal.await;
+                if let Some(ctx_shutdown) = ctx_shutdown {
+                    ctx_shutdown.notify_waiters()
+                }
             }
-        }
-    })?;
-
-    Ok(server)
+        })?;
+        server.await;
+        Ok(())
+    }
 }
 
 fn setup_logging(args: &Args) {
