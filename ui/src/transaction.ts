@@ -81,7 +81,7 @@ interface ClaimRadicleIdentity {
 
 export enum TxKind {
   AnchorProject = "Anchor Project",
-  ClaimRadicleIdentity = "Claim Radicle Identity",
+  ClaimRadicleIdentity = "Claim Identity",
   CommitEnsName = "Commit ENS name",
   CreateOrg = "Create Org",
   LinkEnsNameToOrg = "Link Ens Name to Org",
