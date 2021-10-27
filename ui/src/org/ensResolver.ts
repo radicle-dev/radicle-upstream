@@ -144,7 +144,7 @@ export async function getRegistration(
   ]);
 
   const [address, avatar, url, twitter, github, seedId, seedHost] = meta.map(
-    (value: PromiseSettledResult<string>) =>
+    (value: PromiseSettledResult<string | null>) =>
       value.status === "fulfilled" ? value.value : null
   );
 
