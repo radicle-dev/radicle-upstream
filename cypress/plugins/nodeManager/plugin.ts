@@ -147,8 +147,8 @@ class Node {
         "--unsafe-fast-keystore",
       ],
       {
+        buffer: false,
         env: {
-          ...global.process.env,
           RAD_HOME: this.radHome,
           RUST_LOG: [
             "info",
@@ -202,7 +202,7 @@ class Node {
 
     const gitConfigSet = (name: string, value: string) =>
       execa("git", ["config", "--global", name, value], {
-        env: { ...global.process.env, HOME: this.radHome },
+        env: { HOME: this.radHome },
       });
 
     await gitConfigSet(

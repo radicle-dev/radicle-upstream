@@ -53,6 +53,7 @@ export class ProxyProcessManager {
 
     const childProcess = execa(this.options.proxyPath, this.options.proxyArgs, {
       stdio: ["ignore", "pipe", "pipe"],
+      buffer: false,
     });
 
     this.childProcess = childProcess;
