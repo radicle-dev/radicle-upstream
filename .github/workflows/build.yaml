@@ -1,7 +1,7 @@
 name: build
 on:
   push:
-    branches: [master]
+    branches: ["**"]
   pull_request:
 jobs:
   build-linux:
@@ -37,7 +37,7 @@ jobs:
             cypress/workspace/test-tmp/*/combined-node.log
   build-macos:
     runs-on: macos-11
-    if: github.event.pull_request
+    if: github.event.pull_request || github.head_ref == "refs/heads/master"
     steps:
       - run:  |
           echo "CARGO_HOME=$HOME/cache/cargo" >> $GITHUB_ENV
