@@ -1,0 +1,31 @@
+[package]
+name = "upstream-seed"
+version = "0.1.0"
+license = "GPL-3.0-only"
+authors = ["radicle team <dev@radicle.xyz>"]
+edition = "2018"
+description = "Minimal seed node for working with upstream"
+readme = "https://github.com/radicle-dev/radicle-upstream/blob/master/upstream-seed/README.md"
+repository = "git@github.com:radicle-dev/radicle-upstream.git"
+categories = [ "code-collaboration", "p2p" ]
+keywords = [ "radicle", "upstream" ]
+
+[dependencies]
+anyhow = "1.0"
+async-trait = { version = "0.1" }
+either = { version = "1.6" }
+futures = { version = "0.3" }
+futures-delay-queue = "0.5"
+git2 = { version = "0.13", default-features = false }
+rustc-hex = { version = "2.1" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+structopt = "0.3"
+thiserror = { version = "1" }
+tokio = { version = "1", features = ["macros", "time", "rt", "rt-multi-thread"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# radicle-link dependencies. These are patched in the workspace.
+librad = { version = "0" }
+link-identities = { version = "0" }
