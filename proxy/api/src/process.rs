@@ -13,7 +13,7 @@ use std::{future::Future, net, sync::Arc, time::Duration};
 use argh::FromArgs;
 use futures::prelude::*;
 use thiserror::Error;
-use tokio::sync::{watch, RwLock};
+use tokio::sync::{broadcast, watch, RwLock};
 
 use crate::{config, context, git_helper, http, notification, service, session};
 
@@ -175,7 +175,6 @@ enum RunError {
 /// # Errors
 ///
 /// Errors when either the peer or the API error.
-#[allow(clippy::too_many_lines)]
 async fn run_rigging(
     rigging: Rigging,
     restart_signal: impl Future<Output = ()> + Send + Sync + 'static,
@@ -194,102 +193,27 @@ async fn run_rigging(
     } = rigging;
 
     let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
-    let server_ctx = ctx.clone();
-    let ctx_shutdown = match ctx {
-        context::Context::Sealed(_) => None,
-        context::Context::Unsealed(ref unsealed) => Some(unsealed.shutdown.clone()),
-    };
 
     tracing::info!("starting API");
-    let api = http::api(server_ctx.clone(), peer_events_sender.clone());
-    let (_, server) =
-        warp::serve(api).try_bind_with_graceful_shutdown(server_ctx.http_listen(), {
-            let restart_signal = restart_signal.clone();
-            async move {
-                futures::future::select(
-                    Box::pin(restart_signal),
-                    Box::pin(restart_server_signal_rx),
-                )
-                .await;
-                if let Some(ctx_shutdown) = ctx_shutdown {
-                    ctx_shutdown.notify_waiters()
-                }
-            }
-        })?;
-
-    let server = server.map(Ok);
+    let server = serve(
+        ctx.clone(),
+        peer_events_sender.clone(),
+        futures::future::select(
+            restart_signal.clone().boxed(),
+            restart_server_signal_rx.boxed(),
+        )
+        .map(|_| ()),
+    )?
+    .map(Ok);
 
     if let Some(peer) = peer {
-        let mut tasks = vec![restart_signal.shared().boxed()];
+        let mut tasks = vec![restart_signal.clone().boxed()];
 
         if let Some(seeds_sender) = seeds_sender {
-            let mut peer_control = peer.control();
-            let seeds_store = ctx.store().clone();
-            let seeds_event_task = async move {
-                let mut last_seeds = session_seeds(&seeds_store, ctx.default_seeds())
-                    .await
-                    .expect("Failed to read session store");
-                let mut timer = tokio::time::interval(Duration::from_secs(5));
-
-                loop {
-                    let _timestamp = timer.tick().await;
-
-                    let seeds = session_seeds(&seeds_store, ctx.default_seeds())
-                        .await
-                        .expect("Failed to read session store");
-
-                    let current_status = peer_control.current_status().await;
-
-                    if seeds == last_seeds && current_status != radicle_daemon::PeerStatus::Offline
-                    {
-                        continue;
-                    }
-
-                    if seeds_sender.send(seeds.clone()).is_err() {
-                        break;
-                    }
-
-                    last_seeds = seeds;
-                }
-            };
-            tasks.push(seeds_event_task.boxed());
+            tasks.push(send_seeds(&ctx, peer.control(), seeds_sender).boxed());
         }
-        let peer_event_task = {
-            let mut peer_events = peer.subscribe();
 
-            async move {
-                loop {
-                    match peer_events.recv().await {
-                        Ok(event) => {
-                            if let radicle_daemon::peer::Event::WaitingRoomTransition(
-                                ref transition,
-                            ) = event
-                            {
-                                tracing::debug!(event = ?transition.event, "waiting room transition")
-                            }
-
-                            if let radicle_daemon::peer::Event::GossipFetched {
-                                gossip,
-                                result,
-                                ..
-                            } = &event
-                            {
-                                tracing::debug!(?gossip, ?result, "gossip received")
-                            }
-
-                            if let Some(notification) = notification::from_peer_event(event) {
-                                let _result = peer_events_sender.send(notification).err();
-                            }
-                        },
-                        Err(err) => {
-                            tracing::error!(?err, "Failed to receive peer event");
-                            return;
-                        },
-                    }
-                }
-            }
-        };
-        tasks.push(peer_event_task.boxed());
+        tasks.push(send_peer_events(peer.subscribe(), peer_events_sender).boxed());
 
         let mut tasks = futures::future::select_all(tasks).fuse();
 
@@ -404,4 +328,86 @@ async fn session_seeds(
             tracing::error!(?seeds, ?err, "Error parsing seed list");
             vec![]
         }))
+}
+
+async fn send_peer_events(
+    mut peer_events: broadcast::Receiver<radicle_daemon::PeerEvent>,
+    peer_events_sender: broadcast::Sender<notification::Notification>,
+) {
+    loop {
+        match peer_events.recv().await {
+            Ok(event) => {
+                if let radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) = event {
+                    tracing::debug!(event = ?transition.event, "waiting room transition")
+                }
+
+                if let radicle_daemon::peer::Event::GossipFetched { gossip, result, .. } = &event {
+                    tracing::debug!(?gossip, ?result, "gossip received")
+                }
+
+                if let Some(notification) = notification::from_peer_event(event) {
+                    let _result = peer_events_sender.send(notification).err();
+                }
+            },
+            Err(err) => {
+                tracing::error!(?err, "Failed to receive peer event");
+                return;
+            },
+        }
+    }
+}
+
+async fn send_seeds(
+    ctx: &context::Context,
+    mut peer_control: radicle_daemon::peer::Control,
+    seeds_sender: watch::Sender<Vec<radicle_daemon::seed::Seed>>,
+) {
+    let seeds_store = ctx.store().clone();
+    let mut last_seeds = session_seeds(&seeds_store, ctx.default_seeds())
+        .await
+        .expect("Failed to read session store");
+    let mut timer = tokio::time::interval(Duration::from_secs(5));
+
+    loop {
+        let _timestamp = timer.tick().await;
+
+        let seeds = session_seeds(&seeds_store, ctx.default_seeds())
+            .await
+            .expect("Failed to read session store");
+
+        let current_status = peer_control.current_status().await;
+
+        if seeds == last_seeds && current_status != radicle_daemon::PeerStatus::Offline {
+            continue;
+        }
+
+        if seeds_sender.send(seeds.clone()).is_err() {
+            break;
+        }
+
+        last_seeds = seeds;
+    }
+}
+
+fn serve(
+    ctx: context::Context,
+    peer_events_sender: broadcast::Sender<notification::Notification>,
+    restart_signal: impl Future<Output = ()> + Send + 'static,
+) -> Result<impl Future<Output = ()>, RunError> {
+    let ctx_shutdown = match ctx {
+        context::Context::Sealed(_) => None,
+        context::Context::Unsealed(ref unsealed) => Some(unsealed.shutdown.clone()),
+    };
+    let listen_addr = ctx.http_listen();
+    let api = http::api(ctx, peer_events_sender);
+    let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(listen_addr, {
+        async move {
+            restart_signal.await;
+            if let Some(ctx_shutdown) = ctx_shutdown {
+                ctx_shutdown.notify_waiters()
+            }
+        }
+    })?;
+
+    Ok(server)
 }
