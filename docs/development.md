@@ -395,6 +395,29 @@ build times. If you need to update this image, proceed as follows:
 8. Commit changes to `Dockerfile` and `pipeline.yaml`. Pushing the changes will
    create a new branch and build the updated image.
 
+## Updating NPM dependencies
+
+1. Run `yarn upgrade-interactive`.
+
+2. Select newer versions if appropriate
+   * For major version upgrades review the changelog to assess the impact of
+     breaking changes. The assessment should be included in the commit message.
+   * The following packages cannot be upgraded to the next major version because
+     we don’t support ES modules yet. See [#2227](https://github.com/radicle-dev/radicle-upstream/issues/2227).
+     If possible, do a minor version upgrade.
+     * `node-fetch` and `@types/node`
+     * `globby`
+     * `exit-hook`
+     * `strip-ansi`
+   * Don’t update `radicle-contracts`.
+   * Don’t do a major upgrade of `@types/node`.
+   * `electron-builder` shows `^22.13.1` as the latest version. This is
+     not the latest version. Choose the version from the “Range” column.
+
+3. Update transitive dependencies: Remove `yarn.lock` and run `yarn install`.
+
+4. Run `yarn dedupe`.
+
 ## Releases
 
 This section describes how to release a new version of Upstream.
