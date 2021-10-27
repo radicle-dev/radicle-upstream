@@ -5,26 +5,24 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="ts" context="module">
+  export interface SegmentedControlOption {
+    title: string;
+    value: string;
+  }
+</script>
+
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
+
   export let style: string | undefined = undefined;
+
+  export let active: string;
+  export let options: SegmentedControlOption[];
+
   const dispatch = createEventDispatcher();
 
-  interface Option<T> {
-    title: string;
-    value: T;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type AnyOption = Option<any>;
-
-  // Currently active option value.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export let active: any;
-  // The available options.
-  export let options: AnyOption[];
-
-  const onClick = (option: AnyOption) => {
+  const onClick = (option: SegmentedControlOption) => {
     dispatch("select", option.value);
     currentlyActive = option.value;
   };
@@ -39,11 +37,11 @@
     border: 1px solid var(--color-foreground-level-3);
     border-radius: 0.5rem;
     height: 2.5rem;
+    background-color: var(--color-background);
+    overflow: hidden;
   }
-  .segmented-control:hover button.active:not(:hover) {
-    background: none;
-  }
-  .segmented-control button {
+
+  button {
     cursor: pointer;
     padding: 0 0.75rem;
     max-height: 1.875rem;
@@ -52,18 +50,19 @@
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);
   }
-  .segmented-control button:focus {
+
+  button:focus {
     outline: none;
   }
-  .segmented-control button.active {
+
+  button:hover,
+  button:active {
+    background-color: var(--color-foreground-level-2);
+  }
+
+  button.active {
     background-color: var(--color-foreground-level-2);
     color: var(--color-primary);
-  }
-  .segmented-control button:hover {
-    background-color: var(--color-foreground-level-2);
-  }
-  .segmented-control button:active {
-    background-color: var(--color-foreground-level-2);
   }
 </style>
 
@@ -78,4 +77,6 @@
       {option.title}
     </button>
   {/each}
+
+  <slot />
 </div>

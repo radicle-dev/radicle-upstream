@@ -8,17 +8,10 @@
 <script lang="ts">
   import * as router from "ui/src/router";
 
-  import {
-    theme,
-    themeOptions,
-    codeFont,
-    codeFontOptions,
-    uiFont,
-    uiFontOptions,
-    primaryColor,
-    primaryColorOptions,
-    primaryColorHex,
-  } from "ui/src/appearance";
+  import CodeFontSetting from "ui/App/SharedComponents/CodeFontSetting.svelte";
+  import PrimaryColorSetting from "ui/App/SharedComponents/PrimaryColorSetting.svelte";
+  import ThemeSetting from "ui/App/SharedComponents/ThemeSetting.svelte";
+  import UiFontSetting from "ui/App/SharedComponents/UiFontSetting.svelte";
 
   import CheckIcon from "design-system/icons/Check.svelte";
   import CrossIcon from "design-system/icons/Cross.svelte";
@@ -34,7 +27,6 @@
   import FollowToggle from "design-system/FollowToggle.svelte";
   import IdentifierLink from "design-system/IdentifierLink.svelte";
   import Loading from "design-system/Loading.svelte";
-  import SegmentedColorPicker from "design-system/SegmentedColorPicker.svelte";
   import SegmentedControl from "design-system/SegmentedControl.svelte";
   import SupportButton from "design-system/SupportButton.svelte";
   import TextInput from "design-system/TextInput.svelte";
@@ -153,6 +145,7 @@
     z-index: 10;
     display: flex;
     align-items: center;
+    gap: 1rem;
   }
 </style>
 
@@ -174,34 +167,16 @@
     <div class="layout">
       <div class="settings">
         <Tooltip value="Theme" position="bottom">
-          <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$theme}
-            options={themeOptions}
-            on:select={ev => theme.set(ev.detail)} />
-        </Tooltip>
-        <Tooltip value="Primary color" position="bottom">
-          <div style="display: flex;">
-            <SegmentedColorPicker
-              active={$primaryColor}
-              options={primaryColorOptions}
-              on:select={ev => primaryColor.set(ev.detail)}
-              bind:colorValue={$primaryColorHex} />
-          </div>
+          <ThemeSetting />
         </Tooltip>
         <Tooltip value="UI font" position="bottom">
-          <SegmentedControl
-            style="background-color: var(--color-background); margin: 0 2rem;"
-            active={$uiFont}
-            options={uiFontOptions}
-            on:select={ev => uiFont.set(ev.detail)} />
+          <UiFontSetting />
         </Tooltip>
         <Tooltip value="Code font" position="bottom">
-          <SegmentedControl
-            style="background-color: var(--color-background); margin-right: 2rem;"
-            active={$codeFont}
-            options={codeFontOptions}
-            on:select={ev => codeFont.set(ev.detail)} />
+          <CodeFontSetting />
+        </Tooltip>
+        <Tooltip value="Primary color" position="bottom">
+          <PrimaryColorSetting />
         </Tooltip>
       </div>
       <h1 style="margin-bottom: 92px">Primitives</h1>
@@ -718,19 +693,19 @@
           <SupportButton style="margin-right: 1rem;" />
 
           <SegmentedControl
-            active={1}
+            active={"closed"}
             options={[
               {
                 title: "Open",
-                value: 0,
+                value: "open",
               },
               {
                 title: "Closed",
-                value: 1,
+                value: "closed",
               },
               {
                 title: "All",
-                value: 2,
+                value: "all",
               },
             ]} />
         </div>

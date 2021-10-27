@@ -9,17 +9,6 @@
   import * as svelteStore from "svelte/store";
 
   import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
-  import {
-    theme,
-    themeOptions,
-    codeFont,
-    codeFontOptions,
-    uiFont,
-    uiFontOptions,
-    primaryColor,
-    primaryColorOptions,
-    primaryColorHex,
-  } from "ui/src/appearance";
   import { updateChecker } from "ui/src/updateChecker";
   import * as ethereum from "ui/src/ethereum";
   import * as ipc from "ui/src/ipc";
@@ -27,12 +16,15 @@
   import * as Session from "ui/src/session";
 
   import Button from "design-system/Button.svelte";
-  import SegmentedColorPicker from "design-system/SegmentedColorPicker.svelte";
   import SegmentedControl from "design-system/SegmentedControl.svelte";
 
+  import CodeFontSetting from "ui/App/SharedComponents/CodeFontSetting.svelte";
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
+  import PrimaryColorSetting from "ui/App/SharedComponents/PrimaryColorSetting.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
+  import ThemeSetting from "ui/App/SharedComponents/ThemeSetting.svelte";
+  import UiFontSetting from "ui/App/SharedComponents/UiFontSetting.svelte";
 
   const updateEthereumEnvironment = (event: CustomEvent) => {
     const environment = event.detail as ethereum.Environment;
@@ -169,10 +161,7 @@
           </p>
         </div>
         <div class="action">
-          <SegmentedControl
-            active={$theme}
-            options={themeOptions}
-            on:select={ev => theme.set(ev.detail)} />
+          <ThemeSetting />
         </div>
       </div>
       <div class="section-item border">
@@ -184,10 +173,7 @@
           </p>
         </div>
         <div class="action">
-          <SegmentedControl
-            active={$uiFont}
-            options={uiFontOptions}
-            on:select={ev => uiFont.set(ev.detail)} />
+          <UiFontSetting />
         </div>
       </div>
       <div class="section-item">
@@ -199,10 +185,7 @@
           </p>
         </div>
         <div class="action">
-          <SegmentedControl
-            active={$codeFont}
-            options={codeFontOptions}
-            on:select={ev => codeFont.set(ev.detail)} />
+          <CodeFontSetting />
         </div>
       </div>
       <div class="section-item">
@@ -213,11 +196,7 @@
           </p>
         </div>
         <div class="action">
-          <SegmentedColorPicker
-            active={$primaryColor}
-            options={primaryColorOptions}
-            on:select={ev => primaryColor.set(ev.detail)}
-            bind:colorValue={$primaryColorHex} />
+          <PrimaryColorSetting />
         </div>
       </div>
     </section>
