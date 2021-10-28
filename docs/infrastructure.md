@@ -64,7 +64,9 @@ docker-compose --env-file upstream-production-config.env -f docker-compose.yml u
 
 1. Create an external IP address
 ```bash
-gcloud compute addresses create "org-node" --region europe-north1
+gcloud compute addresses create "org-node" \
+--project=radicle-upstream \
+--region europe-north1
 ```
 
 2. Create a GCP instance:
