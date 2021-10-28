@@ -3,9 +3,7 @@ yarn-error.log
 dist
 .DS_Store
 native/bundle.*
-public/bundle.*
-public/index.html
-public/twemoji
+public/*
 cypress/videos
 cypress/screenshots
 cypress/fixtures/example.json

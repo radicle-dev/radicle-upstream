@@ -89,6 +89,8 @@
     "prettier:write": "yarn _private:prettier --write",
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
     "reset:state": "scripts/reset-state.sh",
+    "ds:start": "webpack serve --open --config-name design-system",
+    "ds:deploy": "scripts/deploy-design-system.sh",
     "_private:test:integration": "wait-on tcp:17246 && yarn run webpack build --config-name ui && yarn run cypress run",
     "_private:test:integration:debug": "wait-on ./public/bundle.js tcp:17246 && yarn run cypress open",
     "_private:electron:start": "wait-on ./public/bundle.js && NODE_ENV=development electron native/index.js",
@@ -141,6 +143,7 @@
     "@tsconfig/svelte": "^2.0.1",
     "@types/big.js": "^6.1.2",
     "@types/cookie": "^0.4.1",
+    "@types/copy-webpack-plugin": "^8.0.1",
     "@types/jest": "^27.0.2",
     "@types/lodash": "^4.14.176",
     "@types/lru-cache": "^5.1.1",
@@ -155,10 +158,12 @@
     "@types/twemoji": "^12.1.2",
     "@types/uuid": "^8.3.1",
     "@types/wait-on": "^5.3.1",
+    "@types/webpack-dev-server": "^4.3.1",
     "@typescript-eslint/eslint-plugin": "^5.2.0",
     "@typescript-eslint/parser": "^5.2.0",
     "chokidar": "^3.5.2",
     "cookie": "^0.4.1",
+    "copy-webpack-plugin": "^9.0.1",
     "cross-env": "^7.0.3",
     "cypress": "^8.7.0",
     "electron": "^15.3.0",
@@ -202,6 +207,7 @@
     "util": "^0.12.4",
     "wait-on": "^6.0.0",
     "webpack": "^5.60.0",
-    "webpack-cli": "^4.9.1"
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.4.0"
   }
 }
