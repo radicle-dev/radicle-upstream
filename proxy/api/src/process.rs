@@ -54,18 +54,6 @@ pub struct Args {
     pub dev_log: bool,
 }
 
-/// Data required to run the peer and the API
-struct Rigging {
-    /// The context provided to the API
-    ctx: context::Context,
-    /// The [`radicle_daemon::Peer`] to run
-    peer: Option<
-        radicle_daemon::Peer<link_crypto::BoxedSigner, radicle_daemon::config::StreamDiscovery>,
-    >,
-    /// Channel to receive updates to the seed nodes from the API
-    seeds_sender: Option<watch::Sender<Vec<radicle_daemon::seed::Seed>>>,
-}
-
 /// Run the proxy process
 ///
 /// # Errors
@@ -142,20 +130,16 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
             tracing::info!("process has shut down");
             break;
         };
-        let rigging = rig(
+
+        run_session(
             service_handle,
             environment,
             auth_token.clone(),
+            notified_restart,
             args.clone(),
         )
         .await?;
-        let result = run_rigging(rigging, notified_restart).await;
-        match result {
-            Ok(()) => {
-                tracing::info!("reloading");
-            },
-            Err(e) => return Err(e.into()),
-        };
+        tracing::info!("reloading");
     }
 
     Ok(())
@@ -173,90 +157,16 @@ enum RunError {
     Warp(#[from] warp::Error),
 }
 
-/// Run the API and peer.
-///
-/// Returns when either the peer or the API stops.
-///
-/// # Errors
-///
-/// Errors when either the peer or the API error.
-async fn run_rigging(
-    rigging: Rigging,
-    restart_signal: impl Future<Output = ()> + Send + Sync + 'static,
-) -> Result<(), RunError> {
-    // Required for `tokio::select`. We can’t put it on the element directly, though.
-    #![allow(clippy::mut_mut)]
-
-    let Rigging {
-        ctx,
-        peer,
-        seeds_sender,
-    } = rigging;
-
-    let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
-
-    let mut shutdown_runner = crate::shutdown_runner::ShutdownRunner::new();
-
-    // Trigger a shutdown when the restart signal resolves
-    shutdown_runner.add_without_shutdown(restart_signal.map(Ok));
-
-    shutdown_runner.add_with_shutdown({
-        let ctx = ctx.clone();
-        let peer_events_sender = peer_events_sender.clone();
-        move |shutdown_signal| serve(ctx, peer_events_sender, shutdown_signal).boxed()
-    });
-
-    if let Some(peer) = peer {
-        let mut tasks = vec![send_peer_events(peer.subscribe(), peer_events_sender).boxed()];
-
-        if let Some(seeds_sender) = seeds_sender {
-            tasks.push(send_seeds(ctx.clone(), peer.control(), seeds_sender).boxed());
-        }
-
-        shutdown_runner.add_without_shutdown(async move {
-            futures::future::select_all(tasks).await;
-            Ok(())
-        });
-
-        tracing::info!("starting peer");
-        shutdown_runner.add_with_shutdown(move |shutdown_signal| {
-            let (peer_shutdown, peer_run) = peer.start();
-            let peer_run = peer_run.fuse();
-            let mut shutdown_signal = shutdown_signal.fuse();
-            async move {
-                futures::pin_mut!(peer_run);
-                let result = futures::select! {
-                    _ = shutdown_signal => {
-                        drop(peer_shutdown);
-                        peer_run.await
-                    }
-                    result = peer_run => {
-                        result
-                    }
-                };
-
-                result.map_err(RunError::from)
-            }
-            .boxed()
-        });
-    }
-
-    let results = shutdown_runner.run().await;
-
-    for result in results {
-        result?
-    }
-
-    Ok(())
-}
-
-/// Create [`Rigging`] to run the peer and API.
-async fn rig(
+async fn run_session(
     service_handle: service::Handle,
     environment: &service::Environment,
     auth_token: Arc<RwLock<Option<String>>>,
+    restart_signal: impl Future<Output = ()> + Send + Sync + 'static,
     args: Args,
-) -> Result<Rigging, anyhow::Error> {
+) -> Result<(), anyhow::Error> {
+    // Required for `tokio::select`. We can’t put it on the element directly, though.
+    #![allow(clippy::mut_mut)]
+
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
         temp_dir.path().join("store")
     } else {
@@ -279,10 +189,16 @@ async fn rig(
         paths: paths.clone(),
     };
 
-    if let Some(key) = environment.key.clone() {
-        let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
+    let (seeds_sender, seeds_receiver) = watch::channel(seeds);
+    let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
 
-        let (seeds_sender, seeds_receiver) = watch::channel(seeds);
+    let mut shutdown_runner = crate::shutdown_runner::ShutdownRunner::new();
+
+    // Trigger a shutdown when the restart signal resolves
+    shutdown_runner.add_without_shutdown(restart_signal.map(Ok));
+
+    let ctx = if let Some(key) = environment.key.clone() {
+        let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
 
         let config =
             radicle_daemon::config::configure(paths.clone(), signer.clone(), args.peer_listen);
@@ -304,19 +220,57 @@ async fn rig(
             rest: sealed,
         });
 
-        Ok(Rigging {
-            ctx,
-            peer: Some(peer),
-            seeds_sender: Some(seeds_sender),
-        })
+        shutdown_runner.add_without_shutdown(
+            send_peer_events(peer.subscribe(), peer_events_sender.clone())
+                .map(Ok)
+                .boxed(),
+        );
+
+        shutdown_runner.add_without_shutdown(
+            send_seeds(ctx.clone(), peer.control(), seeds_sender)
+                .map(Ok)
+                .boxed(),
+        );
+
+        shutdown_runner.add_with_shutdown(move |shutdown_signal| {
+            let (peer_shutdown, peer_run) = peer.start();
+            let peer_run = peer_run.fuse();
+            let mut shutdown_signal = shutdown_signal.fuse();
+            async move {
+                futures::pin_mut!(peer_run);
+                let result = futures::select! {
+                    _ = shutdown_signal => {
+                        drop(peer_shutdown);
+                        peer_run.await
+                    }
+                    result = peer_run => {
+                        result
+                    }
+                };
+
+                result.map_err(RunError::from)
+            }
+            .boxed()
+        });
+
+        ctx
     } else {
-        let ctx = context::Context::Sealed(sealed);
-        Ok(Rigging {
-            ctx,
-            peer: None,
-            seeds_sender: None,
-        })
+        context::Context::Sealed(sealed)
+    };
+
+    shutdown_runner.add_with_shutdown({
+        let ctx = ctx.clone();
+        let peer_events_sender = peer_events_sender;
+        move |shutdown_signal| serve(ctx, peer_events_sender, shutdown_signal).boxed()
+    });
+
+    let results = shutdown_runner.run().await;
+
+    for result in results {
+        result?
     }
+
+    Ok(())
 }
 
 /// Get and resolve seed settings from the session store.
