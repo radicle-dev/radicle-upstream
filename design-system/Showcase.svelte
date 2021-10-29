@@ -477,7 +477,7 @@
             size="small"
             kind={{
               type: "orgImage",
-              url: "https://app.radicle.network/images/alt-clients.png",
+              url: "https://pbs.twimg.com/profile_images/1372563232850870274/aREQff_C_400x400.jpg",
             }} />
           <Avatar
             style="margin-right: 16px"
@@ -512,7 +512,7 @@
             size="regular"
             kind={{
               type: "orgImage",
-              url: "https://app.radicle.network/images/alt-clients.png",
+              url: "https://pbs.twimg.com/profile_images/1372563232850870274/aREQff_C_400x400.jpg",
             }} />
           <Avatar
             style="margin-right: 16px"
@@ -547,7 +547,7 @@
             size="large"
             kind={{
               type: "orgImage",
-              url: "https://app.radicle.network/images/alt-clients.png",
+              url: "https://pbs.twimg.com/profile_images/1372563232850870274/aREQff_C_400x400.jpg",
             }} />
           <Avatar
             style="margin-right: 16px"
@@ -582,7 +582,7 @@
             size="huge"
             kind={{
               type: "orgImage",
-              url: "https://app.radicle.network/images/alt-clients.png",
+              url: "https://pbs.twimg.com/profile_images/1372563232850870274/aREQff_C_400x400.jpg",
             }} />
           <Avatar
             style="margin-right: 16px"
