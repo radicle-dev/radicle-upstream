@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import Tooltip from "design-system/Tooltip.svelte";
+  import Tooltip from "../Tooltip.svelte";
 
   export let style: string | undefined = undefined;
   export let color: string;

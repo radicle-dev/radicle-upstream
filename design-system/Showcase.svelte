@@ -6,36 +6,31 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import * as router from "ui/src/router";
+  import CheckIcon from "./icons/Check.svelte";
+  import CrossIcon from "./icons/Cross.svelte";
+  import ForkIcon from "./icons/Fork.svelte";
+  import MinusIcon from "./icons/Minus.svelte";
+  import PlusIcon from "./icons/Plus.svelte";
+  import ArrowUpIcon from "./icons/ArrowUp.svelte";
 
-  import CodeFontSetting from "ui/App/SharedComponents/CodeFontSetting.svelte";
-  import PrimaryColorSetting from "ui/App/SharedComponents/PrimaryColorSetting.svelte";
-  import ThemeSetting from "ui/App/SharedComponents/ThemeSetting.svelte";
-  import UiFontSetting from "ui/App/SharedComponents/UiFontSetting.svelte";
+  import Avatar from "./Avatar.svelte";
+  import Button from "./Button.svelte";
+  import Checkbox from "./Checkbox.svelte";
+  import Dropdown from "./Dropdown.svelte";
+  import FollowToggle from "./FollowToggle.svelte";
+  import IdentifierLink from "./IdentifierLink.svelte";
+  import Loading from "./Loading.svelte";
+  import SegmentedControl from "./SegmentedControl.svelte";
+  import SupportButton from "./SupportButton.svelte";
+  import TextInput from "./TextInput.svelte";
+  import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
+  import Tooltip from "./Tooltip.svelte";
 
-  import CheckIcon from "design-system/icons/Check.svelte";
-  import CrossIcon from "design-system/icons/Cross.svelte";
-  import ForkIcon from "design-system/icons/Fork.svelte";
-  import MinusIcon from "design-system/icons/Minus.svelte";
-  import PlusIcon from "design-system/icons/Plus.svelte";
-  import ArrowUpIcon from "design-system/icons/ArrowUp.svelte";
+  import Section from "./Showcase/Section.svelte";
+  import TypographySwatch from "./Showcase/TypographySwatch.svelte";
+  import ColorSwatch from "./Showcase/ColorSwatch.svelte";
 
-  import Avatar from "design-system/Avatar.svelte";
-  import Button from "design-system/Button.svelte";
-  import Checkbox from "design-system/Checkbox.svelte";
-  import Dropdown from "design-system/Dropdown.svelte";
-  import FollowToggle from "design-system/FollowToggle.svelte";
-  import IdentifierLink from "design-system/IdentifierLink.svelte";
-  import Loading from "design-system/Loading.svelte";
-  import SegmentedControl from "design-system/SegmentedControl.svelte";
-  import SupportButton from "design-system/SupportButton.svelte";
-  import TextInput from "design-system/TextInput.svelte";
-  import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
-  import Tooltip from "design-system/Tooltip.svelte";
-
-  import Section from "./DesignSystemGuideModal/Section.svelte";
-  import TypographySwatch from "./DesignSystemGuideModal/TypographySwatch.svelte";
-  import ColorSwatch from "./DesignSystemGuideModal/ColorSwatch.svelte";
+  export let onClose: (() => void) | undefined = undefined;
 
   // TODO: fix types on this.
   const colors = Array.from(document.styleSheets)
@@ -90,8 +85,12 @@
   ];
 
   function onKeydown(event: KeyboardEvent) {
-    if (event.target === document.body && event.code === "Escape") {
-      router.pop();
+    if (
+      event.target === document.body &&
+      event.code === "Escape" &&
+      onClose !== undefined
+    ) {
+      onClose();
     }
   }
 </script>
@@ -137,48 +136,23 @@
     margin-bottom: 32px;
     align-items: flex-end;
   }
-
-  .settings {
-    right: 132px;
-    top: 24px;
-    position: absolute;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
 </style>
 
 <svelte:window on:keydown={onKeydown} />
 
-<div class="close-button">
-  <Button
-    style="padding:0.5rem;"
-    on:click={() => {
-      router.pop();
-    }}
-    variant="transparent">
-    <CrossIcon />
-  </Button>
-</div>
+{#if onClose !== undefined}
+  <div class="close-button">
+    <Button style="padding:0.5rem;" on:click={onClose} variant="transparent">
+      <CrossIcon />
+    </Button>
+  </div>
+{/if}
 
 <div class="fullscreen">
   <div class="content">
     <div class="layout">
-      <div class="settings">
-        <Tooltip value="Theme" position="bottom">
-          <ThemeSetting />
-        </Tooltip>
-        <Tooltip value="UI font" position="bottom">
-          <UiFontSetting />
-        </Tooltip>
-        <Tooltip value="Code font" position="bottom">
-          <CodeFontSetting />
-        </Tooltip>
-        <Tooltip value="Primary color" position="bottom">
-          <PrimaryColorSetting />
-        </Tooltip>
-      </div>
+      <slot />
+
       <h1 style="margin-bottom: 92px">Primitives</h1>
 
       <Section title="Colors" subTitle="Primary and grays">

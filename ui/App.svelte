@@ -25,7 +25,14 @@
   import NotificationFaucet from "ui/App/NotificationFaucet.svelte";
   import Theme from "ui/App/Theme.svelte";
 
-  import DesignSystemGuideModal from "ui/App/DesignSystemGuideModal.svelte";
+  import DesignSystemShowcaseModal from "design-system/Showcase.svelte";
+  import Tooltip from "design-system/Tooltip.svelte";
+
+  import CodeFontSetting from "ui/App/SharedComponents/CodeFontSetting.svelte";
+  import PrimaryColorSetting from "ui/App/SharedComponents/PrimaryColorSetting.svelte";
+  import ThemeSetting from "ui/App/SharedComponents/ThemeSetting.svelte";
+  import UiFontSetting from "ui/App/SharedComponents/UiFontSetting.svelte";
+
   import OnboardingModal from "ui/App/OnboardingModal.svelte";
 
   import LoadingScreen from "ui/App/LoadingScreen.svelte";
@@ -103,6 +110,18 @@
   }
 </script>
 
+<style>
+  .settings {
+    right: 132px;
+    top: 24px;
+    position: absolute;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+</style>
+
 <UnrecoverableErrorScreen />
 <Hotkeys />
 <ModalLayout />
@@ -111,7 +130,22 @@
 
 {#if $sessionStore.status === remote.Status.Success}
   {#if $activeRouteStore.type === "designSystemGuide"}
-    <DesignSystemGuideModal />
+    <DesignSystemShowcaseModal onClose={() => router.pop()}>
+      <div class="settings">
+        <Tooltip value="Theme" position="bottom">
+          <ThemeSetting />
+        </Tooltip>
+        <Tooltip value="UI font" position="bottom">
+          <UiFontSetting />
+        </Tooltip>
+        <Tooltip value="Code font" position="bottom">
+          <CodeFontSetting />
+        </Tooltip>
+        <Tooltip value="Primary color" position="bottom">
+          <PrimaryColorSetting />
+        </Tooltip>
+      </div>
+    </DesignSystemShowcaseModal>
   {:else if $activeRouteStore.type === "lock"}
     <LockScreen />
   {:else if $activeRouteStore.type === "onboarding"}
