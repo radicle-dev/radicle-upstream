@@ -99,21 +99,3 @@ time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
     s/^.*Run Finished.*/$(log-group-end)\n$(log-group-start)Run Finished/
   "
 log-group-end
-
-if [[ "${GITHUB_REF:-}" == "refs/heads/master" || "${GITHUB_REF:-}" == refs/heads/release-candidate/v* ]]; then
-  if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
-    log-group-start "Packaging, notarizing and uploading app binaries"
-    (
-      export NOTARIZE=true
-      export APPLE_ID="rudolfs@monadic.xyz"
-      export APPLE_ID_PASSWORD="@keychain:AC_PASSWORD"
-      export CSC_NAME="Monadic GmbH (35C27H9VL2)"
-      time yarn dist
-    )
-    log-group-end
-  else
-    log-group-start "Packaging and uploading app binaries"
-    time yarn dist
-    log-group-end
-  fi
-fi
