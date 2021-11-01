@@ -10907,7 +10907,6 @@ __metadata:
     execa: ^5.1.1
     exit-hook: ^2.2.1
     ganache-cli: ^6.12.2
-    globby: ^11.0.4
     graphql: ^15.7.0
     html-webpack-plugin: ^5.5.0
     husky: ^7.0.4

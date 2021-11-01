@@ -6,10 +6,10 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import globby from "globby";
 import yargs from "yargs";
 import * as fs from "fs/promises";
 import * as Path from "path";
+import execa from "execa";
 
 // Error that is shown without a stacktrace to the user
 class UserError extends Error {
@@ -38,6 +38,10 @@ async function main() {
 
         let failure = false;
         for (const file of files) {
+          if (!requireLicenseHeader(file)) {
+            continue;
+          }
+
           const content = await fs.readFile(file, "utf8");
           if (!hasLicenseHeader(content)) {
             failure = true;
@@ -109,43 +113,24 @@ function makeLicenseComment(extName: string): string {
   }
 }
 
-// Globs for the files we enforce license headers for.
-const gitIgnore = (async () => {
-  const content = await fs.readFile(
-    Path.resolve(__dirname, "..", ".gitignore"),
-    "utf8"
-  );
-  return content
-    .split(/\r?\n/)
-    .filter(line => line && !line.startsWith("#"))
-    .map(line => {
-      if (line.startsWith("/")) {
-        return line.substr(1);
-      } else {
-        return line;
-      }
-    });
-})();
+const EXTENSIONS = [".js", ".rs", ".sh", ".ts", ".svelte"];
+
+// Returns true if the file at path requires a license header. This is
+// `true` if the path has one of `EXTENSIONS`.
+function requireLicenseHeader(path: string): boolean {
+  return EXTENSIONS.includes(Path.extname(path));
+}
 
 // Returns the list of file paths that should include license headers.
+//
+// The list consists of all files checked into version control that
+// have one of `EXTENSIONS`.
 async function getPaths(): Promise<string[]> {
-  const gitIgnore_ = await gitIgnore;
-  const ignore = [...gitIgnore_, "fixtures"];
-
-  return globby(
-    [
-      "ci/**/*",
-      "cypress/**/*.(js|ts)",
-      "design-system/**/*.ts",
-      "native/**/*.(js|ts)",
-      "proxy/**/*.rs",
-      "proxy-client/**/*.ts",
-      "public/**/*.css",
-      "scripts/**/*",
-      "ui/**/*",
-    ],
-    { ignore }
-  );
+  const result = await execa("git", ["ls-files"]);
+  const gitPaths = result.stdout.split("\n");
+  return gitPaths.filter(path => {
+    return EXTENSIONS.includes(Path.extname(path));
+  });
 }
 
 // Pattern we use to check for the presence for the license headers in
