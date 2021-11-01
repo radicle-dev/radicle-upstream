@@ -137,7 +137,7 @@
     margin-top: 2rem;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: auto;
+    grid-template-rows: 15rem;
     gap: 1.5rem;
     grid-template-areas: "main main sidebar";
   }
@@ -290,7 +290,9 @@
         </ul>
         {#if showSidebar}
           <div class="sidebar">
-            <ProfileSidebar />
+            <ProfileSidebar
+              urn={session.identity.urn}
+              identity={session.identity} />
           </div>
         {/if}
       </div>
