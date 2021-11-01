@@ -13,6 +13,8 @@
 #![cfg_attr(not(test), warn(clippy::unwrap_used))]
 #![allow(clippy::multiple_crate_versions)]
 
+use std::{collections::HashSet, iter::FromIterator as _};
+
 use anyhow::Context;
 use futures::prelude::*;
 
@@ -102,6 +104,8 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
             .map(Ok)
     });
 
+    task_runner.add_cancel(announce(peer.clone()).map(Ok));
+
     task_runner.add_vital({
         let shutdown_signal = task_runner.shutdown_triggered();
         async move { peer.run(bootstrap_addrs, shutdown_signal).await }
@@ -153,6 +157,25 @@ async fn track_projects(
     }
 
     tracing::debug!("track_projects done");
+}
+
+/// Announce all projects ([`crate::peer::Peer::announce_all_projects`]) when the membership of the
+/// gossip network changes.
+async fn announce(peer: crate::peer::Peer) {
+    let mut prev_active = HashSet::new();
+    let mut membership = peer.membership().boxed();
+    while let Some(membership) = membership.next().await {
+        let active = HashSet::from_iter(membership.active);
+        let mut added = active.difference(&prev_active);
+        if added.next().is_some() {
+            let result = peer.announce_all_projects().await;
+            if let Err(err) = result {
+                tracing::error!(?err, "failed to announce all projects");
+            }
+
+            prev_active = active;
+        }
+    }
 }
 
 /// Install signal handlers for SIGINT or SIGTERM and return when one of these signals is received.

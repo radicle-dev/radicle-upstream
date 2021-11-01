@@ -30,3 +30,4 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 # radicle-link dependencies. These are patched in the workspace.
 librad = { version = "0" }
 link-identities = { version = "0" }
+rad-identities = { version = "0" }

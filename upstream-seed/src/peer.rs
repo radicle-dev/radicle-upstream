@@ -218,6 +218,52 @@ impl Peer {
             })
     }
 
+    /// Broadcast “Have” gossip messages for all tracked peers in all projects.
+    ///
+    /// If getting the list of peers for one project or announcing this list for one project fails
+    /// no error is returned and a message is logged instead.
+    pub async fn announce_all_projects(&self) -> anyhow::Result<()> {
+        let storage = self
+            .librad_peer
+            .storage()
+            .await
+            .context("failed to access librad storage")?;
+        let projects =
+            rad_identities::project::list(storage.as_ref()).context("failed to list projects")?;
+        for project_result in projects {
+            let project = match project_result {
+                Ok(project) => project,
+                Err(err) => {
+                    tracing::error!(?err, "failed to read project");
+                    continue;
+                }
+            };
+            let urn = project.urn();
+
+            let tracked_peers = match rad_identities::project::tracked(storage.as_ref(), &urn) {
+                Ok(tracked_peers) => tracked_peers,
+                Err(err) => {
+                    tracing::error!(?err, %urn, "failed to get tracked peers");
+                    continue;
+                }
+            };
+
+            for peer_info in tracked_peers {
+                let payload = librad::net::protocol::gossip::Payload {
+                    urn: project.urn(),
+                    rev: None,
+                    origin: Some(peer_info.peer_id()),
+                };
+                tracing::debug!(?payload, "sending announcement");
+                self.librad_peer
+                    .announce(payload)
+                    .map_err(|_| anyhow::anyhow!("librad peer not bound"))?;
+            }
+        }
+
+        Ok(())
+    }
+
     async fn get_project(&self, urn: Urn) -> anyhow::Result<Option<link_identities::git::Project>> {
         Ok(self
             .librad_peer

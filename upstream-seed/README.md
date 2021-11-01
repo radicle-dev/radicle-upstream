@@ -12,5 +12,7 @@ projects.
 * Asks for updates to tracked projects and replicates updates if they are
   available.
 * Replicates person identities associated with owners of the tracked projects.
+* Announces all projects it tracks and all peers that it tracks for these
+  projects whenever a new peer connects.
 
 [librad]: https://github.com/radicle-dev/radicle-link/tree/master/librad
