@@ -123,22 +123,22 @@ mkdir /Users/rudolfs/work/20000
 # Launch the first instance.
 
 RAD_HOME="/Users/rudolfs/work/19000" \
-RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:19000 --peer-listen 0.0.0.0:19000" \
+RADICLE_PROXY_HTTP_LISTEN="127.0.0.1:19000" \
+RADICLE_PROXY_PEER_LISTEN="0.0.0.0:19000" \
 RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:19000" \
 yarn start
 
 # And then in a separate shell, launch the second instance.
 
 RAD_HOME="/Users/rudolfs/work/20000" \
-RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:20000 --peer-listen 0.0.0.0:20000" \
+RADICLE_PROXY_HTTP_LISTEN="127.0.0.1:20000" \
+RADICLE_PROXY_PEER_LISTEN="0.0.0.0:20000" \
 RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:20000" \
 yarn start
 ```
 
-You can also let the the OS choose a free peer port by setting it to:
-`--peer-listen 0.0.0.0:0`. And if you don't need completely isolated state,
-then you can use `RAD_PROFILE` instead of `RAD_HOME`, but be aware that
-Electron state will be shared by all instances.
+You can also let the the OS choose a free peer port by using
+`RADICLE_PROXY_PEER_LISTEN="0.0.0.0:20000"`.
 
 
 ### Running on Windows (experimental)

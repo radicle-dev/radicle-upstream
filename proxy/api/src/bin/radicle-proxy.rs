@@ -6,5 +6,5 @@
 
 #[tokio::main]
 pub async fn main() -> Result<(), anyhow::Error> {
-    api::run(argh::from_env()).await
+    api::run(api::Args::from_args()).await
 }

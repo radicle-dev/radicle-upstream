@@ -35,6 +35,7 @@
 )]
 
 mod browser;
+mod cli;
 mod config;
 mod context;
 mod control;
@@ -57,4 +58,5 @@ mod project;
 mod service;
 mod session;
 
-pub use process::{run, Args};
+pub use cli::Args;
+pub use process::run;
