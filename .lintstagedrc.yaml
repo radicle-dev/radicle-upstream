@@ -2,4 +2,5 @@
 - prettier --write
 "*.{js,ts,svelte}":
 - eslint --fix --max-warnings=0
+"*":
 - ./scripts/license-header.ts check

@@ -175,7 +175,6 @@
     "eslint-plugin-svelte3": "^3.2.1",
     "exit-hook": "^2.2.1",
     "ganache-cli": "^6.12.2",
-    "globby": "^11.0.4",
     "html-webpack-plugin": "^5.5.0",
     "husky": "^7.0.4",
     "jest": "^27.3.1",

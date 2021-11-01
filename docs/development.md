@@ -406,7 +406,6 @@ build times. If you need to update this image, proceed as follows:
      we don’t support ES modules yet. See [#2227](https://github.com/radicle-dev/radicle-upstream/issues/2227).
      If possible, do a minor version upgrade.
      * `node-fetch` and `@types/node`
-     * `globby`
      * `exit-hook`
      * `strip-ansi`
    * Don’t update `radicle-contracts`.
