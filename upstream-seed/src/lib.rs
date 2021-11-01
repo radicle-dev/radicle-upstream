@@ -82,6 +82,26 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
         .map(Ok),
     );
 
+    task_runner.add_cancel({
+        peer.clone()
+            .connected_peers()
+            .for_each(|peers| {
+                tracing::info!(?peers, "p2p connections changed");
+                futures::future::ready(())
+            })
+            .map(Ok)
+    });
+
+    task_runner.add_cancel({
+        peer.clone()
+            .membership()
+            .for_each(|membership_info| {
+                tracing::info!(active = ?membership_info.active, passive = ?membership_info.passive, "gossip membership changed");
+                futures::future::ready(())
+            })
+            .map(Ok)
+    });
+
     task_runner.add_vital({
         let shutdown_signal = task_runner.shutdown_triggered();
         async move { peer.run(bootstrap_addrs, shutdown_signal).await }
@@ -263,6 +283,26 @@ impl TaskRunner {
         self.futures.push(self.shutdown.wrap_vital(fut).boxed());
     }
 
+    /// Add a future that is dropped when shutdown is triggered.
+    ///
+    /// If the future resolves with [`Ok`], no shutdown is triggered. Otherwise, a shutdown is
+    /// triggered and the error is added to the error list returned by [`TaskRunner::run`].
+    pub fn add_cancel(&mut self, fut: impl Future<Output = anyhow::Result<()>> + Send + 'static) {
+        let vital_token = self.shutdown.vital_token();
+        self.futures.push(
+            self.shutdown
+                .wrap_cancel(fut)
+                .map(move |maybe_result| {
+                    let result = maybe_result.unwrap_or(Ok(()));
+                    if result.is_ok() {
+                        vital_token.forget();
+                    }
+                    result
+                })
+                .boxed(),
+        );
+    }
+
     /// Run all added futures as tasks and collect any errors.
     pub async fn run(self) -> Result<(), Vec<anyhow::Error>> {
         let tasks = self.futures.into_iter().map(tokio::spawn);
@@ -290,8 +330,14 @@ mod test {
 
     #[tokio::test]
     async fn task_runner() {
+        let (dropped_tx, dropped_rx) = futures::channel::oneshot::channel::<()>();
         let mut task_runner = TaskRunner::new();
 
+        task_runner.add_cancel(async move {
+            future::pending::<()>().await;
+            drop(dropped_tx);
+            Ok(())
+        });
         task_runner.add_vital(
             task_runner
                 .shutdown_triggered()
@@ -302,20 +348,57 @@ mod test {
         let errors = task_runner.run().await.unwrap_err();
         let error_messages = errors.iter().map(|e| e.to_string()).collect::<Vec<_>>();
         assert_eq!(error_messages, vec!["foo".to_string(), "bar".to_string()]);
+
+        assert!(dropped_rx.await.is_err());
     }
 
     #[tokio::test]
     async fn task_runner_panic() {
+        let (dropped_tx, dropped_rx) = futures::channel::oneshot::channel::<()>();
         let mut task_runner = TaskRunner::new();
+
+        task_runner.add_cancel(async move {
+            future::pending::<()>().await;
+            drop(dropped_tx);
+            Ok(())
+        });
+
         task_runner.add_vital(
             task_runner
                 .shutdown_triggered()
                 .map(|_| Err(anyhow::anyhow!("foo"))),
         );
+
         task_runner.add_vital(async move { panic!("panic") });
 
         let errors = task_runner.run().await.unwrap_err();
         let error_messages = errors.iter().map(|e| e.to_string()).collect::<Vec<_>>();
         assert_eq!(error_messages, vec!["foo".to_string(), "panic".to_string()]);
+
+        assert!(dropped_rx.await.is_err());
+    }
+
+    #[tokio::test]
+    async fn task_runner_cancel_ok_doesnt_trigger_shutdown() {
+        let mut task_runner = TaskRunner::new();
+
+        task_runner.add_cancel(future::ok(()));
+        task_runner.add_cancel(future::pending());
+
+        let result =
+            tokio::time::timeout(std::time::Duration::from_millis(10), task_runner.run()).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn task_runner_cancel_err_triggers_shutdown() {
+        let mut task_runner = TaskRunner::new();
+
+        task_runner.add_cancel(future::err(anyhow::anyhow!("foo")));
+        task_runner.add_cancel(future::pending());
+
+        let errors = task_runner.run().await.unwrap_err();
+        let error_messages = errors.iter().map(|e| e.to_string()).collect::<Vec<_>>();
+        assert_eq!(error_messages, vec!["foo".to_string()]);
     }
 }
