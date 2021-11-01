@@ -32,6 +32,7 @@
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
+  import ProfileSidebar from "ui/App/ProfileScreen/ProfileSidebar.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
@@ -126,15 +127,38 @@
 
   let showRequests: boolean = false;
 
+  const showSidebar: boolean = true;
+
   showNotificationsForFailedProjects();
 </script>
 
 <style>
+  .sidebar-layout {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto;
+    gap: 1.5rem;
+    grid-template-areas: "main main sidebar";
+  }
+
+  .one-column {
+    grid-template-areas: "main main main";
+  }
+
+  .sidebar {
+    grid-area: sidebar;
+  }
+
   .grid {
+    grid-area: main;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
-    margin-top: 2rem;
+  }
+
+  .two-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .box {
@@ -194,75 +218,82 @@
           modal.toggle(SearchModal);
         }} />
     {:else}
-      <ul class="grid" data-cy="project-list">
-        {#each $profileProjectsStore.data.cloned as project}
-          <li>
-            <ProjectCardSquare
-              {project}
-              isMaintainer={isMaintainer(session.identity.urn, project)}
-              on:click={() => openProject({ detail: project })} />
-          </li>
-        {/each}
-        {#each $profileProjectsStore.data.follows as project}
-          <li>
-            <ProjectCardSquare
-              isMaintainer={isMaintainer(session.identity.urn, project)}
-              {project}
-              on:click={() => openProject({ detail: project })} />
-          </li>
-        {/each}
-        {#if $profileProjectsStore.data.requests.length > 0}
-          <li class="box requests">
-            <div>
-              <h2>Still looking...</h2>
-              <p style="margin-top: 1rem;">
+      <div class="sidebar-layout" class:one-column={!showSidebar}>
+        <ul class="grid" data-cy="project-list" class:two-columns={showSidebar}>
+          {#each $profileProjectsStore.data.cloned as project}
+            <li>
+              <ProjectCardSquare
+                {project}
+                isMaintainer={isMaintainer(session.identity.urn, project)}
+                on:click={() => openProject({ detail: project })} />
+            </li>
+          {/each}
+          {#each $profileProjectsStore.data.follows as project}
+            <li>
+              <ProjectCardSquare
+                isMaintainer={isMaintainer(session.identity.urn, project)}
+                {project}
+                on:click={() => openProject({ detail: project })} />
+            </li>
+          {/each}
+          {#if $profileProjectsStore.data.requests.length > 0}
+            <li class="box requests">
+              <div>
+                <h2>Still looking...</h2>
+                <p style="margin-top: 1rem;">
+                  {projectCountText($profileProjectsStore.data.requests.length)}
+                  {$profileProjectsStore.data.requests.length > 1
+                    ? `you’re following haven’t been found yet.`
+                    : `you’re following hasn't been found yet.`}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                dataCy="show-requests"
+                on:click={() => {
+                  showRequests = !showRequests;
+                }}
+                style="align-self: flex-start;">
+                {!showRequests ? "Show" : "Hide"}
                 {projectCountText($profileProjectsStore.data.requests.length)}
-                {$profileProjectsStore.data.requests.length > 1
-                  ? `you’re following haven’t been found yet.`
-                  : `you’re following hasn't been found yet.`}
-              </p>
-            </div>
+              </Button>
+            </li>
+            {#if showRequests}
+              {#each $profileProjectsStore.data.requests as project}
+                <li
+                  class="request-card box"
+                  data-cy="undiscovered-project"
+                  out:fade|local={{ duration: 200 }}>
+                  <CopyableIdentifier kind="radicleId" value={project.urn} />
+                  <FollowToggle
+                    style="align-self: flex-start;"
+                    following
+                    on:unfollow={() => onUnFollow(project.urn)} />
+                </li>
+              {/each}
+            {/if}
+          {/if}
+          <li class="search box" data-cy="search-box">
+            <p
+              style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
+              Follow a new project
+            </p>
             <Button
-              variant="outline"
-              dataCy="show-requests"
               on:click={() => {
-                showRequests = !showRequests;
+                modal.toggle(SearchModal);
               }}
-              style="align-self: flex-start;">
-              {!showRequests ? "Show" : "Hide"}
-              {projectCountText($profileProjectsStore.data.requests.length)}
+              icon={MagnifyingGlassIcon}
+              variant="outline">
+              Look for a project
             </Button>
           </li>
-          {#if showRequests}
-            {#each $profileProjectsStore.data.requests as project}
-              <li
-                class="request-card box"
-                data-cy="undiscovered-project"
-                out:fade|local={{ duration: 200 }}>
-                <CopyableIdentifier kind="radicleId" value={project.urn} />
-                <FollowToggle
-                  style="align-self: flex-start;"
-                  following
-                  on:unfollow={() => onUnFollow(project.urn)} />
-              </li>
-            {/each}
-          {/if}
+        </ul>
+        {#if showSidebar}
+          <div class="sidebar">
+            <ProfileSidebar />
+          </div>
         {/if}
-        <li class="search box" data-cy="search-box">
-          <p
-            style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
-            Follow a new project
-          </p>
-          <Button
-            on:click={() => {
-              modal.toggle(SearchModal);
-            }}
-            icon={MagnifyingGlassIcon}
-            variant="outline">
-            Look for a project
-          </Button>
-        </li>
-      </ul>
+      </div>
     {/if}
   {:else if $profileProjectsStore.status === remote.Status.Error}
     <Error message={$profileProjectsStore.error.message} />
