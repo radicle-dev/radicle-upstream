@@ -37,6 +37,11 @@
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
 
+  import * as ethereum from "ui/src/ethereum";
+  import * as Wallet from "ui/src/wallet";
+  const ethereumEnvironment = ethereum.selectedEnvironment;
+  const walletStore = Wallet.store;
+
   const session = Session.unsealed();
 
   interface ProfileProjects {
@@ -126,10 +131,10 @@
   }
 
   let showRequests: boolean = false;
+  showNotificationsForFailedProjects();
 
   const showSidebar: boolean = true;
-
-  showNotificationsForFailedProjects();
+  $: wallet = $walletStore;
 </script>
 
 <style>
@@ -288,7 +293,7 @@
             </Button>
           </li>
         </ul>
-        {#if showSidebar}
+        {#if showSidebar && $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
           <div class="sidebar">
             <ProfileSidebar
               urn={session.identity.urn}

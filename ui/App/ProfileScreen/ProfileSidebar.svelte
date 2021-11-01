@@ -8,13 +8,8 @@
 <script lang="ts">
   import type { Identity } from "ui/src/identity";
   import { push } from "ui/src/router";
-  import * as ethereum from "ui/src/ethereum";
-  import * as Wallet from "ui/src/wallet";
 
   import { orgSidebarStore } from "ui/src/org";
-
-  const ethereumEnvironment = ethereum.selectedEnvironment;
-  const walletStore = Wallet.store;
 
   import * as format from "design-system/lib/format";
 
@@ -24,12 +19,10 @@
   import OrgsIcon from "design-system/icons/Orgs.svelte";
   import TwitterIcon from "design-system/icons/Twitter.svelte";
   import Avatar from "design-system/Avatar.svelte";
-  import Spinner from "design-system/Spinner.svelte";
+  import Loading from "design-system/Loading.svelte";
 
   export let urn: string;
   export let identity: Identity;
-
-  $: wallet = $walletStore;
 </script>
 
 <style>
@@ -68,35 +61,31 @@
 </style>
 
 <aside>
-  {#if $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
+  {#if $orgSidebarStore.type === "resolved" && $orgSidebarStore.orgs.length > 0}
     <div class="row">
       <div class="title">
         <OrgsIcon />
         <span class="typo-text-bold">Orgs</span>
       </div>
-      {#if $orgSidebarStore.type === "fetched" && $orgSidebarStore.orgs.length > 0}
-        <Spinner />
-      {:else if $orgSidebarStore.type === "resolved"}
-        {#each $orgSidebarStore.orgs as org (org.id)}
-          <div
-            class="org"
-            on:click={() =>
-              push({
-                type: "org",
-                params: { address: org.id, view: "projects" },
-              })}>
-            <Avatar
-              style="margin-right: 0.5rem;"
-              size="small"
-              kind={org.registration?.avatar
-                ? { type: "orgImage", url: org.registration.avatar }
-                : { type: "orgEmoji", uniqueIdentifier: org.id }} />
-            <p class="typo-text-bold">
-              {org.registration?.domain || format.shortEthAddress(org.id)}
-            </p>
-          </div>
-        {/each}
-      {/if}
+      {#each $orgSidebarStore.orgs as org (org.id)}
+        <div
+          class="org"
+          on:click={() =>
+            push({
+              type: "org",
+              params: { address: org.id, view: "projects" },
+            })}>
+          <Avatar
+            style="margin-right: 0.5rem;"
+            size="small"
+            kind={org.registration?.avatar
+              ? { type: "orgImage", url: org.registration.avatar }
+              : { type: "orgEmoji", uniqueIdentifier: org.id }} />
+          <p class="typo-text-bold">
+            {org.registration?.domain || format.shortEthAddress(org.id)}
+          </p>
+        </div>
+      {/each}
     </div>
   {/if}
   <div class="row">
