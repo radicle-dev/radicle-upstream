@@ -6,23 +6,23 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { Identity } from "ui/src/identity";
   import { push } from "ui/src/router";
-
-  import { orgSidebarStore } from "ui/src/org";
+  import type { Org } from "ui/src/org";
+  import type { Registration } from "ui/src/org/ensResolver";
 
   import * as format from "design-system/lib/format";
 
   import GithubIcon from "design-system/icons/Github.svelte";
   import GlobeIcon from "design-system/icons/Globe.svelte";
-  import UserIcon from "design-system/icons/User.svelte";
+  import EthIcon from "design-system/icons/Ethereum.svelte";
   import OrgsIcon from "design-system/icons/Orgs.svelte";
   import TwitterIcon from "design-system/icons/Twitter.svelte";
   import Avatar from "design-system/Avatar.svelte";
-  import Loading from "design-system/Loading.svelte";
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let urn: string;
-  export let identity: Identity;
+  export let registration: Registration | undefined;
+  export let ownedOrgs: Org[] = [];
 </script>
 
 <style>
@@ -61,13 +61,26 @@
 </style>
 
 <aside>
-  {#if $orgSidebarStore.type === "resolved" && $orgSidebarStore.orgs.length > 0}
+  {#if registration?.address}
+    <div class="row">
+      <div class="title">
+        <EthIcon />
+        <span class="typo-text-bold">Attested address</span>
+      </div>
+      <CopyableIdentifier
+        value={registration.address}
+        kind="ethAddress"
+        name="owner address"
+        showIcon={false} />
+    </div>
+  {/if}
+  {#if ownedOrgs.length > 0}
     <div class="row">
       <div class="title">
         <OrgsIcon />
         <span class="typo-text-bold">Orgs</span>
       </div>
-      {#each $orgSidebarStore.orgs as org (org.id)}
+      {#each ownedOrgs as org (org.id)}
         <div
           class="org"
           on:click={() =>
@@ -88,38 +101,38 @@
       {/each}
     </div>
   {/if}
-  <div class="row">
-    <div class="title">
-      <UserIcon />
-      <span class="typo-text-bold">Emoji</span>
+  {#if registration?.url}
+    <div class="row">
+      <div class="title">
+        <GlobeIcon />
+        <span class="typo-text-bold">Website</span>
+      </div>
+      <a class="typo-link" href={registration.url}
+        >{registration.url.replace(/https?:\/\//, "")}</a>
     </div>
-    <Avatar
-      style="justify-content: flex-start;"
-      size="large"
-      kind={{ type: "userEmoji", uniqueIdentifier: urn }} />
-  </div>
-  <div class="row">
-    <div class="title">
-      <GlobeIcon />
-      <span class="typo-text-bold">Website</span>
+  {/if}
+  {#if registration?.github}
+    <div class="row">
+      <div class="title">
+        <GithubIcon />
+        <span class="typo-text-bold">Github</span>
+      </div>
+      <a class="typo-link url" href={`http://github.com/${registration.github}`}
+        >github.com/{registration.github}</a>
     </div>
-    <a class="typo-link" href={`https://www.juliendonck.com`}
-      >juliendonck.com</a>
-  </div>
-  <div class="row">
-    <div class="title">
-      <GithubIcon />
-      <span class="typo-text-bold">Github</span>
+  {/if}
+  {#if registration?.twitter}
+    <div class="row">
+      <div class="title">
+        <TwitterIcon />
+        <span class="typo-text-bold">Twitter</span>
+      </div>
+      <a
+        class="typo-link"
+        href={`https://www.twitter.com/${registration.twitter.replace(
+          "@",
+          ""
+        )}`}>twitter.com/{registration.twitter.replace("@", "")}</a>
     </div>
-    <a class="typo-link" href={`https://www.github.com/juliendonck`}
-      >github.com/juliendonck</a>
-  </div>
-  <div class="row">
-    <div class="title">
-      <TwitterIcon />
-      <span class="typo-text-bold">Twitter</span>
-    </div>
-    <a class="typo-link" href={`https://www.twitter.com/juliendonck`}
-      >twitter.com/juliendonck</a>
-  </div>
+  {/if}
 </aside>

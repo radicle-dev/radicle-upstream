@@ -20,6 +20,11 @@
   import * as project from "ui/src/project";
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as localPeer from "ui/src/localPeer";
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as Safe from "ui/src/org/safe";
+  import * as graph from "ui/src/org/theGraphApi";
+  import { getRegistration, Registration } from "ui/src/org/ensResolver";
+  import type { Org } from "ui/src/org";
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
   import PlusIcon from "design-system/icons/Plus.svelte";
@@ -39,6 +44,10 @@
 
   import * as ethereum from "ui/src/ethereum";
   import * as Wallet from "ui/src/wallet";
+
+  let registration: Registration | undefined;
+  let ownedOrgs: Org[] = [];
+
   const ethereumEnvironment = ethereum.selectedEnvironment;
   const walletStore = Wallet.store;
 
@@ -133,8 +142,29 @@
   let showRequests: boolean = false;
   showNotificationsForFailedProjects();
 
+  const wallet = svelteStore.get(Wallet.store);
+  let state: "loading" | "loaded" | "error" = "loading";
+
+  async function loadSidebarData(): Promise<void> {
+    let address = session.identity.metadata.ethereum.address;
+    state = "loading";
+    try {
+      const gnosisSafeWallets = await Safe.getSafesByOwner(
+        wallet.environment,
+        address
+      );
+      ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
+      const ensName = await wallet.provider.lookupAddress(address);
+      registration = await getRegistration(ensName);
+      state = "loaded";
+    } catch (err: unknown) {
+      state = "error";
+    }
+  }
+
+  loadSidebarData();
+
   const showSidebar: boolean = true;
-  $: wallet = $walletStore;
 </script>
 
 <style>
@@ -296,8 +326,9 @@
         {#if showSidebar && $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
           <div class="sidebar">
             <ProfileSidebar
-              urn={session.identity.urn}
-              identity={session.identity} />
+              {registration}
+              {ownedOrgs}
+              urn={session.identity.urn} />
           </div>
         {/if}
       </div>
