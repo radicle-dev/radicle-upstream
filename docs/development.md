@@ -138,7 +138,7 @@ yarn start
 ```
 
 You can also let the the OS choose a free peer port by using
-`RADICLE_PROXY_PEER_LISTEN="0.0.0.0:20000"`.
+`RADICLE_PROXY_PEER_LISTEN="0.0.0.0:0"`.
 
 
 ### Running on Windows (experimental)
