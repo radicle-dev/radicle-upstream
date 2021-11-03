@@ -5,6 +5,7 @@
 // LICENSE file.
 
 use anyhow::Context;
+use futures::prelude::*;
 
 use librad::profile::Profile;
 use link_identities::git::Urn;
@@ -47,23 +48,21 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
     let key = load_or_create_secret_key(&key_path)?;
 
     let peer_id = librad::PeerId::from(&key);
-    tracing::info!(?peer_id);
+    let bootstrap_addrs = options.bootstrap.clone().unwrap_or_default();
+    tracing::info!(?peer_id, ?bootstrap_addrs);
 
-    tracing::info!(bootstrap = ?options.bootstrap);
-
+    let shutdown_signal = install_signal_handler();
     let peer = peer::Peer::new(peer::Config {
         rad_paths,
         key,
         listen: options.listen,
     });
+    let track_task = tokio::spawn(track_projects(peer.clone(), options.project).map(Ok));
 
-    let track_task = tokio::spawn(track_projects(peer.clone(), options.project));
-
-    let bootstrap_addrs = options.bootstrap.clone().unwrap_or_default();
-    let client_task = tokio::spawn(peer.run(bootstrap_addrs));
+    let client_task = tokio::spawn(async move { peer.run(bootstrap_addrs, shutdown_signal).await });
 
     let (result, _, _) = futures::future::select_all([client_task, track_task]).await;
-    result?;
+    result??;
 
     Ok(())
 }
@@ -93,6 +92,36 @@ async fn track_projects(client: peer::Peer, projects: Vec<Urn>) {
             }
         }
     }
+}
+
+/// Install signal handlers for SIGINT or SIGTERM and return when one of these signals is received.
+///
+/// Also starts a background task that exits the process if any of the signals is received after a
+/// grace period of ten seconds after the first signal.
+async fn install_signal_handler() {
+    const GRACE_PERIOD: std::time::Duration = std::time::Duration::from_secs(10);
+    let (shutdown_tx, shutdown_rx) = futures::channel::oneshot::channel();
+    tokio::spawn(async move {
+        use tokio::signal::unix::{signal, SignalKind};
+        let mut sig_int = signal(SignalKind::interrupt()).unwrap();
+        let mut sig_term = signal(SignalKind::terminate()).unwrap();
+
+        futures::future::select(sig_term.recv().boxed(), sig_int.recv().boxed()).await;
+        let _ = shutdown_tx.send(());
+
+        tracing::info!(
+            "Shutting down. Send SIGINT or SIGTERM again within the next 10 seconds to force a shutdown."
+        );
+        let grace_period_end = std::time::Instant::now() + GRACE_PERIOD;
+        loop {
+            futures::future::select(sig_term.recv().boxed(), sig_int.recv().boxed()).await;
+            if std::time::Instant::now() > grace_period_end {
+                std::process::exit(5);
+            }
+        }
+    });
+
+    let _ = shutdown_rx.await;
 }
 
 fn load_or_create_secret_key(path: &std::path::Path) -> anyhow::Result<librad::SecretKey> {

@@ -7,7 +7,7 @@
 use std::{net::SocketAddr, time::Duration};
 
 use anyhow::Context as _;
-use futures::stream::StreamExt as _;
+use futures::prelude::*;
 
 use librad::{
     git::{identities, replication, storage::fetcher, tracking},
@@ -30,6 +30,7 @@ pub struct Config {
     pub key: librad::SecretKey,
     pub listen: SocketAddr,
 }
+
 const PROVIDER_QUERY_TIMEOUT: Duration = Duration::from_secs(60);
 
 /// Wrapper around [`librad::net::peer::Peer`] that provides seed specific functionality.
@@ -68,24 +69,41 @@ impl Peer {
         Self { librad_peer }
     }
 
-    /// Run the peer. This function runs indefinitely until a fatal error occurs.
-    pub async fn run(self, bootstrap: Vec<(PeerId, SocketAddr)>) {
-        let disco = discovery::Static::resolve(bootstrap).unwrap();
+    /// Run the peer by listening for incoming connections.
+    ///
+    /// Returns when `shutdown_signal` resolves or an error occurs.
+    pub async fn run(
+        &self,
+        bootstrap: Vec<(PeerId, SocketAddr)>,
+        shutdown_signal: impl Future<Output = ()>,
+    ) -> anyhow::Result<()> {
+        let librad_peer = self.librad_peer.clone();
+        let static_discovery = discovery::Static::resolve(bootstrap).unwrap();
+        let shutdown_signal = shutdown_signal.shared();
 
-        loop {
-            match self.librad_peer.bind().await {
-                Ok(bound) => {
-                    let (_kill, run) = bound.accept(disco.clone().discover());
+        let bound = librad_peer
+            .bind()
+            .await
+            .context("failed to bind librad peer")?;
+        tracing::info!(addrs = ?bound.listen_addrs(), "peer bound");
 
-                    if let Err(err) = run.await {
-                        tracing::error!(?err, "failed to accept on bound librad peer");
-                    }
-                }
-                Err(err) => {
-                    tracing::error!(?err, "failed to bind librad peer");
-                    tokio::time::sleep(Duration::from_secs(2)).await
-                }
+        let (stop_accepting, listen) = bound.accept(static_discovery.clone().discover());
+        let result = match future::select(shutdown_signal.clone(), listen.boxed()).await {
+            future::Either::Left((_, listen)) => {
+                stop_accepting();
+                listen.await
             }
+            future::Either::Right((listen_result, _)) => listen_result,
+        };
+
+        match result {
+            // We called `stop_accepting`.
+            Err(librad::net::protocol::io::error::Accept::Done) => {
+                tracing::info!("peer stopped listening");
+                Ok(())
+            }
+            Err(err) => Err(err).context("peer listening failed"),
+            Ok(never) => never,
         }
     }
 
