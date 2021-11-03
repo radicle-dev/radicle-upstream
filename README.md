@@ -61,7 +61,6 @@ Upstream uses:
 [ru]: https://www.rust-lang.org
 [rw]: https://radicle.xyz/downloads.html
 [so]: https://adobe-fonts.github.io/source-code-pro
-[st]: https://buildkite.com/monadic/radicle-upstream
 [sv]: https://svelte.dev
 [tw]: https://twemoji.twitter.com
 [ui]: ui

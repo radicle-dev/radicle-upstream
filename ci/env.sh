@@ -8,10 +8,16 @@
 
 set -Eeou pipefail
 
-if [[ "${BUILDKITE:-}" = "true" ]]; then
-  source ci/setup-buildkite.sh
-elif [[ "${GITHUB_ACTIONS:-}" = "true" ]]; then
-  source ci/setup-github-actions.sh
+if [[ "${GITHUB_ACTIONS:-}" = "true" ]]; then
+  export CACHE_FOLDER="$HOME/cache"
+
+  function log-group-start () {
+    echo "::group::${1:-}"
+  }
+
+  function log-group-end () {
+    echo "::endgroup::"
+  }
 else
   echo "Unknown CI platform"
   exit 1
