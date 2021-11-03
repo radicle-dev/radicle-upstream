@@ -8,7 +8,7 @@ import * as orgRoute from "ui/App/OrgScreen/route";
 import * as projectRoute from "ui/App/ProjectScreen/route";
 import * as userProfileRoute from "ui/App/UserProfileScreen/route";
 
-export type NetworkDiagnosticsTab = "peers" | "requests";
+export type DiagnosticsTab = "storage" | "connections" | "waitingRoom";
 export type WalletTab = "transactions";
 
 export type Route =
@@ -18,7 +18,7 @@ export type Route =
   | { type: "onboarding" }
   | { type: "org"; params: orgRoute.Params }
   | { type: "profile" }
-  | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
+  | { type: "diagnostics"; activeTab: DiagnosticsTab }
   | { type: "userProfile"; params: userProfileRoute.Params }
   | {
       type: "project";
@@ -36,7 +36,7 @@ export type LoadedRoute =
   | { type: "onboarding" }
   | orgRoute.LoadedRoute
   | { type: "profile" }
-  | { type: "networkDiagnostics"; activeTab: NetworkDiagnosticsTab }
+  | { type: "diagnostics"; activeTab: DiagnosticsTab }
   | userProfileRoute.LoadedRoute
   | projectRoute.LoadedRoute
   | { type: "wallet"; activeTab: WalletTab }
@@ -49,7 +49,7 @@ export function routeToPath(route: Route): string {
 
   if (route.type === "org") {
     subRoute = `/${route.params.address}/${route.params.view}`;
-  } else if (route.type === "networkDiagnostics" || route.type === "wallet") {
+  } else if (route.type === "diagnostics" || route.type === "wallet") {
     subRoute = `/${route.activeTab}`;
   } else if (route.type === "userProfile") {
     subRoute = `/${route.params.urn}`;

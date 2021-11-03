@@ -14,6 +14,7 @@ use link_crypto::{BoxedSigner, PeerId};
 use crate::{context, notification::Notification};
 
 mod control;
+mod diagnostics;
 mod error;
 mod identity;
 mod keystore;
@@ -63,10 +64,12 @@ pub fn api(
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
     let keystore_filter = path("keystore").and(keystore::filters(ctx.clone()));
-    let source_filter = path("source").and(source::filters(ctx));
+    let source_filter = path("source").and(source::filters(ctx.clone()));
+    let diagnostics_filter = path("diagnostics").and(diagnostics::filters(ctx));
 
     let api = path("v1").and(combine!(
         control_filter,
+        diagnostics_filter,
         identity_filter,
         notification_filter,
         project_filter,

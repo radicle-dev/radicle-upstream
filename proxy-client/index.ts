@@ -30,6 +30,16 @@ interface KeyStoreCreateParams {
   passphrase: string;
 }
 
+export interface Diagnostics {
+  gitDirPath: string;
+  refsTree: string[];
+}
+
+export const diagnosticsSchema = zod.object({
+  gitDirPath: zod.string(),
+  refsTree: zod.array(zod.string()),
+});
+
 export class ProxyClient {
   private fetcher: Fetcher;
 
@@ -44,6 +54,17 @@ export class ProxyClient {
     this.project = new project.Client(this.fetcher);
     this.source = new source.Client(this.fetcher);
     this.identity = new identity.Client(this.fetcher);
+  }
+
+  async diagnosticsGet(options?: RequestOptions): Promise<Diagnostics> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: "diagnostics",
+        options,
+      },
+      diagnosticsSchema
+    );
   }
 
   async sessionGet(options?: RequestOptions): Promise<Session> {

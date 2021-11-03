@@ -43,6 +43,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 thiserror = "1.0"
 tokio = { version = "1.2", features = [ "macros", "process", "signal", "time" ] }
 url = "2.1"
+walkdir = "2"
 warp = { version = "0.3", default-features = false }
 
 # radicle-link dependencies. These are patched in the workspace
