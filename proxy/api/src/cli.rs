@@ -28,7 +28,7 @@ pub struct Args {
     pub peer_listen: std::net::SocketAddr,
 
     /// Add one or more default seed addresses to initialise the settings store
-    #[structopt(long, long = "default-seed")]
+    #[structopt(long, env = "RADICLE_PROXY_DEFAULT_SEED", long = "default-seed")]
     pub default_seeds: Vec<String>,
 
     /// Don’t install the git-remote-rad binary
