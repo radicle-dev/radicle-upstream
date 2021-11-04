@@ -4,6 +4,15 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+#![warn(
+    clippy::all,
+    clippy::cargo,
+    unused_import_braces,
+    unused_qualifications
+)]
+#![cfg_attr(not(test), warn(clippy::unwrap_used))]
+#![allow(clippy::multiple_crate_versions)]
+
 use anyhow::Context;
 use futures::prelude::*;
 
@@ -33,7 +42,11 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
         .output()
         .context("failed to run git")?
         .stdout;
-    tracing::info!(git_version = std::str::from_utf8(&git_version).unwrap().trim());
+    tracing::info!(
+        git_version = std::str::from_utf8(&git_version)
+            .expect("invalid git output")
+            .trim()
+    );
 
     let profile = Profile::from_root(&options.rad_home, None)
         .context("failed to initialize Radicle profile")?;
@@ -51,7 +64,7 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
     let bootstrap_addrs = options.bootstrap.clone().unwrap_or_default();
     tracing::info!(?peer_id, ?bootstrap_addrs);
 
-    let shutdown_signal = install_signal_handler();
+    let shutdown_signal = install_signal_handler().context("failed to install signal handler")?;
     let peer = peer::Peer::new(peer::Config {
         rad_paths,
         key,
@@ -98,14 +111,17 @@ async fn track_projects(client: peer::Peer, projects: Vec<Urn>) {
 ///
 /// Also starts a background task that exits the process if any of the signals is received after a
 /// grace period of ten seconds after the first signal.
-async fn install_signal_handler() {
+fn install_signal_handler() -> anyhow::Result<impl Future<Output = ()>> {
+    use tokio::signal::unix::{signal, SignalKind};
     const GRACE_PERIOD: std::time::Duration = std::time::Duration::from_secs(10);
-    let (shutdown_tx, shutdown_rx) = futures::channel::oneshot::channel();
-    tokio::spawn(async move {
-        use tokio::signal::unix::{signal, SignalKind};
-        let mut sig_int = signal(SignalKind::interrupt()).unwrap();
-        let mut sig_term = signal(SignalKind::terminate()).unwrap();
 
+    let (shutdown_tx, shutdown_rx) = futures::channel::oneshot::channel();
+    let mut sig_int =
+        signal(SignalKind::interrupt()).context("failed to install signal handler")?;
+    let mut sig_term =
+        signal(SignalKind::terminate()).context("failed to install signal handler")?;
+
+    tokio::spawn(async move {
         futures::future::select(sig_term.recv().boxed(), sig_int.recv().boxed()).await;
         let _ = shutdown_tx.send(());
 
@@ -121,7 +137,7 @@ async fn install_signal_handler() {
         }
     });
 
-    let _ = shutdown_rx.await;
+    Ok(shutdown_rx.map(|_| ()))
 }
 
 fn load_or_create_secret_key(path: &std::path::Path) -> anyhow::Result<librad::SecretKey> {

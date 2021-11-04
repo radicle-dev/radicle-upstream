@@ -155,7 +155,7 @@ impl Manager {
         let env = self
             .environment()
             .context("failed to load environment")?
-            .ok_or(anyhow::anyhow!("service has been shut down"))?;
+            .ok_or_else(|| anyhow::anyhow!("service has been shut down"))?;
         let key = env
             .keystore
             .get(passphrase)

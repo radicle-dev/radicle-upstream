@@ -78,7 +78,8 @@ impl Peer {
         shutdown_signal: impl Future<Output = ()>,
     ) -> anyhow::Result<()> {
         let librad_peer = self.librad_peer.clone();
-        let static_discovery = discovery::Static::resolve(bootstrap).unwrap();
+        let static_discovery = discovery::Static::resolve(bootstrap)
+            .context("failed to resolve bootstrap addresses")?;
         let shutdown_signal = shutdown_signal.shared();
 
         let bound = librad_peer

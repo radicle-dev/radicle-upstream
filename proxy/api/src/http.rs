@@ -209,7 +209,7 @@ where
 {
     with_qs_opt()
         .and_then(|opt_query: Option<T>| async move {
-            opt_query.ok_or(warp::reject::Rejection::from(error::Routing::QueryMissing))
+            opt_query.ok_or_else(|| warp::reject::Rejection::from(error::Routing::QueryMissing))
         })
         .boxed()
 }
