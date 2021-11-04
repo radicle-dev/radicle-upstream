@@ -11,7 +11,6 @@
 use std::{sync::Arc, time::Duration};
 
 use futures::prelude::*;
-use thiserror::Error;
 use tokio::sync::{broadcast, watch, RwLock};
 
 use crate::{cli::Args, config, context, git_helper, http, notification, service, session};
@@ -107,18 +106,6 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-/// Error running either the peer, the event tasks or the API.
-#[derive(Debug, Error)]
-enum RunError {
-    /// The peer errored
-    #[error(transparent)]
-    Peer(#[from] radicle_daemon::peer::Error),
-
-    /// Warp errored
-    #[error(transparent)]
-    Warp(#[from] warp::Error),
-}
-
 async fn run_session(
     service_handle: service::Handle,
     environment: &service::Environment,
@@ -200,7 +187,7 @@ async fn run_session(
             let mut shutdown_signal = shutdown_signal.fuse();
             async move {
                 futures::pin_mut!(peer_run);
-                let result = futures::select! {
+                futures::select! {
                     _ = shutdown_signal => {
                         drop(peer_shutdown);
                         peer_run.await
@@ -208,10 +195,9 @@ async fn run_session(
                     result = peer_run => {
                         result
                     }
-                };
-
-                result.map_err(RunError::from)
+                }
             }
+            .map_err(|e| anyhow::Error::new(e).context("peer failed"))
             .boxed()
         });
 
@@ -223,7 +209,11 @@ async fn run_session(
     shutdown_runner.add_with_shutdown({
         let ctx = ctx.clone();
         let peer_events_sender = peer_events_sender;
-        move |shutdown_signal| serve(ctx, peer_events_sender, shutdown_signal).boxed()
+        move |shutdown_signal| {
+            serve(ctx, peer_events_sender, shutdown_signal)
+                .map_err(|e| e.context("server failed"))
+                .boxed()
+        }
     });
 
     let results = shutdown_runner.run().await;
@@ -312,7 +302,7 @@ fn serve(
     ctx: context::Context,
     peer_events_sender: broadcast::Sender<notification::Notification>,
     restart_signal: impl Future<Output = ()> + Send + 'static,
-) -> impl Future<Output = Result<(), RunError>> {
+) -> impl Future<Output = anyhow::Result<()>> {
     let ctx_shutdown = match ctx {
         context::Context::Sealed(_) => None,
         context::Context::Unsealed(ref unsealed) => Some(unsealed.shutdown.clone()),
