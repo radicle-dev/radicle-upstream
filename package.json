@@ -96,8 +96,8 @@
     "_private:electron:start": "wait-on ./public/bundle.js && NODE_ENV=development electron native/index.js",
     "_private:dist:clean": "rimraf ./dist && mkdir ./dist",
     "_private:prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
-    "_private:proxy:start:test": "cargo build --features unsafe-fast-keystore --bins && cargo run --features unsafe-fast-keystore -- --test --unsafe-fast-keystore",
-    "_private:proxy:start:test:watch": "cargo build --features unsafe-fast-keystore --bins && cargo watch -x 'run --features unsafe-fast-keystore -- --test --unsafe-fast-keystore'",
+    "_private:proxy:start:test": "cargo build --all-features --bins && cargo run --all-features -- --test --unsafe-fast-keystore",
+    "_private:proxy:start:test:watch": "cargo build --all-features --bins && cargo watch -x 'run --all-features -- --test --unsafe-fast-keystore'",
     "_private:webpack:ui:watch": "webpack build --watch --config-name ui",
     "postinstall": "patch-package && scripts/install-twemoji-assets.sh && husky install"
   },

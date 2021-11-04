@@ -24,11 +24,8 @@ mkdir -p ~/.cargo
 ln -sf "$cargo_deny_cache" ~/.cargo/advisory-db
 log-group-end
 
-log-group-start "Updating submodules"
+log-group-start "Test setup"
 ./scripts/test-setup.sh
-log-group-end
-
-log-group-start "Set custom git config"
 cp ci/gitconfig "$HOME/.gitconfig"
 log-group-end
 
@@ -37,27 +34,39 @@ time ./scripts/license-header.ts check
 time cargo deny check
 log-group-end
 
-log-group-start "Run proxy fmt"
+log-group-start "cargo fmt"
 time cargo fmt --all -- --check
 log-group-end
 
-log-group-start "Run proxy lints"
-time cargo clippy --all --all-targets -- --deny warnings
-time cargo clippy --all --all-targets --all-features -- --deny warnings
+log-group-start "cargo clippy"
+cargo clippy --all --all-targets -- --deny warnings
+cargo clippy --all --all-targets --all-features -- --deny warnings
 log-group-end
 
-log-group-start "Run proxy docs"
+log-group-start "cargo doc"
 (
   export RUSTDOCFLAGS="-D broken-intra-doc-links"
-  time cargo doc --workspace --no-deps --all-features --document-private-items
+  cargo doc --workspace --no-deps --all-features --document-private-items
 )
 log-group-end
 
-log-group-start "Run app eslint checks"
+log-group-start "cargo build"
+cargo build --all --all-features --all-targets
+log-group-end
+
+log-group-start "cargo test"
+(
+  export RUST_TEST_TIME_UNIT=2000,4000
+  export RUST_TEST_TIME_INTEGRATION=2000,8000
+  cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
+)
+log-group-end
+
+log-group-start "eslint"
 time yarn lint
 log-group-end
 
-log-group-start "Run app prettier checks"
+log-group-start "prettier"
 time yarn prettier:check
 log-group-end
 
@@ -65,13 +74,6 @@ log-group-start "Check TypeScript"
 time yarn typescript:check
 log-group-end
 
-log-group-start "Run proxy tests"
-(
-  export RUST_TEST_TIME_UNIT=2000,4000
-  export RUST_TEST_TIME_INTEGRATION=2000,8000
-  cargo test --all --all-features --all-targets -- -Z unstable-options --report-time
-)
-log-group-end
 
 log-group-start "Bundle electron main files"
 time yarn run webpack --config-name main
