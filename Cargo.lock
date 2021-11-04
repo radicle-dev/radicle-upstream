@@ -215,6 +215,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-shutdown"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a0530589772e3689f22201f7afc108c252c887a40914fb89285b8f2f22923ff"
+
+[[package]]
 name = "async-std"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4036,7 +4042,7 @@ name = "upstream-seed"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "async-trait",
+ "async-shutdown",
  "either",
  "futures 0.3.17",
  "futures-delay-queue",
