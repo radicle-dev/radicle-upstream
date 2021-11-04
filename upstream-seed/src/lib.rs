@@ -70,25 +70,50 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
         key,
         listen: options.listen,
     });
-    let track_task = tokio::spawn(track_projects(peer.clone(), options.project).map(Ok));
 
-    let client_task = tokio::spawn(async move { peer.run(bootstrap_addrs, shutdown_signal).await });
+    let mut task_runner = TaskRunner::new();
+    task_runner.add_vital(shutdown_signal.map(Ok));
+    task_runner.add_vital(
+        track_projects(
+            peer.clone(),
+            task_runner.shutdown_triggered(),
+            options.project,
+        )
+        .map(Ok),
+    );
+    task_runner.add_vital({
+        let shutdown_signal = task_runner.shutdown_triggered();
+        async move { peer.run(bootstrap_addrs, shutdown_signal).await }
+    });
 
-    let (result, _, _) = futures::future::select_all([client_task, track_task]).await;
-    result??;
+    match task_runner.run().await {
+        Ok(_) => {}
+        Err(errs) => {
+            for err in errs {
+                tracing::error!(?err, "task failed")
+            }
+        }
+    }
 
     Ok(())
 }
 
-async fn track_projects(client: peer::Peer, projects: Vec<Urn>) {
+async fn track_projects(
+    client: peer::Peer,
+    shutdown: impl Future<Output = ()>,
+    projects: Vec<Urn>,
+) {
     let (delay_queue, projects_rx) = futures_delay_queue::delay_queue();
     for project in projects {
         delay_queue.insert(project, std::time::Duration::new(0, 0));
     }
 
+    let projects_rx = projects_rx.into_stream().take_until(shutdown);
+    futures::pin_mut!(projects_rx);
+
     let retry_delay = std::time::Duration::from_secs(1);
 
-    while let Some(project) = projects_rx.receive().await {
+    while let Some(project) = projects_rx.next().await {
         tracing::info!(%project, "trying to track project");
         match client.track_project(project.clone()).await {
             Ok(found) => {
@@ -105,6 +130,8 @@ async fn track_projects(client: peer::Peer, projects: Vec<Urn>) {
             }
         }
     }
+
+    tracing::debug!("track_projects done");
 }
 
 /// Install signal handlers for SIGINT or SIGTERM and return when one of these signals is received.
@@ -173,6 +200,7 @@ fn init_logging() {
         let directives = [
             "info",
             "quinn=warn",
+            "upstream_seed=debug",
             "librad=debug",
             // Silence some noisy debug statements.
             "librad::git::refs=info",
@@ -203,4 +231,94 @@ fn init_logging() {
         Ok("json") => builder.json().init(),
         _ => builder.pretty().init(),
     };
+}
+
+/// Run [`Future`]s as tasks until a shutdown condition is triggered and collect their result.
+struct TaskRunner {
+    vital: Vec<future::BoxFuture<'static, anyhow::Result<()>>>,
+    shutdown: async_shutdown::Shutdown,
+}
+
+impl TaskRunner {
+    pub fn new() -> Self {
+        Self {
+            vital: vec![],
+            shutdown: async_shutdown::Shutdown::new(),
+        }
+    }
+
+    /// Returns when a shutdown is triggered.
+    pub fn shutdown_triggered(&self) -> impl Future<Output = ()> + Send + Unpin + 'static {
+        self.shutdown.wait_shutdown_triggered()
+    }
+
+    /// Add a vital future.
+    ///
+    /// When the futures resolves, the shutdown is triggered. The task runner only completes once
+    /// `fut` resolves.
+    ///
+    /// The caller needs to ensure that `fut` eventually resolves when a shutdown is triggered.
+    pub fn add_vital(&mut self, fut: impl Future<Output = anyhow::Result<()>> + Send + 'static) {
+        self.vital.push(fut.boxed())
+    }
+
+    /// Run all added futures as tasks and collect any errors.
+    pub async fn run(self) -> Result<(), Vec<anyhow::Error>> {
+        let Self { vital, shutdown } = self;
+        let tasks = vital
+            .into_iter()
+            .map(|fut| shutdown.wrap_vital(tokio::spawn(fut)));
+        let results = future::join_all(tasks).await;
+        let errors = results
+            .into_iter()
+            .filter_map(|res| match res {
+                Ok(Ok(_)) => None,
+                Ok(Err(err)) => Some(err),
+                Err(join_err) => Some(anyhow::Error::new(join_err)),
+            })
+            .collect::<Vec<_>>();
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[tokio::test]
+    async fn task_runner() {
+        let mut task_runner = TaskRunner::new();
+
+        task_runner.add_vital(
+            task_runner
+                .shutdown_triggered()
+                .map(|_| Err(anyhow::anyhow!("foo"))),
+        );
+        task_runner.add_vital(future::err(anyhow::anyhow!("bar")));
+
+        let errors = task_runner.run().await.unwrap_err();
+        let error_messages = errors.iter().map(|e| e.to_string()).collect::<Vec<_>>();
+        assert_eq!(error_messages, vec!["foo".to_string(), "bar".to_string()])
+    }
+
+    #[tokio::test]
+    async fn task_runner_panic() {
+        let mut task_runner = TaskRunner::new();
+
+        task_runner.add_vital(
+            task_runner
+                .shutdown_triggered()
+                .map(|_| Err(anyhow::anyhow!("foo"))),
+        );
+        task_runner.add_vital(async move { panic!("panic") });
+
+        let errors = task_runner.run().await.unwrap_err();
+        let error_messages = errors.iter().map(|e| e.to_string()).collect::<Vec<_>>();
+        assert_eq!(error_messages, vec!["foo".to_string(), "panic".to_string()])
+    }
 }

@@ -12,7 +12,7 @@ keywords = [ "radicle", "upstream" ]
 
 [dependencies]
 anyhow = "1.0"
-async-trait = { version = "0.1" }
+async-shutdown = "0.1.2"
 either = { version = "1.6" }
 futures = { version = "0.3" }
 futures-delay-queue = "0.5"
