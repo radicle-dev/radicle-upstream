@@ -31,13 +31,29 @@ interface KeyStoreCreateParams {
 }
 
 export interface Diagnostics {
-  gitDirPath: string;
-  refsTree: string[];
+  storage: {
+    gitDirPath: string;
+    refsTree: string[];
+  };
+  peer: {
+    membership: {
+      active: string[];
+      passive: string[];
+    };
+  };
 }
 
 export const diagnosticsSchema = zod.object({
-  gitDirPath: zod.string(),
-  refsTree: zod.array(zod.string()),
+  storage: zod.object({
+    gitDirPath: zod.string(),
+    refsTree: zod.array(zod.string()),
+  }),
+  peer: zod.object({
+    membership: zod.object({
+      active: zod.array(zod.string()),
+      passive: zod.array(zod.string()),
+    }),
+  }),
 });
 
 export class ProxyClient {

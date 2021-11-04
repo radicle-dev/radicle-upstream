@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
   import * as Session from "ui/src/session";
+  import * as proxy from "ui/src/proxy";
   import { status as localPeerState } from "ui/src/localPeer";
 
   import Json from "./Json.svelte";
@@ -24,4 +25,7 @@
 <div class="container">
   <Json title="Your identity" data={session.identity} />
   <Json title="Connection status" data={$localPeerState} />
+  {#await proxy.client.diagnosticsGet() then result}
+    <Json title="Peer membership" data={result.peer.membership} />
+  {/await}
 </div>

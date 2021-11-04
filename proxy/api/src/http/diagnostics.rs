@@ -37,6 +37,7 @@ mod handler {
     /// Get diagnostics information.
     #[allow(clippy::unused_async)]
     pub async fn get(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+        let membership = ctx.peer.membership().await;
         let git_dir = ctx.rest.paths.git_dir();
         let refs_tree = WalkDir::new(git_dir.join("refs"))
             .into_iter()
@@ -50,8 +51,16 @@ mod handler {
             })
             .collect::<Vec<String>>();
         let reply = json!({
-            "gitDirPath": git_dir,
-            "refsTree": refs_tree,
+            "storage": {
+                "gitDirPath": git_dir,
+                "refsTree": refs_tree,
+            },
+            "peer": {
+                "membership": {
+                    "active": membership.active,
+                    "passive": membership.passive
+                }
+            }
         });
         Ok(reply::json(&reply))
     }

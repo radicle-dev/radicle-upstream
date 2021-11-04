@@ -61,12 +61,16 @@
   ];
 
   async function copyEverythingToClipboard() {
+    const diagnostics = await proxy.client.diagnosticsGet();
     ipc.copyToClipboard(
       JSON.stringify(
         {
-          storage: await proxy.client.diagnosticsGet(),
+          storage: diagnostics.storage,
           identity: Session.unsealed().identity,
-          localPeerState: $localPeerState,
+          localPeer: {
+            membership: diagnostics.peer.membership,
+            state: $localPeerState,
+          },
           waitingRoomState: $waitingRoomState,
           waitingRoomEventLog: $waitingRoomEventLog,
         },
