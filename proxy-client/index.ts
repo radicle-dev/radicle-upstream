@@ -35,12 +35,7 @@ export interface Diagnostics {
     gitDirPath: string;
     refsTree: string[];
   };
-  peer: {
-    membership: {
-      active: string[];
-      passive: string[];
-    };
-  };
+  peer?: unknown;
 }
 
 export const diagnosticsSchema = zod.object({
@@ -48,12 +43,7 @@ export const diagnosticsSchema = zod.object({
     gitDirPath: zod.string(),
     refsTree: zod.array(zod.string()),
   }),
-  peer: zod.object({
-    membership: zod.object({
-      active: zod.array(zod.string()),
-      passive: zod.array(zod.string()),
-    }),
-  }),
+  peer: zod.unknown(),
 });
 
 export class ProxyClient {

@@ -68,7 +68,7 @@
           storage: diagnostics.storage,
           identity: Session.unsealed().identity,
           localPeer: {
-            membership: diagnostics.peer.membership,
+            ...diagnostics,
             state: $localPeerState,
           },
           waitingRoomState: $waitingRoomState,

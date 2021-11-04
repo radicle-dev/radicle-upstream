@@ -24,8 +24,8 @@
 
 <div class="container">
   <Json title="Your identity" data={session.identity} />
-  <Json title="Connection status" data={$localPeerState} />
   {#await proxy.client.diagnosticsGet() then result}
-    <Json title="Peer membership" data={result.peer.membership} />
+    <Json title="Your peer" data={result.peer} />
   {/await}
+  <Json title="Connection status" data={$localPeerState} />
 </div>
