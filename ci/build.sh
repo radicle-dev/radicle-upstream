@@ -13,17 +13,6 @@ yarn install --immutable
 yarn dedupe --check
 log-group-end
 
-log-group-start "Linking cache"
-declare -r rust_target_cache="$CACHE_FOLDER/proxy-target"
-mkdir -p "$rust_target_cache"
-ln -s "${rust_target_cache}" ./target
-
-declare -r cargo_deny_cache="$CACHE_FOLDER/cargo-deny"
-mkdir -p "$cargo_deny_cache"
-mkdir -p ~/.cargo
-ln -sf "$cargo_deny_cache" ~/.cargo/advisory-db
-log-group-end
-
 log-group-start "Test setup"
 ./scripts/test-setup.sh
 cp ci/gitconfig "$HOME/.gitconfig"

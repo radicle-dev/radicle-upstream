@@ -23,9 +23,14 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/cache/cargo
-            ~/cache/proxy-target
-          key: build-${{ runner.os }}-rust-v1-${{ hashFiles('Cargo.lock') }}
+            ~/.cargo/advisory-db/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git
+            ./target/*/deps
+            ./target/*/build
+            ./target/*/.fingerprint
+          key: build-${{ runner.os }}-rust-v3-${{ hashFiles('Cargo.lock') }}
       - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()
@@ -39,9 +44,6 @@ jobs:
     runs-on: macos-11
     if: github.event.pull_request || github.ref == 'refs/heads/master'
     steps:
-      - run:  |
-          echo "CARGO_HOME=$HOME/cache/cargo" >> $GITHUB_ENV
-          echo "PATH=$HOME/cache/cargo/bin:$PATH" >> $GITHUB_ENV
       - uses: actions/checkout@master
       - name: Cache Yarn
         uses: actions/cache@v2
@@ -56,13 +58,19 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/cache/cargo
-            ~/cache/proxy-target
-          key: build-${{ runner.os }}-rust-v2-${{ hashFiles('Cargo.lock') }}
+            ~/.cargo/bin/cargo-deny
+            ~/.cargo/advisory-db/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git
+            ./target/*/deps
+            ./target/*/build
+            ./target/*/.fingerprint
+          key: build-${{ runner.os }}-rust-v3-${{ hashFiles('Cargo.lock') }}
       - name: Install toolchain
         run: |
           rustup component add clippy rustfmt
-          test -f $CARGO_HOME/bin/cargo-deny || cargo install cargo-deny
+          test -f ~/.cargo/bin/cargo-deny || cargo install cargo-deny
       - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()
