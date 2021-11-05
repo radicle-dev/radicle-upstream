@@ -23,6 +23,8 @@
   import * as svelteStore from "ui/src/svelteStore";
   import * as Safe from "ui/src/org/safe";
   import * as graph from "ui/src/org/theGraphApi";
+  import * as ethereum from "ui/src/ethereum";
+  import * as Wallet from "ui/src/wallet";
   import { getRegistration, Registration } from "ui/src/org/ensResolver";
   import type { Org } from "ui/src/org";
 
@@ -42,14 +44,9 @@
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
 
-  import * as ethereum from "ui/src/ethereum";
-  import * as Wallet from "ui/src/wallet";
-
   let registration: Registration | undefined;
   let ownedOrgs: Org[] = [];
-
   const ethereumEnvironment = ethereum.selectedEnvironment;
-  const walletStore = Wallet.store;
 
   const session = Session.unsealed();
 
@@ -146,7 +143,7 @@
   let state: "loading" | "loaded" | "error" = "loading";
 
   async function loadSidebarData(): Promise<void> {
-    let address = session.identity.metadata.ethereum.address;
+    const address = session.identity.metadata.ethereum.address;
     state = "loading";
     try {
       const gnosisSafeWallets = await Safe.getSafesByOwner(
