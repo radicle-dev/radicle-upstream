@@ -170,7 +170,7 @@
       alt="user-blockie" />
   {:else if kind.type === "orgBlockie"}
     <img
-      class="avatar circle"
+      class="avatar square"
       class:small={size === "small"}
       class:regular={size === "regular"}
       class:large={size === "large"}
