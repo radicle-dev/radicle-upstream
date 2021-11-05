@@ -8,51 +8,12 @@
 // Otherwise clippy complains about FromArgs
 #![allow(clippy::default_trait_access)]
 
-use std::{net, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
-use argh::FromArgs;
 use futures::prelude::*;
-use thiserror::Error;
 use tokio::sync::{broadcast, watch, RwLock};
 
-use crate::{config, context, git_helper, http, notification, service, session};
-
-/// Flags accepted by the proxy binary.
-#[derive(Clone, FromArgs)]
-#[allow(clippy::struct_excessive_bools)]
-pub struct Args {
-    /// put proxy in test mode to use certain fixtures
-    #[argh(switch)]
-    pub test: bool,
-    /// run HTTP API on a specified address:port (default: 127.0.0.1:17246)
-    #[argh(
-        option,
-        default = "std::net::SocketAddr::from(([127, 0, 0, 1], 17246))"
-    )]
-    pub http_listen: net::SocketAddr,
-    /// run the peer on a specified address:port (default: 0.0.0.0:0)
-    #[argh(option, default = "std::net::SocketAddr::from(([0, 0, 0, 0], 0))")]
-    pub peer_listen: net::SocketAddr,
-    /// add one or more default seed addresses to initialise the settings store (default: none)
-    #[argh(option, long = "default-seed")]
-    pub default_seeds: Vec<String>,
-    /// don’t install the git-remote-rad binary
-    #[argh(switch)]
-    pub skip_remote_helper_install: bool,
-    #[argh(option)]
-    /// passphrase to unlock the keystore
-    ///
-    /// If not provided the keystore must be unlocked via the HTTP API.
-    pub key_passphrase: Option<String>,
-    #[cfg(feature = "unsafe-fast-keystore")]
-    /// enables fast but unsafe encryption of the keystore for development builds
-    #[argh(switch)]
-    pub unsafe_fast_keystore: bool,
-
-    /// enables more verbose logging for development
-    #[argh(switch)]
-    pub dev_log: bool,
-}
+use crate::{cli::Args, config, context, git_helper, http, notification, service, session};
 
 /// Run the proxy process
 ///
@@ -145,18 +106,6 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-/// Error running either the peer, the event tasks or the API.
-#[derive(Debug, Error)]
-enum RunError {
-    /// The peer errored
-    #[error(transparent)]
-    Peer(#[from] radicle_daemon::peer::Error),
-
-    /// Warp errored
-    #[error(transparent)]
-    Warp(#[from] warp::Error),
-}
-
 async fn run_session(
     service_handle: service::Handle,
     environment: &service::Environment,
@@ -238,7 +187,7 @@ async fn run_session(
             let mut shutdown_signal = shutdown_signal.fuse();
             async move {
                 futures::pin_mut!(peer_run);
-                let result = futures::select! {
+                futures::select! {
                     _ = shutdown_signal => {
                         drop(peer_shutdown);
                         peer_run.await
@@ -246,10 +195,9 @@ async fn run_session(
                     result = peer_run => {
                         result
                     }
-                };
-
-                result.map_err(RunError::from)
+                }
             }
+            .map_err(|e| anyhow::Error::new(e).context("peer failed"))
             .boxed()
         });
 
@@ -261,7 +209,11 @@ async fn run_session(
     shutdown_runner.add_with_shutdown({
         let ctx = ctx.clone();
         let peer_events_sender = peer_events_sender;
-        move |shutdown_signal| serve(ctx, peer_events_sender, shutdown_signal).boxed()
+        move |shutdown_signal| {
+            serve(ctx, peer_events_sender, shutdown_signal)
+                .map_err(|e| e.context("server failed"))
+                .boxed()
+        }
     });
 
     let results = shutdown_runner.run().await;
@@ -350,7 +302,7 @@ fn serve(
     ctx: context::Context,
     peer_events_sender: broadcast::Sender<notification::Notification>,
     restart_signal: impl Future<Output = ()> + Send + 'static,
-) -> impl Future<Output = Result<(), RunError>> {
+) -> impl Future<Output = anyhow::Result<()>> {
     let ctx_shutdown = match ctx {
         context::Context::Sealed(_) => None,
         context::Context::Unsealed(ref unsealed) => Some(unsealed.shutdown.clone()),

@@ -90,12 +90,12 @@
         }
         push({ type: "network" });
         break;
-      case hotkeys.ShortcutKey.NetworkDiagnostics:
+      case hotkeys.ShortcutKey.Diagnostics:
         modal.hide();
-        if ($activeRouteStore.type === "networkDiagnostics") {
+        if ($activeRouteStore.type === "diagnostics") {
           return;
         }
-        push({ type: "networkDiagnostics", activeTab: "peers" });
+        push({ type: "diagnostics", activeTab: "storage" });
         break;
     }
   };

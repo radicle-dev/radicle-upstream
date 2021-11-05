@@ -37,7 +37,7 @@
 
   import LoadingScreen from "ui/App/LoadingScreen.svelte";
   import LockScreen from "ui/App/LockScreen.svelte";
-  import NetworkDiagnosticsScreen from "ui/App/NetworkDiagnosticsScreen.svelte";
+  import DiagnosticsScreen from "ui/App/DiagnosticsScreen.svelte";
   import NetworkScreen from "ui/App/NetworkScreen.svelte";
   import OrgsScreen from "ui/App/OrgsScreen.svelte";
   import OrgScreen from "ui/App/OrgScreen.svelte";
@@ -157,8 +157,8 @@
       ownUserUrn={$activeRouteStore.ownUserUrn}
       user={$activeRouteStore.user}
       projects={$activeRouteStore.projects} />
-  {:else if $activeRouteStore.type === "networkDiagnostics"}
-    <NetworkDiagnosticsScreen activeTab={$activeRouteStore.activeTab} />
+  {:else if $activeRouteStore.type === "diagnostics"}
+    <DiagnosticsScreen activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "singleSigOrg"}
     <SingleSigOrgScreen
       registration={$activeRouteStore.registration}

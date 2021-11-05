@@ -123,22 +123,22 @@ mkdir /Users/rudolfs/work/20000
 # Launch the first instance.
 
 RAD_HOME="/Users/rudolfs/work/19000" \
-RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:19000 --peer-listen 0.0.0.0:19000" \
+RADICLE_PROXY_HTTP_LISTEN="127.0.0.1:19000" \
+RADICLE_PROXY_PEER_LISTEN="0.0.0.0:19000" \
 RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:19000" \
 yarn start
 
 # And then in a separate shell, launch the second instance.
 
 RAD_HOME="/Users/rudolfs/work/20000" \
-RADICLE_UPSTREAM_PROXY_ARGS="--http-listen 127.0.0.1:20000 --peer-listen 0.0.0.0:20000" \
+RADICLE_PROXY_HTTP_LISTEN="127.0.0.1:20000" \
+RADICLE_PROXY_PEER_LISTEN="0.0.0.0:20000" \
 RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:20000" \
 yarn start
 ```
 
-You can also let the the OS choose a free peer port by setting it to:
-`--peer-listen 0.0.0.0:0`. And if you don't need completely isolated state,
-then you can use `RAD_PROFILE` instead of `RAD_HOME`, but be aware that
-Electron state will be shared by all instances.
+You can also let the the OS choose a free peer port by using
+`RADICLE_PROXY_PEER_LISTEN="0.0.0.0:0"`.
 
 
 ### Running on Windows (experimental)
@@ -351,13 +351,12 @@ Upstream.
 
 ## CI setup
 
-We run CI builds with [Buildkite][bk] and [Github Actions][ga]. Buildkite builds
-all branch pushes to the Github repository. Github actions builds pull requests
-on Github.
+We run CI builds on [Github Actions][ga].
 
-When tests pass, the build process uploads the Upstream binary as a build
-artifact. If the UI end-to-end tests fail, screenshots of the failing tests are
-uploaded instead of the binary.
+If the UI end-to-end tests fail, screenshots and logs for the failing tests are
+uploaded.
+
+On pushes of the master branch we also build and upload distribution artifacts.
 
 ### Docker image updates
 
@@ -384,16 +383,7 @@ build times. If you need to update this image, proceed as follows:
 
    `docker push gcr.io/radicle-upstream/radicle-upstream-ci:15`
 
-6. Update the image version in `.buildkite/pipeline.yaml`:
-
-   ```yaml
-   DOCKER_IMAGE: 'gcr.io/radicle-upstream/radicle-upstream-ci:15'
-   ```
-
-7. Update the image version in `.github/workflows/build.yaml`
-
-8. Commit changes to `Dockerfile` and `pipeline.yaml`. Pushing the changes will
-   create a new branch and build the updated image.
+6. Update the image version in `.github/workflows/build.yaml`
 
 ## Updating NPM dependencies
 
@@ -519,7 +509,6 @@ All Github access tokens _must_ have the `public_repo` scope.
     This is ok for release candidate branches.
 
 [an]: #apple-notarization
-[bk]: https://buildkite.com/monadic/radicle-upstream
 [br]: https://brew.sh
 [bs]: https://docs.brew.sh/How-To-Open-a-Homebrew-Pull-Request#submit-a-new-version-of-an-existing-formula
 [ca]: https://developer.apple.com/account/resources/certificates/add

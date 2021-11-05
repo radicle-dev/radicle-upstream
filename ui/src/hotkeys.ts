@@ -31,7 +31,7 @@ export enum ShortcutKey {
   Network = "b",
   Search = "p",
   Settings = ",",
-  NetworkDiagnostics = "1",
+  Diagnostics = "i",
 }
 
 export interface KeyboardShortcut {
@@ -59,8 +59,8 @@ export const shortcuts: KeyboardShortcut[] = [
   { description: "Network", key: ShortcutKey.Network, modifierKey: true },
   { description: "Settings", key: ShortcutKey.Settings, modifierKey: true },
   {
-    description: "Network diagnostics",
-    key: ShortcutKey.NetworkDiagnostics,
+    description: "Diagnostics",
+    key: ShortcutKey.Diagnostics,
     modifierKey: true,
     hide: true,
   },

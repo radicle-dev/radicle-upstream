@@ -22,18 +22,6 @@ declare -r cargo_deny_cache="$CACHE_FOLDER/cargo-deny"
 mkdir -p "$cargo_deny_cache"
 mkdir -p ~/.cargo
 ln -sf "$cargo_deny_cache" ~/.cargo/advisory-db
-
-if [[ "${BUILDKITE_AGENT_META_DATA_PLATFORM:-}" != "macos" && "${RUNNER_OS:-}" != "macOS" ]]; then
-  free_cache_space_kb=$(df --output=avail /cache | sed -n 2p)
-  min_free_cache_kb=$(( 2 * 1024 * 1024 )) # 2GiB is 25%
-  echo "$(( free_cache_space_kb / 1024 )) MiB free space on /cache"
-  if [[ $free_cache_space_kb -le $min_free_cache_kb ]]; then
-    echo "Not enough free space on /cache. Deleting ${rust_target_cache}"
-    du -sh /cache/*
-    rm -rf "${rust_target_cache}"
-    mkdir -p "${rust_target_cache}"
-  fi
-fi
 log-group-end
 
 log-group-start "Updating submodules"
@@ -41,8 +29,7 @@ log-group-start "Updating submodules"
 log-group-end
 
 log-group-start "Set custom git config"
-cp .buildkite/.gitconfig "$HOME/"
-cat "$HOME/.gitconfig"
+cp ci/gitconfig "$HOME/.gitconfig"
 log-group-end
 
 log-group-start "License compliance"

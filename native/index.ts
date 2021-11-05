@@ -35,13 +35,7 @@ let proxyArgs: string[] = [];
 if (isDev) {
   proxyPath = path.join(__dirname, "../target/debug/radicle-proxy");
 
-  if (process.env.RADICLE_UPSTREAM_PROXY_ARGS) {
-    proxyArgs =
-      process.env.RADICLE_UPSTREAM_PROXY_ARGS.split(/[, ]/).filter(Boolean);
-  }
   proxyArgs.push(
-    "--default-seed",
-    "hybz9gfgtd9d4pd14a6r66j5hz6f77fed4jdu7pana4fxaxbt369kg@setzling.radicle.xyz:12345",
     "--skip-remote-helper-install",
     "--unsafe-fast-keystore",
     "--dev-log"

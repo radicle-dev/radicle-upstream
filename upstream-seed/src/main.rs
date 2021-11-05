@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-#[tokio::main]
-pub async fn main() -> Result<(), anyhow::Error> {
-    api::run(api::Args::from_args()).await
+fn main() {
+    upstream_seed::main();
 }

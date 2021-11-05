@@ -2,6 +2,7 @@
 resolver = "2"
 members = [
   "proxy/api",
+  "upstream-seed",
 ]
 
 [patch.crates-io.librad]
