@@ -140,20 +140,27 @@
   showNotificationsForFailedProjects();
 
   const wallet = svelteStore.get(Wallet.store);
-  let state: "loading" | "loaded" | "error" = "loading";
 
   async function loadSidebarData(): Promise<void> {
-    const address = session.identity.metadata.ethereum.address;
-    state = "loading";
+    const address =
+      session.identity.metadata.ethereum?.address || Wallet.walletAddress();
+
+    if (!address) {
+      return;
+    }
+
     try {
       const gnosisSafeWallets = await Safe.getSafesByOwner(
         wallet.environment,
         address
       );
       ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
+
       const ensName = await wallet.provider.lookupAddress(address);
+      if (!ensName) {
+        return;
+      }
       registration = await getRegistration(ensName);
-      state = "loaded";
     } catch (err: unknown) {
       error.show(
         new error.Error({
@@ -162,19 +169,17 @@
           source: err,
         })
       );
-      state = "error";
     }
   }
 
   loadSidebarData();
 
-  const showSidebar: boolean =
-    $wallet.status === Wallet.Status.Connected &&
-    ethereum.supportedNetwork($ethereumEnvironment) ===
-      $wallet.connected.network &&
-    session.identity.metadata.ethereum?.address
-      ? true
-      : false;
+  $: showSidebar =
+    ($wallet.status === Wallet.Status.Connected &&
+      ethereum.supportedNetwork($ethereumEnvironment) ===
+        $wallet.connected.network &&
+      session.identity.metadata.ethereum?.address !== undefined) ||
+    Wallet.walletAddress() !== undefined;
 </script>
 
 <style>
