@@ -61,13 +61,11 @@
   }
 
   function blockieBg(urn: string) {
-    const seed = urn.toLowerCase();
-    const avatar = createIcon({
-      seed,
+    return createIcon({
+      seed: urn.toLowerCase(),
       size: 8,
       scale: 16,
-    });
-    return avatar.toDataURL();
+    }).toDataURL();
   }
 </script>
 
