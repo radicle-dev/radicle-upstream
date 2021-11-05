@@ -8,7 +8,7 @@
 <script lang="ts">
   import { unreachable } from "./lib/unreachable";
   import * as radicleAvatar from "radicle-avatar";
-  import { createIcon } from "./blockies";
+  import { createIcon } from "./lib/blockies";
   import Emoji from "./Emoji.svelte";
 
   export let dataCy: string | undefined = undefined;
