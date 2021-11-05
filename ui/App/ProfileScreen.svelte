@@ -155,13 +155,26 @@
       registration = await getRegistration(ensName);
       state = "loaded";
     } catch (err: unknown) {
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectRequestFailure,
+          message: "Failed to fetch ENS registration",
+          source: err,
+        })
+      );
       state = "error";
     }
   }
 
   loadSidebarData();
 
-  const showSidebar: boolean = true;
+  const showSidebar: boolean =
+    $wallet.status === Wallet.Status.Connected &&
+    ethereum.supportedNetwork($ethereumEnvironment) ===
+      $wallet.connected.network &&
+    session.identity.metadata.ethereum?.address
+      ? true
+      : false;
 </script>
 
 <style>
@@ -222,7 +235,9 @@
   <div slot="header" style="display: flex">
     <ProfileHeader
       urn={session.identity.urn}
-      name={session.identity.metadata.handle}
+      name={registration?.domain
+        ? registration?.domain
+        : session.identity.metadata.handle}
       peerId={session.identity.peerId} />
 
     <Button
@@ -320,7 +335,7 @@
             </Button>
           </li>
         </ul>
-        {#if showSidebar && $wallet.status === Wallet.Status.Connected && ethereum.supportedNetwork($ethereumEnvironment) === $wallet.connected.network}
+        {#if showSidebar}
           <div class="sidebar">
             <ProfileSidebar
               {registration}
