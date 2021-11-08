@@ -81,6 +81,7 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
         )
         .map(Ok),
     );
+
     task_runner.add_vital({
         let shutdown_signal = task_runner.shutdown_triggered();
         async move { peer.run(bootstrap_addrs, shutdown_signal).await }
@@ -235,14 +236,14 @@ fn init_logging() {
 
 /// Run [`Future`]s as tasks until a shutdown condition is triggered and collect their result.
 struct TaskRunner {
-    vital: Vec<future::BoxFuture<'static, anyhow::Result<()>>>,
+    futures: Vec<future::BoxFuture<'static, anyhow::Result<()>>>,
     shutdown: async_shutdown::Shutdown,
 }
 
 impl TaskRunner {
     pub fn new() -> Self {
         Self {
-            vital: vec![],
+            futures: vec![],
             shutdown: async_shutdown::Shutdown::new(),
         }
     }
@@ -259,15 +260,12 @@ impl TaskRunner {
     ///
     /// The caller needs to ensure that `fut` eventually resolves when a shutdown is triggered.
     pub fn add_vital(&mut self, fut: impl Future<Output = anyhow::Result<()>> + Send + 'static) {
-        self.vital.push(fut.boxed())
+        self.futures.push(self.shutdown.wrap_vital(fut).boxed());
     }
 
     /// Run all added futures as tasks and collect any errors.
     pub async fn run(self) -> Result<(), Vec<anyhow::Error>> {
-        let Self { vital, shutdown } = self;
-        let tasks = vital
-            .into_iter()
-            .map(|fut| shutdown.wrap_vital(tokio::spawn(fut)));
+        let tasks = self.futures.into_iter().map(tokio::spawn);
         let results = future::join_all(tasks).await;
         let errors = results
             .into_iter()
@@ -303,13 +301,12 @@ mod test {
 
         let errors = task_runner.run().await.unwrap_err();
         let error_messages = errors.iter().map(|e| e.to_string()).collect::<Vec<_>>();
-        assert_eq!(error_messages, vec!["foo".to_string(), "bar".to_string()])
+        assert_eq!(error_messages, vec!["foo".to_string(), "bar".to_string()]);
     }
 
     #[tokio::test]
     async fn task_runner_panic() {
         let mut task_runner = TaskRunner::new();
-
         task_runner.add_vital(
             task_runner
                 .shutdown_triggered()
@@ -319,6 +316,6 @@ mod test {
 
         let errors = task_runner.run().await.unwrap_err();
         let error_messages = errors.iter().map(|e| e.to_string()).collect::<Vec<_>>();
-        assert_eq!(error_messages, vec!["foo".to_string(), "panic".to_string()])
+        assert_eq!(error_messages, vec!["foo".to_string(), "panic".to_string()]);
     }
 }
