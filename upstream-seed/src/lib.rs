@@ -255,7 +255,7 @@ impl TaskRunner {
 
     /// Add a vital future.
     ///
-    /// When the futures resolves, the shutdown is triggered. The task runner only completes once
+    /// When the future resolves, a shutdown is triggered. The task runner only completes once
     /// `fut` resolves.
     ///
     /// The caller needs to ensure that `fut` eventually resolves when a shutdown is triggered.
