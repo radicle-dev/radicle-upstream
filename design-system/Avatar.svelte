@@ -20,8 +20,8 @@
 
   type Kind =
     | EmojiKind
-    | { type: "userBlockie"; uniqueIdentifier: string }
-    | { type: "orgBlockie"; uniqueIdentifier: string }
+    | { type: "userBlocky"; uniqueIdentifier: string }
+    | { type: "orgBlocky"; uniqueIdentifier: string }
     | { type: "userImage"; url: string }
     | { type: "orgImage"; url: string }
     | { type: "pendingOrg" }
@@ -60,7 +60,7 @@
     }
   }
 
-  function blockieBg(urn: string) {
+  function blockyBg(urn: string) {
     return createIcon({
       seed: urn.toLowerCase(),
       size: 8,
@@ -157,24 +157,24 @@
   class:large={size === "large"}
   class:huge={size === "huge"}
   {style}>
-  {#if kind.type === "userBlockie"}
+  {#if kind.type === "userBlocky"}
     <img
       class="avatar circle"
       class:small={size === "small"}
       class:regular={size === "regular"}
       class:large={size === "large"}
       class:huge={size === "huge"}
-      src={blockieBg(kind.uniqueIdentifier)}
-      alt="user-blockie" />
-  {:else if kind.type === "orgBlockie"}
+      src={blockyBg(kind.uniqueIdentifier)}
+      alt="user-blocky" />
+  {:else if kind.type === "orgBlocky"}
     <img
       class="avatar square"
       class:small={size === "small"}
       class:regular={size === "regular"}
       class:large={size === "large"}
       class:huge={size === "huge"}
-      src={blockieBg(kind.uniqueIdentifier)}
-      alt="org-blockie" />
+      src={blockyBg(kind.uniqueIdentifier)}
+      alt="org-blocky" />
   {:else if kind.type === "userImage"}
     <img
       class="avatar circle"

@@ -12,7 +12,7 @@
 
   import * as format from "design-system/lib/format";
 
-  import BlockieIcon from "design-system/icons/Blockie.svelte";
+  import BlockyIcon from "design-system/icons/Blocky.svelte";
   import GithubIcon from "design-system/icons/Github.svelte";
   import GlobeIcon from "design-system/icons/Globe.svelte";
   import EthIcon from "design-system/icons/Ethereum.svelte";
@@ -104,13 +104,13 @@
   {/if}
   <div class="row">
     <div class="title">
-      <BlockieIcon />
-      <span class="typo-text-bold">Blockie</span>
+      <BlockyIcon />
+      <span class="typo-text-bold">Blocky</span>
     </div>
     <Avatar
       style="justify-content: flex-start"
       size="large"
-      kind={{ type: "userBlockie", uniqueIdentifier: urn }} />
+      kind={{ type: "userBlocky", uniqueIdentifier: urn }} />
   </div>
   {#if registration?.url}
     <div class="row">
