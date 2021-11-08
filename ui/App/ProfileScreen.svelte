@@ -144,7 +144,6 @@
   async function loadSidebarData(): Promise<void> {
     const address =
       session.identity.metadata.ethereum?.address || Wallet.walletAddress();
-
     if (!address) {
       return;
     }
@@ -155,7 +154,17 @@
         address
       );
       ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
+    } catch (err: unknown) {
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectRequestFailure,
+          message: "Failed to fetch orgs for sidebar.",
+          source: err,
+        })
+      );
+    }
 
+    try {
       const ensName = await wallet.provider.lookupAddress(address);
       if (!ensName) {
         return;
