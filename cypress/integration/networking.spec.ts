@@ -15,35 +15,30 @@ const validSeedAddress =
 
 context("p2p networking", () => {
   context("network status indicator", () => {
-    it(
-      "reacts to network state changes",
-      { defaultCommandTimeout: 8000 },
-      () => {
-        commands.withTempDir(tempDirPath => {
-          nodeManager.withTwoOnboardedNodes(
-            { dataDir: tempDirPath, node1User: {}, node2User: {} },
-            (node1, node2) => {
-              nodeManager.asNode(node1);
-              commands.pick("connection-status-offline").should("exist");
-              nodeManager.connectTwoNodes(node1, node2);
-              commands.pick("connection-status-online").should("exist");
-              nodeManager.asNode(node2);
-              commands.pick("connection-status-online").should("exist");
-            }
-          );
-        });
-      }
-    );
+    it("reacts to network state changes", () => {
+      commands.withTempDir(tempDirPath => {
+        nodeManager.withTwoOnboardedNodes(
+          { dataDir: tempDirPath, node1User: {}, node2User: {} },
+          (node1, node2) => {
+            nodeManager.asNode(node1);
+            commands.pick("connection-status-offline").should("exist");
+            nodeManager.connectTwoNodes(node1, node2);
+            commands.pick("connection-status-online").should("exist");
+            nodeManager.asNode(node2);
+            commands.pick("connection-status-online").should("exist");
+          }
+        );
+      });
+    });
   });
 
   it(
     "replicates a project from one node to another",
     {
-      defaultCommandTimeout: 8000,
       // Tests involving two nodes are extremely flaky
       retries: {
         runMode: 3,
-        openMode: 1,
+        openMode: 0,
       },
     },
     () => {
