@@ -75,14 +75,6 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
 
     let mut task_runner = TaskRunner::new();
     task_runner.add_vital(shutdown_signal.map(Ok));
-    task_runner.add_vital(
-        track_projects(
-            peer.clone(),
-            task_runner.shutdown_triggered(),
-            options.project,
-        )
-        .map(Ok),
-    );
 
     task_runner.add_cancel({
         peer.clone()
@@ -106,6 +98,15 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
 
     task_runner.add_cancel(announce(peer.clone()).map(Ok));
 
+    task_runner.add_vital(
+        fetch_from_connected(
+            task_runner.shutdown_triggered(),
+            peer.clone(),
+            options.project.clone(),
+        )
+        .map(Ok),
+    );
+
     task_runner.add_vital({
         let shutdown_signal = task_runner.shutdown_triggered();
         async move { peer.run(bootstrap_addrs, shutdown_signal).await }
@@ -123,42 +124,6 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn track_projects(
-    client: peer::Peer,
-    shutdown: impl Future<Output = ()>,
-    projects: Vec<Urn>,
-) {
-    let (delay_queue, projects_rx) = futures_delay_queue::delay_queue();
-    for project in projects {
-        delay_queue.insert(project, std::time::Duration::new(0, 0));
-    }
-
-    let projects_rx = projects_rx.into_stream().take_until(shutdown);
-    futures::pin_mut!(projects_rx);
-
-    let retry_delay = std::time::Duration::from_secs(1);
-
-    while let Some(project) = projects_rx.next().await {
-        tracing::info!(%project, "trying to track project");
-        match client.track_project(project.clone()).await {
-            Ok(found) => {
-                if found {
-                    tracing::info!(%project, "project tracked");
-                } else {
-                    tracing::info!(%project, "project not found");
-                    delay_queue.insert(project, retry_delay);
-                }
-            }
-            Err(err) => {
-                tracing::warn!(?err, %project, "project tracking failed");
-                delay_queue.insert(project, retry_delay);
-            }
-        }
-    }
-
-    tracing::debug!("track_projects done");
-}
-
 /// Announce all projects ([`crate::peer::Peer::announce_all_projects`]) when the membership of the
 /// gossip network changes.
 async fn announce(peer: crate::peer::Peer) {
@@ -172,9 +137,36 @@ async fn announce(peer: crate::peer::Peer) {
             if let Err(err) = result {
                 tracing::error!(?err, "failed to announce all projects");
             }
-
-            prev_active = active;
         }
+
+        prev_active = active;
+    }
+}
+
+/// Try to fetch all projects whenever a new peer connects.
+async fn fetch_from_connected(
+    shutdown_signal: impl Future<Output = ()> + Send,
+    peer: crate::peer::Peer,
+    projects: Vec<Urn>,
+) {
+    let mut new_connections = peer.new_connections().take_until(shutdown_signal).boxed();
+    while let Some(new_connections) = new_connections.next().await {
+        futures::stream::iter(&projects)
+            .for_each_concurrent(4, |project| {
+                let new_connections = Clone::clone(&new_connections);
+                let peer = &peer;
+                async move {
+                    for peer_id in new_connections {
+                        let result = peer
+                            .fetch_identity_from_peer(project.clone(), peer_id, None)
+                            .await;
+                        if let Err(err) = result {
+                            tracing::error!(?err, "failed to track project from peer")
+                        }
+                    }
+                }
+            })
+            .await
     }
 }
 
@@ -197,7 +189,7 @@ fn install_signal_handler() -> anyhow::Result<impl Future<Output = ()>> {
         let _ = shutdown_tx.send(());
 
         tracing::info!(
-            "Shutting down. Send SIGINT or SIGTERM again within the next 10 seconds to force a shutdown."
+            "Shutting down. Send SIGINT or SIGTERM again after 10 seconds to force a shutdown."
         );
         let grace_period_end = std::time::Instant::now() + GRACE_PERIOD;
         loop {
@@ -247,14 +239,15 @@ fn init_logging() {
             "upstream_seed=debug",
             "librad=debug",
             // Silence some noisy debug statements.
-            "librad::git::refs=info",
-            "librad::git::include=info",
-            "librad::git::identities::person=info",
+            "librad::git::fetch::specs::refspecs=info",
             "librad::git::identities::local=info",
-            "librad::net::quic::connection::tracking",
-            "librad::net::protocol::membership::periodic=info",
-            "librad::net::protocol::accept=info",
+            "librad::git::identities::person=info",
+            "librad::git::include=info",
+            "librad::git::refs=info",
             "librad::git::tracking=info",
+            "librad::net::protocol::accept=info",
+            "librad::net::protocol::membership::periodic=info",
+            "librad::net::quic::connection::tracking",
         ];
 
         let mut env_filter = tracing_subscriber::EnvFilter::default();

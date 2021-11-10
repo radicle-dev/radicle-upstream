@@ -4,13 +4,13 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-use std::{collections::HashSet, iter::FromIterator, net::SocketAddr, time::Duration};
+use std::{collections::HashSet, net::SocketAddr};
 
 use anyhow::Context as _;
 use futures::prelude::*;
 
 use librad::{
-    git::{identities, replication, storage::fetcher, tracking},
+    git::{replication, storage::fetcher, tracking},
     net::{
         discovery::{self, Discovery as _},
         protocol, Network,
@@ -21,7 +21,6 @@ use librad::{
 use link_identities::git::Urn;
 
 type LibradPeer = librad::net::peer::Peer<librad::SecretKey>;
-type PeerInfo = librad::net::peer::PeerInfo<SocketAddr>;
 
 /// Configuration for creating a new [`Peer`].
 #[derive(Clone)]
@@ -30,8 +29,6 @@ pub struct Config {
     pub key: librad::SecretKey,
     pub listen: SocketAddr,
 }
-
-const PROVIDER_QUERY_TIMEOUT: Duration = Duration::from_secs(60);
 
 /// Wrapper around [`librad::net::peer::Peer`] that provides seed specific functionality.
 #[derive(Clone)]
@@ -108,57 +105,38 @@ impl Peer {
         }
     }
 
-    /// Try to track and replicate the project by issuing a Want query to the network.
+    /// Fetch and track indentity `urn` from a remote peer.
     ///
-    /// Return `true` if we were able to find a peer and fetch the project from it or if the
-    /// project has already been replicated. Returns `false` if no peer providing the project was
-    /// found before the deadline.
-    pub async fn track_project(&self, urn: Urn) -> anyhow::Result<bool> {
-        if let Some(_project) = self
-            .get_project(urn.clone())
-            .await
-            .context("failed to get project")?
-        {
-            return Ok(true);
-        }
-
-        let mut peers = self
-            .librad_peer
-            .providers(urn.clone(), PROVIDER_QUERY_TIMEOUT / 2);
-
-        while let Some(peer_info) = peers.next().await {
-            let peer_id = peer_info.peer_id;
-            match self.track_project_from_peer(urn.clone(), peer_info).await {
-                Ok(_) => return Ok(true),
-                Err(err) => {
-                    tracing::error!(%urn, %peer_id, ?err, "tracking failed")
-                }
-            }
-        }
-
-        Ok(false)
-    }
-
-    pub async fn track_project_from_peer(
+    /// If `addrs` is `None` the remote peer must already be connected so that we can discover its
+    /// address. Otherwise an error is returned.
+    #[tracing::instrument(skip(self, urn), fields(identity = %urn))]
+    pub async fn fetch_identity_from_peer(
         &self,
         urn: Urn,
-        peer_info: PeerInfo,
+        peer_id: PeerId,
+        addrs: Option<Vec<SocketAddr>>,
     ) -> anyhow::Result<()> {
-        self.librad_peer
-            .using_storage({
-                let urn = urn.clone();
-                let peer_id = peer_info.peer_id;
-                move |storage| tracking::track(storage, &urn, peer_id)
-            })
-            .await??;
+        tracing::info!("start fetch identity");
+        let addrs = if let Some(addrs) = addrs {
+            addrs
+        } else {
+            let stats = self.librad_peer.stats().await;
+            stats
+                .connected_peers
+                .get(&peer_id)
+                .ok_or_else(|| anyhow::anyhow!("peer is not connected"))?
+                .clone()
+        };
 
         let cfg = self.librad_peer.protocol_config().replication;
-        self.librad_peer
+
+        let replication_result = self
+            .librad_peer
             .using_storage({
-                let seen_addrs = peer_info.seen_addrs.to_vec();
-                let peer_id = peer_info.peer_id;
+                let urn = urn.clone();
                 move |storage| -> anyhow::Result<()> {
-                    let fetcher = fetcher::PeerToPeer::new(urn.clone(), peer_id, seen_addrs)
+                    tracking::track(storage, &urn, peer_id).context("failed to track identity")?;
+                    let fetcher = fetcher::PeerToPeer::new(urn.clone(), peer_id, addrs)
                         .build(storage)
                         .context("failed to build fetcher")?
                         .context("failed to build inner fetcher")?;
@@ -169,6 +147,8 @@ impl Peer {
                 }
             })
             .await??;
+
+        tracing::info!(?replication_result, "fetch identity done");
 
         Ok(())
     }
@@ -202,7 +182,15 @@ impl Peer {
 
                 move |_| {
                     let librad_peer = librad_peer.clone();
-                    async move { HashSet::from_iter(librad_peer.connected_peers().await) }
+                    async move {
+                        librad_peer
+                            .stats()
+                            .await
+                            .connected_peers
+                            .keys()
+                            .copied()
+                            .collect::<HashSet<_>>()
+                    }
                 }
             })
             .filter_map({
@@ -216,6 +204,25 @@ impl Peer {
                     })
                 }
             })
+    }
+
+    /// Stream that emits an item whenever new peers connect.
+    ///
+    /// The stream never ends.
+    pub fn new_connections(&self) -> impl Stream<Item = Vec<PeerId>> + 'static {
+        let mut prev_connected = HashSet::<PeerId>::new();
+        self.connected_peers().filter_map(move |connected| {
+            let added = connected
+                .difference(&prev_connected)
+                .copied()
+                .collect::<Vec<_>>();
+            prev_connected = connected;
+            if added.is_empty() {
+                future::ready(None)
+            } else {
+                future::ready(Some(added))
+            }
+        })
     }
 
     /// Broadcast “Have” gossip messages for all tracked peers in all projects.
@@ -262,13 +269,6 @@ impl Peer {
         }
 
         Ok(())
-    }
-
-    async fn get_project(&self, urn: Urn) -> anyhow::Result<Option<link_identities::git::Project>> {
-        Ok(self
-            .librad_peer
-            .using_storage(move |storage| identities::project::get(&storage, &urn))
-            .await??)
     }
 
     /// Stream of events from [`LibradPeer`].
