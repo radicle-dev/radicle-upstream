@@ -26,9 +26,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/cache/cargo
-            ./target
-          key: ${{ github.job }}-rust-v2-${{ hashFiles('Cargo.lock') }}
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git
+            ./target/*/deps
+            ./target/*/build
+            ./target/*/.fingerprint
+          key: ${{ github.job }}-rust-v3-${{ hashFiles('Cargo.lock') }}
       - run: ci/dist.sh
       - uses: actions/upload-artifact@v2
         with:
@@ -39,9 +43,6 @@ jobs:
   build-dist-macos:
     runs-on: macos-11
     steps:
-      - run:  |
-          echo "CARGO_HOME=$HOME/cache/cargo" >> $GITHUB_ENV
-          echo "PATH=$HOME/cache/cargo/bin:$PATH" >> $GITHUB_ENV
       - uses: actions/checkout@master
       - name: Cache Yarn
         uses: actions/cache@v2
@@ -57,9 +58,13 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/cache/cargo
-            ./target
-          key: ${{ github.job }}-rust-v2-${{ hashFiles('Cargo.lock') }}
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git
+            ./target/*/deps
+            ./target/*/build
+            ./target/*/.fingerprint
+          key: ${{ github.job }}-rust-v3-${{ hashFiles('Cargo.lock') }}
       - run: ci/dist.sh
       - uses: actions/upload-artifact@v2
         with:

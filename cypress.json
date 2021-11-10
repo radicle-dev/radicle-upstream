@@ -1,5 +1,7 @@
 {
   "video": false,
   "viewportWidth": 1200,
-  "viewportHeight": 600
+  "viewportHeight": 600,
+  "defaultCommandTimeout": 8000,
+  "retries": { "runMode": 1, "openMode": 0 }
 }

@@ -175,301 +175,283 @@ context("patches", () => {
     });
   });
 
-  it(
-    "replicates a patch from contributor to maintainer",
-    // Project replication may take longer than the default timeout.
-    { defaultCommandTimeout: 8000 },
-    () => {
-      const maintainer = {
-        handle: "rudolfs",
-        passphrase: "1111",
-      };
-      const contributor = {
-        handle: "abbey",
-        passphrase: "2222",
-      };
+  it("replicates a patch from contributor to maintainer", () => {
+    const maintainer = {
+      handle: "rudolfs",
+      passphrase: "1111",
+    };
+    const contributor = {
+      handle: "abbey",
+      passphrase: "2222",
+    };
 
-      commands.withTempDir(tempDirPath => {
-        nodeManager.withTwoOnboardedNodes(
-          {
-            dataDir: tempDirPath,
-            node1User: maintainer,
-            node2User: contributor,
-          },
-          (maintainerNode, contributorNode) => {
-            nodeManager.connectTwoNodes(maintainerNode, contributorNode);
-            nodeManager.asNode(maintainerNode);
+    commands.withTempDir(tempDirPath => {
+      nodeManager.withTwoOnboardedNodes(
+        {
+          dataDir: tempDirPath,
+          node1User: maintainer,
+          node2User: contributor,
+        },
+        (maintainerNode, contributorNode) => {
+          nodeManager.connectTwoNodes(maintainerNode, contributorNode);
+          nodeManager.asNode(maintainerNode);
 
-            const maintainerProjectsDir = path.join(
-              tempDirPath,
-              "maintainer-projects"
-            );
-            cy.exec(`mkdir -p "${maintainerProjectsDir}"`);
+          const maintainerProjectsDir = path.join(
+            tempDirPath,
+            "maintainer-projects"
+          );
+          cy.exec(`mkdir -p "${maintainerProjectsDir}"`);
 
-            const projectName = "new-fancy-project.xyz";
-            cy.log("Create a project via API");
-            commands.createEmptyProject(
-              maintainerNode.client,
-              projectName,
-              maintainerProjectsDir
-            );
+          const projectName = "new-fancy-project.xyz";
+          cy.log("Create a project via API");
+          commands.createEmptyProject(
+            maintainerNode.client,
+            projectName,
+            maintainerProjectsDir
+          );
 
-            cy.log("refresh the UI for the project to show up");
-            commands.pick("sidebar", "settings").click();
-            commands.pick("sidebar", "profile").click();
-            commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          cy.log("refresh the UI for the project to show up");
+          commands.pick("sidebar", "settings").click();
+          commands.pick("sidebar", "profile").click();
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
-            commands
-              .pickWithContent(
-                ["project-screen", "header"],
-                "new-fancy-project"
-              )
-              .should("exist");
+          commands
+            .pickWithContent(["project-screen", "header"], "new-fancy-project")
+            .should("exist");
 
-            const contributorProjectsDir = path.join(
-              tempDirPath,
-              "contributor-projects"
-            );
+          const contributorProjectsDir = path.join(
+            tempDirPath,
+            "contributor-projects"
+          );
 
-            commands.pick("project-screen", "header", "radicleId").then(el => {
-              const urn = el.attr("data");
-              if (!urn) {
-                throw new Error("Could not find URN");
-              }
+          commands.pick("project-screen", "header", "radicleId").then(el => {
+            const urn = el.attr("data");
+            if (!urn) {
+              throw new Error("Could not find URN");
+            }
 
-              nodeManager.asNode(contributorNode);
+            nodeManager.asNode(contributorNode);
 
-              cy.log("contributor follows the project");
-              cy.then(() => contributorNode.client.project.requestSubmit(urn));
-              commands
-                .pick("project-list-entry-new-fancy-project.xyz")
-                .should("exist");
-
-              cy.log("contributor checks out the project");
-              cy.exec(`mkdir -p "${contributorProjectsDir}"`);
-              cy.then(() =>
-                contributorNode.client.project.checkout(urn, {
-                  path: contributorProjectsDir,
-                  peerId: maintainerNode.peerId,
-                })
-              );
-            });
-
-            cy.log("the project is now under the project tab");
-            commands.pick("sidebar", "profile").click();
+            cy.log("contributor follows the project");
+            cy.then(() => contributorNode.client.project.requestSubmit(urn));
             commands
               .pick("project-list-entry-new-fancy-project.xyz")
               .should("exist");
 
-            cy.log("test patch replication from contributor to maintainer");
-            cy.log("add a patch to the project from contributor's node");
-            const patchCommitSubject =
-              "Merge request replication from contributor to maintainer";
-            const forkedProjectPath = path.join(
-              contributorProjectsDir,
-              projectName
+            cy.log("contributor checks out the project");
+            cy.exec(`mkdir -p "${contributorProjectsDir}"`);
+            cy.then(() =>
+              contributorNode.client.project.checkout(urn, {
+                path: contributorProjectsDir,
+                peerId: maintainerNode.peerId,
+              })
             );
-            const patchTag = "feature-1";
-            const patchMessage = "This is an awesome feature";
+          });
 
-            nodeManager.exec(
-              `cd "${forkedProjectPath}"
+          cy.log("the project is now under the project tab");
+          commands.pick("sidebar", "profile").click();
+          commands
+            .pick("project-list-entry-new-fancy-project.xyz")
+            .should("exist");
+
+          cy.log("test patch replication from contributor to maintainer");
+          cy.log("add a patch to the project from contributor's node");
+          const patchCommitSubject =
+            "Merge request replication from contributor to maintainer";
+          const forkedProjectPath = path.join(
+            contributorProjectsDir,
+            projectName
+          );
+          const patchTag = "feature-1";
+          const patchMessage = "This is an awesome feature";
+
+          nodeManager.exec(
+            `cd "${forkedProjectPath}"
             git checkout -b my-branch
             git commit --allow-empty -m "${patchCommitSubject}"
             git tag -a --message "${patchMessage}" radicle-patch/${patchTag} HEAD
             git push --tag rad`,
-              contributorNode
-            );
+            contributorNode
+          );
 
-            cy.log("refresh the UI for the patch to show up");
-            commands.pick("sidebar", "profile").click();
-            commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          cy.log("refresh the UI for the patch to show up");
+          commands.pick("sidebar", "profile").click();
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
-            cy.log("contributor sees the patch");
-            commands.pick("patches-tab").click();
-            commands
-              .pickWithContent(["patch-list"], patchMessage)
-              .should("exist");
+          cy.log("contributor sees the patch");
+          commands.pick("patches-tab").click();
+          commands
+            .pickWithContent(["patch-list"], patchMessage)
+            .should("exist");
 
-            cy.log("add contributor remote on maintainer's node");
-            nodeManager.asNode(maintainerNode);
+          cy.log("add contributor remote on maintainer's node");
+          nodeManager.asNode(maintainerNode);
 
-            commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
 
-            commands.pick("project-screen", "header", "radicleId").then(el => {
-              const urn = el.attr("data");
-              if (!urn) {
-                throw new Error("Could not find URN");
-              }
+          commands.pick("project-screen", "header", "radicleId").then(el => {
+            const urn = el.attr("data");
+            if (!urn) {
+              throw new Error("Could not find URN");
+            }
 
-              cy.then(() =>
-                maintainerNode.client.project.peerTrack(
-                  urn,
-                  contributorNode.peerId
-                )
-              );
-            });
-
-            cy.log("maintainer received the contributor's patch");
-            commands
-              .pickWithContent(["patches-tab", "counter"], "1")
-              .should("exist");
-            commands.pick("patches-tab").click();
-            commands.pickWithContent(["patch-list"], patchMessage).click();
-
-            cy.log(
-              "maintainer can see the patch details & navigate to the commit"
-            );
-            commands
-              .pickWithContent(["patch-page"], patchMessage)
-              .should("exist");
-            commands
-              .pickWithContent(
-                ["patch-page", "history", "commit-group", "commit"],
-                patchCommitSubject
+            cy.then(() =>
+              maintainerNode.client.project.peerTrack(
+                urn,
+                contributorNode.peerId
               )
-              .click();
-            commands
-              .pickWithContent(["commit-page"], patchCommitSubject)
-              .should("exist");
-          }
-        );
-      });
-    }
-  );
-
-  it.skip(
-    "updates maintainer view when a patch has been received",
-    // Project replication may take longer than the default timeout.
-    { defaultCommandTimeout: 8000 },
-    () => {
-      const maintainer = {
-        handle: "rudolfs",
-        passphrase: "1111",
-      };
-      const contributor = {
-        handle: "abbey",
-        passphrase: "2222",
-      };
-
-      commands.withTempDir(tempDirPath => {
-        nodeManager.withTwoOnboardedNodes(
-          {
-            dataDir: tempDirPath,
-            node1User: maintainer,
-            node2User: contributor,
-          },
-          (maintainerNode, contributorNode) => {
-            nodeManager.connectTwoNodes(maintainerNode, contributorNode);
-            nodeManager.asNode(maintainerNode);
-
-            const maintainerProjectsDir = path.join(
-              tempDirPath,
-              "maintainer-projects"
             );
-            cy.exec(`mkdir -p "${maintainerProjectsDir}"`);
+          });
 
-            const projectName = "new-fancy-project.xyz";
-            cy.log("Create a project via API");
-            commands
-              .createEmptyProject(
-                maintainerNode.client,
-                projectName,
-                maintainerProjectsDir
+          cy.log("maintainer received the contributor's patch");
+          commands
+            .pickWithContent(["patches-tab", "counter"], "1")
+            .should("exist");
+          commands.pick("patches-tab").click();
+          commands.pickWithContent(["patch-list"], patchMessage).click();
+
+          cy.log(
+            "maintainer can see the patch details & navigate to the commit"
+          );
+          commands
+            .pickWithContent(["patch-page"], patchMessage)
+            .should("exist");
+          commands
+            .pickWithContent(
+              ["patch-page", "history", "commit-group", "commit"],
+              patchCommitSubject
+            )
+            .click();
+          commands
+            .pickWithContent(["commit-page"], patchCommitSubject)
+            .should("exist");
+        }
+      );
+    });
+  });
+
+  it.skip("updates maintainer view when a patch has been received", () => {
+    const maintainer = {
+      handle: "rudolfs",
+      passphrase: "1111",
+    };
+    const contributor = {
+      handle: "abbey",
+      passphrase: "2222",
+    };
+
+    commands.withTempDir(tempDirPath => {
+      nodeManager.withTwoOnboardedNodes(
+        {
+          dataDir: tempDirPath,
+          node1User: maintainer,
+          node2User: contributor,
+        },
+        (maintainerNode, contributorNode) => {
+          nodeManager.connectTwoNodes(maintainerNode, contributorNode);
+          nodeManager.asNode(maintainerNode);
+
+          const maintainerProjectsDir = path.join(
+            tempDirPath,
+            "maintainer-projects"
+          );
+          cy.exec(`mkdir -p "${maintainerProjectsDir}"`);
+
+          const projectName = "new-fancy-project.xyz";
+          cy.log("Create a project via API");
+          commands
+            .createEmptyProject(
+              maintainerNode.client,
+              projectName,
+              maintainerProjectsDir
+            )
+            .as("projectUrn");
+
+          cy.log("refresh the UI for the project to show up");
+          commands.pick("sidebar", "settings").click();
+          commands.pick("sidebar", "profile").click();
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+
+          commands
+            .pickWithContent(["project-screen", "header"], "new-fancy-project")
+            .should("exist");
+
+          const contributorProjectsDir = path.join(
+            tempDirPath,
+            "contributor-projects"
+          );
+
+          nodeManager.asNode(contributorNode);
+          cy.get<string>("@projectUrn").then(urn => {
+            cy.log("contributor checks out the project");
+            cy.then(() => contributorNode.client.project.requestSubmit(urn));
+            commands.pick("following-tab").click();
+            commands.pick(`project-list-entry-${projectName}`).should("exist");
+
+            cy.exec(`mkdir -p "${contributorProjectsDir}"`);
+            cy.then(() =>
+              contributorNode.client.project.checkout(urn, {
+                path: contributorProjectsDir,
+                peerId: maintainerNode.peerId,
+              })
+            );
+          });
+
+          cy.log("maintainer tracks peer");
+          nodeManager.asNode(maintainerNode);
+          cy.get<string>("@projectUrn").then(urn => {
+            cy.then(() =>
+              maintainerNode.client.project.peerTrack(
+                urn,
+                contributorNode.peerId
               )
-              .as("projectUrn");
-
-            cy.log("refresh the UI for the project to show up");
-            commands.pick("sidebar", "settings").click();
-            commands.pick("sidebar", "profile").click();
-            commands.pick("project-list-entry-new-fancy-project.xyz").click();
-
-            commands
-              .pickWithContent(
-                ["project-screen", "header"],
-                "new-fancy-project"
-              )
-              .should("exist");
-
-            const contributorProjectsDir = path.join(
-              tempDirPath,
-              "contributor-projects"
             );
+          });
 
-            nodeManager.asNode(contributorNode);
-            cy.get<string>("@projectUrn").then(urn => {
-              cy.log("contributor checks out the project");
-              cy.then(() => contributorNode.client.project.requestSubmit(urn));
-              commands.pick("following-tab").click();
-              commands
-                .pick(`project-list-entry-${projectName}`)
-                .should("exist");
+          commands.pick(`project-list-entry-${projectName}`).click();
+          commands.pick("patches-tab").click();
 
-              cy.exec(`mkdir -p "${contributorProjectsDir}"`);
-              cy.then(() =>
-                contributorNode.client.project.checkout(urn, {
-                  path: contributorProjectsDir,
-                  peerId: maintainerNode.peerId,
-                })
-              );
-            });
+          cy.log("add a patch to the project from contributor's node");
+          const forkedProjectPath = path.join(
+            contributorProjectsDir,
+            projectName
+          );
+          const patchId = "feature-1";
 
-            cy.log("maintainer tracks peer");
-            nodeManager.asNode(maintainerNode);
-            cy.get<string>("@projectUrn").then(urn => {
-              cy.then(() =>
-                maintainerNode.client.project.peerTrack(
-                  urn,
-                  contributorNode.peerId
-                )
-              );
-            });
-
-            commands.pick(`project-list-entry-${projectName}`).click();
-            commands.pick("patches-tab").click();
-
-            cy.log("add a patch to the project from contributor's node");
-            const forkedProjectPath = path.join(
-              contributorProjectsDir,
-              projectName
-            );
-            const patchId = "feature-1";
-
-            nodeManager.exec(
-              `cd "${forkedProjectPath}"
+          nodeManager.exec(
+            `cd "${forkedProjectPath}"
             git checkout -b my-branch
             git commit --allow-empty -m "commit message"
             git tag -a --message "patch message" radicle-patch/${patchId} HEAD
             git push --tag rad`,
-              contributorNode
-            );
+            contributorNode
+          );
 
-            commands.pick("patches-tab", "counter").should("contain", "1");
-            commands.pickWithContent(["patch-list"], patchId).should("exist");
+          commands.pick("patches-tab", "counter").should("contain", "1");
+          commands.pickWithContent(["patch-list"], patchId).should("exist");
 
-            cy.log("maintainer merges patch in background");
-            nodeManager.asNode(contributorNode);
-            commands.pick(`project-list-entry-${projectName}`).click();
-            commands.pick("patches-tab").click();
+          cy.log("maintainer merges patch in background");
+          nodeManager.asNode(contributorNode);
+          commands.pick(`project-list-entry-${projectName}`).click();
+          commands.pick("patches-tab").click();
 
-            nodeManager.exec(
-              `cd "${contributorProjectsDir}/${projectName}"
+          nodeManager.exec(
+            `cd "${contributorProjectsDir}/${projectName}"
               git checkout main
               git pull rad "remotes/${contributorNode.peerId}/tags/radicle-patch/${patchId}"
               git push rad`,
-              maintainerNode
-            );
+            maintainerNode
+          );
 
-            commands
-              .pickWithContent(
-                ["patch-filter-tabs", "segmented-control-option"],
-                "Closed"
-              )
-              .click();
-            commands.pick(`patch-card-${patchId}`).should("exist");
-          }
-        );
-      });
-    }
-  );
+          commands
+            .pickWithContent(
+              ["patch-filter-tabs", "segmented-control-option"],
+              "Closed"
+            )
+            .click();
+          commands.pick(`patch-card-${patchId}`).should("exist");
+        }
+      );
+    });
+  });
 });

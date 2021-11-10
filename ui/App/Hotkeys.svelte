@@ -36,7 +36,8 @@
       !hotkeys.areEnabled() ||
       screen.isLocked() ||
       hasInputTarget ||
-      event.repeat
+      event.repeat ||
+      event.altKey
     ) {
       return false;
     }

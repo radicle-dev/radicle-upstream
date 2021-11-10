@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-use std::{net::SocketAddr, time::Duration};
+use std::{collections::HashSet, iter::FromIterator, net::SocketAddr, time::Duration};
 
 use anyhow::Context as _;
 use futures::prelude::*;
@@ -173,10 +173,129 @@ impl Peer {
         Ok(())
     }
 
+    /// Returns stream that emits an item whenever the membership of the gossip layer changes.
+    ///
+    /// The stream never ends.
+    pub fn membership(&self) -> impl Stream<Item = librad::net::peer::MembershipInfo> + 'static {
+        self.events().filter_map({
+            let librad_peer = self.librad_peer.clone();
+
+            move |event| match event {
+                librad::net::peer::ProtocolEvent::Membership(_) => {
+                    let librad_peer = librad_peer.clone();
+                    async move { Some(librad_peer.membership().await) }.left_future()
+                }
+                _ => futures::future::ready(None).right_future(),
+            }
+        })
+    }
+
+    /// Returns stream that emits the set of connected peers whenever it changes.
+    ///
+    /// The stream never ends.
+    pub fn connected_peers(&self) -> impl Stream<Item = HashSet<PeerId>> + 'static {
+        let mut interval = tokio::time::interval(std::time::Duration::from_millis(50));
+        interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Delay);
+        tokio_stream::wrappers::IntervalStream::new(interval)
+            .then({
+                let librad_peer = self.librad_peer.clone();
+
+                move |_| {
+                    let librad_peer = librad_peer.clone();
+                    async move { HashSet::from_iter(librad_peer.connected_peers().await) }
+                }
+            })
+            .filter_map({
+                let mut prev = HashSet::new();
+                move |connected| {
+                    futures::future::ready(if connected == prev {
+                        None
+                    } else {
+                        prev = connected.clone();
+                        Some(connected)
+                    })
+                }
+            })
+    }
+
+    /// Broadcast “Have” gossip messages for all tracked peers in all projects.
+    ///
+    /// If getting the list of peers for one project or announcing this list for one project fails
+    /// no error is returned and a message is logged instead.
+    pub async fn announce_all_projects(&self) -> anyhow::Result<()> {
+        let storage = self
+            .librad_peer
+            .storage()
+            .await
+            .context("failed to access librad storage")?;
+        let projects =
+            rad_identities::project::list(storage.as_ref()).context("failed to list projects")?;
+        for project_result in projects {
+            let project = match project_result {
+                Ok(project) => project,
+                Err(err) => {
+                    tracing::error!(?err, "failed to read project");
+                    continue;
+                }
+            };
+            let urn = project.urn();
+
+            let tracked_peers = match rad_identities::project::tracked(storage.as_ref(), &urn) {
+                Ok(tracked_peers) => tracked_peers,
+                Err(err) => {
+                    tracing::error!(?err, %urn, "failed to get tracked peers");
+                    continue;
+                }
+            };
+
+            for peer_info in tracked_peers {
+                let payload = librad::net::protocol::gossip::Payload {
+                    urn: project.urn(),
+                    rev: None,
+                    origin: Some(peer_info.peer_id()),
+                };
+                tracing::debug!(?payload, "sending announcement");
+                self.librad_peer
+                    .announce(payload)
+                    .map_err(|_| anyhow::anyhow!("librad peer not bound"))?;
+            }
+        }
+
+        Ok(())
+    }
+
     async fn get_project(&self, urn: Urn) -> anyhow::Result<Option<link_identities::git::Project>> {
         Ok(self
             .librad_peer
             .using_storage(move |storage| identities::project::get(&storage, &urn))
             .await??)
+    }
+
+    /// Stream of events from [`LibradPeer`].
+    ///
+    /// It’s not guaranteed that all peer events are delivered to the stream. If items from the
+    /// stream are not processed in time events may be skipped.
+    ///
+    /// The stream will never end.
+    fn events(
+        &self,
+    ) -> impl Stream<Item = librad::net::peer::ProtocolEvent> + Unpin + Send + 'static {
+        self.librad_peer
+            .subscribe()
+            .scan((), |(), res| async move {
+                use tokio::sync::broadcast::error::RecvError;
+                match res {
+                    Ok(item) => Some(Some(item)),
+                    Err(err) => match err {
+                        RecvError::Closed => None,
+                        RecvError::Lagged(_) => {
+                            tracing::warn!("skipped peer events");
+                            Some(None)
+                        }
+                    },
+                }
+            })
+            .filter_map(futures::future::ready)
+            .boxed()
     }
 }
