@@ -21,12 +21,11 @@
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as localPeer from "ui/src/localPeer";
   import * as svelteStore from "ui/src/svelteStore";
-  import * as Safe from "ui/src/org/safe";
-  import * as graph from "ui/src/org/theGraphApi";
   import * as ethereum from "ui/src/ethereum";
   import * as Wallet from "ui/src/wallet";
   import { getRegistration, Registration } from "ui/src/org/ensResolver";
   import type { Org } from "ui/src/org";
+  import { orgSidebarStore } from "ui/src/org";
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
   import PlusIcon from "design-system/icons/Plus.svelte";
@@ -149,22 +148,6 @@
     }
 
     try {
-      const gnosisSafeWallets = await Safe.getSafesByOwner(
-        wallet.environment,
-        address
-      );
-      ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
-    } catch (err: unknown) {
-      error.show(
-        new error.Error({
-          code: error.Code.ProjectRequestFailure,
-          message: "Failed to fetch orgs for sidebar.",
-          source: err,
-        })
-      );
-    }
-
-    try {
       const ensName = await wallet.provider.lookupAddress(address);
       if (!ensName) {
         return;
@@ -182,6 +165,9 @@
   }
 
   loadSidebarData();
+  $: if ($orgSidebarStore.type === "resolved") {
+    ownedOrgs = $orgSidebarStore.orgs;
+  }
 
   $: showSidebar =
     ($wallet.status === Wallet.Status.Connected &&
