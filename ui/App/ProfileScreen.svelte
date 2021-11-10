@@ -352,6 +352,7 @@
         {#if showSidebar}
           <div class="sidebar">
             <ProfileSidebar
+              attested={session.identity.metadata.ethereum?.address}
               {registration}
               {ownedOrgs}
               urn={session.identity.urn} />

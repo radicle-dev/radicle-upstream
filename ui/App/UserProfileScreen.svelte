@@ -11,16 +11,24 @@
 
   import { isMaintainer, Project } from "ui/src/project";
   import * as router from "ui/src/router";
+  import * as error from "ui/src/error";
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as ethereum from "ui/src/ethereum";
+  import * as Wallet from "ui/src/wallet";
+  import * as Safe from "ui/src/org/safe";
+  import * as graph from "ui/src/org/theGraphApi";
+  import { getRegistration, Registration } from "ui/src/org/ensResolver";
+  import type { Org } from "ui/src/org";
 
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import UserProfileHeader from "./UserProfileScreen/UserProfileHeader.svelte";
+  import ProfileSidebar from "ui/App/ProfileScreen/ProfileSidebar.svelte";
 
   export let projects: proxyProject.Project[];
   export let user: proxyIdentity.RemoteIdentity;
   export let ownUserUrn: string;
-
   function openProject(project: Project) {
     router.push({
       type: "project",
@@ -30,14 +38,87 @@
       },
     });
   }
+
+  let registration: Registration | undefined;
+  let ownedOrgs: Org[] = [];
+
+  const wallet = svelteStore.get(Wallet.store);
+  const ethereumEnvironment = ethereum.selectedEnvironment;
+
+  async function loadSidebarData(): Promise<void> {
+    const address = user.metadata.ethereum?.address;
+    if (!address) {
+      return;
+    }
+
+    try {
+      const gnosisSafeWallets = await Safe.getSafesByOwner(
+        wallet.environment,
+        address
+      );
+      ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
+    } catch (err: unknown) {
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectRequestFailure,
+          message: "Failed to fetch orgs for sidebar.",
+          source: err,
+        })
+      );
+    }
+
+    try {
+      const ensName = await wallet.provider.lookupAddress(address);
+      if (!ensName) {
+        return;
+      }
+      registration = await getRegistration(ensName);
+    } catch (err: unknown) {
+      error.show(
+        new error.Error({
+          code: error.Code.ProjectRequestFailure,
+          message: "Failed to fetch ENS registration",
+          source: err,
+        })
+      );
+    }
+  }
+
+  loadSidebarData();
+  $: showSidebar =
+    $wallet.status === Wallet.Status.Connected &&
+    ethereum.supportedNetwork($ethereumEnvironment) ===
+      $wallet.connected.network &&
+    user.metadata.ethereum?.address !== undefined;
 </script>
 
 <style>
+  .sidebar-layout {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 15rem;
+    gap: 1.5rem;
+    grid-template-areas: "main main sidebar";
+  }
+
+  .one-column {
+    grid-template-areas: "main main main";
+  }
+
+  .sidebar {
+    grid-area: sidebar;
+  }
+
   .grid {
+    grid-area: main;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
-    margin-top: 2rem;
+  }
+
+  .two-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 </style>
 
@@ -49,15 +130,26 @@
   {#if projects.length === 0}
     <EmptyState text="This peer doesn't have any projects." />
   {:else}
-    <ul class="grid" data-cy="project-list">
-      {#each projects as project}
-        <li>
-          <ProjectCardSquare
-            {project}
-            isMaintainer={isMaintainer(ownUserUrn, project)}
-            on:click={() => openProject(project)} />
-        </li>
-      {/each}
-    </ul>
+    <div class="sidebar-layout" class:one-column={!showSidebar}>
+      <ul class="grid" data-cy="project-list" class:two-columns={showSidebar}>
+        {#each projects as project}
+          <li>
+            <ProjectCardSquare
+              {project}
+              isMaintainer={isMaintainer(ownUserUrn, project)}
+              on:click={() => openProject(project)} />
+          </li>
+        {/each}
+      </ul>
+      {#if showSidebar}
+        <div class="sidebar">
+          <ProfileSidebar
+            attested={user.metadata.ethereum?.address}
+            {registration}
+            {ownedOrgs}
+            urn={user.urn} />
+        </div>
+      {/if}
+    </div>
   {/if}
 </ScreenLayout>
