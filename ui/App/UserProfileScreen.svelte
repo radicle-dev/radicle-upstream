@@ -17,7 +17,11 @@
   import * as Wallet from "ui/src/wallet";
   import * as Safe from "ui/src/org/safe";
   import * as graph from "ui/src/org/theGraphApi";
-  import { getRegistration, Registration } from "ui/src/org/ensResolver";
+  import {
+    getCachedRegistrationByAddress,
+    getRegistration,
+    Registration,
+  } from "ui/src/org/ensResolver";
   import type { Org } from "ui/src/org";
 
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
@@ -47,6 +51,7 @@
 
   async function loadSidebarData(): Promise<void> {
     const address = user.metadata.ethereum?.address;
+    console.log(user);
     if (!address) {
       return;
     }
@@ -57,6 +62,15 @@
         address
       );
       ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
+      if (ownedOrgs) {
+        ownedOrgs.map(async org => {
+          const registration = await getCachedRegistrationByAddress(org.id);
+          if (registration) {
+            org.registration = registration;
+          }
+          return org;
+        });
+      }
     } catch (err: unknown) {
       error.show(
         new error.Error({
