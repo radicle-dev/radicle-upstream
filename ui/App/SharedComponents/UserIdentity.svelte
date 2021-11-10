@@ -140,7 +140,9 @@
       <div class="metadata">
         {#if user}
           <div class="handle-wrapper">
-            <h2 class="typo-overflow-ellipsis">{handle}</h2>
+            <h2 class="typo-overflow-ellipsis">
+              {handle || user.metadata.handle}
+            </h2>
           </div>
           {#if user.metadata.ethereum}
             <CopyableIdentifier
