@@ -87,7 +87,8 @@ class UpdateChecker {
   public notifyEnable() {
     const isEnabled = svelteStore.get(isEnabledStore);
     if (isEnabled === null) {
-      notification.primary({
+      notification.show({
+        type: "primary",
         message: "Want to check for new versions automatically?",
         persist: true,
         actions: [
@@ -188,7 +189,8 @@ class UpdateChecker {
       currentVersion !== undefined && semver.gt(version, currentVersion);
 
     if (!hasBeenNotifiedRecently && isNewer) {
-      notification.primary({
+      notification.show({
+        type: "primary",
         message: "There is a new version of Upstream available",
         persist: true,
         actions: [

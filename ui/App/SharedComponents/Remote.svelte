@@ -8,7 +8,7 @@
 <script lang="ts">
   import type { Readable } from "svelte/store";
 
-  import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,7 +28,7 @@
     !!noErrorSlotProvided &&
     !disableErrorLogging
   ) {
-    error.show(storeValue.error);
+    notification.showException(storeValue.error);
   }
 
   $: data =

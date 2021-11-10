@@ -6,29 +6,13 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { SvelteComponent } from "svelte";
-  import type { Notification } from "ui/src/notification";
+  import * as Notification from "ui/src/notification";
 
-  import ExclamationCircleIcon from "design-system/icons/ExclamationCircle.svelte";
-  import InfoCircleIcon from "design-system/icons/InfoCircle.svelte";
-
-  export let notification: Notification;
+  export let notification: Notification.Notification;
   export let style: string | undefined = undefined;
 
-  const variantClass = `variant-${notification.variant.toLowerCase()}`;
-
-  let icon: typeof SvelteComponent | null;
-  switch (notification.icon) {
-    case "InfoCircle":
-      icon = InfoCircleIcon;
-      break;
-    case "ExclamationCircle":
-      icon = ExclamationCircleIcon;
-      break;
-    case null:
-      icon = null;
-      break;
-  }
+  const timesShownStore = notification.timesShownStore;
+  let actionClicked = false;
 </script>
 
 <style>
@@ -53,15 +37,15 @@
     fill: var(--color-background);
   }
 
-  .variant-info {
+  .info {
     background-color: var(--color-foreground);
   }
 
-  .variant-error {
+  .error {
     background-color: var(--color-negative);
   }
 
-  .variant-primary {
+  .primary {
     background-color: var(--color-primary);
   }
 
@@ -82,37 +66,40 @@
   .action-divider {
     align-self: stretch;
     width: 1px;
-  }
-
-  .variant-error .action-divider {
-    background-color: var(--color-negative-level-2);
-  }
-
-  .variant-info .action-divider {
-    background-color: var(--color-foreground-level-6);
-  }
-
-  .variant-primary .action-divider {
-    background-color: var(--color-primary-level-1);
+    background-color: var(--color-background);
+    opacity: 0.5;
   }
 </style>
 
 <div
-  class={`notification ${variantClass}`}
+  on:mouseenter={() => {
+    Notification.removeHideTimer(notification);
+  }}
+  on:mouseleave={() => {
+    if (!actionClicked) {
+      Notification.attachHideTimer(notification);
+    }
+  }}
+  class="notification"
+  class:info={notification.type === "info"}
+  class:error={notification.type === "error"}
+  class:primary={notification.type === "primary"}
   class:bypassLockedScreen={notification.bypassLockedScreen}
   {style}>
-  {#if icon}
-    <svelte:component this={icon} style="margin-left: 8px; height: 24px" />
-  {/if}
-
-  <p class="message typo-overflow-ellipsis">{notification.message}</p>
+  <p class="message typo-overflow-ellipsis">
+    {#if $timesShownStore > 1}<span>{$timesShownStore}× </span>{/if}
+    {notification.message}
+  </p>
 
   {#each notification.actions as action}
     <div class="action-divider" />
     <button
       class="action typo-text-bold"
       data-cy="notification-action"
-      on:click={action.handler}>
+      on:click={() => {
+        actionClicked = true;
+        action.handler();
+      }}>
       {action.label}
     </button>
   {/each}

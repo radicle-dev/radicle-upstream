@@ -11,7 +11,6 @@
   import * as Session from "ui/src/session";
   import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
-  import * as error from "ui/src/error";
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
@@ -65,7 +64,10 @@
         icon: AtIcon,
         event: () => {
           copyToClipboard(project.urn);
-          notification.info({ message: "Radicle ID copied to your clipboard" });
+          notification.show({
+            type: "info",
+            message: "Radicle ID copied to your clipboard",
+          });
         },
         tooltip: format.shortUrn(project.urn),
       },
@@ -102,7 +104,7 @@
   fetch(urn);
 
   $: if ($store.status === remote.Status.Error) {
-    error.show($store.error);
+    notification.showException($store.error);
   }
 
   let peerSelectorExpanded: boolean = false;

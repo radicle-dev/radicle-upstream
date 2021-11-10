@@ -13,7 +13,6 @@
 
   import { VALID_PEER_MATCH } from "ui/src/screen/project";
 
-  import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as proxy from "ui/src/proxy";
@@ -119,14 +118,15 @@
   $: if ($projectRequestStore.status === remote.Status.Success) {
     reset();
     router.push({ type: "profile" });
-    notification.info({
+    notification.show({
+      type: "info",
       message: "You’ll be notified when this project has been found.",
     });
     modal.hide();
   }
 
   $: if ($projectRequestStore.status === remote.Status.Error) {
-    error.show($projectRequestStore.error);
+    notification.showException($projectRequestStore.error);
   }
 </script>
 

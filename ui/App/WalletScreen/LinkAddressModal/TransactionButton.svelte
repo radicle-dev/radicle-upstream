@@ -9,7 +9,6 @@
   import Button from "design-system/Button.svelte";
 
   import * as notification from "ui/src/notification";
-  import * as error from "ui/src/error";
   import * as transaction from "ui/src/transaction";
 
   export let style: string | undefined = undefined;
@@ -25,14 +24,14 @@
   async function userDidClick(): Promise<void> {
     try {
       running = true;
-      notification.info({
+      notification.show({
+        type: "info",
         message:
           "Waiting for you to confirm the transaction in your connected wallet",
-        showIcon: true,
       });
       await onClick();
     } catch (e: unknown) {
-      error.show(transaction.convertError(e, errorLabel));
+      notification.showException(transaction.convertError(e, errorLabel));
     } finally {
       running = false;
     }

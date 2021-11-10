@@ -9,11 +9,12 @@
   import lodash from "lodash";
 
   import { push } from "ui/src/router";
+  import { store } from "ui/src/wallet";
   import { unreachable } from "ui/src/unreachable";
   import * as Org from "ui/src/org";
-  import { store } from "ui/src/wallet";
   import * as ensResolver from "ui/src/org/ensResolver";
   import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
   import * as theGraphApi from "ui/src/org/theGraphApi";
 
   import AnchorIcon from "design-system/icons/Anchor.svelte";
@@ -44,7 +45,7 @@
       resolvedOrgs = await fetchOrgs();
       state = "loaded";
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({ message: "Failed to fetch orgs", source: err })
       );
       state = "error";

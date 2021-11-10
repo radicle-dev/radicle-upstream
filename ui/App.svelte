@@ -7,10 +7,12 @@
 -->
 <script lang="ts">
   import * as Session from "ui/src/session";
+  import * as config from "ui/src/config";
   import * as customProtocolHandler from "ui/src/customProtocolHandler";
   import * as error from "ui/src/error";
   import * as ethereum from "ui/src/ethereum";
   import * as hotkeys from "ui/src/hotkeys";
+  import * as notification from "ui/src/notification";
   import * as org from "./src/org";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
@@ -22,11 +24,13 @@
 
   import Hotkeys from "ui/App/Hotkeys.svelte";
   import ModalLayout from "ui/App/ModalLayout.svelte";
-  import NotificationFaucet from "ui/App/NotificationFaucet.svelte";
+  import Notifications from "ui/App/Notifications.svelte";
   import Theme from "ui/App/Theme.svelte";
 
   import DesignSystemShowcaseModal from "design-system/Showcase.svelte";
   import Tooltip from "design-system/Tooltip.svelte";
+
+  import SharedComponentShowcase from "ui/App/SharedComponents/SharedComponentShowcase.svelte";
 
   import CodeFontSetting from "ui/App/SharedComponents/CodeFontSetting.svelte";
   import PrimaryColorSetting from "ui/App/SharedComponents/PrimaryColorSetting.svelte";
@@ -53,6 +57,28 @@
   customProtocolHandler.register();
   org.initialize();
   transaction.initialize();
+
+  // If we’re not in any kind of test environment we show unhandled
+  // errors to the user.
+  if (
+    !config.isCypressTestEnv &&
+    !config.isCypressTestRunner &&
+    !config.isNodeTestEnv
+  ) {
+    window.addEventListener("unhandledrejection", ev => {
+      ev.preventDefault();
+      notification.showException(
+        error.fromUnknown(ev.reason, error.Code.UnhandledRejection)
+      );
+    });
+
+    window.addEventListener("error", ev => {
+      ev.preventDefault();
+      notification.showException(
+        error.fromUnknown(ev.error, error.Code.UnhandledError)
+      );
+    });
+  }
 
   const activeRouteStore = router.activeRouteStore;
   const ethereumEnvironment = ethereum.selectedEnvironment;
@@ -89,7 +115,7 @@
         break;
 
       case remote.Status.Error:
-        error.show(session.error);
+        notification.showException(session.error);
         break;
     }
   });
@@ -125,13 +151,13 @@
 <UnrecoverableErrorScreen />
 <Hotkeys />
 <ModalLayout />
-<NotificationFaucet />
+<Notifications />
 <Theme />
 
 {#if $sessionStore.status === remote.Status.Success}
   {#if $activeRouteStore.type === "designSystemGuide"}
     <DesignSystemShowcaseModal onClose={() => router.pop()}>
-      <div class="settings">
+      <div class="settings" slot="top">
         <Tooltip value="Theme" position="bottom">
           <ThemeSetting />
         </Tooltip>
@@ -144,6 +170,10 @@
         <Tooltip value="Primary color" position="bottom">
           <PrimaryColorSetting />
         </Tooltip>
+      </div>
+
+      <div slot="bottom">
+        <SharedComponentShowcase />
       </div>
     </DesignSystemShowcaseModal>
   {:else if $activeRouteStore.type === "lock"}

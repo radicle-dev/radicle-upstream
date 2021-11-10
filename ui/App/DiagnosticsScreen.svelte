@@ -8,6 +8,7 @@
 <script lang="ts">
   import { unreachable } from "ui/src/unreachable";
 
+  import { notificationHistory } from "ui/src/notification";
   import { status as localPeerState } from "ui/src/localPeer";
   import { waitingRoomEventLog, waitingRoomState } from "ui/src/localPeer";
   import * as Session from "ui/src/session";
@@ -28,8 +29,9 @@
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ConnectionsTab from "./DiagnosticsScreen/Connections.svelte";
-  import WaitingRoomTab from "./DiagnosticsScreen/WaitingRoom.svelte";
   import StorageTab from "./DiagnosticsScreen/Storage.svelte";
+  import WaitingRoomTab from "./DiagnosticsScreen/WaitingRoom.svelte";
+  import NotificationHistoryTab from "./DiagnosticsScreen/NotificationHistory.svelte";
 
   export let activeTab: router.DiagnosticsTab;
 
@@ -58,6 +60,14 @@
         router.push({ type: "diagnostics", activeTab: "waitingRoom" });
       },
     },
+    {
+      title: "Notification History",
+      active: active === "notificationHistory",
+      icon: TransactionsIcon,
+      onClick: () => {
+        router.push({ type: "diagnostics", activeTab: "notificationHistory" });
+      },
+    },
   ];
 
   async function copyEverythingToClipboard() {
@@ -73,12 +83,16 @@
           },
           waitingRoomState: $waitingRoomState,
           waitingRoomEventLog: $waitingRoomEventLog,
+          notificationHistory: $notificationHistory,
         },
         null,
         2
       )
     );
-    notification.info({ message: "Copied all debug info to clipboard" });
+    notification.show({
+      type: "info",
+      message: "Copied all debug info to clipboard",
+    });
   }
 </script>
 
@@ -114,6 +128,8 @@
       <StorageTab />
     {:else if activeTab === "waitingRoom"}
       <WaitingRoomTab />
+    {:else if activeTab === "notificationHistory"}
+      <NotificationHistoryTab />
     {:else}
       {unreachable(activeTab)}
     {/if}

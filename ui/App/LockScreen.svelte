@@ -42,15 +42,15 @@
           svelteTick().then(() => {
             input && input.focus();
           });
-          errorNotificationHandle = notification.error({
+          errorNotificationHandle = notification.show({
+            type: "error",
             message: "That’s the wrong passphrase.",
-            showIcon: true,
             actions: [{ label: "Dismiss", handler: () => {} }],
             persist: true,
           });
         }
       } catch (err: unknown) {
-        errorNotificationHandle = error.show(
+        errorNotificationHandle = notification.showException(
           new error.Error({
             message: "Failed to unseal session",
             source: err,

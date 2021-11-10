@@ -148,9 +148,9 @@
           peerId: peer.identity.peerId,
         });
 
-        notification.info({
+        notification.show({
+          type: "info",
           message: `${project.metadata.name} checked out to ${path}`,
-          showIcon: true,
           actions: [
             {
               label: "Open folder",
@@ -167,7 +167,7 @@
         } else {
           message = `Checkout failed`;
         }
-        error.show(
+        notification.showException(
           new error.Error({
             code: error.Code.ProjectCheckoutFailure,
             message,
@@ -187,7 +187,7 @@
   $: fetch(project, selectedPeer);
 
   $: if ($store.status === remote.Status.Error) {
-    error.show($store.error);
+    notification.showException($store.error);
   }
 </script>
 

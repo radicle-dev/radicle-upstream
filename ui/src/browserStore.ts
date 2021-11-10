@@ -7,8 +7,8 @@
 import type * as zod from "zod";
 import persistentStore from "svelte-persistent-store/dist";
 
-import * as svelteStore from "ui/src/svelteStore";
 import * as error from "ui/src/error";
+import * as svelteStore from "ui/src/svelteStore";
 
 const VALID_STORAGE_KEY_RE = /radicle(\.[a-zA-Z])+/;
 
@@ -42,7 +42,7 @@ export function create<T>(
     } else {
       if (!errorShown) {
         errorShown = true;
-        error.show(
+        error.showNotification(
           new error.Error({
             message: "Stored data does not match schema",
             details: {

@@ -87,7 +87,8 @@
             activeView: { type: "files" },
           },
         });
-        notification.info({
+        notification.show({
+          type: "info",
           message: `Project ${response.metadata.name} was created!`,
         });
       } catch (err: unknown) {
@@ -98,7 +99,7 @@
         } else {
           message = `Could not create project`;
         }
-        error.show(
+        notification.showException(
           new error.Error({
             code: error.Code.ProjectCreationFailure,
             message,

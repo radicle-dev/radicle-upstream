@@ -12,7 +12,7 @@ import * as svelteStore from "svelte/store";
 
 import type * as identity from "./identity";
 import { config } from "./config";
-import * as notifiation from "./notification";
+import * as notification from "./notification";
 import * as remote from "./remote";
 import * as session from "./session";
 import * as error from "./error";
@@ -185,7 +185,7 @@ session.session.subscribe(sess => {
         if (result.success) {
           eventBus.push(result.data);
         } else {
-          error.show(
+          notification.showException(
             new error.Error({
               code: error.Code.ProxyEventParseFailure,
               message: "Failed to parse proxy event",
@@ -206,7 +206,8 @@ const eventBus = new bacon.Bus<Event>();
 eventBus.onValue(event => {
   switch (event.type) {
     case EventType.RequestCloned:
-      notifiation.info({
+      notification.show({
+        type: "info",
         message: `Project for "${event.urn}" found and cloned.`,
         actions: [
           {
@@ -226,7 +227,10 @@ eventBus.onValue(event => {
       break;
 
     case EventType.RequestTimedOut:
-      notifiation.error({ message: `Search for "${event.urn}" failed.` });
+      notification.show({
+        type: "error",
+        message: `Search for "${event.urn}" failed.`,
+      });
 
       break;
   }

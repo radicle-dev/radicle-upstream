@@ -4,48 +4,32 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { Readable, derived, writable } from "svelte/store";
+import * as zod from "zod";
+import lodash from "lodash";
 
-export enum Variant {
-  Error = "ERROR",
-  Info = "INFO",
-  // Uses primary color as the notification background
-  Primary = "PRIMARY",
-}
+import * as browserStore from "ui/src/browserStore";
+import * as error from "ui/src/error";
+import * as ipc from "ui/src/ipc";
+import * as svelteStore from "ui/src/svelteStore";
 
-export interface NotificationParams {
-  message: string;
-  // If `true`, show an appropriate icon as part of the notification.
-  // An icon is only shown for the `Error` and `Info` notification
-  // variants. Defaults to `false`.
-  showIcon?: boolean;
-  // A list of actions to show as part of the notification. If not
-  // provided a default action to close the notification will be shown.
-  actions?: Action[];
-  // If `true`, the notification does not automatically disappear after
-  // a certain time. Defaults to `false`.
-  persist?: boolean;
-  // If `true`, the user is allowed to interact with the notification even when
-  // the screen is in a waiting waiting state, i.e. cursor is a spinner and mouse
-  // clicks are disabled.
-  bypassLockedScreen?: boolean;
+type NotificationType = "error" | "info" | "primary";
+
+interface SerializedNotification {
+  readonly timestamp: number;
+  readonly type: string;
+  readonly message: string;
+  readonly details?: unknown;
 }
 
 export interface Notification {
   readonly id: number;
-  readonly variant: Variant;
-  readonly showIcon: boolean;
+  readonly type: NotificationType;
   readonly message: string;
   readonly actions: readonly Action[];
-  readonly icon: Icon | null;
   readonly bypassLockedScreen?: boolean;
-}
-
-// We can’t use `DesignSystem/Primitives/Icon` directly because this
-// file is imported in the Jest tests and they do not support Svelte.
-export enum Icon {
-  InfoCircle = "InfoCircle",
-  ExclamationCircle = "ExclamationCircle",
+  readonly details?: unknown;
+  hideTimerHandle?: number;
+  timesShownStore: svelteStore.Writable<number>;
 }
 
 export interface Action {
@@ -53,94 +37,165 @@ export interface Action {
   readonly handler: () => void;
 }
 
-// Handle to remove notifications. Returned when a notification is
-// created
+// Handle to remove notifications. Returned when a notification is created.
 export interface Handle {
-  // Don’t show the notification anymore
+  // Don’t show the notification anymore.
   remove(): void;
 }
 
-const notificationsStore = writable<Notification[]>([]);
+export const notificationStore = svelteStore.writable<Notification[]>([]);
 
-export const store: Readable<Notification[]> = derived(
-  notificationsStore,
-  (state: Notification[]) => state
+export const notificationHistory = browserStore.create<
+  SerializedNotification[]
+>(
+  "radicle.notificationHistory",
+  [],
+  zod.array(
+    zod.object({
+      timestamp: zod.number(),
+      type: zod.string(),
+      message: zod.string(),
+      details: zod.unknown(),
+    })
+  )
 );
+
+error.notifications.onValue(error => {
+  showException(error);
+});
 
 const closeAction: Action = {
   label: "Close",
   handler: () => {},
 };
 
-// Only exported for `DesignSystemGuide`.
-export const create = (
-  variant: Variant,
-  params: NotificationParams
-): Notification => {
-  const id = Math.random();
-  const showIcon = params.showIcon || false;
+export function removeHideTimer(notification: Notification) {
+  window.clearTimeout(notification.hideTimerHandle);
+  notification.hideTimerHandle = undefined;
+}
 
-  let actions = params.actions || [closeAction];
-  actions = actions.map(action => ({
-    label: action.label,
-    handler: () => {
-      action.handler();
-      remove(id);
-    },
-  }));
+export function attachHideTimer(notification: Notification) {
+  if (notification.hideTimerHandle) {
+    removeHideTimer(notification);
+  }
 
-  let icon = null;
-  if (params.showIcon) {
-    switch (variant) {
-      case Variant.Info:
-        icon = Icon.InfoCircle;
-        break;
-      case Variant.Error:
-        icon = Icon.ExclamationCircle;
-        break;
-      case Variant.Primary:
-        icon = null;
-        break;
+  notification.hideTimerHandle = window.setTimeout(() => {
+    remove(notification.id);
+  }, 8000);
+}
+
+export function show(params: {
+  type: NotificationType;
+  message: string;
+  // A list of actions to show as part of the notification. If not
+  // provided a default action to close the notification will be shown.
+  actions?: Action[];
+  // If `true`, the notification does not automatically disappear after
+  // a certain time. Defaults to `false`.
+  persist?: boolean;
+  // If `true`, the user is allowed to interact with the notification even when
+  // the screen is in a waiting waiting state, i.e. cursor is a spinner and
+  // mouse clicks are disabled.
+  bypassLockedScreen?: boolean;
+  // Any additional metadata that can be serialized with `JSON.serialize`, e.g.
+  // the exception stack for error notifications.
+  details?: unknown;
+}): Handle {
+  notificationHistory.update(
+    history =>
+      [
+        ...history,
+        {
+          timestamp: Date.now(),
+          type: params.type,
+          message: params.message,
+          details: params.details,
+        },
+      ].slice(-20) // Limit history to a maximum of 20 items.
+  );
+
+  const existingNotification = svelteStore
+    .get(notificationStore)
+    .find(
+      storedNotification =>
+        storedNotification.type === params.type &&
+        storedNotification.message === params.message &&
+        lodash.isEqual(storedNotification.details, params.details)
+    );
+
+  if (existingNotification) {
+    existingNotification.timesShownStore.update(n => n + 1);
+    attachHideTimer(existingNotification);
+    return {
+      remove: () => remove(existingNotification.id),
+    };
+  } else {
+    const id = Math.random();
+
+    let actions = params.actions || [closeAction];
+    actions = actions.map(action => ({
+      label: action.label,
+      handler: () => {
+        action.handler();
+        remove(id);
+      },
+    }));
+
+    const notification: Notification = {
+      id,
+      actions,
+      timesShownStore: svelteStore.writable<number>(1),
+      type: params.type,
+      message: params.message,
+      bypassLockedScreen: params.bypassLockedScreen,
+      details: params.details,
+    };
+
+    if (params.persist !== true) {
+      attachHideTimer(notification);
     }
+
+    notificationStore.update(notifications => [notification, ...notifications]);
+
+    return {
+      remove: () => remove(notification.id),
+    };
   }
+}
 
-  return {
-    id,
-    variant,
-    message: params.message,
-    showIcon,
-    actions,
-    bypassLockedScreen: params.bypassLockedScreen,
-    icon,
-  };
-};
-
-const show = (variant: Variant, params: NotificationParams): Handle => {
-  const notification = create(variant, params);
-  notificationsStore.update(notifications => [notification, ...notifications]);
-
-  if (params.persist !== true) {
-    setTimeout(() => {
-      remove(notification.id);
-    }, 8000);
-  }
-
-  return {
-    remove: () => remove(notification.id),
-  };
-};
-
-export const error = (params: NotificationParams): Handle =>
-  show(Variant.Error, params);
-
-export const info = (params: NotificationParams): Handle =>
-  show(Variant.Info, params);
-
-export const primary = (params: NotificationParams): Handle =>
-  show(Variant.Primary, params);
-
-const remove = (id: number): void => {
-  notificationsStore.update(notifications => {
-    return notifications.filter((n: Notification) => n.id !== id);
+function remove(id: number): void {
+  notificationStore.update(notifications => {
+    return notifications.filter(notification => {
+      if (notification.id === id) {
+        removeHideTimer(notification);
+        return false;
+      } else {
+        return true;
+      }
+    });
   });
-};
+}
+
+// Show an error notification and log the error to the console.
+export function showException(exception: error.Error): Handle {
+  error.log(exception);
+
+  return show({
+    type: "error",
+    message: exception.message,
+    persist: false,
+    details: exception,
+    actions: [
+      {
+        label: "Copy error",
+        handler: () => {
+          ipc.copyToClipboard(JSON.stringify(exception, null, 2));
+        },
+      },
+      {
+        label: "Dismiss",
+        handler: () => {},
+      },
+    ],
+  });
+}

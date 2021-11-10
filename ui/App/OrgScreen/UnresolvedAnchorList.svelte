@@ -26,9 +26,9 @@
   const onFollow = (projectId: string) => {
     proxy.client.project.requestSubmit(projectId);
     router.push({ type: "profile" });
-    notification.info({
+    notification.show({
+      type: "info",
       message: `Added ${projectId} to the queue`,
-      showIcon: true,
     });
   };
 </script>

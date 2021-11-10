@@ -10,6 +10,7 @@
 
   import * as error from "ui/src/error";
   import * as modal from "ui/src/modal";
+  import * as notification from "ui/src/notification";
   import * as proxy from "ui/src/proxy";
   import * as router from "ui/src/router";
   import * as session from "ui/src/session";
@@ -41,7 +42,7 @@
     try {
       user = await proxy.client.personGet(urn);
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({
           message: "Failed to fetch user data",
           source: err,
@@ -139,7 +140,9 @@
       <div class="metadata">
         {#if user}
           <div class="handle-wrapper">
-            <h2 class="typo-overflow-ellipsis">{handle}</h2>
+            <h2 class="typo-overflow-ellipsis">
+              {handle || user.metadata.handle}
+            </h2>
           </div>
           {#if user.metadata.ethereum}
             <CopyableIdentifier

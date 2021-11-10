@@ -168,7 +168,7 @@
         commitInProgress = true;
         state = await commit();
       } catch (err: unknown) {
-        error.show(error.fromUnknown(err));
+        notification.showException(error.fromUnknown(err));
       } finally {
         commitInProgress = false;
       }
@@ -192,9 +192,9 @@
           commitmentBlock: commitment.block,
         };
       } else {
-        const commitNotification = notification.info({
+        const commitNotification = notification.show({
+          type: "info",
           message: "Waiting for previous commitment transation to be confirmed",
-          showIcon: true,
           persist: true,
         });
         let commitmentBlock;
@@ -214,10 +214,10 @@
   }
 
   async function submitCommitment(name: string): Promise<State> {
-    const signNotification = notification.info({
+    const signNotification = notification.show({
+      type: "info",
       message:
         "Waiting for you to sign the commitment permit in your connected wallet",
-      showIcon: true,
       persist: true,
     });
     let signature: ethers.Signature;
@@ -229,10 +229,10 @@
       signNotification.remove();
     }
 
-    const commitNotification = notification.info({
+    const commitNotification = notification.show({
+      type: "info",
       message:
         "Waiting for you to confirm the commitment transaction in your connected wallet",
-      showIcon: true,
       persist: true,
     });
     const salt = ensRegistrar.generateSalt();
@@ -253,9 +253,9 @@
     ensRegistrar.commitmentStore.set(commitment);
     transaction.add(transaction.commitEnsName(tx));
 
-    const txNotification = notification.info({
+    const txNotification = notification.show({
+      type: "info",
       message: "Waiting for the transaction to be included",
-      showIcon: true,
       persist: true,
     });
 

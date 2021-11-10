@@ -45,7 +45,8 @@ const setHistory = async (history: Route[]) => {
 
     function scheduleNotification() {
       notificationTimeout = setTimeout(() => {
-        notificationHandle = notification.info({
+        notificationHandle = notification.show({
+          type: "info",
           persist: true,
           bypassLockedScreen: true,
           message: "This seems to be taking a while",
