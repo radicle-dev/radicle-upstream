@@ -6,20 +6,22 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import type { Project } from "ui/src/project";
+
   import { onDestroy } from "svelte";
   import { fade } from "svelte/transition";
 
-  import * as router from "ui/src/router";
-  import * as Session from "ui/src/session";
-  import * as modal from "ui/src/modal";
-  import * as remote from "ui/src/remote";
-  import * as proxy from "ui/src/proxy";
-  import * as error from "ui/src/error";
-  import type { Project } from "ui/src/project";
   import { isMaintainer } from "ui/src/project";
-  import * as project from "ui/src/project";
-  import * as mutexExecutor from "ui/src/mutexExecutor";
+  import * as Session from "ui/src/session";
+  import * as error from "ui/src/error";
   import * as localPeer from "ui/src/localPeer";
+  import * as modal from "ui/src/modal";
+  import * as mutexExecutor from "ui/src/mutexExecutor";
+  import * as notification from "ui/src/notification";
+  import * as project from "ui/src/project";
+  import * as proxy from "ui/src/proxy";
+  import * as remote from "ui/src/remote";
+  import * as router from "ui/src/router";
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
   import PlusIcon from "design-system/icons/Plus.svelte";
@@ -77,7 +79,7 @@
         profileProjectsStore.success(profileProjects);
       }
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({ message: "Failed to fetch projects.", source: err })
       );
     }
@@ -86,17 +88,16 @@
   const showNotificationsForFailedProjects = async (): Promise<void> => {
     try {
       const failedProjects = await proxy.client.project.listFailed();
-      failedProjects.forEach(failedProject => {
-        error.show(
+      if (failedProjects.length > 0) {
+        notification.showException(
           new error.Error({
-            code: error.Code.ProjectRequestFailure,
-            message: `The project ${failedProject.metadata.name} couldn’t be loaded`,
-            details: failedProject,
+            message: "Some of your projects could not be loaded",
+            details: failedProjects,
           })
         );
-      });
+      }
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({
           code: error.Code.ProjectRequestFailure,
           message: "Failed to get failed projects",

@@ -12,6 +12,7 @@ import type { TransactionReceipt } from "@ethersproject/abstract-provider";
 
 import * as error from "./error";
 import { store as walletStore } from "./wallet";
+import * as notification from "ui/src/notification";
 
 // The store where all managed transactions are stored.
 export const store = persistentStore<Tx[]>("transactions", []);
@@ -156,7 +157,7 @@ function registerTxUpdateCallback(tx: Tx): void {
         });
       })
       .catch(err => {
-        error.show(
+        notification.showException(
           new error.Error({
             message: "Failed to update transaction status",
             source: err,

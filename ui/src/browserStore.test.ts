@@ -10,17 +10,7 @@ import * as svelteStore from "svelte/store";
 
 import * as browserStore from "./browserStore";
 
-jest.mock("ui/src/error", () => {
-  const original = jest.requireActual("ui/src/error");
-  return {
-    __esModule: true,
-    ...original,
-    show: jest.fn(),
-  };
-});
-
 afterEach(() => {
-  jest.resetAllMocks();
   window.localStorage.clear();
 });
 
@@ -55,26 +45,28 @@ test("update value", () => {
 });
 
 test("invalid value returns initial value and shows error", () => {
+  const onError = jest.fn();
+  error.notifications.onValue(onError);
+
   window.localStorage.setItem("radicle.foo", "0");
   const store = browserStore.create("radicle.foo", false, zod.boolean());
 
   expect(svelteStore.get(store)).toBe(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const showMock: any = (error.show as any).mock;
-  expect(showMock.calls[0][0].message).toBe(
+  expect(onError.mock.calls[0][0].message).toBe(
     "Stored data does not match schema"
   );
 });
 
 test("invalid value shows error only once", () => {
+  const onError = jest.fn();
+  error.notifications.onValue(onError);
+
   window.localStorage.setItem("radicle.foo", "0");
   const store = browserStore.create("radicle.foo", false, zod.boolean());
 
   expect(svelteStore.get(store)).toBe(false);
   expect(svelteStore.get(store)).toBe(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const showMock: any = (error.show as any).mock;
-  expect(showMock.calls.length).toBe(1);
+  expect(onError.mock.calls.length).toBe(1);
 });

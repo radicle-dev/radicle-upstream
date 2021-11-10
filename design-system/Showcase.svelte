@@ -151,7 +151,7 @@
 <div class="fullscreen">
   <div class="content">
     <div class="layout">
-      <slot />
+      <slot name="top" />
 
       <h1 style="margin-bottom: 92px">Primitives</h1>
 
@@ -695,6 +695,8 @@
           <Loading />
         </div>
       </Section>
+
+      <slot name="bottom" />
     </div>
   </div>
 </div>

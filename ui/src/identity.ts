@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import * as error from "./error";
+import * as notification from "./notification";
 import * as proxy from "./proxy";
 import * as session from "./session";
 import type { Ethereum, Identity, Metadata } from "proxy-client/identity";
@@ -39,7 +40,7 @@ const updateEthereumClaim = async (
       ethereum,
     });
   } catch (err: unknown) {
-    error.show(
+    notification.showException(
       new error.Error({
         code: error.Code.UpdateEthereumClaimFailure,
         message: `Failed to update the Ethereum claim in your identity`,

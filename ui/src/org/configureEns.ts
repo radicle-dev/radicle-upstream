@@ -57,9 +57,9 @@ export async function updateScreenAndNotifyUser(
     ];
   }
 
-  notification.info({
+  notification.show({
+    type: "info",
     message,
     actions,
-    showIcon: true,
   });
 }

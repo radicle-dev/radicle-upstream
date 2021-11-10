@@ -5,11 +5,17 @@
 // LICENSE file.
 
 import * as svelteStore from "svelte/store";
-import * as lodash from "lodash";
+import lodash from "lodash";
 
-import * as config from "ui/src/config";
-import * as notification from "./notification";
+import * as bacon from "./bacon";
 import * as ipc from "./ipc";
+
+const notificationBus = new bacon.Bus<Error>();
+export const notifications: bacon.EventStream<Error> =
+  notificationBus.toEventStream();
+export function showNotification(error: Error): void {
+  notificationBus.push(error);
+}
 
 interface ErrorParams {
   // A unique code for easy identification of the error.
@@ -173,29 +179,6 @@ export const log = (error: Error): void => {
   console.error(error, info);
 };
 
-// Show an error notification and log the error to the console
-export const show = (error: Error): notification.Handle => {
-  log(error);
-
-  return notification.error({
-    message: error.message,
-    showIcon: true,
-    persist: true,
-    actions: [
-      {
-        label: "Copy error",
-        handler: () => {
-          ipc.copyToClipboard(JSON.stringify(error, null, 2));
-        },
-      },
-      {
-        label: "Dismiss",
-        handler: () => {},
-      },
-    ],
-  });
-};
-
 // Fatal application errors that trigger a blue screen
 export type FatalError =
   | { kind: FatalErrorKind.Session }
@@ -225,24 +208,6 @@ ipc.listenProxyError(proxyError => {
   );
   setFatal({ kind: FatalErrorKind.ProxyExit, data: proxyError });
 });
-
-// If we’re not in any kind of test environment we show unhandled
-// errors to the user.
-if (
-  !config.isCypressTestEnv &&
-  !config.isCypressTestRunner &&
-  !config.isNodeTestEnv
-) {
-  window.addEventListener("unhandledrejection", ev => {
-    ev.preventDefault();
-    show(fromUnknown(ev.reason, Code.UnhandledRejection));
-  });
-
-  window.addEventListener("error", ev => {
-    ev.preventDefault();
-    show(fromUnknown(ev.error, Code.UnhandledError));
-  });
-}
 
 // Value is `true` if there was a fatal error
 export const fatalError: svelteStore.Readable<FatalError | null> =

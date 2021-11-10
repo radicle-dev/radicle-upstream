@@ -84,10 +84,10 @@
     });
 
     if (records.length > 0) {
-      const updateNotification = notification.info({
+      const updateNotification = notification.show({
+        type: "info",
         message:
           "Waiting for you to confirm the metadata update transaction in your connected wallet",
-        showIcon: true,
         persist: true,
       });
 
@@ -100,17 +100,17 @@
           records as ensResolver.EnsRecord[]
         );
         transaction.add(transaction.updateEnsMetadata(tx));
-        waitingForTxNotification = notification.info({
+        waitingForTxNotification = notification.show({
+          type: "info",
           message:
             "The org’s updated metadata will appear once the transaction has been included",
-          showIcon: true,
           persist: true,
         });
         onSubmit();
       } catch (err: unknown) {
         setRecordsInProgress = false;
 
-        error.show(error.fromUnknown(err));
+        notification.showException(error.fromUnknown(err));
         return;
       } finally {
         updateNotification.remove();

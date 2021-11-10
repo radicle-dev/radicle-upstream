@@ -4,18 +4,20 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { derived, get, writable } from "svelte/store";
+import type { Project, User } from "ui/src/project";
 import type { Readable, Writable } from "svelte/store";
 
+import { derived, get, writable } from "svelte/store";
+
+import * as appearance from "ui/src/appearance";
 import * as error from "ui/src/error";
-import * as patch from "ui/src/project/patch";
 import * as localPeer from "ui/src/localPeer";
-import type { Project, User } from "ui/src/project";
+import * as notification from "ui/src/notification";
+import * as patch from "ui/src/project/patch";
+import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
 import * as router from "ui/src/router";
 import * as source from "ui/src/source";
-import * as appearance from "ui/src/appearance";
-import * as proxy from "ui/src/proxy";
 
 export enum ViewKind {
   Aborted = "ABORTED",
@@ -295,7 +297,7 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
       if (e.message.match("object not found")) {
         commitStore.error(e);
       } else {
-        error.show(
+        notification.showException(
           new error.Error({
             code: error.Code.CommitFetchFailure,
             message: "Could not fetch commit",

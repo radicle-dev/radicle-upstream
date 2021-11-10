@@ -85,7 +85,7 @@ const pollOrgListForever = async (
           // don’t show them. We reset this behavior after the fetch is
           // successful.
           if (showError) {
-            error.show(
+            notification.showException(
               new error.Error({
                 code: error.Code.OrgFetchFailed,
                 message: `Failed to fetch org data`,
@@ -160,10 +160,10 @@ export async function anchorProjectWithGnosis(
     commitHash
   );
 
-  const confirmNotification = notification.info({
+  const confirmNotification = notification.show({
+    type: "info",
     message:
       "Waiting for you to sign the anchor transaction in your connected wallet",
-    showIcon: true,
     persist: true,
   });
 
@@ -178,10 +178,10 @@ export async function anchorProjectWithGnosis(
     confirmNotification.remove();
   }
 
-  notification.info({
+  notification.show({
+    type: "info",
     message:
       "Your anchored project will appear once the quorum of members have confirmed the transaction",
-    showIcon: true,
     persist: true,
     actions: [
       {
@@ -210,10 +210,10 @@ export async function anchorProjectWithWallet(
 ): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
 
-  const confirmNotification = notification.info({
+  const confirmNotification = notification.show({
+    type: "info",
     message:
       "Waiting for you to confirm the anchor transaction in your connected wallet",
-    showIcon: true,
     persist: true,
   });
 
@@ -231,10 +231,10 @@ export async function anchorProjectWithWallet(
 
   transaction.add(transaction.anchorProject(response));
 
-  notification.info({
+  notification.show({
+    type: "info",
     message:
       "Your anchored project will appear once the transaction has been included",
-    showIcon: true,
     persist: true,
     actions: [
       {
@@ -263,10 +263,10 @@ export async function createOrg(
   isMultiSig: boolean
 ): Promise<void> {
   const walletStore = svelteStore.get(wallet.store);
-  const confirmNotification = notification.info({
+  const confirmNotification = notification.show({
+    type: "info",
     message:
       "Waiting for you to confirm the org creation transaction in your connected wallet",
-    showIcon: true,
     persist: true,
   });
 
@@ -286,9 +286,9 @@ export async function createOrg(
   pollOrgListForever(15 * 1000);
 
   transaction.add(transaction.createOrg(response));
-  const creationNotification = notification.info({
+  const creationNotification = notification.show({
+    type: "info",
     message: "Org creation transaction confirmed, your org will appear shortly",
-    showIcon: true,
     persist: true,
   });
 
@@ -307,9 +307,9 @@ export async function createOrg(
   // Reset org list polling to default interval.
   pollOrgListForever();
 
-  notification.info({
+  notification.show({
+    type: "info",
     message: `Org ${orgAddress} has been created`,
-    showIcon: true,
     persist: true,
     actions: [
       {

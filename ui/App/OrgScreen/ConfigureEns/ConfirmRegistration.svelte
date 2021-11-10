@@ -29,10 +29,10 @@
   async function register() {
     confirmButtonDisabled = true;
 
-    const registrationNotification = notification.info({
+    const registrationNotification = notification.show({
+      type: "info",
       message:
         "Waiting for you to confirm the registration transaction in your connected wallet",
-      showIcon: true,
       persist: true,
     });
 
@@ -45,7 +45,7 @@
     } catch (err: unknown) {
       confirmButtonDisabled = false;
 
-      error.show(error.fromUnknown(err));
+      notification.showException(error.fromUnknown(err));
       // Don't advance flow if the user rejected the tx.
       return;
     } finally {
@@ -55,9 +55,9 @@
 
     transaction.add(transaction.registerEnsName(registrationTx));
 
-    const txNotification = notification.info({
+    const txNotification = notification.show({
+      type: "info",
       message: "Waiting for the transaction to be included",
-      showIcon: true,
       persist: true,
     });
 
@@ -66,16 +66,16 @@
     } catch (err: unknown) {
       confirmButtonDisabled = false;
 
-      error.show(error.fromUnknown(err));
+      notification.showException(error.fromUnknown(err));
       // Don't advance flow unless we have the tx receipt.
       return;
     } finally {
       txNotification.remove();
     }
 
-    notification.info({
+    notification.show({
+      type: "info",
       message: `${commitment.name}.${ensResolver.DOMAIN} has been registered with your wallet`,
-      showIcon: true,
     });
     registrationDone({ name: commitment.name, registration: undefined });
   }

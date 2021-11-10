@@ -6,10 +6,11 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import * as router from "ui/src/router";
   import { unreachable } from "ui/src/unreachable";
-  import * as modal from "ui/src/modal";
   import * as error from "ui/src/error";
+  import * as modal from "ui/src/modal";
+  import * as notification from "ui/src/notification";
+  import * as router from "ui/src/router";
 
   import {
     selectedEnvironment as ethereumEnvironment,
@@ -76,7 +77,7 @@
       });
       modal.hide();
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({
           message: "Failed to connect to wallet",
           source: err,

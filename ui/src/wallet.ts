@@ -7,9 +7,10 @@
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
 
-import * as radToken from "./wallet/radToken";
 import * as error from "ui/src/error";
 import * as mutexExecutor from "ui/src/mutexExecutor";
+import * as notification from "ui/src/notification";
+import * as radToken from "./wallet/radToken";
 
 import * as ethereum from "ui/src/ethereum";
 import {
@@ -79,7 +80,7 @@ async function updateAccountBalances(
       accountBalancesStore.set(result);
     }
   } catch (err: unknown) {
-    error.show(
+    notification.showException(
       new error.Error({
         message: "Failed to get account balances",
         source: err,
@@ -139,7 +140,7 @@ function build(environment: Environment, provider: Provider): Wallet {
     } catch (unknownErr: unknown) {
       const err = error.fromUnknown(unknownErr);
       stateStore.set({ status: Status.NotConnected, error: err });
-      error.show(
+      notification.showException(
         new error.Error({
           code: error.Code.WalletConnectionFailure,
           message: `Failed to connect wallet: ${err.message}`,

@@ -8,7 +8,11 @@ import * as orgRoute from "ui/App/OrgScreen/route";
 import * as projectRoute from "ui/App/ProjectScreen/route";
 import * as userProfileRoute from "ui/App/UserProfileScreen/route";
 
-export type DiagnosticsTab = "storage" | "connections" | "waitingRoom";
+export type DiagnosticsTab =
+  | "connections"
+  | "notificationHistory"
+  | "storage"
+  | "waitingRoom";
 export type WalletTab = "transactions";
 
 export type Route =

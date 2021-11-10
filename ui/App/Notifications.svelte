@@ -8,9 +8,9 @@
 <script lang="ts">
   import { fade, fly } from "svelte/transition";
   import { flip } from "svelte/animate";
-  import { store } from "ui/src/notification";
+  import { notificationStore } from "ui/src/notification";
 
-  import Notification from "./NotificationFaucet/Notification.svelte";
+  import Notification from "./Notifications/Notification.svelte";
 
   export let style: string | undefined = undefined;
 </script>
@@ -29,7 +29,7 @@
 </style>
 
 <div class="wrapper" {style}>
-  {#each $store as notification (notification.id)}
+  {#each $notificationStore as notification (notification.id)}
     <div
       data-cy="notification"
       style="max-width: 95%;"

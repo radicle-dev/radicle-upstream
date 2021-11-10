@@ -15,6 +15,7 @@
   import * as router from "ui/src/router";
   import * as screen from "ui/src/screen";
   import * as session from "ui/src/session";
+  import * as notification from "ui/src/notification";
 
   import Welcome from "./OnboardingModal/Welcome.svelte";
   import EnterName from "./OnboardingModal/EnterName.svelte";
@@ -68,7 +69,7 @@
       } catch (err: unknown) {
         animateBackward();
         state = State.EnterName;
-        error.show(
+        notification.showException(
           new error.Error({
             code: error.Code.IdentityCreationFailure,
             message: `Could not create identity`,

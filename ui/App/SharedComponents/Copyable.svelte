@@ -44,7 +44,7 @@
     }
 
     copyToClipboard(content.trim());
-    notification.info({ message: tooltipMessage });
+    notification.show({ type: "info", message: tooltipMessage });
   }
 </script>
 

@@ -29,19 +29,19 @@
     continueButtonDisabled = true;
 
     if (safeAddress) {
-      const signNotification = notification.info({
+      const signNotification = notification.show({
+        type: "info",
         message:
           "Waiting for you to sign the proposal in your connected wallet",
-        showIcon: true,
         persist: true,
       });
 
       try {
         await org.proposeSetNameChange(domain, orgAddress, safeAddress);
-        notification.info({
+        notification.show({
+          type: "info",
           message:
             "Your org metadata will be updated once the quorum of members have confirmed the transaction",
-          showIcon: true,
           persist: true,
           actions: [
             {
@@ -61,15 +61,15 @@
       } catch (err: unknown) {
         continueButtonDisabled = false;
 
-        error.show(error.fromUnknown(err));
+        notification.showException(error.fromUnknown(err));
       } finally {
         signNotification.remove();
       }
     } else {
-      const setNameNotification = notification.info({
+      const setNameNotification = notification.show({
+        type: "info",
         message:
           "Waiting for you to confirm the set name transaction in your connected wallet",
-        showIcon: true,
         persist: true,
       });
 
@@ -79,16 +79,16 @@
       try {
         tx = await org.setNameSingleSig(domain, orgAddress);
         transaction.add(transaction.linkEnsNameToOrg(tx));
-        waitingForTxNotification = notification.info({
+        waitingForTxNotification = notification.show({
+          type: "info",
           message: `Once the transaction has been included, your org will point to ${domain}`,
-          showIcon: true,
           persist: true,
         });
         onSubmit();
       } catch (err: unknown) {
         continueButtonDisabled = false;
 
-        error.show(error.fromUnknown(err));
+        notification.showException(error.fromUnknown(err));
         return;
       } finally {
         setNameNotification.remove();
