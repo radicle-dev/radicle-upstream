@@ -110,6 +110,19 @@ We use [Cypress](https://www.cypress.io/) for integration tests and
   the [`.only` method][on].
 - To develop unit tests in watch mode, run: `yarn test:unit:watch`
 
+### Running p2p network tests
+
+The network tests use Linux namespaces to set up the required network
+topologies, thus they only work on a Linux host. For the tests to work
+properly, make sure that the `FORWARD` chain in the `filter` table is set to
+`ACCEPT`.
+
+To run the p2p network test suite locally:
+
+```bash
+sudo FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-test.ts
+```
+
 
 ### Running multiple Upstream instances on the same machine
 

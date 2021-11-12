@@ -3,6 +3,7 @@ yarn-error.log
 dist
 .DS_Store
 native/bundle.*
+design-system/build
 public/*
 cypress/videos
 cypress/screenshots
@@ -10,6 +11,7 @@ cypress/fixtures/example.json
 cypress/workspace
 proxy/**/target
 proxy/**/*.rs.bk
+p2p-tests/workspace
 /target
 sandbox
 .yarn/*

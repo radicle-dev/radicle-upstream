@@ -152,7 +152,7 @@ impl Keystore for MemoryStore {
             .lock()
             .expect("Failed to access memory key");
         if key_and_passphrase.is_some() {
-            return Err(FileError::KeyExists(std::path::PathBuf::new()).into());
+            return Err(FileError::KeyExists(PathBuf::new()).into());
         }
 
         let key = link_crypto::SecretKey::new();
@@ -172,7 +172,7 @@ impl Keystore for MemoryStore {
                 Err(FileError::Crypto(SecretBoxError::InvalidKey).into())
             }
         } else {
-            Err(FileError::NoSuchKey(std::path::PathBuf::new()).into())
+            Err(FileError::NoSuchKey(PathBuf::new()).into())
         }
     }
 }
