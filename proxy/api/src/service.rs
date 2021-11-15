@@ -27,6 +27,8 @@ pub struct Environment {
     pub keystore: Arc<dyn crate::keystore::Keystore + Send + Sync>,
     /// If true, we are running the service in test mode.
     pub test_mode: bool,
+    /// If `true`, the HTTP api will accept any request without checking the auth token.
+    pub insecure_http_api: bool,
 }
 
 /// Configuration for initializing [`Environment`].
@@ -39,6 +41,9 @@ pub struct EnvironmentConfig {
     /// If `true`, then fast but unsafe encryption parameters are used for the keystore.
     #[cfg(feature = "unsafe-fast-keystore")]
     pub unsafe_fast_keystore: bool,
+
+    /// If `true`, the HTTP api will accept any request without checking the auth token.
+    pub insecure_http_api: bool,
 }
 
 /// Error returned when creating a new [`Environment`].
@@ -76,12 +81,14 @@ impl Environment {
         } else {
             Arc::new(keystore::file(coco_profile.paths().clone()))
         };
+
         Ok(Self {
             key: None,
             temp_dir,
             coco_profile,
             keystore,
             test_mode: config.test_mode,
+            insecure_http_api: config.insecure_http_api,
         })
     }
 }
