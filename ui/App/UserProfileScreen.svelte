@@ -135,6 +135,14 @@
   .two-columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .empty {
+    grid-column: 1 / span 2;
+  }
+
+  .three-columns {
+    grid-column: 1 / span 3;
+  }
 </style>
 
 <ScreenLayout dataCy="user-profile-screen">
@@ -142,10 +150,12 @@
     <UserProfileHeader {user} />
   </div>
 
-  {#if projects.length === 0}
-    <EmptyState text="This peer doesn't have any projects." />
-  {:else}
-    <div class="sidebar-layout" class:one-column={!showSidebar}>
+  <div class="sidebar-layout" class:one-column={!showSidebar}>
+    {#if projects.length === 0}
+      <div class="empty" class:three-columns={!showSidebar}>
+        <EmptyState text="This peer doesn't have any projects." />
+      </div>
+    {:else}
       <ul class="grid" data-cy="project-list" class:two-columns={showSidebar}>
         {#each projects as project}
           <li>
@@ -156,15 +166,15 @@
           </li>
         {/each}
       </ul>
-      {#if showSidebar}
-        <div class="sidebar">
-          <ProfileSidebar
-            attested={user.metadata.ethereum?.address}
-            {registration}
-            {ownedOrgs}
-            urn={user.urn} />
-        </div>
-      {/if}
-    </div>
-  {/if}
+    {/if}
+    {#if showSidebar}
+      <div class="sidebar">
+        <ProfileSidebar
+          attested={user.metadata.ethereum?.address}
+          {registration}
+          {ownedOrgs}
+          urn={user.urn} />
+      </div>
+    {/if}
+  </div>
 </ScreenLayout>

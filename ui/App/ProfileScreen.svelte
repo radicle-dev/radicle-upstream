@@ -207,6 +207,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .empty {
+    grid-column: 1 / span 2;
+  }
+
+  .three-columns {
+    grid-column: 1 / span 3;
+  }
+
   .box {
     border: 1px solid var(--color-foreground-level-2);
     border-radius: 0.5rem;
@@ -254,19 +262,21 @@
   </div>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
-    {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
-      <EmptyState
-        text="You haven’t created or followed any projects yet."
-        primaryActionText="Start your first project"
-        on:primaryAction={() => {
-          modal.toggle(CreateProjectModal);
-        }}
-        secondaryActionText="Or look for a project"
-        on:secondaryAction={() => {
-          modal.toggle(SearchModal);
-        }} />
-    {:else}
-      <div class="sidebar-layout" class:one-column={!showSidebar}>
+    <div class="sidebar-layout" class:one-column={!showSidebar}>
+      {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
+        <div class="empty" class:three-columns={!showSidebar}>
+          <EmptyState
+            text="You haven’t created or followed any projects yet."
+            primaryActionText="Start your first project"
+            on:primaryAction={() => {
+              modal.toggle(CreateProjectModal);
+            }}
+            secondaryActionText="Or look for a project"
+            on:secondaryAction={() => {
+              modal.toggle(SearchModal);
+            }} />
+        </div>
+      {:else}
         <ul class="grid" data-cy="project-list" class:two-columns={showSidebar}>
           {#each $profileProjectsStore.data.cloned as project}
             <li>
@@ -336,17 +346,17 @@
             </Button>
           </li>
         </ul>
-        {#if showSidebar}
-          <div class="sidebar">
-            <ProfileSidebar
-              attested={session.identity.metadata.ethereum?.address}
-              {registration}
-              {ownedOrgs}
-              urn={session.identity.urn} />
-          </div>
-        {/if}
-      </div>
-    {/if}
+      {/if}
+      {#if showSidebar}
+        <div class="sidebar">
+          <ProfileSidebar
+            attested={session.identity.metadata.ethereum?.address}
+            {registration}
+            {ownedOrgs}
+            urn={session.identity.urn} />
+        </div>
+      {/if}
+    </div>
   {:else if $profileProjectsStore.status === remote.Status.Error}
     <Error message={$profileProjectsStore.error.message} />
   {/if}
