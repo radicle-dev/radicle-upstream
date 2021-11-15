@@ -41,7 +41,7 @@ You can connect to the seed node using the handle
 
 The org node uses the following resources
 * GCE VM `org-node`
-  * 4vCPI, 8GB RAM, 50GB SSD disk
+  * 1 vCPU, 3.75GB RAM, 50GB SSD disk
 * External IP Address `org-node`
   * bound to the VM instance `org-node`
   * reachable under `seed.upstream.radicle.xyz`
@@ -165,6 +165,20 @@ END
 docker-compose --env-file upstream-production-config.env -f docker-compose.yml up --detach
 ```
 
+## seed-node development instance
+
+For upstream-seed testing and development we have another VM. To save costs, we
+start and stop it on demand whenever we need to test something.
+
+Connect to the VM via: `ssh seednode@35.228.122.189`.
+
+The org node uses the following resources
+* GCE VM `seed-node`
+  * 4 vCPUs, 4GB RAM, 50GB SSD disk
+* External IP Address `seed-node`
+  * bound to the VM instance `seed-node`
+  * reachable under `35.228.122.189`
+* Firewall rule `seed-node` to allow traffic to the `seed-node` VM.
 
 
 [do]: https://docs.docker.com/engine/install/debian
