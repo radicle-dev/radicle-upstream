@@ -155,7 +155,7 @@
       }
       registration = await getRegistration(ensName);
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({
           code: error.Code.ProjectRequestFailure,
           message: "Failed to fetch ENS registration",
