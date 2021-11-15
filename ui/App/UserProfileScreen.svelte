@@ -12,6 +12,7 @@
   import { isMaintainer, Project } from "ui/src/project";
   import * as router from "ui/src/router";
   import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
   import * as svelteStore from "ui/src/svelteStore";
   import * as ethereum from "ui/src/ethereum";
   import * as Wallet from "ui/src/wallet";
@@ -72,7 +73,7 @@
         });
       }
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({
           code: error.Code.ProjectRequestFailure,
           message: "Failed to fetch orgs for sidebar.",
@@ -88,7 +89,7 @@
       }
       registration = await getRegistration(ensName);
     } catch (err: unknown) {
-      error.show(
+      notification.showException(
         new error.Error({
           code: error.Code.ProjectRequestFailure,
           message: "Failed to fetch ENS registration",
