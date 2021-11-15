@@ -56,6 +56,19 @@
       }
     }
   }
+
+  function verifyImgUrl(image_url: string): string {
+    const http = new XMLHttpRequest();
+
+    http.open("HEAD", image_url, false);
+    http.send();
+
+    if (http.status !== 404) {
+      return image_url;
+    } else {
+      return `../design-system/static/img/fallback.svg`;
+    }
+  }
 </script>
 
 <style>
@@ -153,7 +166,7 @@
       class:regular={size === "regular"}
       class:large={size === "large"}
       class:huge={size === "huge"}
-      src={kind.url}
+      src={verifyImgUrl(kind.url)}
       alt="user-avatar" />
   {:else if kind.type === "orgImage"}
     <img
@@ -162,7 +175,7 @@
       class:regular={size === "regular"}
       class:large={size === "large"}
       class:huge={size === "huge"}
-      src={kind.url}
+      src={verifyImgUrl(kind.url)}
       alt="user-avatar" />
   {:else if kind.type === "userEmoji"}
     <div
