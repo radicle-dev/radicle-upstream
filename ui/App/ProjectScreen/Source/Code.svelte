@@ -31,67 +31,51 @@
 </script>
 
 <style>
-  .center-content {
+  .container {
     margin: 0 auto;
     max-width: var(--content-max-width);
     min-width: var(--content-min-width);
-  }
 
-  .container {
     display: flex;
-    width: inherit;
-    margin-bottom: 4rem;
-    padding: 0 var(--content-padding);
-  }
-
-  .column-left {
-    display: flex;
-    flex-direction: column;
-    padding-right: 0.75rem;
-  }
-
-  .column-right {
-    display: flex;
-    flex-direction: column;
-    padding-left: 0.75rem;
-    min-width: var(--content-min-width);
-    width: 100%;
+    padding: 0 var(--content-padding) 4rem;
+    gap: 1.5rem;
   }
 
   .source-tree {
     overflow-x: auto;
     width: 18rem;
+    flex-shrink: 0;
+  }
+
+  .file-content {
+    flex-grow: 1;
   }
 </style>
 
-<div class="wrapper">
-  <div class="container center-content">
-    <Remote
-      {store}
-      let:data={{ code, peer, project, selectedPath, selectedRevision, tree }}>
-      <div class="column-left">
-        <div class="source-tree" data-cy="source-tree">
-          <Tree
-            fetchTree={path =>
-              proxy.client.source.treeGet({
-                projectUrn: project.urn,
-                peerId: peer.peerId,
-                revision: selectedRevision.selected,
-                prefix: path,
-              })}
-            on:select={onSelectPath}
-            {selectedPath}
-            {selectedRevision}
-            {tree} />
-        </div>
-      </div>
-      <div class="column-right">
-        <FileView
-          {code}
-          {tree}
-          on:commit={({ detail: sha1 }) => onSelectCommit(project.urn, sha1)}
-          on:root={onSelectRoot} />
-      </div>
-    </Remote>
-  </div>
+<div class="container">
+  <Remote
+    {store}
+    let:data={{ code, peer, project, selectedPath, selectedRevision, tree }}>
+    <div class="source-tree" data-cy="source-tree">
+      <Tree
+        fetchTree={path =>
+          proxy.client.source.treeGet({
+            projectUrn: project.urn,
+            peerId: peer.peerId,
+            revision: selectedRevision.selected,
+            prefix: path,
+          })}
+        on:select={onSelectPath}
+        {selectedPath}
+        {selectedRevision}
+        {tree} />
+    </div>
+    <div class="file-content">
+      <FileView
+        {code}
+        {tree}
+        on:commit={({ detail: sha1 }) => onSelectCommit(project.urn, sha1)}
+        on:root={onSelectRoot} />
+    </div>
+  </Remote>
 </div>
