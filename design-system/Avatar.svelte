@@ -28,6 +28,14 @@
 
   export let size: "small" | "regular" | "large" | "huge" = "regular";
 
+  let imageError = false;
+
+  $: {
+    // Create dependency on `kind`.
+    kind;
+    imageError = false;
+  }
+
   // TODO: memoize this because we call it twice for each emoji component.
   function emojiAvatar(kind: EmojiKind): {
     emoji: string;
@@ -55,15 +63,6 @@
         };
       }
     }
-  }
-
-  function validImgUrl(image_url: string): boolean {
-    const http = new XMLHttpRequest();
-
-    http.open("HEAD", image_url, false);
-    http.send();
-
-    return http.status !== 404;
   }
 </script>
 
@@ -156,7 +155,7 @@
   class:huge={size === "huge"}
   {style}>
   {#if kind.type === "userImage"}
-    {#if validImgUrl(kind.url)}
+    {#if !imageError}
       <img
         class="avatar circle"
         class:small={size === "small"}
@@ -164,6 +163,9 @@
         class:large={size === "large"}
         class:huge={size === "huge"}
         src={kind.url}
+        on:error={() => {
+          imageError = true;
+        }}
         alt="user-avatar" />
     {:else}
       <div
@@ -177,7 +179,7 @@
         data-cy="user-avatar" />
     {/if}
   {:else if kind.type === "orgImage"}
-    {#if validImgUrl(kind.url)}
+    {#if !imageError}
       <img
         class="avatar square"
         class:small={size === "small"}
@@ -185,6 +187,9 @@
         class:large={size === "large"}
         class:huge={size === "huge"}
         src={kind.url}
+        on:error={() => {
+          imageError = true;
+        }}
         alt="user-avatar" />
     {:else}
       <div
