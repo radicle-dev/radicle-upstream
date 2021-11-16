@@ -60,7 +60,7 @@
     }
   }
 
-  function blockyBg(urn: string) {
+  function blockyDataUri(urn: string) {
     return createIcon({
       seed: urn.toLowerCase(),
       size: 8,
@@ -164,8 +164,8 @@
       class:regular={size === "regular"}
       class:large={size === "large"}
       class:huge={size === "huge"}
-      src={blockyBg(kind.uniqueIdentifier)}
-      alt="user-blocky" />
+      src={blockyDataUri(kind.uniqueIdentifier)}
+      alt="user-avatar" />
   {:else if kind.type === "orgBlocky"}
     <img
       class="avatar square"
@@ -173,8 +173,8 @@
       class:regular={size === "regular"}
       class:large={size === "large"}
       class:huge={size === "huge"}
-      src={blockyBg(kind.uniqueIdentifier)}
-      alt="org-blocky" />
+      src={blockyDataUri(kind.uniqueIdentifier)}
+      alt="user-avatar" />
   {:else if kind.type === "userImage"}
     <img
       class="avatar circle"
