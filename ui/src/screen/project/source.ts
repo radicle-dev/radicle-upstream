@@ -12,7 +12,6 @@ import { derived, get, writable } from "svelte/store";
 import * as appearance from "ui/src/appearance";
 import * as error from "ui/src/error";
 import * as localPeer from "ui/src/localPeer";
-import * as notification from "ui/src/notification";
 import * as patch from "ui/src/project/patch";
 import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
@@ -272,38 +271,6 @@ export const selectRevision = async (
       });
     } catch (err: unknown) {
       screenStore.error(error.fromUnknown(err));
-    }
-  }
-};
-
-const commitStore = remote.createStore<source.Commit>();
-export const commit = commitStore.readable;
-
-export const fetchCommit = async (sha1: string): Promise<void> => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const {
-      data: { project },
-    } = screen;
-
-    try {
-      commitStore.success(
-        await proxy.client.source.commitGet({ projectUrn: project.urn, sha1 })
-      );
-    } catch (err: unknown) {
-      const e = error.fromUnknown(err);
-      if (e.message.match("object not found")) {
-        commitStore.error(e);
-      } else {
-        notification.showException(
-          new error.Error({
-            code: error.Code.CommitFetchFailure,
-            message: "Could not fetch commit",
-            source: err,
-          })
-        );
-      }
     }
   }
 };

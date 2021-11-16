@@ -8,12 +8,16 @@
 <script lang="ts">
   import type * as project from "ui/src/project";
 
-  import { commit, fetchCommit } from "ui/src/screen/project/source";
-  import { formatCommitTime } from "ui/src/source";
-  import * as remote from "ui/src/remote";
+  import { formatCommitTime, Commit } from "ui/src/source";
+  import * as error from "ui/src/error";
+  import * as notification from "ui/src/notification";
+  import * as proxy from "ui/src/proxy";
   import * as router from "ui/src/router";
+  import { unreachable } from "ui/src/unreachable";
+  import * as mutexExecutor from "ui/src/mutexExecutor";
 
   import BranchIcon from "design-system/icons/Branch.svelte";
+  import Loading from "design-system/Loading.svelte";
 
   import AnchorCard from "./AnchorCard.svelte";
   import BackButton from "../BackButton.svelte";
@@ -21,10 +25,47 @@
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
+  export let projectUrn: string;
   export let commitHash: string;
   export let anchors: project.ConfirmedAnchor[];
 
-  fetchCommit(commitHash);
+  let commitResult:
+    | { type: "loading" }
+    | { type: "error" }
+    | { type: "ok"; commit: Commit } = { type: "loading" };
+
+  const commitLoader = mutexExecutor.create();
+
+  $: {
+    loadCommit(commitHash, projectUrn);
+  }
+
+  async function loadCommit(
+    commitId: string,
+    projectUrn: string
+  ): Promise<void> {
+    commitResult = { type: "loading" };
+    try {
+      const commit = await commitLoader.run(abort =>
+        proxy.client.source.commitGet({ projectUrn, sha1: commitId }, { abort })
+      );
+      if (commit) {
+        commitResult = { type: "ok", commit };
+      }
+    } catch (err: unknown) {
+      commitResult = { type: "error" };
+      const e = error.fromUnknown(err);
+      if (!e.message.match("object not found")) {
+        notification.showException(
+          new error.Error({
+            code: error.Code.CommitFetchFailure,
+            message: "Could not fetch commit",
+            source: err,
+          })
+        );
+      }
+    }
+  }
 </script>
 
 <style>
@@ -72,37 +113,50 @@
     border-top: 1px solid var(--color-foreground-level-3);
     margin: 1rem 0 1.5rem 0;
   }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - var(--bigheader-height) - var(--topbar-height));
+  }
 </style>
 
 <div class="commit-page" data-cy="commit-page">
-  {#if $commit.status === remote.Status.Success}
+  {#if commitResult.type === "loading"}
+    <div class="loading-container">
+      <Loading />
+    </div>
+  {:else if commitResult.type === "ok"}
     <BackButton
       style="padding: 1rem; z-index: 0;"
       on:arrowClick={() => router.pop()}>
-      <h3 style="margin-bottom: .75rem">{$commit.data.header.summary}</h3>
+      <h3 style="margin-bottom: .75rem">
+        {commitResult.commit.header.summary}
+      </h3>
       <div>
         <span class="field">
           <!-- NOTE(cloudhead): These awful margin hacks are here because
             there is a bug in prettier that breaks our HTML if we try to format
             it differently. -->
-          <span>{$commit.data.header.author.name}</span>
+          <span>{commitResult.commit.header.author.name}</span>
           <span>committed</span>
           <CopyableIdentifier
             style="display: inline-block;"
             kind="commitHash"
-            value={$commit.data.header.sha1} />
-          {#if $commit.data.branches.length > 0}
+            value={commitResult.commit.header.sha1} />
+          {#if commitResult.commit.branches.length > 0}
             <span style="margin-right: -1ch">to</span>
             <span class="branch typo-semi-bold">
               <BranchIcon
                 style="vertical-align: bottom; fill:
                 var(--color-foreground-level-6)" />
               <span data-cy="commit-branch" style="margin-left: -0.5ch"
-                >{$commit.data.branches[0]}</span>
+                >{commitResult.commit.branches[0]}</span>
             </span>
           {/if}
           <span style="margin-left: -0.5ch">
-            {formatCommitTime($commit.data.header.committerTime)}
+            {formatCommitTime(commitResult.commit.header.committerTime)}
           </span>
         </span>
       </div>
@@ -111,12 +165,12 @@
       <pre
         class="typo-mono"
         style="margin-bottom: 1rem">
-        {$commit.data.header.summary}
+        {commitResult.commit.header.summary}
       </pre>
       <pre
         class="description"
         style="margin-bottom: 1rem">
-        {$commit.data.header.description}
+        {commitResult.commit.header.description}
       </pre>
       <hr />
       <div class="context">
@@ -124,19 +178,19 @@
           <span class="field">
             Authored by
             <span class="author typo-semi-bold">
-              {$commit.data.header.author.name}
+              {commitResult.commit.header.author.name}
             </span>
             <span class="typo-mono"
-              >&lt;{$commit.data.header.author.email}&gt;</span>
+              >&lt;{commitResult.commit.header.author.email}&gt;</span>
           </span>
-          {#if $commit.data.header.committer.email !== $commit.data.header.author.email}
+          {#if commitResult.commit.header.committer.email !== commitResult.commit.header.author.email}
             <span class="field">
               Committed by
               <span class="author typo-semi-bold">
-                {$commit.data.header.committer.name}
+                {commitResult.commit.header.committer.name}
               </span>
               <span class="typo-mono">
-                &lt;{$commit.data.header.committer.email}&gt;
+                &lt;{commitResult.commit.header.committer.email}&gt;
               </span>
             </span>
           {/if}
@@ -148,7 +202,7 @@
             tooltipPosition="left"
             style="display: inline-block;"
             kind="commitHash"
-            value={$commit.data.header.sha1} />
+            value={commitResult.commit.header.sha1} />
         </span>
       </div>
     </div>
@@ -158,14 +212,18 @@
     {/each}
 
     <main>
-      <Changeset diff={$commit.data.diff} stats={$commit.data.stats} />
+      <Changeset
+        diff={commitResult.commit.diff}
+        stats={commitResult.commit.stats} />
     </main>
-  {:else if $commit.status === remote.Status.Error}
+  {:else if commitResult.type === "error"}
     <EmptyState emoji="🦤">
       Commit <CopyableIdentifier
         kind="commitHash"
         value={commitHash}
         style="display: inline-block;" /> isn’t replicated yet.
     </EmptyState>
+  {:else}
+    {unreachable(commitResult)}
   {/if}
 </div>

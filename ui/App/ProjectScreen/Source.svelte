@@ -243,6 +243,7 @@
     </div>
   {:else if activeView.type === "commit"}
     <CommitTab
+      projectUrn={$store.data.project.urn}
       commitHash={activeView.commitHash}
       anchors={anchors.filter(anchor => {
         return (
