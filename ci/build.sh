@@ -28,7 +28,6 @@ time cargo fmt --all -- --check
 log-group-end
 
 log-group-start "cargo clippy"
-cargo clippy --all --all-targets -- --deny warnings
 cargo clippy --all --all-targets --all-features -- --deny warnings
 log-group-end
 

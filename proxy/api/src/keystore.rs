@@ -62,7 +62,6 @@ pub fn file(paths: Paths) -> impl Keystore + Send + Sync {
 /// encrpytion parameters.
 ///
 /// The key file is named `librad.key` and located under in the `paths` key directory.
-#[cfg(feature = "unsafe-fast-keystore")]
 #[must_use]
 pub fn unsafe_fast_file(paths: Paths) -> impl Keystore + Send + Sync {
     FileStore {

@@ -32,7 +32,6 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     let mut service_manager = service::Manager::new(service::EnvironmentConfig {
         test_mode: args.test,
         insecure_http_api: args.insecure_http_api,
-        #[cfg(feature = "unsafe-fast-keystore")]
         unsafe_fast_keystore: args.unsafe_fast_keystore,
     })?;
 

@@ -11,11 +11,6 @@ keywords = [ "radicle", "upstream", "proxy", "git" ]
 repository = "git@github.com:radicle-dev/radicle-upstream.git"
 default-run = "radicle-proxy"
 
-[features]
-# Enables the option to use fast but unsafe encryption and decryption
-# of the key stored on disk.
-unsafe-fast-keystore = []
-
 [dependencies]
 anyhow = "1.0"
 async-stream = "0.3"

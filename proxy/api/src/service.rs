@@ -39,7 +39,6 @@ pub struct EnvironmentConfig {
     pub test_mode: bool,
 
     /// If `true`, then fast but unsafe encryption parameters are used for the keystore.
-    #[cfg(feature = "unsafe-fast-keystore")]
     pub unsafe_fast_keystore: bool,
 
     /// If `true`, the HTTP api will accept any request without checking the auth token.
@@ -72,10 +71,6 @@ impl Environment {
             (None, coco_profile)
         };
 
-        #[cfg(not(feature = "unsafe-fast-keystore"))]
-        let keystore = Arc::new(keystore::file(coco_profile.paths().clone()));
-
-        #[cfg(feature = "unsafe-fast-keystore")]
         let keystore: Arc<dyn keystore::Keystore + Send + Sync> = if config.unsafe_fast_keystore {
             Arc::new(keystore::unsafe_fast_file(coco_profile.paths().clone()))
         } else {

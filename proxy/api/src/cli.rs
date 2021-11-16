@@ -41,7 +41,6 @@ pub struct Args {
     pub key_passphrase: Option<String>,
 
     /// Enables fast but unsafe encryption of the keystore for development builds
-    #[cfg(feature = "unsafe-fast-keystore")]
     #[structopt(long)]
     pub unsafe_fast_keystore: bool,
 
