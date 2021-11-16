@@ -16,6 +16,7 @@
     removePeer,
     store,
   } from "ui/src/screen/project";
+  import * as remote from "ui/src/remote";
 
   import Button from "design-system/Button.svelte";
   import List from "design-system/List.svelte";
@@ -49,11 +50,15 @@
   };
 
   // Don't show our own peer in the list unless we have published something.
-  const filteredPeers = (peers: [User]) => {
+  const filteredPeers = (peers: User[]) => {
     return peers.filter(peer => {
       return !(peer.type === PeerType.Local && peer.role === PeerRole.Tracker);
     });
   };
+
+  function bindSubmitPeer(urn: string): () => void {
+    return () => submitPeer(urn);
+  }
 </script>
 
 <style>
@@ -73,7 +78,7 @@
   }
 </style>
 
-<Remote {store} let:data={{ peerSelection, project }}>
+{#if $store.status === remote.Status.Success}
   <Modal dataCy="remotes-modal" emoji="💻" title="Edit remotes">
     <svelte:fragment slot="description">
       Add a user’s Device ID to collaborate with them on this project.
@@ -91,7 +96,7 @@
           dataCy="follow-button"
           style="display: flex; align-self: flex-start;"
           disabled={!newPeer}
-          on:click={() => submitPeer(project.urn)}>
+          on:click={bindSubmitPeer($store.data.project.urn)}>
           Add
         </Button>
       </div>
@@ -100,7 +105,7 @@
     <List
       dataCy="followed-peers"
       key="peerId"
-      items={filteredPeers(peerSelection)}
+      items={filteredPeers($store.data.peerSelection)}
       let:item={peer}
       styleHoverState={false}
       style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
@@ -109,7 +114,7 @@
         on:unfollow={event => {
           unfollowPeer(event.detail.projectUrn, event.detail.peerId);
         }}
-        projectUrn={project.urn} />
+        projectUrn={$store.data.project.urn} />
     </List>
 
     <Remote store={pendingPeers} let:data>
@@ -136,8 +141,8 @@
           on:cancel={event => {
             cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
           }}
-          projectUrn={project.urn} />
+          projectUrn={$store.data.project.urn} />
       </List>
     </Remote>
   </Modal>
-</Remote>
+{/if}
