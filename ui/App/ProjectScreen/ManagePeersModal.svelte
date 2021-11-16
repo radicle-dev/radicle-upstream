@@ -7,23 +7,26 @@
 -->
 <script lang="ts">
   import type { PeerId } from "ui/src/identity";
-  import { PeerType, PeerRole } from "ui/src/project";
+  import {
+    PeerType,
+    PeerRole,
+    PeerReplicationStatusType,
+  } from "ui/src/project";
   import type { User } from "ui/src/project";
   import {
     addPeer,
-    pendingPeers,
     peerValidation,
     removePeer,
     store,
   } from "ui/src/screen/project";
   import * as remote from "ui/src/remote";
+  import * as svelteStore from "svelte/store";
 
   import Button from "design-system/Button.svelte";
   import List from "design-system/List.svelte";
   import TextInput from "design-system/TextInput.svelte";
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
-  import Remote from "ui/App/SharedComponents/Remote.svelte";
   import Peer from "./ManagePeers/Peer.svelte";
   import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
 
@@ -55,6 +58,16 @@
       return !(peer.type === PeerType.Local && peer.role === PeerRole.Tracker);
     });
   };
+
+  const pendingPeers = svelteStore.derived(store, remoteData => {
+    if (remoteData.status === remote.Status.Success) {
+      return remoteData.data.peers.filter(
+        peer => peer.status.type === PeerReplicationStatusType.NotReplicated
+      );
+    } else {
+      return [];
+    }
+  });
 
   function bindSubmitPeer(urn: string): () => void {
     return () => submitPeer(urn);
@@ -117,32 +130,30 @@
         projectUrn={$store.data.project.urn} />
     </List>
 
-    <Remote store={pendingPeers} let:data>
-      {#if data.peers.length > 0}
-        <div style="display: flex; width: 100%; margin-top: 1.5rem;">
-          <p class="typo-text-bold">Still looking…</p>
-          <p
-            class="typo-text"
-            style="margin-left: 0.5rem; color: var(--color-foreground-level-6);">
-            These remotes haven’t been found yet.
-          </p>
-        </div>
-      {/if}
+    {#if $pendingPeers.length > 0}
+      <div style="display: flex; width: 100%; margin-top: 1.5rem;">
+        <p class="typo-text-bold">Still looking…</p>
+        <p
+          class="typo-text"
+          style="margin-left: 0.5rem; color: var(--color-foreground-level-6);">
+          These remotes haven’t been found yet.
+        </p>
+      </div>
+    {/if}
 
-      <List
-        dataCy="pending-peers"
-        key="peerId"
-        items={data.peers}
-        let:item={peer}
-        styleHoverState={false}
-        style="width: 100%; margin: 1rem 0 0; padding: 0;">
-        <PeerFollowRequest
-          {peer}
-          on:cancel={event => {
-            cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
-          }}
-          projectUrn={$store.data.project.urn} />
-      </List>
-    </Remote>
+    <List
+      dataCy="pending-peers"
+      key="peerId"
+      items={$pendingPeers}
+      let:item={peer}
+      styleHoverState={false}
+      style="width: 100%; margin: 1rem 0 0; padding: 0;">
+      <PeerFollowRequest
+        {peer}
+        on:cancel={event => {
+          cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
+        }}
+        projectUrn={$store.data.project.urn} />
+    </List>
   </Modal>
 {/if}

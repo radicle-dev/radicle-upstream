@@ -6,7 +6,7 @@
 
 import type { PeerId } from "ui/src/identity";
 
-import { get, derived, Readable } from "svelte/store";
+import { get } from "svelte/store";
 
 import * as error from "ui/src/error";
 import * as mutexExecutor from "ui/src/mutexExecutor";
@@ -82,26 +82,6 @@ export const selectPeer = (peer: project.User): void => {
     }
   }
 };
-
-export const pendingPeers: Readable<
-  remote.Data<{
-    peers: project.Peer[];
-  }>
-> = derived(screenStore, (store): remote.Data<{ peers: project.Peer[] }> => {
-  if (store.status === remote.Status.Success) {
-    const peers = store.data.peers.filter(
-      peer =>
-        peer.status.type === project.PeerReplicationStatusType.NotReplicated
-    );
-
-    return {
-      status: remote.Status.Success,
-      data: { peers },
-    };
-  } else {
-    return store;
-  }
-});
 
 export const trackPeer = (projectUrn: string, peerId: PeerId): void => {
   proxy.client.project
