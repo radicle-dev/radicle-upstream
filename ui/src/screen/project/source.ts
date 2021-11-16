@@ -16,7 +16,6 @@ import * as notification from "ui/src/notification";
 import * as patch from "ui/src/project/patch";
 import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
-import * as router from "ui/src/router";
 import * as source from "ui/src/source";
 
 export enum ViewKind {
@@ -306,24 +305,6 @@ export const fetchCommit = async (sha1: string): Promise<void> => {
         );
       }
     }
-  }
-};
-
-export const selectCommit = (commit: source.CommitHeader): void => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const {
-      data: { project },
-    } = screen;
-
-    router.push({
-      type: "project",
-      params: {
-        urn: project.urn,
-        activeView: { type: "commit", commitHash: commit.sha1 },
-      },
-    });
   }
 };
 

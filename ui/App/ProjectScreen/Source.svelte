@@ -43,10 +43,10 @@
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
   import PatchButton from "./Source/PatchButton.svelte";
+  import History from "./Source/SourceBrowser/History.svelte";
 
   import Anchors from "./Source/Anchors.svelte";
   import CommitTab from "./Source/Commit.svelte";
-  import CommitsTab from "./Source/Commits.svelte";
   import FilesTab from "./Source/Code.svelte";
   import Patch from "./Source/Patch.svelte";
   import PatchList from "./Source/PatchList.svelte";
@@ -198,6 +198,13 @@
     align-items: center;
     height: calc(100vh - var(--bigheader-height));
   }
+
+  .commits-page {
+    margin: 0 auto 6rem;
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+    padding: 2rem var(--content-padding) 0;
+  }
 </style>
 
 {#if $store.status === remote.Status.Success}
@@ -231,7 +238,9 @@
   {#if activeView.type === "files"}
     <FilesTab />
   {:else if activeView.type === "commits"}
-    <CommitsTab />
+    <div class="commits-page" data-cy="commits-page">
+      <History projectUrn={project.urn} history={$store.data.history} />
+    </div>
   {:else if activeView.type === "commit"}
     <CommitTab
       commitHash={activeView.commitHash}

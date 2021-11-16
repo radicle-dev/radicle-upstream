@@ -10,7 +10,6 @@
   import { isMaintainer } from "ui/src/project";
   import type { Project } from "ui/src/project";
   import type { UnsealedSession } from "ui/src/session";
-  import { selectCommit } from "ui/src/screen/project/source";
   import type { GroupedCommitsHistory } from "ui/src/source";
   import type { Patch } from "ui/src/project/patch";
 
@@ -121,5 +120,5 @@
       {/if}
     </div>
   </div>
-  <History history={commits} on:select={event => selectCommit(event.detail)} />
+  <History projectUrn={project.urn} history={commits} />
 </div>
