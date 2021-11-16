@@ -110,7 +110,9 @@
   let peerSelectorExpanded: boolean = false;
 </script>
 
-<ScreenLayout dataCy="project-screen" contentStyle="padding: 0 0 1rem 0;">
+<ScreenLayout
+  dataCy="project-screen"
+  contentStyle="padding: 0 0 1rem 0; max-width: 100%;">
   <div slot="header" style="display: flex">
     {#if $store.status === remote.Status.Success}
       <ProjectHeader
