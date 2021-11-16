@@ -57,17 +57,13 @@
     }
   }
 
-  function verifyImgUrl(image_url: string): string {
+  function validImgUrl(image_url: string): boolean {
     const http = new XMLHttpRequest();
 
     http.open("HEAD", image_url, false);
     http.send();
 
-    if (http.status !== 404) {
-      return image_url;
-    } else {
-      return `../design-system/static/img/fallback.svg`;
-    }
+    return http.status !== 404;
   }
 </script>
 
@@ -160,23 +156,45 @@
   class:huge={size === "huge"}
   {style}>
   {#if kind.type === "userImage"}
-    <img
-      class="avatar circle"
-      class:small={size === "small"}
-      class:regular={size === "regular"}
-      class:large={size === "large"}
-      class:huge={size === "huge"}
-      src={verifyImgUrl(kind.url)}
-      alt="user-avatar" />
+    {#if validImgUrl(kind.url)}
+      <img
+        class="avatar circle"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        src={kind.url}
+        alt="user-avatar" />
+    {:else}
+      <div
+        class="avatar circle"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        style="background-color: var(--color-foreground-level-3);"
+        data-cy="user-avatar" />
+    {/if}
   {:else if kind.type === "orgImage"}
-    <img
-      class="avatar square"
-      class:small={size === "small"}
-      class:regular={size === "regular"}
-      class:large={size === "large"}
-      class:huge={size === "huge"}
-      src={verifyImgUrl(kind.url)}
-      alt="user-avatar" />
+    {#if validImgUrl(kind.url)}
+      <img
+        class="avatar square"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        src={kind.url}
+        alt="user-avatar" />
+    {:else}
+      <div
+        class="avatar square"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        style="background-color: var(--color-foreground-level-3);"
+        data-cy="user-avatar" />
+    {/if}
   {:else if kind.type === "userEmoji"}
     <div
       class="avatar circle"
