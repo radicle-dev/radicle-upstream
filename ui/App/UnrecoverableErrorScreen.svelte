@@ -63,7 +63,9 @@
 
   .content {
     height: 100%;
-    padding: 5rem;
+    max-width: var(--content-max-width);
+    min-width: var(--content-min-width);
+    padding: 0 var(--content-padding) 1rem;
 
     display: flex;
     justify-content: center;
@@ -75,8 +77,8 @@
   .proxy-log-container {
     background: #e3e3ff;
 
-    max-width: 100%;
-    min-width: 40em;
+    max-width: -webkit-fill-available;
+    min-width: var(--content-min-width);
     max-height: 20vh;
     overflow: scroll;
 
@@ -91,8 +93,6 @@
     font-size: 14px;
     white-space: pre-wrap;
     line-height: 1.4;
-
-    max-width: 100%;
   }
 </style>
 

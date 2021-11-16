@@ -223,8 +223,8 @@
     </div>
   {:else if state === "error"}
     <EmptyState
-      emoji="😬"
-      text="Failed to load the orgs."
+      emoji="🌴"
+      text="Orgs aren't loading at the moment. Take a break!"
       primaryActionText="Try again"
       on:primaryAction={loadScreen} />
   {:else}

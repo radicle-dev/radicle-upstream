@@ -31,6 +31,14 @@
 
   export let size: "small" | "regular" | "large" | "huge" = "regular";
 
+  let imageError = false;
+
+  $: {
+    // Create dependency on `kind`.
+    kind;
+    imageError = false;
+  }
+
   // TODO: memoize this because we call it twice for each emoji component.
   function emojiAvatar(kind: EmojiKind): {
     emoji: string;
@@ -176,23 +184,53 @@
       src={blockyDataUri(kind.uniqueIdentifier)}
       alt="user-avatar" />
   {:else if kind.type === "userImage"}
-    <img
-      class="avatar circle"
-      class:small={size === "small"}
-      class:regular={size === "regular"}
-      class:large={size === "large"}
-      class:huge={size === "huge"}
-      src={kind.url}
-      alt="user-avatar" />
+    {#if !imageError}
+      <img
+        class="avatar circle"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        src={kind.url}
+        on:error={() => {
+          imageError = true;
+        }}
+        alt="user-avatar" />
+    {:else}
+      <div
+        class="avatar circle"
+        title="Image could not be loaded"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        style="background-color: var(--color-foreground-level-3);"
+        data-cy="user-avatar" />
+    {/if}
   {:else if kind.type === "orgImage"}
-    <img
-      class="avatar square"
-      class:small={size === "small"}
-      class:regular={size === "regular"}
-      class:large={size === "large"}
-      class:huge={size === "huge"}
-      src={kind.url}
-      alt="user-avatar" />
+    {#if !imageError}
+      <img
+        class="avatar square"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        src={kind.url}
+        on:error={() => {
+          imageError = true;
+        }}
+        alt="user-avatar" />
+    {:else}
+      <div
+        class="avatar square"
+        title="Image could not be loaded"
+        class:small={size === "small"}
+        class:regular={size === "regular"}
+        class:large={size === "large"}
+        class:huge={size === "huge"}
+        style="background-color: var(--color-foreground-level-3);"
+        data-cy="user-avatar" />
+    {/if}
   {:else if kind.type === "userEmoji"}
     <div
       class="avatar circle"
