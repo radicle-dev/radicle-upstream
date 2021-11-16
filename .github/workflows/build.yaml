@@ -42,7 +42,7 @@ jobs:
             cypress/workspace/test-tmp/*/combined-node.log
   build-macos:
     runs-on: macos-11
-    if: github.event.pull_request || github.ref == 'refs/heads/master'
+    if: github.event.pull_request || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@master
       - name: Cache Yarn

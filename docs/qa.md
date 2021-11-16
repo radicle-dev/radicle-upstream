@@ -85,4 +85,4 @@ git config --global user.email "email@example.com"
 
 [ln]: https://releases.radicle.xyz/radicle-upstream-X.X.X-rc.AppImage
 [mc]: https://releases.radicle.xyz/radicle-upstream-X.X.X-rc.dmg
-[rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/master/scripts/reset-state.sh
+[rs]: https://raw.githubusercontent.com/radicle-dev/radicle-upstream/main/scripts/reset-state.sh

@@ -33,39 +33,39 @@ source ./scripts/env
 
 Make sure to source the script from the repository root.
 
-## Merging changes into master
+## Merging changes into main branch
 
-Maintainers are responsible for adding contribution to the `master` branch on
+Maintainers are responsible for adding contribution to the `main` branch on
 the command line. We avoid the Github UI for merging changes. See the [Licensing
 and DCO RFC][dco-rfc] for background on this.
 
-We require commits on master to be [signed with GPG][commit-sign-gpg].
+We require commits on `main` to be [signed with GPG][commit-sign-gpg].
 
-After successful review, Github pull requests can be merged to `master` in two
+After successful review, Github pull requests can be merged to `main` in two
 ways with a fast-forward merge being preferred.
 
 ### Fast-forward merge (preferred)
 
-1. Rebase the pull request branch onto `master` and push it. The pull request
-   branch must be only one commit ahead of master and the commit must be
+1. Rebase the pull request branch onto `main` and push it. The pull request
+   branch must be only one commit ahead of main and the commit must be
    GPG-signed.
 2. Wait for CI to pass
-3. Check out master and merge the feature branch with
+3. Check out main and merge the feature branch with
 
    ```bash
-   git checkout master
+   git checkout main
    git merge --ff origin/feature-branch
    git push
    ```
 
-If `master` has been updated since the rebase you need to repeat the steps.
+If `main` has been updated since the rebase you need to repeat the steps.
 
 ### Squash merge
 
 You can squash merge a branch with
 
 ```bash
-git checkout master
+git checkout main
 git merge --squash --signoff <branch-name>
 git push
 ```
@@ -85,7 +85,7 @@ linting and formatting are enforced locally on a pre-commit basis with
 [husky][hu] and [lint-staged][ls].
 
 Additionally we run the same checks as separate build steps on our CI, just to
-make sure only properly formatted and lint-free code lands into master.
+make sure only properly formatted and lint-free code lands into main.
 
 ### Running tests
 
@@ -496,16 +496,16 @@ All Github access tokens _must_ have the `public_repo` scope.
        brew bump-cask-pr --version X.Y.Z radicle-upstream
        ```
 
-4. Finish the release by merging the release candidate branch into master.
+4. Finish the release by merging the release candidate branch into main.
 
     ```bash
-    git checkout master
+    git checkout main
     git pull --ff-only
     git merge release-candidate/vX.Y.Z --signoff
     git push
     ```
 
-    Merging may produce a merge commit on `master` instead of fast-forwarding.
+    Merging may produce a merge commit on `main` instead of fast-forwarding.
     This is ok for release candidate branches.
 
 [an]: #apple-notarization

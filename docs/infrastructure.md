@@ -30,7 +30,7 @@ Infrastructure for storing public build artifacts at predictable locations
 
 The storage bucket uses the following schema to store artifacts.
 * `v1/by-commit/<commit-sha>/...` for artifacts build from a certain commit.
-* `v1/master/...` for artifacts build from the `master` branch.
+* `v1/main/...` for artifacts build from the `main` branch.
 
 ## Upstream Org Seed Node
 

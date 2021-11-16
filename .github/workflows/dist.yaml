@@ -2,7 +2,7 @@ name: dist
 on:
   push:
     branches:
-    - master
+    - main
     - release-candidate/**
 
 jobs:
@@ -95,11 +95,11 @@ jobs:
           destination: radicle-upstream-build-artifacts/v1/by-commit/${{ github.sha }}
           credentials: ${{ secrets.GCP_SECRET_KEY }}
           parent: false
-      - name: publish master artifacts
-        if: ${{ github.ref == 'refs/heads/master' }}
+      - name: publish main artifacts
+        if: ${{ github.ref == 'refs/heads/main' }}
         uses: google-github-actions/upload-cloud-storage@v0.4.0
         with:
           path: dist
-          destination: radicle-upstream-build-artifacts/v1/master/
+          destination: radicle-upstream-build-artifacts/v1/main/
           credentials: ${{ secrets.GCP_SECRET_KEY }}
           parent: false

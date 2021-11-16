@@ -82,7 +82,7 @@ const createRc: yargs.CommandModule<unknown, StartOptions> = {
         required: true,
       })
       .positional("revision", {
-        default: "origin/master",
+        default: "origin/main",
         describe: "The git revision to start the release from",
       });
   },
