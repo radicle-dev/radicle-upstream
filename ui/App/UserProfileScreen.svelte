@@ -11,8 +11,6 @@
 
   import { isMaintainer, Project } from "ui/src/project";
   import * as router from "ui/src/router";
-  import * as error from "ui/src/error";
-  import * as notification from "ui/src/notification";
   import * as svelteStore from "ui/src/svelteStore";
   import * as ethereum from "ui/src/ethereum";
   import * as Wallet from "ui/src/wallet";
@@ -52,54 +50,34 @@
 
   async function loadSidebarData(): Promise<void> {
     const address = user.metadata.ethereum?.address;
-    console.log(user);
     if (!address) {
       return;
     }
 
-    try {
-      const gnosisSafeWallets = await Safe.getSafesByOwner(
-        wallet.environment,
-        address
-      );
-      ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
-      if (ownedOrgs) {
-        ownedOrgs.map(async org => {
-          const registration = await getCachedRegistrationByAddress(org.id);
-          if (registration) {
-            org.registration = registration;
-          }
-          return org;
-        });
-      }
-    } catch (err: unknown) {
-      notification.showException(
-        new error.Error({
-          code: error.Code.ProjectRequestFailure,
-          message: "Failed to fetch orgs for sidebar.",
-          source: err,
-        })
-      );
+    const gnosisSafeWallets = await Safe.getSafesByOwner(
+      wallet.environment,
+      address
+    );
+    ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
+    if (ownedOrgs) {
+      ownedOrgs.map(async org => {
+        const registration = await getCachedRegistrationByAddress(org.id);
+        if (registration) {
+          org.registration = registration;
+        }
+        return org;
+      });
     }
 
-    try {
-      const ensName = await wallet.provider.lookupAddress(address);
-      if (!ensName) {
-        return;
-      }
-      registration = await getRegistration(ensName);
-    } catch (err: unknown) {
-      notification.showException(
-        new error.Error({
-          code: error.Code.ProjectRequestFailure,
-          message: "Failed to fetch ENS registration",
-          source: err,
-        })
-      );
+    const ensName = await wallet.provider.lookupAddress(address);
+    if (!ensName) {
+      return;
     }
+    registration = await getRegistration(ensName);
   }
 
   loadSidebarData();
+
   $: showSidebar =
     $wallet.status === Wallet.Status.Connected &&
     ethereum.supportedNetwork($ethereumEnvironment) ===
