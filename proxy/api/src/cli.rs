@@ -45,6 +45,10 @@ pub struct Args {
     #[structopt(long)]
     pub unsafe_fast_keystore: bool,
 
+    /// If `true`, the HTTP api will accept any request without checking the auth token.
+    #[structopt(long)]
+    pub insecure_http_api: bool,
+
     /// Enables more verbose logging for development
     #[structopt(long)]
     pub dev_log: bool,

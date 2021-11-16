@@ -35,6 +35,14 @@ impl Context {
         }
     }
 
+    /// Returns `true` if the HTTP api will accept any request without checking the auth token.
+    pub const fn insecure_http_api(&self) -> bool {
+        match self {
+            Self::Sealed(sealed) => sealed.insecure_http_api,
+            Self::Unsealed(unsealed) => unsealed.rest.insecure_http_api,
+        }
+    }
+
     /// Returns the [`SocketAddr`] where the HTTP API is bound to.
     pub const fn http_listen(&self) -> SocketAddr {
         match self {
@@ -179,6 +187,8 @@ pub struct Sealed {
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
+    /// If `true`, the HTTP api will accept any request without checking the auth token.
+    pub insecure_http_api: bool,
     /// Flag to run the HTTP API on the specified address:port.
     pub http_listen: SocketAddr,
     /// Default seeds that will be written to the settings kv store.
@@ -244,6 +254,7 @@ impl Unsealed {
                 rest: Sealed {
                     store,
                     test: false,
+                    insecure_http_api: true,
                     http_listen: "127.0.0.1:17246".parse().expect("Couln't parse address"),
                     default_seeds: vec![],
                     service_handle: service::Handle::dummy(),
