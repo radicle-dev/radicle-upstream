@@ -170,7 +170,7 @@
     {#if showSidebar}
       <div class="sidebar">
         <ProfileSidebar
-          attested={user.metadata.ethereum?.address}
+          attestedAddress={user.metadata.ethereum?.address}
           {registration}
           {ownedOrgs}
           urn={user.urn} />

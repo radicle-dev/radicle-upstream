@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
   import type { Project } from "ui/src/project";
+  import type { Org } from "ui/src/org";
 
   import { onDestroy } from "svelte";
   import { fade } from "svelte/transition";
@@ -19,7 +20,6 @@
   import * as ethereum from "ui/src/ethereum";
   import * as Wallet from "ui/src/wallet";
   import { getRegistration, Registration } from "ui/src/org/ensResolver";
-  import type { Org } from "ui/src/org";
   import { orgSidebarStore } from "ui/src/org";
   import * as modal from "ui/src/modal";
   import * as mutexExecutor from "ui/src/mutexExecutor";
@@ -31,7 +31,6 @@
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
   import PlusIcon from "design-system/icons/Plus.svelte";
-
   import Button from "design-system/Button.svelte";
   import FollowToggle from "design-system/FollowToggle.svelte";
 
@@ -48,7 +47,6 @@
   let registration: Registration | undefined;
   let ownedOrgs: Org[] = [];
   const ethereumEnvironment = ethereum.selectedEnvironment;
-
   const session = Session.unsealed();
 
   interface ProfileProjects {
@@ -350,7 +348,7 @@
       {#if showSidebar}
         <div class="sidebar">
           <ProfileSidebar
-            attested={session.identity.metadata.ethereum?.address}
+            attestedAddress={session.identity.metadata.ethereum?.address}
             {registration}
             {ownedOrgs}
             urn={session.identity.urn} />

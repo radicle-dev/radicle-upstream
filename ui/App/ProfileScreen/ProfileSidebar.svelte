@@ -22,7 +22,7 @@
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let urn: string;
-  export let attested: string | undefined;
+  export let attestedAddress: string | undefined;
   export let registration: Registration | undefined;
   export let ownedOrgs: Org[] = [];
 </script>
@@ -90,14 +90,14 @@
       {/each}
     </div>
   {/if}
-  {#if attested}
+  {#if attestedAddress}
     <div class="row">
       <div class="title">
         <EthIcon />
         <span class="typo-text-bold">Attested address</span>
       </div>
       <CopyableIdentifier
-        value={attested}
+        value={attestedAddress}
         kind="ethAddress"
         name="owner address"
         showIcon={false} />
