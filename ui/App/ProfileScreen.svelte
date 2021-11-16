@@ -146,24 +146,15 @@
       return;
     }
 
-    try {
-      const ensName = await wallet.provider.lookupAddress(address);
-      if (!ensName) {
-        return;
-      }
-      registration = await getRegistration(ensName);
-    } catch (err: unknown) {
-      notification.showException(
-        new error.Error({
-          code: error.Code.ProjectRequestFailure,
-          message: "Failed to fetch ENS registration",
-          source: err,
-        })
-      );
+    const ensName = await wallet.provider.lookupAddress(address);
+    if (!ensName) {
+      return;
     }
+    registration = await getRegistration(ensName);
   }
 
   loadSidebarData();
+
   $: if ($orgSidebarStore.type === "resolved") {
     ownedOrgs = $orgSidebarStore.orgs;
   }
