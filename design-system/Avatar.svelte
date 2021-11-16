@@ -168,6 +168,7 @@
     {:else}
       <div
         class="avatar circle"
+        title="Image could not be loaded"
         class:small={size === "small"}
         class:regular={size === "regular"}
         class:large={size === "large"}
@@ -188,6 +189,7 @@
     {:else}
       <div
         class="avatar square"
+        title="Image could not be loaded"
         class:small={size === "small"}
         class:regular={size === "regular"}
         class:large={size === "large"}
