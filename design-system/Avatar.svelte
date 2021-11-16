@@ -8,6 +8,7 @@
 <script lang="ts">
   import { unreachable } from "./lib/unreachable";
   import * as radicleAvatar from "radicle-avatar";
+  import { createIcon } from "./lib/blockies";
   import Emoji from "./Emoji.svelte";
 
   export let dataCy: string | undefined = undefined;
@@ -19,6 +20,8 @@
 
   type Kind =
     | EmojiKind
+    | { type: "userBlocky"; uniqueIdentifier: string }
+    | { type: "orgBlocky"; uniqueIdentifier: string }
     | { type: "userImage"; url: string }
     | { type: "orgImage"; url: string }
     | { type: "pendingOrg" }
@@ -63,6 +66,14 @@
         };
       }
     }
+  }
+
+  function blockyDataUri(urn: string) {
+    return createIcon({
+      seed: urn.toLowerCase(),
+      size: 8,
+      scale: 16,
+    }).toDataURL();
   }
 </script>
 
@@ -154,7 +165,25 @@
   class:large={size === "large"}
   class:huge={size === "huge"}
   {style}>
-  {#if kind.type === "userImage"}
+  {#if kind.type === "userBlocky"}
+    <img
+      class="avatar circle"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:large={size === "large"}
+      class:huge={size === "huge"}
+      src={blockyDataUri(kind.uniqueIdentifier)}
+      alt="user-avatar" />
+  {:else if kind.type === "orgBlocky"}
+    <img
+      class="avatar square"
+      class:small={size === "small"}
+      class:regular={size === "regular"}
+      class:large={size === "large"}
+      class:huge={size === "huge"}
+      src={blockyDataUri(kind.uniqueIdentifier)}
+      alt="user-avatar" />
+  {:else if kind.type === "userImage"}
     {#if !imageError}
       <img
         class="avatar circle"

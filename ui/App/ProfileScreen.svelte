@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
   import type { Project } from "ui/src/project";
+  import type { Org } from "ui/src/org";
 
   import { onDestroy } from "svelte";
   import { fade } from "svelte/transition";
@@ -15,6 +16,11 @@
   import * as Session from "ui/src/session";
   import * as error from "ui/src/error";
   import * as localPeer from "ui/src/localPeer";
+  import * as svelteStore from "ui/src/svelteStore";
+  import * as ethereum from "ui/src/ethereum";
+  import * as Wallet from "ui/src/wallet";
+  import { getRegistration, Registration } from "ui/src/org/ensResolver";
+  import { orgSidebarStore } from "ui/src/org";
   import * as modal from "ui/src/modal";
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as notification from "ui/src/notification";
@@ -25,7 +31,6 @@
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
   import PlusIcon from "design-system/icons/Plus.svelte";
-
   import Button from "design-system/Button.svelte";
   import FollowToggle from "design-system/FollowToggle.svelte";
 
@@ -34,10 +39,14 @@
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
+  import ProfileSidebar from "ui/App/ProfileScreen/ProfileSidebar.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
 
+  let registration: Registration | undefined;
+  let ownedOrgs: Org[] = [];
+  const ethereumEnvironment = ethereum.selectedEnvironment;
   const session = Session.unsealed();
 
   interface ProfileProjects {
@@ -126,16 +135,73 @@
   }
 
   let showRequests: boolean = false;
-
   showNotificationsForFailedProjects();
+
+  const wallet = svelteStore.get(Wallet.store);
+
+  async function loadSidebarData(): Promise<void> {
+    const address =
+      session.identity.metadata.ethereum?.address || Wallet.walletAddress();
+    if (!address) {
+      return;
+    }
+
+    const ensName = await wallet.provider.lookupAddress(address);
+    if (!ensName) {
+      return;
+    }
+    registration = await getRegistration(ensName);
+  }
+
+  loadSidebarData();
+
+  $: if ($orgSidebarStore.type === "resolved") {
+    ownedOrgs = $orgSidebarStore.orgs;
+  }
+
+  $: showSidebar =
+    ($wallet.status === Wallet.Status.Connected &&
+      ethereum.supportedNetwork($ethereumEnvironment) ===
+        $wallet.connected.network &&
+      session.identity.metadata.ethereum?.address !== undefined) ||
+    Wallet.walletAddress() !== undefined;
 </script>
 
 <style>
+  .sidebar-layout {
+    margin-top: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: 15rem;
+    gap: 1.5rem;
+    grid-template-areas: "main main sidebar";
+  }
+
+  .one-column {
+    grid-template-areas: "main main main";
+  }
+
+  .sidebar {
+    grid-area: sidebar;
+  }
+
   .grid {
+    grid-area: main;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
-    margin-top: 2rem;
+  }
+
+  .two-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .empty {
+    grid-column: 1 / span 2;
+  }
+
+  .three-columns {
+    grid-column: 1 / span 3;
   }
 
   .box {
@@ -167,7 +233,9 @@
   <div slot="header" style="display: flex">
     <ProfileHeader
       urn={session.identity.urn}
-      name={session.identity.metadata.handle}
+      name={registration?.domain
+        ? registration?.domain
+        : session.identity.metadata.handle}
       peerId={session.identity.peerId} />
 
     <Button
@@ -183,88 +251,101 @@
   </div>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
-    {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
-      <EmptyState
-        text="You haven’t created or followed any projects yet."
-        primaryActionText="Start your first project"
-        on:primaryAction={() => {
-          modal.toggle(CreateProjectModal);
-        }}
-        secondaryActionText="Or look for a project"
-        on:secondaryAction={() => {
-          modal.toggle(SearchModal);
-        }} />
-    {:else}
-      <ul class="grid" data-cy="project-list">
-        {#each $profileProjectsStore.data.cloned as project}
-          <li>
-            <ProjectCardSquare
-              {project}
-              isMaintainer={isMaintainer(session.identity.urn, project)}
-              on:click={() => openProject({ detail: project })} />
-          </li>
-        {/each}
-        {#each $profileProjectsStore.data.follows as project}
-          <li>
-            <ProjectCardSquare
-              isMaintainer={isMaintainer(session.identity.urn, project)}
-              {project}
-              on:click={() => openProject({ detail: project })} />
-          </li>
-        {/each}
-        {#if $profileProjectsStore.data.requests.length > 0}
-          <li class="box requests">
-            <div>
-              <h2>Still looking...</h2>
-              <p style="margin-top: 1rem;">
+    <div class="sidebar-layout" class:one-column={!showSidebar}>
+      {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
+        <div class="empty" class:three-columns={!showSidebar}>
+          <EmptyState
+            text="You haven’t created or followed any projects yet."
+            primaryActionText="Start your first project"
+            on:primaryAction={() => {
+              modal.toggle(CreateProjectModal);
+            }}
+            secondaryActionText="Or look for a project"
+            on:secondaryAction={() => {
+              modal.toggle(SearchModal);
+            }} />
+        </div>
+      {:else}
+        <ul class="grid" data-cy="project-list" class:two-columns={showSidebar}>
+          {#each $profileProjectsStore.data.cloned as project}
+            <li>
+              <ProjectCardSquare
+                {project}
+                isMaintainer={isMaintainer(session.identity.urn, project)}
+                on:click={() => openProject({ detail: project })} />
+            </li>
+          {/each}
+          {#each $profileProjectsStore.data.follows as project}
+            <li>
+              <ProjectCardSquare
+                isMaintainer={isMaintainer(session.identity.urn, project)}
+                {project}
+                on:click={() => openProject({ detail: project })} />
+            </li>
+          {/each}
+          {#if $profileProjectsStore.data.requests.length > 0}
+            <li class="box requests">
+              <div>
+                <h2>Still looking...</h2>
+                <p style="margin-top: 1rem;">
+                  {projectCountText($profileProjectsStore.data.requests.length)}
+                  {$profileProjectsStore.data.requests.length > 1
+                    ? `you’re following haven’t been found yet.`
+                    : `you’re following hasn't been found yet.`}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                dataCy="show-requests"
+                on:click={() => {
+                  showRequests = !showRequests;
+                }}
+                style="align-self: flex-start;">
+                {!showRequests ? "Show" : "Hide"}
                 {projectCountText($profileProjectsStore.data.requests.length)}
-                {$profileProjectsStore.data.requests.length > 1
-                  ? `you’re following haven’t been found yet.`
-                  : `you’re following hasn't been found yet.`}
-              </p>
-            </div>
+              </Button>
+            </li>
+            {#if showRequests}
+              {#each $profileProjectsStore.data.requests as project}
+                <li
+                  class="request-card box"
+                  data-cy="undiscovered-project"
+                  out:fade|local={{ duration: 200 }}>
+                  <CopyableIdentifier kind="radicleId" value={project.urn} />
+                  <FollowToggle
+                    style="align-self: flex-start;"
+                    following
+                    on:unfollow={() => onUnFollow(project.urn)} />
+                </li>
+              {/each}
+            {/if}
+          {/if}
+          <li class="search box" data-cy="search-box">
+            <p
+              style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
+              Follow a new project
+            </p>
             <Button
-              variant="outline"
-              dataCy="show-requests"
               on:click={() => {
-                showRequests = !showRequests;
+                modal.toggle(SearchModal);
               }}
-              style="align-self: flex-start;">
-              {!showRequests ? "Show" : "Hide"}
-              {projectCountText($profileProjectsStore.data.requests.length)}
+              icon={MagnifyingGlassIcon}
+              variant="outline">
+              Look for a project
             </Button>
           </li>
-          {#if showRequests}
-            {#each $profileProjectsStore.data.requests as project}
-              <li
-                class="request-card box"
-                data-cy="undiscovered-project"
-                out:fade|local={{ duration: 200 }}>
-                <CopyableIdentifier kind="radicleId" value={project.urn} />
-                <FollowToggle
-                  style="align-self: flex-start;"
-                  following
-                  on:unfollow={() => onUnFollow(project.urn)} />
-              </li>
-            {/each}
-          {/if}
-        {/if}
-        <li class="search box" data-cy="search-box">
-          <p
-            style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
-            Follow a new project
-          </p>
-          <Button
-            on:click={() => {
-              modal.toggle(SearchModal);
-            }}
-            icon={MagnifyingGlassIcon}
-            variant="outline">
-            Look for a project
-          </Button>
-        </li>
-      </ul>
-    {/if}
+        </ul>
+      {/if}
+      {#if showSidebar}
+        <div class="sidebar">
+          <ProfileSidebar
+            attestedAddress={session.identity.metadata.ethereum?.address}
+            {registration}
+            {ownedOrgs}
+            urn={session.identity.urn} />
+        </div>
+      {/if}
+    </div>
   {:else if $profileProjectsStore.status === remote.Status.Error}
     <Error message={$profileProjectsStore.error.message} />
   {/if}
