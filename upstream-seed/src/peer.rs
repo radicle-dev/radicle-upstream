@@ -136,10 +136,30 @@ impl Peer {
                 let urn = urn.clone();
                 move |storage| -> anyhow::Result<()> {
                     tracking::track(storage, &urn, peer_id).context("failed to track identity")?;
-                    let fetcher = fetcher::PeerToPeer::new(urn.clone(), peer_id, addrs)
-                        .build(storage)
-                        .context("failed to build fetcher")?
-                        .context("failed to build inner fetcher")?;
+
+                    // Retry 20 times every 100ms.
+                    let mut retries =
+                        std::iter::repeat(std::time::Duration::from_millis(100)).take(20);
+
+                    let fetcher = loop {
+                        let fetcher_result =
+                            fetcher::PeerToPeer::new(urn.clone(), peer_id, addrs.clone())
+                                .build(storage)
+                                .context("failed to build fetcher")?;
+
+                        match fetcher_result {
+                            Ok(fetcher) => break fetcher,
+                            Err(_) => {
+                                if let Some(delay) = retries.next() {
+                                    std::thread::sleep(delay);
+                                    tracing::debug!(%urn, %peer_id, "retrying fetch");
+                                    continue;
+                                } else {
+                                    anyhow::bail!("building fetcher exceeded maximum retries")
+                                }
+                            }
+                        }
+                    };
 
                     replication::replicate(storage, fetcher, cfg, None)
                         .context("librad replication failed")?;

@@ -247,7 +247,8 @@ fn init_logging() {
             "librad::git::tracking=info",
             "librad::net::protocol::accept=info",
             "librad::net::protocol::membership::periodic=info",
-            "librad::net::quic::connection::tracking",
+            "librad::net::quic::connection::tracking=info",
+            "librad::net::protocol::io::recv::git=warn",
         ];
 
         let mut env_filter = tracing_subscriber::EnvFilter::default();
