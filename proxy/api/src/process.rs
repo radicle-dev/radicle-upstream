@@ -131,7 +131,6 @@ async fn run_session(
         store: store.clone(),
         insecure_http_api: environment.insecure_http_api,
         test: environment.test_mode,
-        http_listen: args.http_listen,
         default_seeds: args.default_seeds,
         service_handle,
         auth_token,
@@ -208,8 +207,9 @@ async fn run_session(
     shutdown_runner.add_with_shutdown({
         let ctx = ctx.clone();
         let peer_events_sender = peer_events_sender;
+        let http_listen_addr = args.http_listen;
         move |shutdown_signal| {
-            serve(ctx, peer_events_sender, shutdown_signal)
+            serve(ctx, peer_events_sender, http_listen_addr, shutdown_signal)
                 .map_err(|e| e.context("server failed"))
                 .boxed()
         }
@@ -300,13 +300,13 @@ async fn send_seeds(
 fn serve(
     ctx: context::Context,
     peer_events_sender: broadcast::Sender<notification::Notification>,
+    listen_addr: std::net::SocketAddr,
     restart_signal: impl Future<Output = ()> + Send + 'static,
 ) -> impl Future<Output = anyhow::Result<()>> {
     let ctx_shutdown = match &ctx {
         context::Context::Sealed(sealed) => sealed.shutdown.clone(),
         context::Context::Unsealed(unsealed) => unsealed.rest.shutdown.clone(),
     };
-    let listen_addr = ctx.http_listen();
     let api = http::api(ctx, peer_events_sender);
     async move {
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(listen_addr, {
