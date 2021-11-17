@@ -175,7 +175,6 @@ pub struct Unsealed {
     pub peer_control: radicle_daemon::PeerControl,
     /// [`radicle_daemon::net::peer::Peer`] to operate on the local monorepo.
     pub peer: radicle_daemon::net::peer::Peer<BoxedSigner>,
-    pub shutdown: Arc<tokio::sync::Notify>,
     pub rest: Sealed,
 }
 
@@ -199,6 +198,8 @@ pub struct Sealed {
     /// Reference to the key store.
     pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
     pub paths: librad::paths::Paths,
+    /// Receives a notification when the server is asked to shut down
+    pub shutdown: Arc<tokio::sync::Notify>,
 }
 
 impl Unsealed {
@@ -248,7 +249,6 @@ impl Unsealed {
             Self {
                 peer_control,
                 peer,
-                shutdown: Arc::new(tokio::sync::Notify::new()),
                 rest: Sealed {
                     store,
                     test: false,
@@ -259,6 +259,7 @@ impl Unsealed {
                     auth_token: Arc::new(RwLock::new(None)),
                     keystore: Arc::new(keystore::memory()),
                     paths,
+                    shutdown: Arc::new(tokio::sync::Notify::new()),
                 },
             },
             run_handle,

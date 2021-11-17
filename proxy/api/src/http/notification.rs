@@ -61,7 +61,7 @@ mod handler {
             }
         };
 
-        let shutdown = ctx.shutdown.clone();
+        let shutdown = ctx.rest.shutdown.clone();
 
         let stream = async_stream::stream! {
             use tokio::sync::broadcast::error::RecvError;

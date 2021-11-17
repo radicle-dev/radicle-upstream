@@ -137,6 +137,7 @@ async fn run_session(
         auth_token,
         keystore: environment.keystore.clone(),
         paths: paths.clone(),
+        shutdown: Arc::new(tokio::sync::Notify::new()),
     };
 
     let (seeds_sender, seeds_receiver) = watch::channel(seeds);
@@ -164,7 +165,6 @@ async fn run_session(
         let ctx = context::Context::Unsealed(context::Unsealed {
             peer_control,
             peer: peer.peer.clone(),
-            shutdown: Arc::new(tokio::sync::Notify::new()),
             rest: sealed,
         });
 
@@ -302,9 +302,9 @@ fn serve(
     peer_events_sender: broadcast::Sender<notification::Notification>,
     restart_signal: impl Future<Output = ()> + Send + 'static,
 ) -> impl Future<Output = anyhow::Result<()>> {
-    let ctx_shutdown = match ctx {
-        context::Context::Sealed(_) => None,
-        context::Context::Unsealed(ref unsealed) => Some(unsealed.shutdown.clone()),
+    let ctx_shutdown = match &ctx {
+        context::Context::Sealed(sealed) => sealed.shutdown.clone(),
+        context::Context::Unsealed(unsealed) => unsealed.rest.shutdown.clone(),
     };
     let listen_addr = ctx.http_listen();
     let api = http::api(ctx, peer_events_sender);
@@ -312,9 +312,7 @@ fn serve(
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(listen_addr, {
             async move {
                 restart_signal.await;
-                if let Some(ctx_shutdown) = ctx_shutdown {
-                    ctx_shutdown.notify_waiters()
-                }
+                ctx_shutdown.notify_waiters()
             }
         })?;
         server.await;
