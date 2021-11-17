@@ -363,6 +363,7 @@ fn setup_logging(args: &Args) {
                 "librad::git::identities::local=info",
                 "librad::net::protocol::membership::periodic=info",
                 "librad::git::tracking=info",
+                "librad::net::protocol::io::recv::git=warn",
             ])
         }
 
