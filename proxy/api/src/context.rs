@@ -9,12 +9,13 @@
 use std::sync::Arc;
 
 use data_encoding::HEXLOWER;
+use futures::prelude::*;
 use rand::Rng as _;
 use tokio::sync::RwLock;
 
 use link_crypto::BoxedSigner;
 
-use crate::{keystore, service};
+use crate::{keystore, notification::Notification, service};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -160,6 +161,7 @@ pub struct Unsealed {
     /// [`radicle_daemon::net::peer::Peer`] to operate on the local monorepo.
     pub peer: radicle_daemon::net::peer::Peer<BoxedSigner>,
     pub rest: Sealed,
+    pub notifications: tokio::sync::broadcast::Sender<Notification>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -186,6 +188,16 @@ pub struct Sealed {
 }
 
 impl Unsealed {
+    /// Return a stream that emits notifications from the peer.
+    ///
+    /// The stream ends when API server is shut down.
+    pub fn notifications(&self) -> impl Stream<Item = Notification> + Send + 'static {
+        let shutdown = self.rest.shutdown.clone();
+        tokio_stream::wrappers::BroadcastStream::new(self.notifications.subscribe())
+            .take_until(async move { shutdown.notified().await })
+            .filter_map(|result| future::ready(result.ok()))
+    }
+
     /// Initialises a new [`Unsealed`] context with the store and coco state in the given temporary
     /// directory.
     ///
@@ -196,7 +208,7 @@ impl Unsealed {
     #[cfg(test)]
     pub fn tmp(
         tmp_dir: &tempfile::TempDir,
-    ) -> Result<(Self, impl std::future::Future<Output = ()>), crate::error::Error> {
+    ) -> Result<(Self, impl Future<Output = ()>), crate::error::Error> {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let key = link_crypto::SecretKey::new();
@@ -244,6 +256,7 @@ impl Unsealed {
                     paths,
                     shutdown: Arc::new(tokio::sync::Notify::new()),
                 },
+                notifications: tokio::sync::broadcast::channel(1).0,
             },
             run_handle,
         ))

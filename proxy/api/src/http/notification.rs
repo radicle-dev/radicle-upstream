@@ -9,81 +9,43 @@
 
 use warp::{filters::BoxedFilter, path, Filter, Reply};
 
-use crate::{context, http, notification::Notification};
+use crate::{context, http};
 
 /// SSE based notifications endpoint.
-pub fn filters(
-    ctx: context::Context,
-    notifications: tokio::sync::broadcast::Sender<Notification>,
-) -> BoxedFilter<(impl Reply,)> {
-    local_peer_status_stream(ctx, notifications)
+pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
+    local_peer_status_stream(ctx)
 }
 
 /// `GET /local_peer_events`
-pub fn local_peer_status_stream(
-    ctx: context::Context,
-    notifications: tokio::sync::broadcast::Sender<Notification>,
-) -> BoxedFilter<(impl Reply,)> {
+pub fn local_peer_status_stream(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
     path!("local_peer_events")
         .and(http::with_context_unsealed(ctx))
-        .and(warp::any().map(move || notifications.subscribe()))
         .and_then(handler::local_peer_events)
         .boxed()
 }
 
 /// Notification handlers to serve event streams.
 mod handler {
-    use futures::{future::Either, StreamExt as _};
+    use futures::prelude::*;
     use warp::{sse, Rejection, Reply};
 
-    use crate::{
-        context,
-        notification::{self, Notification},
-    };
+    use crate::{context, notification::Notification};
 
     /// Sets up local peer events notification stream.
-    pub async fn local_peer_events(
-        ctx: context::Unsealed,
-        mut notifications: tokio::sync::broadcast::Receiver<Notification>,
-    ) -> Result<impl Reply, Rejection> {
-        let mut peer_control = ctx.peer_control;
-        let current_status = peer_control.current_status().await;
+    pub async fn local_peer_events(mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+        let current_status = ctx.peer_control.current_status().await;
 
-        let initial = futures::stream::iter(vec![Notification::LocalPeer(
-            notification::LocalPeer::StatusChanged {
-                old: current_status.clone(),
-                new: current_status,
-            },
-        )]);
-        let filter = |notification: Notification| async move {
-            match notification.clone() {
-                Notification::LocalPeer(event) => Some(sse::Event::default().json_data(event)),
-            }
-        };
-
-        let shutdown = ctx.rest.shutdown.clone();
-
-        let stream = async_stream::stream! {
-            use tokio::sync::broadcast::error::RecvError;
-            loop {
-                match futures::future::select(Box::pin(notifications.recv()), Box::pin(shutdown.notified())).await {
-                    Either::Left((notification, _)) =>
-                        match notification {
-                            Ok(notification) => yield notification,
-                            Err(RecvError::Lagged(_)) => {},
-                            Err(RecvError::Closed) => break,
-
-                        }
-                    Either::Right(_) => {
-                        break;
-                    }
-                }
-
-            }
-        };
+        let initial = futures::stream::iter([Notification::StatusChanged {
+            old: current_status.clone(),
+            new: current_status,
+        }]);
 
         Ok(sse::reply(
-            sse::keep_alive().stream(initial.chain(stream).filter_map(filter)),
+            sse::keep_alive().stream(
+                initial
+                    .chain(ctx.notifications())
+                    .map(|event| sse::Event::default().json_data(event)),
+            ),
         ))
     }
 }

@@ -13,7 +13,6 @@ default-run = "radicle-proxy"
 
 [dependencies]
 anyhow = "1.0"
-async-stream = "0.3"
 chrono = { version = "0.4.19", features = [ "serde" ] }
 data-encoding = "2.3"
 directories = "4.0"
@@ -38,6 +37,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 thiserror = "1.0"
 tokio = { version = "1.2", features = [ "macros", "process", "signal", "time" ] }
+tokio-stream = { version = "0.1.8", features = ["sync"] }
 url = "2.1"
 walkdir = "2"
 warp = { version = "0.3", default-features = false }

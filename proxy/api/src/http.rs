@@ -11,7 +11,7 @@ use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
 use link_crypto::{BoxedSigner, PeerId};
 
-use crate::{context, notification::Notification};
+use crate::context;
 
 mod control;
 mod diagnostics;
@@ -41,10 +41,7 @@ macro_rules! combine {
 }
 
 /// Main entry point for HTTP API.
-pub fn api(
-    ctx: context::Context,
-    notifications: tokio::sync::broadcast::Sender<Notification>,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+pub fn api(ctx: context::Context) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     let test = ctx.test();
 
     let control_filter = path("control")
@@ -59,8 +56,7 @@ pub fn api(
         .untuple_one()
         .and(control::filters(ctx.clone()));
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
-    let notification_filter =
-        path("notifications").and(notification::filters(ctx.clone(), notifications));
+    let notification_filter = path("notifications").and(notification::filters(ctx.clone()));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
     let keystore_filter = path("keystore").and(keystore::filters(ctx.clone()));

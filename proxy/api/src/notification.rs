@@ -14,18 +14,11 @@ use link_identities::git::Urn;
 use radicle_daemon::request::{RequestState, SomeRequest, Status as PeerRequestStatus};
 use radicle_git_ext::Oid;
 
-/// Significant events happening during proxy runtime.
-#[derive(Clone, Debug)]
-pub enum Notification {
-    /// Event observed about the local peer.
-    LocalPeer(LocalPeer),
-}
-
 /// Event observed about the local peer.
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
-pub enum LocalPeer {
+pub enum Notification {
     ProjectUpdated {
         provider: PeerId,
         urn: Urn,
@@ -77,42 +70,36 @@ pub fn from_peer_event(event: radicle_daemon::PeerEvent) -> Option<Notification>
     match event {
         radicle_daemon::PeerEvent::GossipFetched {
             provider, gossip, ..
-        } => Some(Notification::LocalPeer(LocalPeer::ProjectUpdated {
+        } => Some(Notification::ProjectUpdated {
             provider: provider.peer_id,
             urn: gossip.urn,
-        })),
+        }),
         radicle_daemon::PeerEvent::RequestCloned(urn, peer) => {
-            Some(Notification::LocalPeer(LocalPeer::RequestCloned {
-                peer,
-                urn,
-            }))
+            Some(Notification::RequestCloned { peer, urn })
         },
         radicle_daemon::PeerEvent::RequestCreated(urn) => {
-            Some(Notification::LocalPeer(LocalPeer::RequestCreated { urn }))
+            Some(Notification::RequestCreated { urn })
         },
         radicle_daemon::PeerEvent::RequestQueried(urn) => {
-            Some(Notification::LocalPeer(LocalPeer::RequestQueried { urn }))
+            Some(Notification::RequestQueried { urn })
         },
         radicle_daemon::PeerEvent::RequestTimedOut(urn) => {
-            Some(Notification::LocalPeer(LocalPeer::RequestTimedOut { urn }))
+            Some(Notification::RequestTimedOut { urn })
         },
         radicle_daemon::PeerEvent::StatusChanged { old, new } => {
-            Some(Notification::LocalPeer(LocalPeer::StatusChanged {
-                old,
-                new,
-            }))
+            Some(Notification::StatusChanged { old, new })
         },
         radicle_daemon::PeerEvent::WaitingRoomTransition(t) => {
             let since_the_epoch = t
                 .timestamp
                 .duration_since(std::time::UNIX_EPOCH)
                 .expect("Time went backwards");
-            Some(Notification::LocalPeer(LocalPeer::WaitingRoomTransition {
+            Some(Notification::WaitingRoomTransition {
                 event: t.event,
                 state_before: t.state_before.into(),
                 state_after: t.state_after.into(),
                 timestamp: since_the_epoch.as_millis(),
-            }))
+            })
         },
         _ => None,
     }

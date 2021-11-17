@@ -180,10 +180,11 @@ async fn run_session(
             peer_control,
             peer: peer.peer.clone(),
             rest: sealed,
+            notifications: peer_events_sender.clone(),
         });
 
         shutdown_runner.add_without_shutdown(
-            send_peer_events(peer.subscribe(), peer_events_sender.clone())
+            send_peer_events(peer.subscribe(), peer_events_sender)
                 .map(Ok)
                 .boxed(),
         );
@@ -215,10 +216,9 @@ async fn run_session(
 
     shutdown_runner.add_with_shutdown({
         let ctx = ctx.clone();
-        let peer_events_sender = peer_events_sender;
         let http_listen_addr = args.http_listen;
         move |shutdown_signal| {
-            serve(ctx, peer_events_sender, http_listen_addr, shutdown_signal)
+            serve(ctx, http_listen_addr, shutdown_signal)
                 .map_err(|e| e.context("server failed"))
                 .boxed()
         }
@@ -250,25 +250,17 @@ async fn send_peer_events(
     mut peer_events: broadcast::Receiver<radicle_daemon::PeerEvent>,
     peer_events_sender: broadcast::Sender<notification::Notification>,
 ) {
-    loop {
-        match peer_events.recv().await {
-            Ok(event) => {
-                if let radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) = event {
-                    tracing::debug!(event = ?transition.event, "waiting room transition")
-                }
+    while let Ok(event) = peer_events.recv().await {
+        if let radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) = event {
+            tracing::debug!(event = ?transition.event, "waiting room transition")
+        }
 
-                if let radicle_daemon::peer::Event::GossipFetched { gossip, result, .. } = &event {
-                    tracing::debug!(?gossip, ?result, "gossip received")
-                }
+        if let radicle_daemon::peer::Event::GossipFetched { gossip, result, .. } = &event {
+            tracing::debug!(?gossip, ?result, "gossip received")
+        }
 
-                if let Some(notification) = notification::from_peer_event(event) {
-                    let _result = peer_events_sender.send(notification).err();
-                }
-            },
-            Err(err) => {
-                tracing::error!(?err, "Failed to receive peer event");
-                return;
-            },
+        if let Some(notification) = notification::from_peer_event(event) {
+            let _result = peer_events_sender.send(notification).err();
         }
     }
 }
@@ -318,7 +310,6 @@ async fn watch_seeds_discovery(
 
 fn serve(
     ctx: context::Context,
-    peer_events_sender: broadcast::Sender<notification::Notification>,
     listen_addr: std::net::SocketAddr,
     restart_signal: impl Future<Output = ()> + Send + 'static,
 ) -> impl Future<Output = anyhow::Result<()>> {
@@ -326,7 +317,7 @@ fn serve(
         context::Context::Sealed(sealed) => sealed.shutdown.clone(),
         context::Context::Unsealed(unsealed) => unsealed.rest.shutdown.clone(),
     };
-    let api = http::api(ctx, peer_events_sender);
+    let api = http::api(ctx);
     async move {
         let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(listen_addr, {
             async move {
