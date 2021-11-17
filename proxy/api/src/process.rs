@@ -150,8 +150,7 @@ async fn run_session(
     let ctx = if let Some(key) = environment.key.clone() {
         let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
 
-        let config =
-            radicle_daemon::config::configure(paths.clone(), signer.clone(), args.peer_listen);
+        let config = radicle_daemon::config::configure(paths.clone(), signer, args.peer_listen);
         let disco = radicle_daemon::config::StreamDiscovery::new(seeds_receiver);
 
         let peer = radicle_daemon::Peer::new(
@@ -166,7 +165,6 @@ async fn run_session(
             peer_control,
             peer: peer.peer.clone(),
             shutdown: Arc::new(tokio::sync::Notify::new()),
-            signer,
             rest: sealed,
         });
 

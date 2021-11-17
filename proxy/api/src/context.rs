@@ -176,7 +176,6 @@ pub struct Unsealed {
     /// [`radicle_daemon::net::peer::Peer`] to operate on the local monorepo.
     pub peer: radicle_daemon::net::peer::Peer<BoxedSigner>,
     pub shutdown: Arc<tokio::sync::Notify>,
-    pub signer: BoxedSigner,
     pub rest: Sealed,
 }
 
@@ -221,7 +220,7 @@ impl Unsealed {
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let (peer_control, peer, run_handle) = {
-            let config = radicle_daemon::config::default(signer.clone(), tmp_dir.path())?;
+            let config = radicle_daemon::config::default(signer, tmp_dir.path())?;
             let disco = radicle_daemon::config::static_seed_discovery(&[]);
             let coco_peer = radicle_daemon::Peer::new(
                 config,
@@ -249,7 +248,6 @@ impl Unsealed {
             Self {
                 peer_control,
                 peer,
-                signer,
                 shutdown: Arc::new(tokio::sync::Notify::new()),
                 rest: Sealed {
                     store,
