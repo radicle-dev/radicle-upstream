@@ -87,8 +87,11 @@
 <style>
   .sidebar-layout {
     display: grid;
-    grid-template-columns: auto 18rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
+  }
+  main {
+    grid-column: 1 / span 2;
   }
 
   .single-column {
