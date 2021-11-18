@@ -105,17 +105,21 @@ impl Peer {
         }
     }
 
-    /// Fetch and track indentity `urn` from a remote peer.
+    /// Try to fetch and track indentity `urn` from a remote peer. Returns `true` if the remote
+    /// peer provided the identity and `false` otherwise.
     ///
     /// If `addrs` is `None` the remote peer must already be connected so that we can discover its
     /// address. Otherwise an error is returned.
+    ///
+    /// It is acceptable that the remote peer does not provide the identity. No error is returned
+    /// in that case.
     #[tracing::instrument(skip(self, urn), fields(identity = %urn))]
     pub async fn fetch_identity_from_peer(
         &self,
         urn: Urn,
         peer_id: PeerId,
         addrs: Option<Vec<SocketAddr>>,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<bool> {
         tracing::info!("start fetch identity");
         let addrs = if let Some(addrs) = addrs {
             addrs
@@ -130,27 +134,35 @@ impl Peer {
 
         let cfg = self.librad_peer.protocol_config().replication;
 
-        let replication_result = self
+        let fetched = self
             .librad_peer
             .using_storage({
                 let urn = urn.clone();
-                move |storage| -> anyhow::Result<()> {
+                move |storage| {
                     tracking::track(storage, &urn, peer_id).context("failed to track identity")?;
                     let fetcher = fetcher::PeerToPeer::new(urn.clone(), peer_id, addrs)
                         .build(storage)
                         .context("failed to build fetcher")?
                         .context("failed to build inner fetcher")?;
 
-                    replication::replicate(storage, fetcher, cfg, None)
-                        .context("librad replication failed")?;
-                    Ok(())
+                    let result = replication::replicate(storage, fetcher, cfg, None);
+                    match result {
+                        Ok(replication_output) => {
+                            tracing::info!(?replication_output, "fetch identity done");
+                            Ok(true)
+                        }
+                        Err(replication::Error::MissingIdentity) => {
+                            tracing::info!("idenitity not found");
+                            Ok(false)
+                        }
+                        Err(err) => {
+                            Err(anyhow::Error::new(err).context("librad replication failed"))
+                        }
+                    }
                 }
             })
             .await??;
-
-        tracing::info!(?replication_result, "fetch identity done");
-
-        Ok(())
+        Ok(fetched)
     }
 
     /// Returns stream that emits an item whenever the membership of the gossip layer changes.
