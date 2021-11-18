@@ -358,33 +358,6 @@ uploaded.
 
 On pushes of the master branch we also build and upload distribution artifacts.
 
-### Docker image updates
-
-We use a Docker image with all system dependencies pre-installed to reduce
-build times. If you need to update this image, proceed as follows:
-
-1. Install [Google Cloud SDK][gc].
-
-2. Authenticate with Google Cloud: `gcloud auth configure-docker`, pick
-   `radicle-upstream` when asked for which project to use.
-
-3. Prepare a new docker image with all the necessary dependencies by editing:
-   `ci/Dockerfile`.
-
-4. Get the current image version from `pipeline.yaml` and build a new Docker
-   image (remember to bump the version):
-
-    ```sh
-    cd ci
-    docker build . -t gcr.io/radicle-upstream/radicle-upstream-ci:15
-    ```
-
-5. Push the new image version to Google Cloud:
-
-   `docker push gcr.io/radicle-upstream/radicle-upstream-ci:15`
-
-6. Update the image version in `.github/workflows/build.yaml`
-
 ## Updating NPM dependencies
 
 1. Run `yarn upgrade-interactive`.

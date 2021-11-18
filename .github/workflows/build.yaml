@@ -6,8 +6,6 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
-    container:
-      image: "gcr.io/radicle-upstream/radicle-upstream-ci:14"
     steps:
       - uses: actions/checkout@master
       - name: Cache Yarn
@@ -23,6 +21,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
+            /usr/local/bin/cargo-deny
             ~/.cargo/advisory-db/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -30,12 +29,12 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v3-${{ hashFiles('Cargo.lock') }}
+          key: build-${{ runner.os }}-rust-v4-${{ hashFiles('Cargo.lock') }}
       - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-logs-linux
+          name: test-logs-${{ runner.os }}
           path: |
             cypress/screenshots/**/*.png
             cypress/workspace/test-tmp/*/node-*/*.log
@@ -58,7 +57,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/.cargo/bin/cargo-deny
+            /usr/local/bin/cargo-deny
             ~/.cargo/advisory-db/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
@@ -66,16 +65,12 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v3-${{ hashFiles('Cargo.lock') }}
-      - name: Install toolchain
-        run: |
-          rustup component add clippy rustfmt
-          test -f ~/.cargo/bin/cargo-deny || cargo install cargo-deny
+          key: build-${{ runner.os }}-rust-v4-${{ hashFiles('Cargo.lock') }}
       - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()
         with:
-          name: test-logs-macos
+          name: test-logs-${{ runner.os }}
           path: |
             cypress/screenshots/**/*.png
             cypress/workspace/test-tmp/*/node-*/*.log

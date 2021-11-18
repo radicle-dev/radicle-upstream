@@ -8,7 +8,11 @@
 
 source ci/env.sh
 
-log-group-start "Installing yarn dependencies"
+log-group-start "install toolcahin"
+time rustup show active-toolchain
+log-group-start "install toolcahin"
+
+log-group-start "yarn install"
 yarn install --immutable
 log-group-end
 

@@ -6,10 +6,12 @@ on:
     - release-candidate/**
 
 jobs:
-  build-dist-linux:
-    runs-on: ubuntu-latest
-    container:
-      image: "gcr.io/radicle-upstream/radicle-upstream-ci:14"
+  dist:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-11]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@master
       - name: Cache Yarn
@@ -19,9 +21,9 @@ jobs:
             ~/cache/yarn
             ~/cache/cypress
           # Reuses cache from `build` workflow
-          key: build-linux-yarn-v3-${{ hashFiles('yarn.lock') }}
+          key: build-${{ runner.os }}-yarn-v3-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            build-linux-yarn-v3-
+            build-${{ runner.os }}-yarn-v3-
       - name: Cache Rust
         uses: actions/cache@v2
         with:
@@ -32,62 +34,29 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: ${{ github.job }}-rust-v3-${{ hashFiles('Cargo.lock') }}
+          key: ${{ github.job }}-${{ runner.os }}-rust-v3-${{ hashFiles('Cargo.lock') }}
       - run: ci/dist.sh
       - uses: actions/upload-artifact@v2
         with:
-          name: linux-dist
-          path: |
-            dist/*.AppImage
-            dist/*/upstream-seed
-
-  build-dist-macos:
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@master
-      - name: Cache Yarn
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/cache/yarn
-            ~/cache/cypress
-          # Reuses cache from `build` workflow
-          key: build-macos-yarn-v3-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            build-macos-yarn-v3-
-      - name: Cache Rust
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git
-            ./target/*/deps
-            ./target/*/build
-            ./target/*/.fingerprint
-          key: ${{ github.job }}-rust-v3-${{ hashFiles('Cargo.lock') }}
-      - run: ci/dist.sh
-      - uses: actions/upload-artifact@v2
-        with:
-          name: macos-dist
+          name: dist-${{runner.os}}
           path: |
             dist/*.dmg
+            dist/*.AppImage
             dist/*/upstream-seed
 
 
   publish-artifacts:
     needs:
-      - build-dist-linux
-      - build-dist-macos
+      - dist
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v2
         with:
-          name: linux-dist
+          name: dist-Linux
           path: dist
       - uses: actions/download-artifact@v2
         with:
-          name: macos-dist
+          name: dist-macOS
           path: dist
       - name: publish artifacts by commit
         uses: google-github-actions/upload-cloud-storage@v0.4.0
