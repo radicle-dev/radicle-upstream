@@ -12,19 +12,18 @@ log-group-start "Installing yarn dependencies"
 yarn install --immutable
 log-group-end
 
+log-group-start "Building and packaging binaries"
 if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
-	log-group-start "Packaging, notarizing and uploading app binaries"
-	(
-    # TODO setup notarization
-		# export NOTARIZE=true
-		# export APPLE_ID="rudolfs@monadic.xyz"
-		# export APPLE_ID_PASSWORD="@keychain:AC_PASSWORD"
-		# export CSC_NAME="Monadic GmbH (35C27H9VL2)"
-		time yarn dist
-	)
-	log-group-end
-else
-	log-group-start "Packaging and uploading app binaries"
-	time yarn dist
-	log-group-end
+  :
+  # TODO setup notarization
+  # export NOTARIZE=true
+  # export APPLE_ID="rudolfs@monadic.xyz"
+  # export APPLE_ID_PASSWORD="@keychain:AC_PASSWORD"
+  # export CSC_NAME="Monadic GmbH (35C27H9VL2)"
 fi
+
+time yarn dist
+target="$(uname -m)-$(uname -s | tr "[:upper:]" "[:lower:]")"
+mkdir "dist/${target}"
+cp target/release/upstream-seed "dist/${target}/upstream-seed"
+log-group-end

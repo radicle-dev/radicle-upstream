@@ -3,6 +3,13 @@
 A light-weight seed node that tracks and replicates the configured Radicle
 projects.
 
+## Install
+
+You can download binaries for the latest `main` branch builds here:
+
+* <https://storage.googleapis.com/radicle-upstream-build-artifacts/v1/main/x86_64-linux/upstream-seed>
+* <https://storage.googleapis.com/radicle-upstream-build-artifacts/v1/main/x86_64-darwin/upstream-seed>
+
 ## Features
 
 * Radicle peer based on [`librad`][librad] that participates in gossip.

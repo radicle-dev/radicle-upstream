@@ -39,6 +39,7 @@ jobs:
           name: linux-dist
           path: |
             dist/*.AppImage
+            dist/*/upstream-seed
 
   build-dist-macos:
     runs-on: macos-11
@@ -71,6 +72,7 @@ jobs:
           name: macos-dist
           path: |
             dist/*.dmg
+            dist/*/upstream-seed
 
 
   publish-artifacts:
@@ -87,7 +89,6 @@ jobs:
         with:
           name: macos-dist
           path: dist
-      - run: ls dist
       - name: publish artifacts by commit
         uses: google-github-actions/upload-cloud-storage@v0.4.0
         with:
