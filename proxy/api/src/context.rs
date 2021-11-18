@@ -43,14 +43,6 @@ impl Context {
         }
     }
 
-    /// Returns the default seeds that will be written to the settings kv store.
-    pub const fn default_seeds(&self) -> &Vec<String> {
-        match self {
-            Self::Sealed(sealed) => &sealed.default_seeds,
-            Self::Unsealed(unsealed) => &unsealed.rest.default_seeds,
-        }
-    }
-
     /// Returns the [`kv::Store`] for persistent storage.
     pub const fn store(&self) -> &kv::Store {
         match self {

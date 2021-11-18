@@ -125,8 +125,6 @@ async fn run_session(
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
     let paths = environment.coco_profile.paths();
 
-    let seeds = session_seeds(&store, &args.default_seeds).await?;
-
     let sealed = context::Sealed {
         store: store.clone(),
         insecure_http_api: environment.insecure_http_api,
@@ -139,7 +137,6 @@ async fn run_session(
         shutdown: Arc::new(tokio::sync::Notify::new()),
     };
 
-    let (seeds_sender, seeds_receiver) = watch::channel(seeds);
     let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
 
     let mut shutdown_runner = crate::shutdown_runner::ShutdownRunner::new();
@@ -151,7 +148,9 @@ async fn run_session(
         let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
 
         let config = radicle_daemon::config::configure(paths.clone(), signer, args.peer_listen);
-        let disco = radicle_daemon::config::StreamDiscovery::new(seeds_receiver);
+
+        let (watch_seeds_run, disco) = watch_seeds_discovery(store.clone()).await;
+        shutdown_runner.add_without_shutdown(watch_seeds_run.map(Ok).boxed());
 
         let peer = radicle_daemon::Peer::new(
             config,
@@ -169,12 +168,6 @@ async fn run_session(
 
         shutdown_runner.add_without_shutdown(
             send_peer_events(peer.subscribe(), peer_events_sender.clone())
-                .map(Ok)
-                .boxed(),
-        );
-
-        shutdown_runner.add_without_shutdown(
-            send_seeds(ctx.clone(), peer.control(), seeds_sender)
                 .map(Ok)
                 .boxed(),
         );
@@ -227,9 +220,8 @@ async fn run_session(
 /// Get and resolve seed settings from the session store.
 async fn session_seeds(
     store: &kv::Store,
-    default_seeds: &[String],
 ) -> Result<Vec<radicle_daemon::seed::Seed>, anyhow::Error> {
-    let seeds = session::seeds(store, default_seeds)?;
+    let seeds = session::seeds(store)?.unwrap_or_default();
     Ok(radicle_daemon::seed::resolve(&seeds)
         .await
         .unwrap_or_else(|err| {
@@ -265,36 +257,47 @@ async fn send_peer_events(
     }
 }
 
-async fn send_seeds(
-    ctx: context::Context,
-    mut peer_control: radicle_daemon::peer::Control,
-    seeds_sender: watch::Sender<Vec<radicle_daemon::seed::Seed>>,
+/// Create a [`radicle_daemon::config::StreamDiscovery`] that emits new peer addresses whenever the
+/// seed configuration changes in `store`.
+///
+/// The returned task is the future that needs to be run to watch the seeds.
+async fn watch_seeds_discovery(
+    store: kv::Store,
+) -> (
+    impl Future<Output = ()> + Send + 'static,
+    radicle_daemon::config::StreamDiscovery,
 ) {
-    let seeds_store = ctx.store().clone();
-    let mut last_seeds = session_seeds(&seeds_store, ctx.default_seeds())
+    let mut last_seeds = session_seeds(&store)
         .await
         .expect("Failed to read session store");
-    let mut timer = tokio::time::interval(Duration::from_secs(5));
 
-    loop {
-        let _timestamp = timer.tick().await;
+    let (seeds_sender, seeds_receiver) = watch::channel(last_seeds.clone());
 
-        let seeds = session_seeds(&seeds_store, ctx.default_seeds())
-            .await
-            .expect("Failed to read session store");
+    let run = async move {
+        let mut timer = tokio::time::interval(Duration::from_millis(400));
+        loop {
+            let _timestamp = timer.tick().await;
 
-        let current_status = peer_control.current_status().await;
+            let seeds = session_seeds(&store)
+                .await
+                .expect("Failed to read session store");
 
-        if seeds == last_seeds && current_status != radicle_daemon::PeerStatus::Offline {
-            continue;
+            if seeds == last_seeds {
+                continue;
+            }
+
+            if seeds_sender.send(seeds.clone()).is_err() {
+                break;
+            }
+
+            last_seeds = seeds;
         }
+    };
 
-        if seeds_sender.send(seeds.clone()).is_err() {
-            break;
-        }
-
-        last_seeds = seeds;
-    }
+    (
+        run,
+        radicle_daemon::config::StreamDiscovery::new(seeds_receiver),
+    )
 }
 
 fn serve(

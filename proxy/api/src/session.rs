@@ -35,13 +35,8 @@ pub struct Session {
 /// # Errors
 ///
 /// Errors if we cannot read data from the store.
-pub fn seeds(store: &kv::Store, default_seeds: &[String]) -> Result<Vec<String>, error::Error> {
-    let settings = get_current(store)?.map(|session| session.settings);
-
-    match settings {
-        Some(settings) => Ok(settings.coco.seeds),
-        None => Ok(default_seeds.to_vec()),
-    }
+pub fn seeds(store: &kv::Store) -> Result<Option<Vec<String>>, error::Error> {
+    Ok(get_current(store)?.map(|session| session.settings.coco.seeds))
 }
 
 /// Get the current session if present
