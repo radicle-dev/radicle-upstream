@@ -28,7 +28,7 @@ mod peer;
 pub async fn main() {
     init_logging();
 
-    let args: crate::cli::Args = structopt::StructOpt::from_args();
+    let args = cli::from_args();
 
     if let Err(err) = run(args).await {
         tracing::error!(?err, "fatal error");

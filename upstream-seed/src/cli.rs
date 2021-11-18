@@ -1,3 +1,5 @@
+use structopt::{clap::AppSettings, StructOpt};
+
 // Copyright © 2021 The Radicle Upstream Contributors
 //
 // This file is part of radicle-upstream, distributed under the GPLv3
@@ -5,7 +7,7 @@
 // LICENSE file.
 
 /// Upstream seed node.
-#[derive(Debug, structopt::StructOpt)]
+#[derive(Debug, StructOpt)]
 pub struct Args {
     /// Listen on the following address for peer messages.
     #[structopt(long, default_value = "0.0.0.0:8776")]
@@ -28,6 +30,19 @@ pub struct Args {
     /// URNs of projects to replicate. May be specified multiple times.
     #[structopt(long)]
     pub project: Vec<link_identities::git::Urn>,
+}
+
+pub fn from_args() -> Args {
+    let version = format!(
+        "{}-{}.{}",
+        env!("CARGO_PKG_VERSION"),
+        env!("GIT_HEAD"),
+        env!("PROFILE")
+    );
+    let app = Args::clap()
+        .version(version.as_ref())
+        .settings(&[AppSettings::UnifiedHelpMessage]);
+    Args::from_clap(&app.get_matches())
 }
 
 fn parse_bootstrap(value: &str) -> Result<(librad::PeerId, std::net::SocketAddr), String> {
