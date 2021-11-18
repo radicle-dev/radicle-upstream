@@ -70,9 +70,13 @@ mod handler {
 
     #[allow(clippy::unused_async)]
     pub async fn get_seeds(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let seeds = match session::get_current(&ctx.rest.store)? {
-            None => vec![],
-            Some(session) => session.settings.coco.seeds,
+        let seeds = if let Some(seeds) = ctx.rest.seeds {
+            seeds
+        } else {
+            match session::get_current(&ctx.rest.store)? {
+                None => vec![],
+                Some(session) => session.settings.coco.seeds,
+            }
         };
 
         Ok(reply::json(&seeds))
@@ -83,9 +87,17 @@ mod handler {
         ctx: context::Unsealed,
         seeds: Vec<String>,
     ) -> Result<impl Reply, Rejection> {
-        session::update_seeds(&ctx.rest.store, seeds)?;
-
-        Ok(warp::reply::with_status(reply(), StatusCode::NO_CONTENT))
+        if ctx.rest.seeds.is_none() {
+            session::update_seeds(&ctx.rest.store, seeds)?;
+            Ok(warp::reply::with_status(reply(), StatusCode::NO_CONTENT))
+        } else {
+            Err(http::error::Response {
+                status_code: StatusCode::BAD_REQUEST,
+                variant: "STATIC_SEEDS",
+                message: "Seeds are statically configured and cannot be changed".to_string(),
+            }
+            .into())
+        }
     }
 }
 

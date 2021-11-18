@@ -10,6 +10,7 @@
 
 use std::{sync::Arc, time::Duration};
 
+use anyhow::Context;
 use futures::prelude::*;
 use tokio::sync::{broadcast, watch, RwLock};
 
@@ -130,6 +131,7 @@ async fn run_session(
         insecure_http_api: environment.insecure_http_api,
         test: environment.test_mode,
         default_seeds: args.default_seeds,
+        seeds: args.seeds,
         service_handle,
         auth_token,
         keystore: environment.keystore.clone(),
@@ -149,8 +151,17 @@ async fn run_session(
 
         let config = radicle_daemon::config::configure(paths.clone(), signer, args.peer_listen);
 
-        let (watch_seeds_run, disco) = watch_seeds_discovery(store.clone()).await;
-        shutdown_runner.add_without_shutdown(watch_seeds_run.map(Ok).boxed());
+        let disco = if let Some(ref seeds) = sealed.seeds {
+            let seeds = radicle_daemon::seed::resolve(seeds)
+                .await
+                .context("failed to parse and resolve seeds")?;
+            let (_, seeds_receiver) = watch::channel(seeds);
+            radicle_daemon::config::StreamDiscovery::new(seeds_receiver)
+        } else {
+            let (watch_seeds_run, disco) = watch_seeds_discovery(store.clone()).await;
+            shutdown_runner.add_without_shutdown(watch_seeds_run.map(Ok).boxed());
+            disco
+        };
 
         let peer = radicle_daemon::Peer::new(
             config,

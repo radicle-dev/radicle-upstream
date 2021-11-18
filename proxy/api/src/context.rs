@@ -173,6 +173,7 @@ pub struct Sealed {
     pub insecure_http_api: bool,
     /// Default seeds that will be written to the settings kv store.
     pub default_seeds: Vec<String>,
+    pub seeds: Option<Vec<String>>,
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Cookie set on unsealing the key store.
@@ -236,6 +237,7 @@ impl Unsealed {
                     test: false,
                     insecure_http_api: true,
                     default_seeds: vec![],
+                    seeds: None,
                     service_handle: service::Handle::dummy(),
                     auth_token: Arc::new(RwLock::new(None)),
                     keystore: Arc::new(keystore::memory()),
