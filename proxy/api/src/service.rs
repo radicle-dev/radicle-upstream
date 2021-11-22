@@ -43,6 +43,9 @@ pub struct EnvironmentConfig {
 
     /// If `true`, the HTTP api will accept any request without checking the auth token.
     pub insecure_http_api: bool,
+
+    /// Path to the secret key for the identity. Uses `RAD_HOME` if not provided.
+    pub identity_key: Option<std::path::PathBuf>,
 }
 
 /// Error returned when creating a new [`Environment`].
@@ -71,10 +74,16 @@ impl Environment {
             (None, coco_profile)
         };
 
-        let keystore: Arc<dyn keystore::Keystore + Send + Sync> = if config.unsafe_fast_keystore {
-            Arc::new(keystore::unsafe_fast_file(coco_profile.paths().clone()))
+        let key_file = if let Some(identity_key) = config.identity_key.clone() {
+            identity_key
         } else {
-            Arc::new(keystore::file(coco_profile.paths().clone()))
+            coco_profile.paths().keys_dir().join("librad.key")
+        };
+
+        let keystore: Arc<dyn keystore::Keystore + Send + Sync> = if config.unsafe_fast_keystore {
+            Arc::new(keystore::unsafe_fast_file(key_file))
+        } else {
+            Arc::new(keystore::file(key_file))
         };
 
         Ok(Self {

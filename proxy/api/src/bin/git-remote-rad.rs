@@ -13,41 +13,51 @@ use librad::profile::Profile;
 use link_crypto::{BoxedSigner, PublicKey, SecretKey, SomeSigner};
 use radicle_git_helpers::remote_helper;
 use radicle_keystore::{crypto, pinentry::SecUtf8, FileStorage, Keystore};
-
-const SECRET_KEY_FILE: &str = "librad.key";
+use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
+    let key_file_path = if let Ok(value) = std::env::var("IDENTITY_KEY") {
+        PathBuf::from(value)
+    } else {
+        let profile = Profile::load()?;
+        let paths = profile.paths().to_owned();
+        paths.keys_dir().join("librad.key")
+    };
+
     let signer = if std::env::var("RADICLE_UNSAFE_FAST_KEYSTORE") == Ok("1".to_string()) {
-        Some(unsafe_fast_keystore_signer()?)
+        Some(unsafe_fast_keystore_signer(key_file_path)?)
     } else {
         None
     };
     remote_helper::run(remote_helper::Config { signer })
 }
 
-fn unsafe_fast_keystore_signer() -> anyhow::Result<BoxedSigner> {
-    let profile = Profile::load()?;
-    let paths = profile.paths().to_owned();
-    let file = paths.keys_dir().join(SECRET_KEY_FILE);
-    let mut child = Command::new("git")
-        .args(&["credential", "fill"])
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::inherit())
-        .spawn()?;
+fn unsafe_fast_keystore_signer(key_file_path: PathBuf) -> anyhow::Result<BoxedSigner> {
+    let passphrase: SecUtf8 = if let Ok(value) = std::env::var("KEY_PASSPHRASE") {
+        SecUtf8::from(value)
+    } else {
+        let mut child = Command::new("git")
+            .args(&["credential", "fill"])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::inherit())
+            .spawn()?;
 
-    let stdin = child.stdin.as_mut().expect("could not obtain stdin");
-    stdin.write_all("url=rad://\nusername=radicle\n\n".to_string().as_bytes())?;
+        let stdin = child.stdin.as_mut().expect("could not obtain stdin");
+        stdin.write_all("url=rad://\nusername=radicle\n\n".to_string().as_bytes())?;
 
-    let output = child.wait_with_output()?;
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let passphrase: SecUtf8 = stdout
-        .lines()
-        .find_map(|line| line.strip_prefix("password=").map(SecUtf8::from))
-        .ok_or_else(|| anyhow::anyhow!("couldn't obtain passphrase"))?;
+        let output = child.wait_with_output()?;
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let passphrase_: SecUtf8 = stdout
+            .lines()
+            .find_map(|line| line.strip_prefix("password=").map(SecUtf8::from))
+            .ok_or_else(|| anyhow::anyhow!("couldn't obtain passphrase"))?;
+
+        passphrase_
+    };
 
     let keystore = FileStorage::<_, PublicKey, SecretKey, _>::new(
-        &file,
+        &key_file_path,
         crypto::Pwhash::new(passphrase, *crypto::KDF_PARAMS_TEST),
     );
     let secret_key = keystore.get_key().map(|keypair| keypair.secret_key)?;

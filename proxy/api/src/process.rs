@@ -34,6 +34,7 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
         test_mode: args.test,
         insecure_http_api: args.insecure_http_api,
         unsafe_fast_keystore: args.unsafe_fast_keystore,
+        identity_key: args.identity_key.clone(),
     })?;
 
     if let Some(passphrase) = &args.key_passphrase {

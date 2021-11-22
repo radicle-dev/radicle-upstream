@@ -14,9 +14,8 @@
 //! This module provides the [`Keystore`] trait and the [`file()`] function to construct specific
 //! [`Keystore`] implementations.
 
-use std::convert::Infallible;
+use std::{convert::Infallible, path::PathBuf};
 
-use librad::paths::Paths;
 pub use radicle_keystore::pinentry::SecUtf8;
 use radicle_keystore::{
     crypto::{self, Pwhash, SecretBoxError},
@@ -43,29 +42,21 @@ pub trait Keystore {
     fn get(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error>;
 }
 
-/// File name component of the file path to the key.
-const KEY_PATH: &str = "librad.key";
-
 /// Create a [`Keystore`] that is backed by an encrypted file on disk.
-///
-/// The key file is named `librad.key` and located under in the `paths` key
-/// directory.
 #[must_use]
-pub fn file(paths: Paths) -> impl Keystore + Send + Sync {
+pub fn file(path: PathBuf) -> impl Keystore + Send + Sync {
     FileStore {
-        paths,
+        path,
         kdf_params: *crypto::KDF_PARAMS_PROD,
     }
 }
 
 /// Create a [`Keystore`] that is backed by an encrypted file on disk and uses weak (but fast)
 /// encrpytion parameters.
-///
-/// The key file is named `librad.key` and located under in the `paths` key directory.
 #[must_use]
-pub fn unsafe_fast_file(paths: Paths) -> impl Keystore + Send + Sync {
+pub fn unsafe_fast_file(path: PathBuf) -> impl Keystore + Send + Sync {
     FileStore {
-        paths,
+        path,
         kdf_params: *crypto::KDF_PARAMS_TEST,
     }
 }
@@ -73,7 +64,7 @@ pub fn unsafe_fast_file(paths: Paths) -> impl Keystore + Send + Sync {
 /// File-backed [`Keystore`]
 struct FileStore {
     /// Determines the location of the key file when a key is loaded or written.
-    paths: Paths,
+    path: PathBuf,
     kdf_params: crypto::KdfParams,
 }
 
@@ -88,9 +79,8 @@ type FileStorage = radicle_keystore::FileStorage<
 impl FileStore {
     /// Get the [`FileStorage`] backend for this key store.
     fn store(&self, passphrase: SecUtf8) -> FileStorage {
-        let key_path = self.paths.keys_dir().join(KEY_PATH);
         let crypto = Pwhash::new(passphrase, self.kdf_params);
-        FileStorage::new(&key_path, crypto)
+        FileStorage::new(&self.path, crypto)
     }
 }
 

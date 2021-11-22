@@ -37,6 +37,10 @@ pub struct Args {
     )]
     pub default_seeds: Vec<String>,
 
+    /// Path to the secret key for the identity. Uses `RAD_HOME` if not provided.
+    #[structopt(long)]
+    pub identity_key: Option<std::path::PathBuf>,
+
     /// Connect to the given seeds and not to those previously set and stored through the API. Does
     /// not override the stored seeds.
     #[structopt(long, env = "RADICLE_PROXY_SEEDS", long = "seed", use_delimiter = true)]
