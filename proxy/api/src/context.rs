@@ -134,8 +134,8 @@ impl Context {
     }
 
     /// Returns `true` if `token` matches the stored authentication token.
-    pub async fn check_auth_token(&self, token: Option<String>) -> bool {
-        token == *self.auth_token().read().await
+    pub async fn check_auth_token(&self, token: String) -> bool {
+        Some(token) == *self.auth_token().read().await
     }
 }
 
