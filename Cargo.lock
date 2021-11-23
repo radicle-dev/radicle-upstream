@@ -101,6 +101,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_qs",
+ "sha2",
  "structopt",
  "tempfile",
  "thiserror",

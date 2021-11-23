@@ -36,13 +36,13 @@ pub fn dirs() -> ProjectDirs {
 }
 
 /// Returns the directory for the application store
-pub fn store_dir(profile_id: &ProfileId) -> path::PathBuf {
-    let store_root = match std::env::var_os("RAD_HOME") {
+pub fn store_dir(profile_id: &ProfileId, rad_home: Option<&path::Path>) -> path::PathBuf {
+    let store_root = match rad_home {
         None => {
             let dirs = dirs();
             dirs.data_dir().to_path_buf()
         },
-        Some(root) => path::Path::new(&root).to_path_buf(),
+        Some(root) => root.to_path_buf(),
     };
     store_root.join(profile_id.as_str()).join("store")
 }

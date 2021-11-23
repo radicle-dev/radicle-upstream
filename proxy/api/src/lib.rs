@@ -31,6 +31,7 @@ mod git_helper;
 mod http;
 mod identifier;
 mod identity;
+pub mod init_bin;
 mod keystore;
 mod notification;
 mod patch;

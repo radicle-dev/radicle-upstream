@@ -120,7 +120,12 @@ async fn run_session(
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
         temp_dir.path().join("store")
     } else {
-        config::store_dir(environment.coco_profile.id())
+        config::store_dir(
+            environment.coco_profile.id(),
+            std::env::var_os("RAD_HOME")
+                .as_ref()
+                .map(|value| std::path::Path::new(value)),
+        )
     };
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;

@@ -44,7 +44,7 @@ pub trait Keystore {
 
 /// Create a [`Keystore`] that is backed by an encrypted file on disk.
 #[must_use]
-pub fn file(path: PathBuf) -> impl Keystore + Send + Sync {
+pub fn file(path: PathBuf) -> FileStore {
     FileStore {
         path,
         kdf_params: *crypto::KDF_PARAMS_PROD,
@@ -54,7 +54,7 @@ pub fn file(path: PathBuf) -> impl Keystore + Send + Sync {
 /// Create a [`Keystore`] that is backed by an encrypted file on disk and uses weak (but fast)
 /// encrpytion parameters.
 #[must_use]
-pub fn unsafe_fast_file(path: PathBuf) -> impl Keystore + Send + Sync {
+pub fn unsafe_fast_file(path: PathBuf) -> FileStore {
     FileStore {
         path,
         kdf_params: *crypto::KDF_PARAMS_TEST,
@@ -62,7 +62,7 @@ pub fn unsafe_fast_file(path: PathBuf) -> impl Keystore + Send + Sync {
 }
 
 /// File-backed [`Keystore`]
-struct FileStore {
+pub struct FileStore {
     /// Determines the location of the key file when a key is loaded or written.
     path: PathBuf,
     kdf_params: crypto::KdfParams,
@@ -82,20 +82,44 @@ impl FileStore {
         let crypto = Pwhash::new(passphrase, self.kdf_params);
         FileStorage::new(&self.path, crypto)
     }
-}
 
-impl Keystore for FileStore {
-    fn create_key(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
+    /// Create a key and store it encrypted with the given passphrase.
+    ///
+    /// If `seed_data` is given the secret key is deterministically derived from the hash of the
+    /// seed data. Otherwise, a random key is generated.
+    ///
+    /// # Errors
+    ///
+    /// Errors when the storage backend fails to persist the key or a key
+    /// already exists.
+    pub fn create_key_with_seed(
+        &self,
+        passphrase: SecUtf8,
+        seed_data: Option<&[u8]>,
+    ) -> Result<link_crypto::SecretKey, Error> {
         let mut store = self.store(passphrase);
         match store.get_key() {
             Ok(_keypair) => Err(FileError::KeyExists(store.key_file_path().to_owned()).into()),
             Err(FileError::NoSuchKey(_)) => {
-                let key = link_crypto::SecretKey::new();
+                let key = match seed_data {
+                    Some(seed_data) => {
+                        use sha2::Digest;
+                        let seed = sha2::Sha256::digest(seed_data);
+                        link_crypto::SecretKey::from_seed(seed.into())
+                    },
+                    None => link_crypto::SecretKey::new(),
+                };
                 store.put_key(key.clone())?;
                 Ok(key)
             },
             Err(err) => Err(err.into()),
         }
+    }
+}
+
+impl Keystore for FileStore {
+    fn create_key(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
+        self.create_key_with_seed(passphrase, None)
     }
 
     fn get(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error> {
