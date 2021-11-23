@@ -23,6 +23,20 @@ else
   exit 1
 fi
 
+# Remove cargo build artifacts that are large and become stale on every
+# build.
+function clean-cargo-build-artifacts () {
+  if [[ ${RUNNER_OS} == "macOS" ]]; then
+    echo "skipping build artifacts clean-up on macOS"
+  else
+    echo "clean up cargo build artifacts"
+    find target/*/deps -type f -perm -a=x -not -name "*.so" -exec rm {} \;
+    rm \
+      target/*/deps/libapi-* \
+      target/*/deps/libupstream_seed-*
+  fi
+}
+
 export YARN_CACHE_FOLDER="$CACHE_FOLDER/yarn"
 export CARGO_HOME="$HOME/.cargo"
 export CYPRESS_CACHE_FOLDER="$CACHE_FOLDER/cypress"

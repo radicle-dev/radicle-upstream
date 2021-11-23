@@ -21,6 +21,8 @@ log-group-start "Building and packaging binaries"
 time yarn dist
 log-group-end
 
+clean-cargo-build-artifacts
+
 echo "Collect artifacts"
 mkdir artifacts
 shopt -s nullglob

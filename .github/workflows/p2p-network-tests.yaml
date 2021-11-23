@@ -20,13 +20,11 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            /usr/local/bin/cargo-deny
-            ~/.cargo/advisory-db/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v4-${{ hashFiles('Cargo.lock') }}
+          key: build-${{ runner.os }}-rust-v5-${{ hashFiles('Cargo.lock') }}
       - run: ci/p2p-network-tests.sh

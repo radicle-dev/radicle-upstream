@@ -92,3 +92,5 @@ time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
     s/^.*Run Finished.*/$(log-group-end)\n$(log-group-start)Run Finished/
   "
 log-group-end
+
+clean-cargo-build-artifacts
