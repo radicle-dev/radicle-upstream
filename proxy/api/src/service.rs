@@ -27,8 +27,6 @@ pub struct Environment {
     pub keystore: Arc<dyn crate::keystore::Keystore + Send + Sync>,
     /// If true, we are running the service in test mode.
     pub test_mode: bool,
-    /// If `true`, the HTTP api will accept any request without checking the auth token.
-    pub insecure_http_api: bool,
 }
 
 /// Configuration for initializing [`Environment`].
@@ -40,9 +38,6 @@ pub struct EnvironmentConfig {
 
     /// If `true`, then fast but unsafe encryption parameters are used for the keystore.
     pub unsafe_fast_keystore: bool,
-
-    /// If `true`, the HTTP api will accept any request without checking the auth token.
-    pub insecure_http_api: bool,
 
     /// Path to the secret key for the identity. Uses `RAD_HOME` if not provided.
     pub identity_key: Option<std::path::PathBuf>,
@@ -92,7 +87,6 @@ impl Environment {
             coco_profile,
             keystore,
             test_mode: config.test_mode,
-            insecure_http_api: config.insecure_http_api,
         })
     }
 }

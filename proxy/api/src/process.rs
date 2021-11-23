@@ -32,7 +32,6 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
 
     let mut service_manager = service::Manager::new(service::EnvironmentConfig {
         test_mode: args.test,
-        insecure_http_api: args.insecure_http_api,
         unsafe_fast_keystore: args.unsafe_fast_keystore,
         identity_key: args.identity_key.clone(),
     })?;
@@ -129,7 +128,7 @@ async fn run_session(
 
     let sealed = context::Sealed {
         store: store.clone(),
-        insecure_http_api: environment.insecure_http_api,
+        insecure_http_api: args.insecure_http_api,
         test: environment.test_mode,
         default_seeds: args.default_seeds,
         seeds: args.seeds,
