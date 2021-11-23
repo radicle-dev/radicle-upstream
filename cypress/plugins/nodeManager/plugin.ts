@@ -16,17 +16,12 @@ import * as cookie from "cookie";
 
 import { retryOnError } from "ui/src/retryOnError";
 
-import type {
-  NodeId,
-  NodeManagerPlugin,
-  NodeSession,
-  OnboardNodeOptions,
-  PeerId,
+import {
+  pluginMethods,
+  type NodeManagerPlugin,
+  type NodeSession,
+  type StartNodeOptions,
 } from "./shared";
-import { pluginMethods } from "./shared";
-
-type PeerAddress = string;
-type AuthToken = string;
 
 const ROOT_PATH = path.join(__dirname, "../../../");
 
@@ -50,68 +45,34 @@ class Logger {
   }
 }
 
-enum StateKind {
-  Configured = "configured",
-  Started = "started",
-  Onboarded = "onboarded",
-}
-
-// Because it's not possible to mix tagged union types and extending
-// interfaces, we have to repeat the "inherited" attributes in each node state.
-interface ConfiguredNode {
-  kind: StateKind.Configured;
-}
-
-interface StartedNode {
-  kind: StateKind.Started;
-  process: execa.ExecaChildProcess;
-}
-
-interface OnboardedNode {
-  kind: StateKind.Onboarded;
-  process: execa.ExecaChildProcess;
-  authToken: AuthToken;
-  peerAddress: PeerAddress;
-  peerId: PeerId;
-}
-
-type NodeState = ConfiguredNode | StartedNode | OnboardedNode;
-
-class Node {
-  private state: NodeState = { kind: StateKind.Configured };
+class NodeManager implements NodeManagerPlugin {
   private logger: Logger;
-  private dataDir: string;
+  // A radicle-proxy is running on port 30000 for any other Cypress tests
+  // that aren't managed by nodeManager.
+  private nextPort: number = 30001;
+  #processes: execa.ExecaChildProcess[] = [];
 
-  public id: NodeId;
-  public httpPort: number;
-  public peerPort: number;
-  public radHome: string;
+  public constructor() {
+    this.logger = new Logger({ prefix: `[nodeManager] ` });
+  }
 
-  public constructor(id: NodeId, dataDir: string) {
-    this.dataDir = dataDir;
-    this.logger = new Logger({
+  public async startNode(options: StartNodeOptions): Promise<NodeSession> {
+    const id = this.nextPort++;
+    const logger = new Logger({
       prefix: `[node ${id}]: `,
       indentationLevel: 2,
     });
 
-    this.id = id;
-    this.httpPort = id;
-    this.peerPort = id;
-    this.radHome = path.resolve(dataDir, `node-${id}`);
-  }
-
-  public async start() {
-    this.logger.log(`starting node`);
-
-    await fs.mkdirs(this.radHome);
+    const radHome = path.resolve(options.baseDataDir, `node-${id}`);
+    await fs.mkdirs(radHome);
 
     const process = execa(
       PROXY_BINARY_PATH,
       [
         "--http-listen",
-        `${HOST}:${this.httpPort}`,
+        `${HOST}:${id}`,
         "--peer-listen",
-        `${HOST}:${this.peerPort}`,
+        `${HOST}:${id}`,
         "--skip-remote-helper-install",
         "--unsafe-fast-keystore",
         "--insecure-http-api",
@@ -119,7 +80,7 @@ class Node {
       {
         buffer: false,
         env: {
-          RAD_HOME: this.radHome,
+          RAD_HOME: radHome,
           RUST_LOG: [
             "info",
             "api=debug",
@@ -135,44 +96,33 @@ class Node {
       }
     );
 
+    this.#processes.push(process);
+
     process.on("exit", async () => {
-      this.logger.log(`node terminated`);
+      logger.log(`node terminated`);
     });
 
-    const stderrLogPath = path.join(this.radHome, "stderr.log");
-    this.logger.log(`writing output to ${stderrLogPath}`);
+    const stderrLogPath = path.join(radHome, "stderr.log");
+    logger.log(`writing output to "${stderrLogPath}"`);
     const stderrLog = fs.createWriteStream(stderrLogPath);
     // We know that `stderr` is set because of the `stdio` spawn options
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const stderr = process.stderr!;
     stderr.pipe(stderrLog);
 
-    const combinedLogPath = path.join(this.dataDir, "combined-node.log");
+    const combinedLogPath = path.join(options.baseDataDir, "combined-node.log");
     const combinedLog = fs.createWriteStream(combinedLogPath, { flags: "a" });
-    const prependNodeId = new LinePrefix(`Node ${this.id}: `);
+    const prependNodeId = new LinePrefix(`Node ${id}: `);
 
     stderr.pipe(prependNodeId).pipe(combinedLog);
 
-    this.state = { ...this.state, kind: StateKind.Started, process: process };
+    await waitOn({ resources: [`tcp:${HOST}:${id}`] });
 
-    await waitOn({ resources: [`tcp:${HOST}:${this.httpPort}`] });
-
-    this.logger.log("node started successfully");
-  }
-
-  public async onboard(options: {
-    handle: string;
-    passphrase: string;
-  }): Promise<NodeSession> {
-    this.logger.log("onboarding node");
-
-    if (this.state.kind !== StateKind.Started) {
-      throw new Error("Tried to onboard a node that wasn't started yet");
-    }
+    logger.log("node started successfully");
 
     const gitConfigSet = (name: string, value: string) =>
       execa("git", ["config", "--global", name, value], {
-        env: { HOME: this.radHome },
+        env: { HOME: radHome },
       });
 
     await gitConfigSet(
@@ -182,14 +132,11 @@ class Node {
     await gitConfigSet("user.name", options.handle);
     await gitConfigSet("user.email", `${options.handle}@example.com`);
 
-    const keystoreResponse = await fetch(
-      `http://${HOST}:${this.id}/v1/keystore`,
-      {
-        method: "post",
-        body: JSON.stringify({ passphrase: options.passphrase }),
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    const keystoreResponse = await fetch(`http://${HOST}:${id}/v1/keystore`, {
+      method: "post",
+      body: JSON.stringify({ passphrase: options.passphrase }),
+      headers: { "Content-Type": "application/json" },
+    });
 
     if (!keystoreResponse) {
       throw new Error("No response from keystore request");
@@ -204,7 +151,7 @@ class Node {
 
     const identitiesResponse = await retryOnError(
       () =>
-        fetch(`http://${HOST}:${this.id}/v1/identities`, {
+        fetch(`http://${HOST}:${id}/v1/identities`, {
           method: "post",
           body: JSON.stringify({ handle: options.handle }),
           headers: {
@@ -219,88 +166,25 @@ class Node {
     const json = await identitiesResponse.json();
     const peerId = json.peerId;
 
-    this.state = {
-      ...this.state,
-      kind: StateKind.Onboarded,
-      authToken: authToken,
-      peerAddress: `${json.peerId}@${HOST}:${this.peerPort}`,
-      peerId,
-    };
-
-    this.logger.log("node onboarded successfully");
+    logger.log("node onboarded successfully");
 
     return {
-      id: this.id,
+      id,
       authToken,
-      httpPort: this.httpPort,
-      radHome: this.radHome,
+      httpPort: id,
+      radHome: radHome,
       peerId,
     };
-  }
-
-  public async stop(): Promise<void> {
-    if (this.state.kind !== StateKind.Configured) {
-      this.logger.log("stopping node");
-      // We don’t shutdown the process properly to make it faster. We don’t care
-      // about corrupted state because it has no impact on the test.
-      if (!this.state.process.kill("SIGKILL")) {
-        this.logger.log(`could not stop process ${this.state.process.pid}`);
-      }
-    } else {
-      this.logger.log("ignoring stop node command, node wasn't running");
-    }
-  }
-}
-
-class NodeManager implements NodeManagerPlugin {
-  private managedNodes: Node[] = [];
-  private logger: Logger;
-  // A radicle-proxy is running on port 30000 for any other Cypress tests
-  // that aren't managed by nodeManager.
-  private nextPort: number = 30001;
-
-  public constructor() {
-    this.logger = new Logger({ prefix: `[nodeManager] ` });
-  }
-
-  private getNode(id: NodeId) {
-    const node = this.managedNodes.find(node => {
-      return node.id === id;
-    });
-
-    if (!node) {
-      throw new Error(`Could not find node by id ${id}`);
-    }
-
-    return node;
-  }
-
-  public async startNode(dataDir: string): Promise<number> {
-    const id = this.nextPort++;
-    const node = new Node(id, dataDir);
-    await node.start();
-    this.managedNodes.push(node);
-
-    return id;
-  }
-
-  public async onboardNode(options: OnboardNodeOptions): Promise<NodeSession> {
-    this.logger.log("onboardNode");
-
-    const node = this.getNode(options.id);
-
-    return node.onboard({
-      handle: options.handle,
-      passphrase: options.passphrase,
-    });
   }
 
   public async stopAllNodes(): Promise<null> {
     this.logger.log("stopAllNodes");
-
-    await Promise.all(this.managedNodes.map(node => node.stop()));
-
-    this.managedNodes = [];
+    for (const process of this.#processes) {
+      if (!process.killed) {
+        process.kill("SIGKILL");
+      }
+    }
+    this.#processes = [];
 
     // A radicle-proxy is running on port 30000 for any other Cypress tests
     // that aren't managed by nodeManager.

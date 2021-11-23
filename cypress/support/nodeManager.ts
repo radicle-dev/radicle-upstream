@@ -26,18 +26,14 @@ const nodeManagerPlugin = createPlugin<NodeManagerPlugin>(
 );
 
 function startAndOnboardNode(
-  dataDir: string,
+  baseDataDir: string,
   onboardedUser: OnboardedUser
 ): Cypress.Chainable<NodeHandle> {
   return nodeManagerPlugin
-    .startNode(dataDir)
-    .then(id => {
-      cy.log(`Started node ${id}`);
-      return nodeManagerPlugin.onboardNode({
-        id,
-        handle: onboardedUser.handle || "secretariat",
-        passphrase: onboardedUser.passphrase || "radicle-upstream",
-      });
+    .startNode({
+      baseDataDir,
+      handle: onboardedUser.handle || "secretariat",
+      passphrase: onboardedUser.passphrase || "radicle-upstream",
     })
     .then(
       (nodeSession): NodeHandle => ({

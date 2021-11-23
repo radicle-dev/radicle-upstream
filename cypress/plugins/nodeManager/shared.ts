@@ -10,20 +10,18 @@
 // don't have access to those, so indlucing `plugin.ts` inside `commands.ts`
 // leads to errors.
 
-export type PeerId = string;
-
 export interface NodeSession {
   id: number;
-  peerId: PeerId;
+  peerId: string;
   authToken: string;
   httpPort: number;
   radHome: string;
 }
 
-export type NodeId = number;
-
-export interface OnboardNodeOptions {
-  id: NodeId;
+export interface StartNodeOptions {
+  // The directory `${baseDataDir}/node-${id}` will be used to store node
+  // related data.
+  baseDataDir: string;
   handle: string;
   passphrase: string;
 }
@@ -33,18 +31,12 @@ export interface OnboardNodeOptions {
 //
 // See https://docs.cypress.io/api/commands/task.html#Usage
 export interface NodeManagerPlugin {
-  // Start a node and return the node’s ID which is also the port it
-  // the API is listening on.
-  //
-  // The directory `${dataDir}/node-${id}` will be used to store node
-  // related data.
-  startNode: (dataDir: string) => Promise<number>;
-  onboardNode: (options: OnboardNodeOptions) => Promise<NodeSession>;
+  // Start a node and initialize an identity.
+  startNode: (options: StartNodeOptions) => Promise<NodeSession>;
   stopAllNodes: () => Promise<null>;
 }
 
 export const pluginMethods: Array<keyof NodeManagerPlugin> = [
   "startNode",
-  "onboardNode",
   "stopAllNodes",
 ];
