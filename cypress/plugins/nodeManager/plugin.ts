@@ -8,11 +8,13 @@ import * as stream from "stream";
 import { StringDecoder } from "string_decoder";
 import * as path from "path";
 import exitHook from "exit-hook";
-import fetch from "node-fetch";
+import fetch, { FetchError } from "node-fetch";
 import waitOn from "wait-on";
 import * as fs from "fs-extra";
 import execa from "execa";
 import * as cookie from "cookie";
+
+import { retryOnError } from "ui/src/retryOnError";
 
 import type {
   ConnectNodeOptions,
@@ -33,10 +35,6 @@ const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/debug/radicle-proxy");
 
 // IP to which all started processes will bind to.
 const HOST = "127.0.0.1";
-
-const sleep = async (ms: number) => {
-  await new Promise(resolve => setTimeout(resolve, ms));
-};
 
 class Logger {
   prefix: string;
@@ -232,20 +230,19 @@ class Node {
       throw new Error("Response did not contain an auth cookie");
     }
 
-    // We have to wait here because proxy restarts its internal machinery
-    // after the keystore endpoint is queried.
-    await sleep(500);
-
-    const identitiesResponse = await fetch(
-      `http://${HOST}:${this.id}/v1/identities`,
-      {
-        method: "post",
-        body: JSON.stringify({ handle: options.handle }),
-        headers: {
-          Cookie: `auth-token=${authToken}`,
-          "Content-Type": "application/json",
-        },
-      }
+    const identitiesResponse = await retryOnError(
+      () =>
+        fetch(`http://${HOST}:${this.id}/v1/identities`, {
+          method: "post",
+          body: JSON.stringify({ handle: options.handle }),
+          headers: {
+            Cookie: `auth-token=${authToken}`,
+            "Content-Type": "application/json",
+          },
+        }),
+      err => err instanceof FetchError && err.code === "ECONNREFUSED",
+      25,
+      40
     );
     const json = await identitiesResponse.json();
     const peerId = json.peerId;
