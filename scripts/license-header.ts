@@ -103,6 +103,9 @@ function makeLicenseComment(extName: string): string {
   if (extName === ".js" || extName === ".ts" || extName === ".rs") {
     const commentLines = licenseHeaderContent.map(x => `//${x}`);
     return `${commentLines.join("\n")}\n\n`;
+  } else if (extName === ".sh") {
+    const commentLines = licenseHeaderContent.map(x => `#${x}`);
+    return `${commentLines.join("\n")}\n\n`;
   } else if (extName === ".svelte") {
     return `<!--\n${licenseHeaderContent.join("\n")}\n-->\n`;
   } else if (extName === ".css") {

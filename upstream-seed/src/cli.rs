@@ -27,9 +27,14 @@ pub struct Args {
     #[structopt(long, parse(try_from_str = parse_bootstrap))]
     pub bootstrap: Option<Vec<(librad::PeerId, std::net::SocketAddr)>>,
 
-    /// URNs of projects to replicate. May be specified multiple times.
-    #[structopt(long)]
+    /// URNs of projects to replicate. May be specified multiple times or as a comma separated
+    /// list.
+    #[structopt(long, use_delimiter = true)]
     pub project: Vec<link_identities::git::Urn>,
+
+    /// Output logs as JSON.
+    #[structopt(long)]
+    pub log_json: bool,
 }
 
 pub fn from_args() -> Args {

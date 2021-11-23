@@ -26,9 +26,9 @@ mod peer;
 
 #[tokio::main(flavor = "multi_thread")]
 pub async fn main() {
-    init_logging();
-
     let args = cli::from_args();
+
+    init_logging(args.log_json);
 
     if let Err(err) = run(args).await {
         tracing::error!(?err, "fatal error");
@@ -225,7 +225,7 @@ fn load_or_create_secret_key(path: &std::path::Path) -> anyhow::Result<librad::S
     }
 }
 
-fn init_logging() {
+fn init_logging(log_json: bool) {
     if std::env::var("RUST_BACKTRACE").is_err() {
         std::env::set_var("RUST_BACKTRACE", "full");
     }
@@ -262,12 +262,11 @@ fn init_logging() {
         .with_writer(std::io::stderr)
         .with_env_filter(env_filter);
 
-    match std::env::var("TRACING_FMT").as_deref() {
-        Ok("pretty") => builder.pretty().init(),
-        Ok("compact") => builder.compact().init(),
-        Ok("json") => builder.json().init(),
-        _ => builder.pretty().init(),
-    };
+    if log_json {
+        builder.json().init();
+    } else {
+        builder.pretty().init();
+    }
 }
 
 /// Run [`Future`]s as tasks until a shutdown condition is triggered and collect their result.

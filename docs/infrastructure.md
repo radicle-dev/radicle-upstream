@@ -165,6 +165,24 @@ END
 docker-compose --env-file upstream-production-config.env -f docker-compose.yml up --detach
 ```
 
+## seed-node instance
+
+The seed node uses the following resources
+* GCE VM `seed-node-2`
+  * Zone `europe-north1-a`
+  * 100GB disk
+  * Ubuntu LTS 21.04
+  * n1-standard-1 (1vCPU, 3.75GB RAM)
+  * Network tag `seed-node`
+* External IP Address `seed-node-2`
+  * bound to the VM instance `seed-node-2`
+  * reachable under `34.88.37.244`
+* Firewall rule `seed-node` to allow traffic to the VM.
+
+The peer address is `hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@34.88.37.244:8776`.
+
+For more details see the [readme](../infra/seed-node/README.md).
+
 ## seed-node development instance
 
 For upstream-seed testing and development we have another VM. To save costs, we
@@ -172,7 +190,7 @@ start and stop it on demand whenever we need to test something.
 
 Connect to the VM via: `ssh seednode@35.228.122.189`.
 
-The org node uses the following resources
+The seed node uses the following resources
 * GCE VM `seed-node`
   * 4 vCPUs, 4GB RAM, 50GB SSD disk
 * External IP Address `seed-node`

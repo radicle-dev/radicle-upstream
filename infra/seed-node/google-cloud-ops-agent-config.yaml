@@ -1,0 +1,20 @@
+# <== Enter custom agent configurations in this file.
+# See https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent/configuration
+# for more details.
+logging:
+  receivers:
+    journald:
+      type: systemd_journald
+  processors:
+    journald-json:
+      type: parse_json
+      field: MESSAGE
+  service:
+    log_level: error
+    pipelines:
+      default_pipeline:
+        receivers: [journald]
+        processors: [journald-json]
+metrics:
+  service:
+    log_level: error
