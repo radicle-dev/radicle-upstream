@@ -61,20 +61,20 @@ export const unsealed = (): UnsealedSession => {
 
 // Returns when the session becomes unsealed. Throws when fetching the
 // session failed.
-export const waitUnsealed = async (): Promise<void> => {
-  await svelteStore.waitUntil(sessionStore, data => {
+export function waitUnsealed(): Promise<UnsealedSession> {
+  return svelteStore.waitUntil(sessionStore, data => {
     if (
       data.status === remote.Status.Success &&
       data.data.status === Status.UnsealedSession
     ) {
-      return true;
+      return data.data;
     } else if (data.status === remote.Status.Error) {
       throw data.error;
     } else {
-      return false;
+      return undefined;
     }
   });
-};
+}
 
 // Fetches the session from the proxy and updates the session store.
 //

@@ -61,9 +61,8 @@ const pollOrgListForever = async (
       }
       const walletStore = svelteStore.get(wallet.store);
 
-      await svelteStore.waitUntil(
-        walletStore,
-        w => w.status === wallet.Status.Connected
+      await svelteStore.waitUntil(walletStore, w =>
+        w.status === wallet.Status.Connected ? true : undefined
       );
 
       await fetchOrgs().then(
@@ -297,9 +296,11 @@ export async function createOrg(
 
   await svelteStore.waitUntil(orgSidebarStore, store => {
     if (store.type === "initial") {
-      return false;
+      return undefined;
+    } else if (store.orgs.some(org => org.id === orgAddress)) {
+      return true;
     } else {
-      return store.orgs.some(org => org.id === orgAddress);
+      return undefined;
     }
   });
   creationNotification.remove();

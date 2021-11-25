@@ -22,7 +22,7 @@ export interface LoadedRoute {
 }
 
 export async function load(params: Params): Promise<LoadedRoute> {
-  const session = Session.unsealed();
+  const session = await Session.waitUnsealed();
   const user = await proxy.client.personGet(params.urn);
   const projects = await proxy.client.project.listForUser(params.urn);
   return {

@@ -8,15 +8,16 @@ import type { Readable } from "svelte/store";
 
 export * from "svelte/store";
 
-// Waits until the value in `store` matches the predicate and resolves
-// the promise with the value.
+// Calls `matcher(value)` whenever `value` in `store` changes. Returns the
+// result of `matcher(value)` when it returns a value that is not `undefined`
+// for the first time.
 //
-// If `predicate` throws then the error is rethrown by the returned
+// If `matcher` throws then the error is rethrown by the returned
 // promise.
-export function waitUntil<T>(
+export function waitUntil<T, S>(
   store: Readable<T>,
-  predicate: (t: T) => boolean
-): Promise<T> {
+  matcher: (t: T) => S | undefined
+): Promise<S> {
   return new Promise((resolve, reject) => {
     let resolvedNow = false;
     let unsubscribe: () => void | undefined;
@@ -26,19 +27,19 @@ export function waitUntil<T>(
     unsubscribe = store.subscribe(value => {
       let matched;
       try {
-        matched = predicate(value);
+        matched = matcher(value);
       } catch (err: unknown) {
         reject(err);
         return;
       }
 
-      if (matched) {
+      if (matched !== undefined) {
         if (unsubscribe) {
           unsubscribe();
         } else {
           resolvedNow = true;
         }
-        resolve(value);
+        resolve(matched);
       }
     });
     if (resolvedNow) {
