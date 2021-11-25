@@ -25,8 +25,9 @@ fi
 log-group-end
 
 log-group-start "yarn install"
-yarn install --immutable
-yarn dedupe --check
+# Unsetting GITHUB_ACTIONS because yarn tries to add log groups in a buggy way.
+env -u GITHUB_ACTIONS yarn install --immutable
+env -u GITHUB_ACTIONS yarn dedupe --check
 log-group-end
 
 log-group-start "Test setup"

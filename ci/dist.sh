@@ -13,7 +13,8 @@ time rustup show active-toolchain
 log-group-start "install toolcahin"
 
 log-group-start "yarn install"
-yarn install --immutable
+# Unsetting GITHUB_ACTIONS because yarn tries to add log groups in a buggy way.
+env -u GITHUB_ACTIONS yarn install --immutable
 log-group-end
 
 log-group-start "Building and packaging binaries"
