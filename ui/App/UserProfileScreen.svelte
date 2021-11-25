@@ -32,7 +32,8 @@
   export let projects: proxyProject.Project[];
   export let user: proxyIdentity.RemoteIdentity;
   export let ownUserUrn: string;
-  function openProject(project: Project) {
+
+  function openProject(project: Project): void {
     router.push({
       type: "project",
       params: {

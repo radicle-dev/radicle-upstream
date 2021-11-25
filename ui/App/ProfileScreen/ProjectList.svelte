@@ -16,13 +16,6 @@
 
   export let projects: Project[];
   export let userUrn: string;
-
-  const projectCardProps = (project: Project) => ({
-    title: project.metadata.name,
-    description: project.metadata.description || "",
-    showMaintainerBadge: isMaintainer(userUrn, project),
-    anchor: project.anchor,
-  });
 </script>
 
 <style>
@@ -45,7 +38,11 @@
   <div
     class="list-item"
     data-cy={`project-list-entry-${project.metadata.name}`}>
-    <ProjectCard {...projectCardProps(project)} />
+    <ProjectCard
+      title={project.metadata.name}
+      description={project.metadata.description || ""}
+      showMaintainerBadge={isMaintainer(userUrn, project)}
+      anchor={project.anchor} />
 
     {#if project.stats}
       <ProjectStats

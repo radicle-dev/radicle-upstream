@@ -167,8 +167,11 @@ export const removePeer = (projectId: string, peerId: PeerId): void => {
   }
 };
 
-const throwUnlessPeersPresent = (peers: project.User[], projectId: string) => {
+function throwUnlessPeersPresent(
+  peers: project.User[],
+  projectId: string
+): void {
   if (peers.length === 0) {
     throw new Error(`Project ${projectId} is missing peers`);
   }
-};
+}

@@ -24,13 +24,6 @@
   export let primaryActionTooltipMessage: string | undefined = undefined;
 
   $: tooltipMessage = primaryActionDisabled ? primaryActionTooltipMessage : "";
-
-  const onPrimaryAction = () => {
-    dispatch("primaryAction");
-  };
-  const onSecondaryAction = () => {
-    dispatch("secondaryAction");
-  };
 </script>
 
 <style>
@@ -69,7 +62,7 @@
       <Button
         disabled={primaryActionDisabled}
         dataCy="primary-action"
-        on:click={() => onPrimaryAction()}>
+        on:click={() => dispatch("primaryAction")}>
         {primaryActionText}
       </Button>
     </Tooltip>
@@ -78,7 +71,7 @@
     <button
       data-cy="secondary-action"
       style="margin-top: 0.5rem;"
-      on:click={() => onSecondaryAction()}>
+      on:click={() => dispatch("secondaryAction")}>
       <p class="typo-link">{secondaryActionText}</p>
     </button>
   {/if}

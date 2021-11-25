@@ -71,7 +71,7 @@ export const createValidationStore = (
   const { subscribe, update } = internalStore;
   let inputStore: Writable<string> | undefined = undefined;
 
-  const reset = () => {
+  const reset = (): void => {
     inputStore = undefined;
     internalStore.set(initialState);
   };

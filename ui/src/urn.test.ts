@@ -18,12 +18,12 @@ import * as ethers from "ethers";
 import * as Urn from "./urn";
 
 describe("urnToSha1", () => {
-  function expectSuccess(urn: string, expectedRoot: string) {
+  function expectSuccess(urn: string, expectedRoot: string): void {
     const actual = Urn.urnToSha1(urn);
     expect(ethers.utils.hexlify(actual)).toEqual(expectedRoot);
   }
 
-  function expectFailure(urn: string, expectedError: string) {
+  function expectFailure(urn: string, expectedError: string): void {
     expect(() => Urn.urnToSha1(urn)).toThrow(expectedError);
   }
 

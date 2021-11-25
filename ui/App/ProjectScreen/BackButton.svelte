@@ -11,7 +11,7 @@
   import ArrowLeftIcon from "design-system/icons/ArrowLeft.svelte";
 
   const dispatch = createEventDispatcher();
-  const onArrowClick = () => {
+  const onArrowClick = (): void => {
     dispatch("arrowClick");
   };
 

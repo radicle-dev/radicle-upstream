@@ -30,8 +30,8 @@
     : "Checkout a working copy to your local disk.";
 
   const dispatch = createEventDispatcher();
-  const hide = () => (expanded = false);
-  const toggleDropdown = () => {
+  const hide = (): boolean => (expanded = false);
+  const toggleDropdown = (): void => {
     expanded = !expanded;
   };
 </script>

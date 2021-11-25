@@ -5,6 +5,17 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="ts" context="module">
+  export interface MenuItem {
+    title: string;
+    icon: typeof SvelteComponent;
+    event: () => void;
+    tooltip?: string;
+    dataCy?: string;
+    disabled?: boolean;
+  }
+</script>
+
 <script lang="ts">
   import type { SvelteComponent } from "svelte";
   import { fade } from "svelte/transition";
@@ -16,15 +27,6 @@
   export let menuItems: MenuItem[];
   export let dataCy: string | undefined = undefined;
   export let style: string | undefined = undefined;
-
-  interface MenuItem {
-    title: string;
-    icon: typeof SvelteComponent;
-    event: () => void;
-    tooltip?: string;
-    dataCy?: string;
-    disabled?: boolean;
-  }
 
   let expanded = false;
 </script>

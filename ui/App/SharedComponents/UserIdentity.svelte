@@ -29,7 +29,7 @@
 
   let user: proxyIdentity.RemoteIdentity | undefined = undefined;
 
-  async function fetchUser(urn: string) {
+  async function fetchUser(urn: string): Promise<void> {
     // Load data only the first time a user hovers a UserIdentity component and
     // make sure we show the correct data when the URN changes due to
     // reactivity.
@@ -51,7 +51,7 @@
     }
   }
 
-  function goToProfile(urn: string) {
+  function goToProfile(urn: string): void {
     modal.hide();
     if (urn === session.unsealed().identity.urn) {
       router.push({ type: "profile" });

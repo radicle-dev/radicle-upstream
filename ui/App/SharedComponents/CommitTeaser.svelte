@@ -18,7 +18,7 @@
   export let style: string | undefined = undefined;
 
   const dispatch = createEventDispatcher();
-  const onSelect = () => {
+  const onSelect = (): void => {
     dispatch("select", commit.sha1);
   };
 </script>

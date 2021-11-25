@@ -31,7 +31,7 @@
   import * as format from "design-system/lib/format";
 
   import Button from "design-system/Button.svelte";
-  import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
+  import ThreeDotsMenu, { MenuItem } from "design-system/ThreeDotsMenu.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
@@ -46,10 +46,10 @@
   export let activeView: projectRoute.ProjectView = { type: "files" };
   let hoverstyle: string = "";
 
-  const mouseenter = () => {
+  const mouseenter = (): void => {
     hoverstyle = "background-color: var(--color-foreground-level-2)";
   };
-  const mouseleave = () => {
+  const mouseleave = (): void => {
     hoverstyle = "";
   };
 
@@ -57,7 +57,7 @@
   const trackTooltipMaintainer = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
-  const menuItems = (project: Project) => {
+  function menuItems(project: Project): MenuItem[] {
     return [
       {
         title: "Copy Radicle ID",
@@ -81,13 +81,13 @@
           : trackTooltip,
       },
     ];
-  };
+  }
 
-  const onPeerModal = () => {
+  const onPeerModal = (): void => {
     modal.toggle(ManagePeersModal);
   };
 
-  const onSelectPeer = ({ detail: peer }: { detail: User }) => {
+  const onSelectPeer = ({ detail: peer }: { detail: User }): void => {
     selectPeer(peer);
   };
 

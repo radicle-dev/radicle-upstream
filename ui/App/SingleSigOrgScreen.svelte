@@ -36,45 +36,41 @@
   export let registration: Registration | undefined = undefined;
   export let showWriteActions: boolean;
 
-  const tabs = (address: string) => {
-    return [
-      {
-        title: "Anchored projects",
-        icon: ChevronLeftRightIcon,
-        active: true,
-        onClick: () => {
-          router.push({
-            type: "org",
-            params: { address, view: "projects" },
-          });
-        },
+  const tabs = [
+    {
+      title: "Anchored projects",
+      icon: ChevronLeftRightIcon,
+      active: true,
+      onClick: () => {
+        router.push({
+          type: "org",
+          params: { address, view: "projects" },
+        });
       },
-    ];
-  };
+    },
+  ];
 
-  const menuItems = (address: string) => {
-    return [
-      {
-        title: "View on Etherscan",
-        icon: AtIcon,
-        event: () => {
-          org.openOnEtherscan(address);
-        },
+  const menuItems = [
+    {
+      title: "View on Etherscan",
+      icon: AtIcon,
+      event: () => {
+        org.openOnEtherscan(address);
       },
-      {
-        title: "View in browser",
-        icon: GlobeIcon,
-        event: () => {
-          ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
-        },
+    },
+    {
+      title: "View in browser",
+      icon: GlobeIcon,
+      event: () => {
+        ipc.openUrl(`https://app.radicle.network/orgs/${address}`);
       },
-      {
-        title: registration ? "Edit ENS name" : "Register ENS name",
-        icon: EthereumIcon,
-        event: () => org.openEnsConfiguration(address, registration),
-      },
-    ];
-  };
+    },
+    {
+      title: registration ? "Edit ENS name" : "Register ENS name",
+      icon: EthereumIcon,
+      event: () => org.openEnsConfiguration(address, registration),
+    },
+  ];
 
   const showSidebar: boolean = !!(
     registration?.url ||
@@ -104,14 +100,14 @@
     <OrgHeader {registration} slot="left" orgAddress={address} />
     <div style="margin-left: auto; align-self: center; display: flex">
       <FollowToggle following disabled style="margin-right: 1rem;" />
-      <ThreeDotsMenu menuItems={menuItems(address)} />
+      <ThreeDotsMenu {menuItems} />
     </div>
   </div>
   <div class="sidebar-layout" class:single-column={!showSidebar}>
     <main>
       <ActionBar style="padding: 0; margin-top: 1rem;">
         <div slot="left">
-          <TabBar tabs={tabs(address)} />
+          <TabBar {tabs} />
         </div>
         <div slot="right">
           {#if showWriteActions}

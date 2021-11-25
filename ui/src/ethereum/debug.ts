@@ -27,18 +27,18 @@ class EthereumDebug {
     this.provider = provider;
   }
 
-  public async mineBlocks(blocks = 1) {
+  public async mineBlocks(blocks = 1): Promise<void> {
     while (blocks) {
       blocks -= 1;
       await this.provider.send("evm_mine", []);
     }
   }
 
-  public async setBlockTime(seconds = 5) {
+  public async setBlockTime(seconds = 5): Promise<void> {
     await this.provider.send("evm_setTime", [seconds]);
   }
 
-  public async increaseTime(seconds = 5) {
+  public async increaseTime(seconds = 5): Promise<void> {
     await this.provider.send("evm_increaseTime", [seconds]);
   }
 }

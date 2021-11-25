@@ -177,14 +177,14 @@ export function add(tx: Tx): void {
 }
 
 // Cap the amount of managed transactions
-function cap(length = 7) {
+function cap(length = 7): void {
   store.update((txs: Tx[]) => {
     txs.length = Math.min(txs.length, length);
     return txs;
   });
 }
 
-async function updateStatuses() {
+async function updateStatuses(): Promise<void> {
   const txs = svelteStore.get(store);
   txs.forEach(tx => {
     registerTxUpdateCallback(tx);

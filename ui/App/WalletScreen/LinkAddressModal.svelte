@@ -29,7 +29,7 @@
 
   $: address = $walletStore.getAddress() || "";
 
-  async function claim(ident: identity.Identity) {
+  async function claim(ident: identity.Identity): Promise<void> {
     $lastClaimed = address.toLowerCase();
     modal.hide();
     await identity.claimEthAddress(address);

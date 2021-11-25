@@ -173,7 +173,7 @@ export class WalletConnectClient implements WalletConnect {
   // https://github.com/WalletConnect/walletconnect-monorepo/issues/538
   // and
   // https://github.com/WalletConnect/walletconnect-monorepo/pull/370#issuecomment-776038638
-  private reinit() {
+  private reinit(): void {
     this.connector = new Connector({
       bridge: "https://bridge.walletconnect.org",
       qrcodeModal: {
@@ -220,7 +220,7 @@ export class WalletConnectClient implements WalletConnect {
     });
   }
 
-  private setConnection(sessionStatus: ISessionStatus | undefined) {
+  private setConnection(sessionStatus: ISessionStatus | undefined): void {
     let connection;
     if (sessionStatus) {
       connection = {

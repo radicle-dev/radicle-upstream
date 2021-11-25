@@ -27,7 +27,7 @@
 
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
-  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
+  import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ConnectWallet from "./WalletScreen/ConnectWallet.svelte";
   import LinkAddress from "./WalletScreen/LinkAddress.svelte";
@@ -38,8 +38,8 @@
 
   export let activeTab: router.WalletTab;
 
-  const tabs = (active: router.WalletTab) => {
-    const items = [
+  function tabs(active: router.WalletTab): Tab[] {
+    return [
       {
         title: "Transactions",
         icon: TransactionsIcon,
@@ -49,9 +49,7 @@
         },
       },
     ];
-
-    return items;
-  };
+  }
 
   watchAttestationStatus(store);
 
@@ -60,7 +58,7 @@
   // and thus be able to access its appropriate fields.
   $: w = $wallet;
 
-  async function connectWallet() {
+  async function connectWallet(): Promise<void> {
     try {
       await wallet.connect({
         show(uri: string, onClose: () => void) {

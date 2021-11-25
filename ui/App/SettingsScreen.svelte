@@ -26,10 +26,10 @@
   import ThemeSetting from "ui/App/SharedComponents/ThemeSetting.svelte";
   import UiFontSetting from "ui/App/SharedComponents/UiFontSetting.svelte";
 
-  const updateEthereumEnvironment = (event: CustomEvent) => {
+  function updateEthereumEnvironment(event: CustomEvent): void {
     const environment = event.detail as ethereum.Environment;
     ethereum.selectedEnvironment.set(environment);
-  };
+  }
 
   let version = "";
   (async () => {
@@ -51,13 +51,13 @@
     isEnabled => (isEnabled ? "on" : "off")
   );
 
-  const setAppUpdateNotificationEnabled = (event: CustomEvent) => {
+  function setAppUpdateNotificationEnabled(event: CustomEvent): void {
     if (event.detail === "on") {
       updateChecker.enable();
     } else {
       updateChecker.disable();
     }
-  };
+  }
 
   const appUpdateNotificationEnabledOptions = [
     { value: "on", title: "Notify Me" },

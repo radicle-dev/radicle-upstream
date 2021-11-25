@@ -116,7 +116,7 @@
     }
   };
 
-  function openProject({ detail: project }: { detail: Project }) {
+  function openProject({ detail: project }: { detail: Project }): void {
     router.push({
       type: "project",
       params: {
@@ -130,7 +130,7 @@
     proxy.client.project.requestCancel(urn).then(fetchProfileProjects);
   }
 
-  function projectCountText(storeLength: number) {
+  function projectCountText(storeLength: number): string {
     return `${storeLength} project${storeLength > 1 ? "s" : ""}`;
   }
 

@@ -11,7 +11,7 @@ const TRY_COUNT = 10;
 test("retries exhausted", async () => {
   const error = new Error("ERROR");
   let callCount = 0;
-  const action = async () => {
+  const action = async (): Promise<void> => {
     callCount += 1;
     throw error;
   };
@@ -28,7 +28,7 @@ test("rethrows unmatched errors", async () => {
   const retryError = new Error("RETRY");
 
   let callCount = 0;
-  const action = async () => {
+  const action = async (): Promise<void> => {
     callCount += 1;
     if (callCount < TRY_COUNT / 2) {
       throw retryError;
@@ -51,7 +51,7 @@ test("passes valid results", async () => {
   const error = new Error("ERROR");
 
   let callCount = 0;
-  const action = async () => {
+  const action = async (): Promise<string> => {
     callCount += 1;
     if (callCount < TRY_COUNT / 2) {
       throw error;

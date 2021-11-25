@@ -28,7 +28,7 @@ const historyExecutor = mutexExecutor.create();
 
 // Sets the history to the given value and navigates to the last item
 // in the history.
-const setHistory = async (history: Route[]) => {
+async function setHistory(history: Route[]): Promise<void> {
   if (history.length === 0) {
     throw new error.Error({
       code: error.Code.EmptyHistory,
@@ -43,7 +43,7 @@ const setHistory = async (history: Route[]) => {
 
     const abort = new bacon.Bus<void>();
 
-    function scheduleNotification() {
+    function scheduleNotification(): void {
       notificationTimeout = setTimeout(() => {
         notificationHandle = notification.show({
           type: "info",
@@ -95,7 +95,7 @@ const setHistory = async (history: Route[]) => {
     // displayed in the URL bar.
     routeToPath(targetRoute)
   );
-};
+}
 
 export const push = async (newRoute: Route): Promise<void> => {
   const history = svelteStore.get(historyStore);

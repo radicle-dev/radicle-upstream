@@ -24,7 +24,7 @@
 
   const defaultBranch = project.metadata.defaultBranch;
 
-  const selectPatch = ({ detail: patch }: { detail: Patch }) => {
+  const selectPatch = ({ detail: patch }: { detail: Patch }): void => {
     router.push({
       type: "project",
       params: {

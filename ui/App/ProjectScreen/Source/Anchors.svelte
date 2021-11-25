@@ -28,7 +28,7 @@
   $: latest = anchors.slice(-1)[0];
   $: oldAnchors = anchors.slice(0, -1).reverse();
 
-  const openCommit = (commitHash: string, projectId: string) => {
+  function openCommit(commitHash: string, projectId: string): void {
     router.push({
       type: "project",
       params: {
@@ -36,7 +36,7 @@
         urn: projectId,
       },
     });
-  };
+  }
 
   const isAnchorHintVisible = browserStore.create<boolean>(
     "radicle.isAnchorHintVisible",

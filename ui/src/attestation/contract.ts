@@ -114,7 +114,7 @@ export class ClaimsContract {
       return this.getClaimedByTx(txHash, address);
     });
 
-    const listener = async (_: unknown, event: ethers.Event) => {
+    const listener = async (_: unknown, event: ethers.Event): Promise<void> => {
       getClaim.submit(event.transactionHash);
     };
     this.#contract.on(filter, listener);
@@ -127,7 +127,7 @@ export class ClaimsContract {
     }
     const unsubOnClaimed = getClaim.output.onValue(onClaimed);
 
-    const unwatch = () => {
+    const unwatch = (): void => {
       unsubOnClaimed();
       this.#contract.off(filter, listener);
     };

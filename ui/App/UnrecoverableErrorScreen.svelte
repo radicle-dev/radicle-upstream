@@ -28,20 +28,20 @@
   let copyIcon: typeof SvelteComponent;
   $: copyIcon = copied ? CheckIcon : CopyIcon;
 
-  const copyToClipboard = (text: string) => {
+  function copyToClipboard(text: string): void {
     ipc.copyToClipboard(text);
     notification.show({ type: "info", message: "Copied to your clipboard" });
     copied = true;
     setTimeout(() => {
       copied = false;
     }, 2000);
-  };
+  }
 
-  const support = () => {
+  function support(): void {
     ipc.openUrl(
       "https://matrix.radicle.community/#/room/#support:radicle.community"
     );
-  };
+  }
 </script>
 
 <style>

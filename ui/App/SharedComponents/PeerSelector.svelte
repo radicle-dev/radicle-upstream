@@ -34,15 +34,15 @@
     );
   };
 
-  const hide = () => {
+  const hide = (): void => {
     expanded = false;
   };
-  const show = () => {
+  const show = (): void => {
     expanded = true;
   };
 
   const dispatch = createEventDispatcher();
-  const onSelect = (peer: User) => {
+  const onSelect = (peer: User): void => {
     if (peer.role === PeerRole.Tracker) {
       return;
     }

@@ -100,7 +100,7 @@ export const defaultBranchForNewRepository = async (): Promise<string> => {
   return (await ipc.getGitGlobalDefaultBranch()) || UPSTREAM_DEFAULT_BRANCH;
 };
 
-const fetchBranches = async (path: string) => {
+async function fetchBranches(path: string): Promise<void> {
   fetchLocalState(path);
 
   localStateError.set("");
@@ -129,7 +129,7 @@ const fetchBranches = async (path: string) => {
   );
 
   defaultBranch.set(foundDefaultBranch || state.branches[0]);
-};
+}
 
 // Creates a sorted user list from a peer list.
 //

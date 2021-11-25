@@ -26,7 +26,7 @@
   export let anchor: project.Anchor;
   export let replicated: boolean = false;
 
-  const openCommit = () => {
+  function openCommit(): void {
     router.push({
       type: "project",
       params: {
@@ -34,7 +34,7 @@
         urn: anchor.projectId,
       },
     });
-  };
+  }
 
   $: anchorColor =
     anchor.type === "confirmed"

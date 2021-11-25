@@ -33,7 +33,7 @@
   const projectRequestStore = remote.createStore<proxyProject.Request>();
   const projectSearchStore = remote.createStore<proxyProject.Project>();
 
-  function navigateToProject(project: project.Project) {
+  function navigateToProject(project: project.Project): void {
     reset();
     router.push({
       type: "project",
@@ -45,7 +45,7 @@
     modal.hide();
   }
 
-  function onKeydown(event: KeyboardEvent) {
+  function onKeydown(event: KeyboardEvent): void {
     switch (event.code) {
       case "Enter":
         if ($projectSearchStore.status === remote.Status.Success) {
@@ -66,7 +66,7 @@
     projectSearchStore.reset();
   }
 
-  function follow() {
+  function follow(): void {
     if (validationState.type === "valid") {
       remote.fetch(
         projectRequestStore,

@@ -36,28 +36,28 @@
     peerValidation.reset();
   }
 
-  const submitPeer = async (projectUrn: string) => {
+  const submitPeer = async (projectUrn: string): Promise<void> => {
     if (await addPeer(projectUrn, newPeer)) {
       newPeer = "";
     }
   };
 
-  const cancelFollowRequest = (projectUrn: string, peerId: PeerId) => {
+  const cancelFollowRequest = (projectUrn: string, peerId: PeerId): void => {
     removePeer(projectUrn, peerId);
     peerValidation.reset();
   };
 
-  const unfollowPeer = (projectUrn: string, peerId: PeerId) => {
+  const unfollowPeer = (projectUrn: string, peerId: PeerId): void => {
     removePeer(projectUrn, peerId);
     peerValidation.reset();
   };
 
   // Don't show our own peer in the list unless we have published something.
-  const filteredPeers = (peers: User[]) => {
+  function filteredPeers(peers: User[]): User[] {
     return peers.filter(peer => {
       return !(peer.type === PeerType.Local && peer.role === PeerRole.Tracker);
     });
-  };
+  }
 
   const pendingPeers = svelteStore.derived(store, remoteData => {
     if (remoteData.status === remote.Status.Success) {

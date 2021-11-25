@@ -5,16 +5,18 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
-<script lang="ts">
-  import type { SvelteComponent } from "svelte";
-
-  interface Tab {
+<script lang="ts" context="module">
+  export interface Tab {
     title: string;
     active: boolean;
     icon: typeof SvelteComponent;
     counter?: number;
     onClick: () => void;
   }
+</script>
+
+<script lang="ts">
+  import type { SvelteComponent } from "svelte";
 
   export let tabs: Tab[];
   export let style: string | undefined = undefined;

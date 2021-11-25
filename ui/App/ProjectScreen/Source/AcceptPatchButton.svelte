@@ -20,11 +20,13 @@
 
   let expanded = false;
   let copyable: Copyable;
-  const hide = () => (expanded = false);
-  const toggleDropdown = () => {
+  const hide = (): void => {
+    expanded = false;
+  };
+  const toggleDropdown = (): void => {
     expanded = !expanded;
   };
-  const copy = () => {
+  const copy = (): void => {
     copyable.copy();
     toggleDropdown();
   };

@@ -8,7 +8,7 @@ import { derived, get, writable } from "svelte/store";
 import type { SvelteComponent } from "svelte";
 
 type OnHide = () => void;
-const doNothing = () => {};
+const doNothing = (): void => {};
 
 type ModalLayout = {
   modalComponent: typeof SvelteComponent;

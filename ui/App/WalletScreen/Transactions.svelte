@@ -11,6 +11,11 @@
   import type { Tx } from "ui/src/transaction";
 
   import TransactionList from "./Transactions/TransactionList.svelte";
+  interface Section {
+    key: string;
+    title: string;
+    items: Tx[];
+  }
 
   $: includedTxs = $transactions.filter(tx => tx.status === TxStatus.Included);
   $: pendingTxs = $transactions.filter(
@@ -18,8 +23,8 @@
   );
   $: rejectedTxs = $transactions.filter(tx => tx.status === TxStatus.Rejected);
 
-  const groupTxs = (txs: Tx[]) => {
-    const sections: Array<{ key: string; title: string; items: Tx[] }> = [];
+  function groupTxs(txs: Tx[]): Section[] {
+    const sections: Section[] = [];
     // Sort from newest to oldest
     txs.sort((a, b) => b.date - a.date);
     for (const tx of txs) {
@@ -40,7 +45,7 @@
       }
     }
     return sections;
-  };
+  }
 
   $: txMonthSections = groupTxs(includedTxs);
 </script>

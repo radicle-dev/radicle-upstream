@@ -84,7 +84,7 @@ class UpdateChecker {
 
   // If the user has not been asked already, we show a notification
   // and ask them to enable update notifications.
-  public notifyEnable() {
+  public notifyEnable(): void {
     const isEnabled = svelteStore.get(isEnabledStore);
     if (isEnabled === null) {
       notification.show({
@@ -112,7 +112,7 @@ class UpdateChecker {
   }
 
   // Enable background udpate checking.
-  public enable() {
+  public enable(): void {
     isEnabledStore.set(true);
 
     this.checkNewVersion();
@@ -124,7 +124,7 @@ class UpdateChecker {
   }
 
   // Disable background udpate checking.
-  public disable() {
+  public disable(): void {
     isEnabledStore.set(false);
 
     if (this.checkInterval !== null) {
@@ -166,7 +166,7 @@ class UpdateChecker {
   // Fetch information about the latest version. If that version is
   // newer than the current version and the user has not been notified
   // since `VERSION_NOTIFY_SILENCE_INTERVAL` we show a notification.
-  private async checkNewVersion() {
+  private async checkNewVersion(): Promise<void> {
     let latestVersionInfo;
     try {
       latestVersionInfo = await fetchLatestVersion();

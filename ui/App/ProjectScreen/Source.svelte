@@ -39,7 +39,7 @@
 
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
-  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
+  import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
   import CheckoutButton from "./Source/CheckoutButton.svelte";
   import PatchButton from "./Source/PatchButton.svelte";
@@ -58,7 +58,7 @@
 
   export let activeView: projectRoute.ProjectView;
 
-  const tabs = (active: projectRoute.ProjectView, screen: Screen) => {
+  const tabs = (active: projectRoute.ProjectView, screen: Screen): Tab[] => {
     const items = [
       {
         title: "Files",
@@ -140,7 +140,7 @@
     { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
     project: Project,
     peer: User
-  ) => {
+  ): Promise<void> => {
     await screen.withLock(async () => {
       try {
         const path = await proxy.client.project.checkout(project.urn, {
@@ -178,7 +178,11 @@
     });
   };
 
-  const onSelectRevision = ({ detail: revision }: { detail: Branch | Tag }) => {
+  const onSelectRevision = ({
+    detail: revision,
+  }: {
+    detail: Branch | Tag;
+  }): void => {
     selectRevision(revision);
   };
 

@@ -69,12 +69,12 @@ const closeAction: Action = {
   handler: () => {},
 };
 
-export function removeHideTimer(notification: Notification) {
+export function removeHideTimer(notification: Notification): void {
   window.clearTimeout(notification.hideTimerHandle);
   notification.hideTimerHandle = undefined;
 }
 
-export function attachHideTimer(notification: Notification) {
+export function attachHideTimer(notification: Notification): void {
   if (notification.hideTimerHandle) {
     removeHideTimer(notification);
   }

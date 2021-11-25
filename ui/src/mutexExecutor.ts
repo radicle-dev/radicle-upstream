@@ -103,7 +103,7 @@ class MutexWorker<In, Out> {
     this.output = this.outputBus.toEventStream();
   }
 
-  public async submit(x: In) {
+  public async submit(x: In): Promise<void> {
     const output = await this.executor.run(abort => this.fn(x, abort));
     if (output !== undefined) {
       this.outputBus.push(output);

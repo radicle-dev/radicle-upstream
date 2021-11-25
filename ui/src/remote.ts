@@ -96,7 +96,9 @@ export const createStore = <T>(): Store<T> => {
     });
   };
 
-  const resetInternalStore = () => update(() => ({ status: Status.NotAsked }));
+  function resetInternalStore(): void {
+    update(() => ({ status: Status.NotAsked }));
+  }
 
   const is = (status: Status): boolean => {
     return svelteStore.get(internalStore).status === status;

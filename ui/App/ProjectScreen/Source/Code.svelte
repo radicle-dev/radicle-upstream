@@ -14,7 +14,7 @@
   import Remote from "ui/App/SharedComponents/Remote.svelte";
   import Tree from "./SourceBrowser/Tree.svelte";
 
-  const onSelectCommit = (projectUrn: string, sha1: string) => {
+  const onSelectCommit = (projectUrn: string, sha1: string): void => {
     router.push({
       type: "project",
       params: {
@@ -24,10 +24,12 @@
     });
   };
 
-  const onSelectPath = ({ detail: path }: { detail: string }) => {
+  const onSelectPath = ({ detail: path }: { detail: string }): void => {
     selectPath(path);
   };
-  const onSelectRoot = () => selectPath("");
+  const onSelectRoot = (): void => {
+    selectPath("");
+  };
 </script>
 
 <style>

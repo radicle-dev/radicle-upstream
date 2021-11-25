@@ -69,6 +69,7 @@ module.exports = {
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-implicit-any-catch": "error",
     "@typescript-eslint/explicit-member-accessibility": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "error",
   },
   settings: {
     "svelte3/typescript": true,

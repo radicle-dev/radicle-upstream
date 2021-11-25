@@ -21,12 +21,12 @@
 
   const dispatch = createEventDispatcher();
 
-  const openFileDialog = async () => {
+  async function openFileDialog(): Promise<void> {
     path = await getDirectoryPath();
     if (path) {
       dispatch("selected");
     }
-  };
+  }
 </script>
 
 <style>

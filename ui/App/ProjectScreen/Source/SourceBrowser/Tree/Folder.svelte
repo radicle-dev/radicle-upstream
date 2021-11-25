@@ -26,10 +26,10 @@
   let expanded = false;
 
   const dispatch = createEventDispatcher();
-  const onSelectPath = ({ detail: path }: { detail: string }) => {
+  const onSelectPath = ({ detail: path }: { detail: string }): void => {
     dispatch("select", path);
   };
-  const toggle = () => {
+  const toggle = (): void => {
     expanded = !expanded;
   };
 

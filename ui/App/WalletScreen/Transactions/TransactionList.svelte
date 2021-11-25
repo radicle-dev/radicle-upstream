@@ -15,11 +15,11 @@
   export let title: string;
   export let txs: Tx[];
 
-  const onSelect = (hash: string) => {
+  function onSelect(hash: string): void {
     modal.toggle(TransactionModal, () => {}, {
       transactionHash: hash,
     });
-  };
+  }
 </script>
 
 <style>

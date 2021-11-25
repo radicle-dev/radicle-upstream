@@ -31,7 +31,7 @@ function createApolloClient(uri: string): apolloCore.ApolloClient<unknown> {
   });
 }
 
-function orgsSubgraphClient() {
+function orgsSubgraphClient(): apolloCore.ApolloClient<unknown> {
   const walletStore = svelteStore.get(wallet.store);
   let uri;
   switch (walletStore.environment) {

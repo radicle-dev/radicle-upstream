@@ -66,7 +66,7 @@ async function updateAccountBalances(
   environment: Environment,
   address: string,
   provider: ethers.providers.Provider
-) {
+): Promise<void> {
   try {
     const radTokenContract = radToken.connect(provider, environment);
 
@@ -124,7 +124,7 @@ function build(environment: Environment, provider: Provider): Wallet {
   });
 
   // Connect to a wallet using walletconnect
-  async function connect(qrDisplay: QrDisplay) {
+  async function connect(qrDisplay: QrDisplay): Promise<void> {
     if (svelteStore.get(stateStore).status !== Status.NotConnected) {
       throw new Error("A wallet is already connected");
     }

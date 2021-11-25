@@ -42,20 +42,24 @@
   ];
 
   const dispatch = createEventDispatcher();
-  const hide = () => {
+
+  function hide(): void {
     expanded = false;
-  };
-  const select = (revision: Branch | Tag) => {
+  }
+
+  function select(revision: Branch | Tag): void {
     dispatch("select", revision);
     selected = revision as Branch | Tag;
     hide();
-  };
-  const toggle = () => {
+  }
+
+  function toggle(): void {
     expanded = !expanded;
-  };
-  const revisionKey = (revision: Branch | Tag): string => {
+  }
+
+  function revisionKey(revision: Branch | Tag): string {
     return `${revision.type}-${revision.name}`;
-  };
+  }
 </script>
 
 <style>

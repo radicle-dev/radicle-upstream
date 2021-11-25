@@ -17,7 +17,7 @@
 
   $: address = $walletStore.getAddress()?.toLowerCase();
 
-  function onLink() {
+  function onLink(): void {
     modal.toggle(LinkAddressModal);
   }
 </script>

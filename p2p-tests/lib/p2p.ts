@@ -85,7 +85,7 @@ export class LinePrefix extends stream.Transform {
     super();
   }
 
-  public _transform(data: Buffer, _encoding: string, next: () => void) {
+  public _transform(data: Buffer, _encoding: string, next: () => void): void {
     const str = this.buffer + this.stringDecoder.write(data);
     const lines = str.split(/\r?\n/);
     this.buffer = lines.pop() || "";
@@ -99,7 +99,7 @@ export class LinePrefix extends stream.Transform {
     next();
   }
 
-  public _flush(done: () => void) {
+  public _flush(done: () => void): void {
     this.push(`${this.prefix}${this.buffer}${this.stringDecoder.end()}\n`);
     done();
   }
@@ -218,6 +218,8 @@ export function pushRad(
   });
 }
 
-export async function withRetry(action: () => Promise<unknown>) {
+export async function withRetry(
+  action: () => Promise<unknown>
+): Promise<unknown> {
   return await retryOnError(action, () => true, 1000, 10);
 }

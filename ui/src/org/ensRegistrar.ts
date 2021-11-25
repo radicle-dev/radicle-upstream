@@ -13,7 +13,10 @@ import * as svelteStore from "ui/src/svelteStore";
 import * as Wallet from "ui/src/wallet";
 import * as browserStore from "ui/src/browserStore";
 
-import { Registrar__factory as RegistrarFactory } from "radicle-contracts/build/contract-bindings/ethers";
+import {
+  Registrar__factory as RegistrarFactory,
+  Registrar,
+} from "radicle-contracts/build/contract-bindings/ethers";
 
 function registrarAddress(network: ethereum.Environment): string {
   switch (network) {
@@ -29,7 +32,7 @@ function registrarAddress(network: ethereum.Environment): string {
   }
 }
 
-function registrar() {
+function registrar(): Registrar {
   const wallet = svelteStore.get(Wallet.store);
   return RegistrarFactory.connect(
     registrarAddress(wallet.environment),
