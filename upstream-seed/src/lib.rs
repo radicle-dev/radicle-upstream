@@ -78,6 +78,33 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
 
     task_runner.add_cancel({
         peer.clone()
+            .events()
+            .for_each(|event| {
+                if let librad::net::peer::ProtocolEvent::Gossip(gossip) = event {
+                    match *gossip {
+                        librad::net::peer::event::upstream::Gossip::Put {
+                            provider,
+                            payload,
+                            result: _,
+                        } => {
+                            tracing::debug!(
+                                provider_id = %provider.peer_id,
+                                provider_seen_addrs = ?provider.seen_addrs.clone().into_inner(),
+                                urn = %payload.urn,
+                                rev = ?payload.rev,
+                                origin = ?payload.origin,
+                                "gossip put"
+                            )
+                        }
+                    }
+                };
+                future::ready(())
+            })
+            .map(Ok)
+    });
+
+    task_runner.add_cancel({
+        peer.clone()
             .connected_peers()
             .for_each(|peers| {
                 tracing::info!(?peers, "p2p connections changed");
@@ -227,7 +254,8 @@ fn load_or_create_secret_key(path: &std::path::Path) -> anyhow::Result<librad::S
 
 fn init_logging(log_json: bool) {
     if std::env::var("RUST_BACKTRACE").is_err() {
-        std::env::set_var("RUST_BACKTRACE", "full");
+        std::env::set_var("RUST_BACKTRACE", "1");
+        std::env::set_var("RUST_LIB_BACKTRACE", "0");
     }
 
     let env_filter = if let Ok(value) = std::env::var("RUST_LOG") {
@@ -235,19 +263,9 @@ fn init_logging(log_json: bool) {
     } else {
         let directives = [
             "info",
-            "quinn=warn",
             "upstream_seed=debug",
-            "librad=debug",
             // Silence some noisy debug statements.
-            "librad::git::fetch::specs::refspecs=info",
-            "librad::git::identities::local=info",
-            "librad::git::identities::person=info",
-            "librad::git::include=info",
-            "librad::git::refs=info",
-            "librad::git::tracking=info",
-            "librad::net::protocol::accept=info",
-            "librad::net::protocol::membership::periodic=info",
-            "librad::net::quic::connection::tracking=info",
+            "librad::net::protocol::io::streams=warn",
             "librad::net::protocol::io::recv::git=warn",
         ];
 

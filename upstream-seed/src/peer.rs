@@ -309,7 +309,7 @@ impl Peer {
     /// stream are not processed in time events may be skipped.
     ///
     /// The stream will never end.
-    fn events(
+    pub fn events(
         &self,
     ) -> impl Stream<Item = librad::net::peer::ProtocolEvent> + Unpin + Send + 'static {
         self.librad_peer
