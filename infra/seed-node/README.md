@@ -8,6 +8,11 @@ The peer address is `hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@34.8
 ## Configuration
 
 The list of projects the seed node tracks is set in `/etc/upstream-seed.env`.
+After changing the configuration you need to restart the seed with
+
+```bash
+sudo systemctl restart upstream-seed
+```
 
 ## Logging
 
@@ -19,7 +24,7 @@ You can update the `upstream-seed` binary to the latest build of the `main`
 branch by running
 
 ```bash
-/home/ubuntu/radicle-upstream/infa/seed-node/update-upstream-seed.sh
+sudo /home/ubuntu/radicle-upstream/infa/seed-node/update-upstream-seed.sh
 ```
 
 The script accepts a commit hash as an optional argument. If provided, it
