@@ -179,7 +179,7 @@ async fn fetch_from_connected(
     let mut new_connections = peer.new_connections().take_until(shutdown_signal).boxed();
     while let Some(new_connections) = new_connections.next().await {
         futures::stream::iter(&projects)
-            .for_each_concurrent(4, |project| {
+            .for_each(|project| {
                 let new_connections = Clone::clone(&new_connections);
                 let peer = &peer;
                 async move {
