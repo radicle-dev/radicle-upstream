@@ -11,13 +11,13 @@
   import { status } from "ui/src/localPeer";
   import * as proxy from "ui/src/proxy";
   import { indicatorState } from "ui/src/network";
-  import { createValidationStore } from "ui/src/validation";
   import { VALID_SEED_MATCH } from "ui/src/session";
 
   import CrossIcon from "design-system/icons/Cross.svelte";
 
   import Button from "design-system/Button.svelte";
   import TextInput from "design-system/TextInput.svelte";
+  import type { TextInputValidationState } from "design-system/TextInput";
 
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -28,38 +28,26 @@
   let loaded = false;
   let seedInputValue: string = "";
 
-  const seedValidation = createValidationStore(
-    {
-      format: {
-        pattern: VALID_SEED_MATCH,
-        message: "This is not a valid seed address",
-      },
-    },
-    [
-      {
-        promise: (seed: string) => {
-          return Promise.resolve(!seeds.includes(seed));
-        },
-        validationMessage: "This seed already exists",
-      },
-    ]
-  );
+  let seedInputValidationState: TextInputValidationState = {
+    type: "unvalidated",
+  };
 
   $: if (seedInputValue === "") {
-    seedValidation.reset();
+    seedInputValidationState = { type: "unvalidated" };
   }
 
   fetchSeeds();
 
   async function addSeed() {
-    seedValidation.validate(seedInputValue);
-    // We have to wait a tick so that the asynchronous validations can
-    // run and update the validation status
-    await Promise.resolve();
-    if (svelteStore.get(seedValidation).type === "valid") {
-      await updateSeeds(seeds => [...seeds, seedInputValue]);
-      seedInputValue = "";
+    const validationResult = validateSeed(seedInputValue);
+    if (validationResult === true) {
+      seedInputValidationState = { type: "valid" };
+    } else {
+      seedInputValidationState = { type: "invalid", message: validationResult };
+      return;
     }
+
+    await updateSeeds(seeds => [...seeds, seedInputValue]);
   }
 
   async function fetchSeeds() {
@@ -77,6 +65,20 @@
   async function updateSeeds(f: (seeds: string[]) => string[]) {
     seeds = f(seeds);
     await proxy.client.seedsPut(seeds);
+  }
+
+  // Returns `true` if `seed` is a valid seed address and an error message
+  // otherwise.
+  function validateSeed(seed: string): true | string {
+    if (!VALID_SEED_MATCH.exec(seed)) {
+      return "This is not a valid seed address";
+    }
+
+    if (seeds.includes(seed)) {
+      return "This seed already exists";
+    }
+
+    return true;
   }
 </script>
 
@@ -174,7 +176,7 @@
           bind:value={seedInputValue}
           placeholder="Enter a seed address here"
           style="min-width: 14rem; width: 100%;"
-          validationState={$seedValidation} />
+          validationState={seedInputValidationState} />
         <Button
           dataCy="add-seed"
           on:click={addSeed}
