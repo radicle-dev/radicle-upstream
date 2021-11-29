@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import marked from "marked";
+  import { marked } from "marked";
 
   export let content: string;
 </script>
@@ -221,6 +221,6 @@
 
 {#if content}
   <div class="markdown">
-    {@html marked(content)}
+    {@html marked.parse(content)}
   </div>
 {/if}

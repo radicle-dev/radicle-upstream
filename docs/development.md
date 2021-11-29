@@ -373,8 +373,10 @@ On pushes of the master branch we also build and upload distribution artifacts.
      * `strip-ansi`
    * Don’t update `radicle-contracts`.
    * Don’t do a major upgrade of `@types/node`.
-   * `electron-builder` shows `^22.13.1` as the latest version. This is
+   * `electron-builder` shows `^22.14.5` as the latest version. This is
      not the latest version. Choose the version from the “Range” column.
+   * Don’t update `graphql` to v16. v15 is required as a peer dependency for
+     `@apollo/client`.
 
 3. Update transitive dependencies: Remove `yarn.lock` and run `yarn install`.
 

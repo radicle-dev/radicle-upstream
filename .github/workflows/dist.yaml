@@ -21,9 +21,9 @@ jobs:
             ~/cache/yarn
             ~/cache/cypress
           # Reuses cache from `build` workflow
-          key: build-${{ runner.os }}-yarn-v3-${{ hashFiles('yarn.lock') }}
+          key: build-${{ runner.os }}-yarn-v4-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            build-${{ runner.os }}-yarn-v3-
+            build-${{ runner.os }}-yarn-v4-
       - name: Cache Rust
         uses: actions/cache@v2
         with:
