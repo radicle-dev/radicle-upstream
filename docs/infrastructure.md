@@ -11,7 +11,6 @@ The Upstream team owns the following infrastructure.
   * The DNS records (IPv4) pointing `releases.radicle.xyz` to the load balancer
     are managed by the Radicle Foundation.
   * Certificates for the loadbalancers are automatically provisioned by GCP.
-* Provides a container registry under `gcr.io/radicle-upstream`.
 * Provides Org Seed Node service (see below)
 * Provides infra for Github Actions Artifacts (see below)
 
