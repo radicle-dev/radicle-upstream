@@ -18,15 +18,6 @@ env -u GITHUB_ACTIONS yarn install --immutable
 log-group-end
 
 log-group-start "Building and packaging binaries"
-if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
-  :
-  # TODO setup notarization
-  # export NOTARIZE=true
-  # export APPLE_ID="rudolfs@monadic.xyz"
-  # export APPLE_ID_PASSWORD="@keychain:AC_PASSWORD"
-  # export CSC_NAME="Monadic GmbH (35C27H9VL2)"
-fi
-
 time yarn dist
 target="$(uname -m)-$(uname -s | tr "[:upper:]" "[:lower:]")"
 mkdir "dist/${target}"

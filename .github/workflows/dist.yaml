@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-11]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@master
@@ -53,10 +53,6 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: dist-Linux
-          path: dist
-      - uses: actions/download-artifact@v2
-        with:
-          name: dist-macOS
           path: dist
       - name: publish artifacts by commit
         uses: google-github-actions/upload-cloud-storage@v0.4.0

@@ -175,13 +175,12 @@ However, if the build host is not available, it is possible to set up and
 perform notarization locally on Apple hardware.
 
 For this we need:
-  - a paid Apple developer account registered to Monadic
+  - a paid Apple developer account
   - an Apple ID token for allowing the notarization script to run on behalf of
     our developer account
     - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
   - a valid "Developer ID Application" certificate
     - [Certificates Add][ca] -> Developer ID Application
-      **Note:** this can only be created via the company account holder
 
 Once you've created the _Developer ID Application_ certificate, download it
 locally and add it to your keychain by double clicking on the file.
