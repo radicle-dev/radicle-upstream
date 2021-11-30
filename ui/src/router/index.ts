@@ -104,9 +104,13 @@ export const push = async (newRoute: Route): Promise<void> => {
   await setHistory([...history, newRoute].slice(-10));
 };
 
+export const replace = async (newRoute: Route): Promise<void> => {
+  await setHistory([BOOT_ROUTE, newRoute]);
+};
+
 export const pop = async (): Promise<void> => {
   const history = svelteStore.get(historyStore);
-  if (history.length > 1) {
+  if (history.length > 2) {
     await setHistory(history.slice(0, -1));
   }
 };

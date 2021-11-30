@@ -96,10 +96,10 @@
       case remote.Status.Success:
         if (session.data.status === Session.Status.NoSession) {
           hotkeys.disable();
-          router.push({ type: "onboarding" });
+          router.replace({ type: "onboarding" });
         } else if (session.data.status === Session.Status.SealedSession) {
           hotkeys.disable();
-          router.push({ type: "lock" });
+          router.replace({ type: "lock" });
         } else if (session.data.status === Session.Status.UnsealedSession) {
           hotkeys.enable();
           if (
@@ -107,7 +107,7 @@
             $activeRouteStore.type === "lock" ||
             $activeRouteStore.type === "boot"
           ) {
-            router.push({ type: "profile" });
+            router.replace({ type: "profile" });
           }
         } else {
           unreachable(session.data);
