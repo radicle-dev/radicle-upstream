@@ -16,6 +16,7 @@
   import * as modal from "ui/src/modal";
   import * as screen from "ui/src/screen";
   import * as hotkeys from "ui/src/hotkeys";
+  import * as router from "ui/src/router";
   import { config } from "ui/src/config";
 
   const toggleModal = (modalComponent: typeof SvelteComponent) => {
@@ -60,6 +61,9 @@
     }
 
     switch (shortcut.key) {
+      case hotkeys.ShortcutKey.GoBack:
+        router.pop();
+        break;
       case hotkeys.ShortcutKey.Help:
         toggleModal(ShortcutsModal);
         break;

@@ -32,6 +32,7 @@ export enum ShortcutKey {
   Search = "p",
   Settings = ",",
   Diagnostics = "i",
+  GoBack = "ArrowLeft",
 }
 
 export interface KeyboardShortcut {
@@ -63,6 +64,12 @@ export const shortcuts: KeyboardShortcut[] = [
     key: ShortcutKey.Diagnostics,
     modifierKey: true,
     hide: true,
+  },
+  {
+    description: "Go back",
+    key: ShortcutKey.GoBack,
+    displayKey: "←",
+    modifierKey: true,
   },
 ];
 
