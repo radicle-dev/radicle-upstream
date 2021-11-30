@@ -114,22 +114,22 @@ export async function signAndProposeTransaction(
 export function appUrl(
   ethEnv: Ethereum.Environment,
   gnosisSafeAddress: string,
-  view: "transactions" | "settings"
+  view: "transactions/queue" | "settings/owners"
 ): string {
-  let domain: string;
+  let network: string;
   switch (ethEnv) {
     case Ethereum.Environment.Local:
       throw new error.Error({
         message: "appUrl() is not implemented for ethereum.Environment.Local",
       });
     case Ethereum.Environment.Rinkeby:
-      domain = `rinkeby.gnosis-safe.io`;
+      network = "rin";
       break;
     case Ethereum.Environment.Mainnet:
-      domain = `gnosis-safe.io`;
+      network = "eth";
       break;
   }
-  return `https://${domain}/app/#/safes/${gnosisSafeAddress}/${view}`;
+  return `https://gnosis-safe.io/app/${network}:${gnosisSafeAddress}/${view}`;
 }
 
 function createSafeServiceClient(

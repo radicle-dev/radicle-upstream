@@ -48,7 +48,7 @@
               label: "View on Gnosis Safe",
               handler: () => {
                 safeAddress &&
-                  org.openOnGnosisSafe(safeAddress, "transactions");
+                  org.openOnGnosisSafe(safeAddress, "transactions/queue");
               },
             },
             {

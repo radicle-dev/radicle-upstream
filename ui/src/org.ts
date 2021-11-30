@@ -119,14 +119,14 @@ export function initialize(): void {
 
 export function openOnGnosisSafe(
   gnosisSafeAddress: string,
-  view: "transactions" | "settings"
+  view: "transactions/queue" | "settings/owners"
 ): void {
   ipc.openUrl(gnosisSafeWebAppUrl(gnosisSafeAddress, view));
 }
 
 export function gnosisSafeWebAppUrl(
   gnosisSafeAddress: string,
-  view: "transactions" | "settings"
+  view: "transactions/queue" | "settings/owners"
 ): string {
   return Safe.appUrl(
     svelteStore.get(wallet.store).environment,
@@ -187,7 +187,7 @@ export async function anchorProjectWithGnosis(
       {
         label: "View on Gnosis Safe",
         handler: () => {
-          openOnGnosisSafe(safeAddress, "transactions");
+          openOnGnosisSafe(safeAddress, "transactions/queue");
         },
       },
       {

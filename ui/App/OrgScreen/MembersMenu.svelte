@@ -50,7 +50,7 @@
 
     <Button
       on:click={() => {
-        org.openOnGnosisSafe(gnosisSafeAddress, "settings");
+        org.openOnGnosisSafe(gnosisSafeAddress, "settings/owners");
         toggleModal();
       }}
       style="margin-top: 1rem; width: 100%; display: block; text-align: center;">

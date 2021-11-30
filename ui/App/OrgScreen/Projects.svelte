@@ -82,13 +82,13 @@
           Waiting for a member to execute this anchor transaction.
           <a
             class="typo-link"
-            href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+            href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions/queue")}
             >Execute transaction</a>
         {:else}
           Not enough members have confirmed this anchor transaction.
           <a
             class="typo-link"
-            href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions")}
+            href={org.gnosisSafeWebAppUrl(ownerAddress, "transactions/queue")}
             >Confirm transaction</a>
         {/if}
       </p>

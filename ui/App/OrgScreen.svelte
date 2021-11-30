@@ -78,7 +78,7 @@
         title: "View on Gnosis Safe",
         icon: GnosisIcon,
         event: () => {
-          org.openOnGnosisSafe(gnosisSafeAddress, "transactions");
+          org.openOnGnosisSafe(gnosisSafeAddress, "transactions/queue");
         },
       },
       {
