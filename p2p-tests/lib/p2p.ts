@@ -34,30 +34,20 @@ import { retryOnError } from "ui/src/retryOnError";
 
 const PADDING = 12;
 
-const colors: typeof Color[] = ["blue", "cyan", "green", "magenta", "red"];
+const colors: typeof Color[] = [
+  "blue",
+  "cyan",
+  "green",
+  "magenta",
+  "red",
+  "yellow",
+  "white",
+];
 const assignedColors: Record<string, typeof Color> = {};
 
 const ROOT_PATH = path.join(__dirname, "..", "..");
 const P2P_TEST_PATH = path.join(ROOT_PATH, "p2p-tests");
 const BIN_PATH = path.join(ROOT_PATH, "target", "debug");
-
-const processes: execa.ExecaChildProcess[] = [];
-
-export function stopProcesses(): void {
-  processes.forEach(node => node.kill("SIGKILL"));
-}
-
-export function workspacePath(paths: string[] = []): string {
-  return path.join(P2P_TEST_PATH, "workspace", ...paths);
-}
-
-export function p2pTestPath(filename: string): string {
-  return path.join(P2P_TEST_PATH, filename);
-}
-
-export function keyPath(filename: string): string {
-  return path.join(P2P_TEST_PATH, "keys", filename);
-}
 
 function prefix(pfx: string): string {
   if (assignedColors[pfx] === undefined) {
@@ -77,7 +67,7 @@ function prefix(pfx: string): string {
 
 // A transform that prefixes each line from the source with the given
 // string and pushes it to the sink.
-export class LinePrefix extends stream.Transform {
+class LinePrefix extends stream.Transform {
   private buffer: string = "";
   private stringDecoder = new StringDecoder();
 
@@ -105,80 +95,175 @@ export class LinePrefix extends stream.Transform {
   }
 }
 
-export function initPeer(namespace: string): void {
-  const radHome = workspacePath([namespace]);
-  fs.removeSync(radHome);
-  fs.mkdirsSync(radHome);
-
-  execa.sync(path.join(BIN_PATH, "radicle-proxy-init"), [
-    namespace,
-    "--key-passphrase",
-    namespace,
-    "--rad-home",
-    workspacePath([namespace]),
-  ]);
+interface RadicleProxyParams {
+  dataPath: string;
+  ipAddress: string;
+  name: string;
+  seed: string;
 }
 
-export function startPeer(
-  namespace: string,
-  ip: string,
-  args: string[]
-): ProxyClient.ProxyClient {
-  initPeer(namespace);
+export class RadicleProxy {
+  public checkoutPath: string;
+  public identityUrn: string;
+  public name: string;
+  public passphrase: string;
+  public peerId: string;
+  public proxyClient: ProxyClient.ProxyClient;
+  public radHome: string;
 
-  const childProcess = spawnInNamespace(
-    namespace,
-    [
-      path.join(BIN_PATH, "radicle-proxy"),
-      "--peer-listen",
-      `${ip}:8776`,
-      "--http-listen",
-      `${ip}:17246`,
-      "--skip-remote-helper-install",
-      "--unsafe-fast-keystore",
-      "--insecure-http-api",
-      "--dev-log",
-      ...args,
-    ],
-    {
-      RAD_HOME: workspacePath([namespace]),
+  #childProcess: execa.ExecaChildProcess | undefined = undefined;
+  #ipAddress: string;
+  #seed: string;
+
+  public constructor({ dataPath, ipAddress, name, seed }: RadicleProxyParams) {
+    this.#ipAddress = ipAddress;
+    this.#seed = seed;
+    this.name = name;
+    this.passphrase = name;
+
+    this.checkoutPath = path.join(dataPath, `${name}-checkouts`);
+    this.radHome = path.join(dataPath, `${name}-rad-home`);
+
+    fs.mkdirsSync(this.radHome);
+
+    const initResult = JSON.parse(
+      execa.sync(path.join(BIN_PATH, "radicle-proxy-init"), [
+        this.name,
+        "--key-passphrase",
+        this.passphrase,
+        "--rad-home",
+        this.radHome,
+      ]).stdout
+    );
+
+    this.identityUrn = initResult.identityUrn;
+    this.peerId = initResult.peerId;
+
+    this.proxyClient = new ProxyClient.ProxyClient(
+      `http://${this.#ipAddress}:17246`
+    );
+  }
+
+  public start(): void {
+    if (this.#childProcess) {
+      throw new Error("Tried to start a process that already was running.");
     }
-  );
 
-  processes.push(childProcess);
+    this.#childProcess = spawnInNamespace(
+      this.name,
+      [
+        path.join(BIN_PATH, "radicle-proxy"),
+        "--peer-listen",
+        `${this.#ipAddress}:8776`,
+        "--http-listen",
+        `${this.#ipAddress}:17246`,
+        "--key-passphrase",
+        this.passphrase,
+        "--skip-remote-helper-install",
+        "--unsafe-fast-keystore",
+        "--insecure-http-api",
+        "--dev-log",
+        "--seed",
+        this.#seed,
+      ],
+      {
+        RAD_HOME: this.radHome,
+      }
+    );
+  }
 
-  return new ProxyClient.ProxyClient(`http://${ip}:17246`);
+  public async stop(): Promise<void> {
+    if (!this.#childProcess) {
+      throw new Error("Tried to stop() process that wasn't started.");
+    }
+
+    this.#childProcess.kill("SIGTERM");
+    await this.#childProcess;
+    this.#childProcess = undefined;
+  }
 }
 
-export function startSeed(namespace: string, args: string[]): void {
-  const radHome = workspacePath([namespace]);
-  fs.removeSync(radHome);
-  fs.mkdirsSync(radHome);
-
-  const childProcess = spawnInNamespace(
-    namespace,
-    [path.join(BIN_PATH, "upstream-seed"), "--rad-home", radHome, ...args],
-    {}
-  );
-
-  processes.push(childProcess);
+interface UpstreamSeedParams {
+  dataPath: string;
+  ipAddress: string;
+  name: string;
+  project: string;
 }
 
-export function spawnInNamespace(
-  namespace: string,
+export class UpstreamSeed {
+  public listen: string;
+  public name: string;
+  public peerId: string;
+  public radHome: string;
+  public seedAddress: string;
+
+  #childProcess: execa.ExecaChildProcess | undefined = undefined;
+  #project: string;
+
+  public constructor({
+    name,
+    ipAddress,
+    dataPath,
+    project,
+  }: UpstreamSeedParams) {
+    this.#project = project;
+    this.listen = `${ipAddress}:8776`;
+    this.name = name;
+    this.peerId = "hybfoqx9wrdjhnr9jyb74zpduph57z99f67bjgfnsf83p1rk7z1diy";
+    this.radHome = path.join(dataPath, `${name}-rad-home`);
+    this.seedAddress = `${this.peerId}@${this.listen}`;
+
+    fs.mkdirsSync(this.radHome);
+  }
+
+  public start(): void {
+    if (this.#childProcess) {
+      throw new Error("Tried to start a process that already was running.");
+    }
+
+    this.#childProcess = spawnInNamespace(
+      this.name,
+      [
+        path.join(BIN_PATH, "upstream-seed"),
+        "--rad-home",
+        this.radHome,
+        "--listen",
+        this.listen,
+        "--identity-key",
+        path.join(P2P_TEST_PATH, "keys", `seed-${this.peerId}.key`),
+        "--project",
+        this.#project,
+      ],
+      {}
+    );
+  }
+
+  public async stop(): Promise<void> {
+    if (!this.#childProcess) {
+      throw new Error("Tried to stop() process that wasn't started.");
+    }
+
+    this.#childProcess.kill("SIGTERM");
+    await this.#childProcess;
+    this.#childProcess = undefined;
+  }
+}
+
+function spawnInNamespace(
+  name: string,
   args: string[],
   env: NodeJS.ProcessEnv
 ): execa.ExecaChildProcess {
   const subprocess = execa(
     "ip",
-    ["netns", "exec", `upstream-test-${namespace}`, ...args],
+    ["netns", "exec", `upstream-test-${name}`, ...args],
     {
       env,
     }
   );
 
-  const stdoutPrefix = new LinePrefix(prefix(namespace));
-  const stderrPrefix = new LinePrefix(prefix(namespace));
+  const stdoutPrefix = new LinePrefix(prefix(name));
+  const stderrPrefix = new LinePrefix(prefix(name));
 
   if (subprocess.stdout) {
     subprocess.stdout.pipe(stdoutPrefix).pipe(process.stdout);
@@ -190,7 +275,12 @@ export function spawnInNamespace(
   return subprocess;
 }
 
-export function commit(author: string, checkoutPath: string): void {
+interface CommitParams {
+  author: string;
+  checkoutPath: string;
+}
+
+export function commit({ author, checkoutPath }: CommitParams): void {
   execa.sync("git", ["commit", "--allow-empty", "-m", "commit-message"], {
     cwd: checkoutPath,
     env: {
@@ -202,11 +292,25 @@ export function commit(author: string, checkoutPath: string): void {
   });
 }
 
-export function pushRad(
-  radHome: string,
-  checkoutPath: string,
-  keyPassphrase: string
-): void {
+export function getLatestCommitSha(checkoutPath: string): string {
+  return execa
+    .sync("git", ["rev-parse", "HEAD"], {
+      cwd: checkoutPath,
+    })
+    .stdout.trim();
+}
+
+interface PushRadParams {
+  radHome: string;
+  checkoutPath: string;
+  keyPassphrase: string;
+}
+
+export function pushRad({
+  radHome,
+  checkoutPath,
+  keyPassphrase,
+}: PushRadParams): void {
   execa.sync("git", ["push", "rad"], {
     cwd: checkoutPath,
     env: {
@@ -222,4 +326,62 @@ export async function withRetry(
   action: () => Promise<unknown>
 ): Promise<unknown> {
   return await retryOnError(action, () => true, 1000, 10);
+}
+
+interface RunTestcaseParams {
+  testcase: (dataDirPath: string) => Promise<void>;
+  networkScript: string;
+  dataDirName: string;
+}
+
+export async function runTestcase({
+  testcase,
+  networkScript,
+  dataDirName,
+}: RunTestcaseParams): Promise<void> {
+  const scriptPath = path.join(P2P_TEST_PATH, networkScript);
+
+  execa.commandSync(`${scriptPath} start`);
+
+  const testDataDir = path.join(P2P_TEST_PATH, "workspace", dataDirName);
+  fs.removeSync(testDataDir);
+
+  const maybeError: Error | void = await testcase(testDataDir).catch(
+    err => err
+  );
+  if (maybeError) {
+    console.log("\nTEST FAILED ❌\n");
+    console.log(maybeError);
+  } else {
+    console.log("\nTEST PASSED ✅\n");
+    fs.removeSync(testDataDir);
+  }
+
+  execa.commandSync(`${scriptPath} stop`);
+
+  if (maybeError) {
+    process.exit(1);
+  }
+
+  process.exit(0);
+}
+
+interface RadCliParams {
+  radHome: string;
+  args: string[];
+}
+
+export function radCli({ radHome, args }: RadCliParams): unknown {
+  const radBinaryPath = path.join(BIN_PATH, "rad");
+  const result = execa.sync(radBinaryPath, args, {
+    env: {
+      RAD_HOME: radHome,
+    },
+  });
+
+  try {
+    return JSON.parse(result.stdout);
+  } catch {
+    throw new Error(`Couldn't parse rad cli output: ${result.stdout}`);
+  }
 }

@@ -81,6 +81,7 @@ dependencies = [
  "nonempty 0.6.0",
  "percent-encoding",
  "pretty_assertions",
+ "rad-exe",
  "rad-identities",
  "radicle-daemon",
  "radicle-git-ext",
@@ -3153,6 +3154,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "rad-exe"
+version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2021-12-07#958dce52393205da55c97721e8b432cca1c6c19a"
+dependencies = [
+ "anyhow",
+ "librad",
+ "rad-clib",
+ "rad-identities",
+ "rad-profile",
+ "structopt",
+ "thrussh-agent",
+]
+
+[[package]]
 name = "rad-identities"
 version = "0.1.0"
 source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2021-12-07#958dce52393205da55c97721e8b432cca1c6c19a"
@@ -3175,6 +3190,21 @@ dependencies = [
  "thrussh-agent",
  "tracing",
  "url",
+]
+
+[[package]]
+name = "rad-profile"
+version = "0.1.0"
+source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2021-12-07#958dce52393205da55c97721e8b432cca1c6c19a"
+dependencies = [
+ "anyhow",
+ "futures-lite",
+ "librad",
+ "rad-clib",
+ "serde",
+ "structopt",
+ "thiserror",
+ "thrussh-agent",
 ]
 
 [[package]]

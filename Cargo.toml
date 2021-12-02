@@ -33,6 +33,10 @@ tag = "cycle/2021-12-07"
 git = "https://github.com/radicle-dev/radicle-link.git"
 tag = "cycle/2021-12-07"
 
+[patch.crates-io.rad-exe]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2021-12-07"
+
 
 # Uncomment the following lines and comment out the radicle-link patches above
 # to develop against a local copy of `radicle-link`.

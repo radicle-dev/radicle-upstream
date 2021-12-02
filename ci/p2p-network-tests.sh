@@ -18,8 +18,18 @@ log-group-start "cargo build"
 cargo build --all --all-features --all-targets
 log-group-end
 
-log-group-start "Run p2p networking tests"
-# The -E option is necessary because the script depents on GITHUB_ env variables
-# which otherwise wouldn't be forwarded.
-time sudo -E FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-test.ts
+log-group-start "maintainer-update-propagation-1-test.ts"
+time sudo -E FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-1-test.ts
+log-group-end
+
+log-group-start "maintainer-update-propagation-2-test.ts"
+time sudo -E FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-2-test.ts
+log-group-end
+
+log-group-start "maintainer-update-propagation-3-test.ts"
+time sudo -E FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-3-test.ts
+log-group-end
+
+log-group-start "active-sets-test.ts"
+time sudo -E FORCE_COLOR=1 ./p2p-tests/active-sets-test.ts
 log-group-end
