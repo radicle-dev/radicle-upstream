@@ -50,7 +50,7 @@
     // App.svelte checks whether to load onboarding or the app depending if
     // the session data is present or not.
     session.fetch();
-    router.push({ type: "wallet", activeTab: "transactions" });
+    router.replace({ type: "wallet", activeTab: "transactions" });
   };
 
   const onCreateIdentity = async (handle: string, passphrase: string) => {
