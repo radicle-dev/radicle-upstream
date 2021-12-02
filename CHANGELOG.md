@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.12](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.11...v0.2.12) (2021-12-01)
+
+
+### Features
+
+* add isolated p2p network tests ([755c20d](https://github.com/radicle-dev/radicle-upstream/commit/755c20d9158d231604ade95523c35139865d192b))
+* add peer membership to diagnostics screen ([3970130](https://github.com/radicle-dev/radicle-upstream/commit/3970130edefd87e1212a64551b7d646fbd8e7c45))
+* add proxy CLI option to unseal key for development ([7e5125a](https://github.com/radicle-dev/radicle-upstream/commit/7e5125a6d9139a3c53b9352f4d8f1ea6931d228e))
+* add switch to disable HTTP API auth token check ([a56ad1e](https://github.com/radicle-dev/radicle-upstream/commit/a56ad1e2fac831db3168bf7f676d2f3d2fbab323))
+* add user hovercard ([3696a79](https://github.com/radicle-dev/radicle-upstream/commit/3696a7930af35e81bf8c712708a0f408d3fb19dc))
+* allow specifying key file via a CLI option ([cc6ddff](https://github.com/radicle-dev/radicle-upstream/commit/cc6ddfff1ade77c66f674bb7e6521627e240fa33))
+* decouple design-system from Upstream ([23c2fe9](https://github.com/radicle-dev/radicle-upstream/commit/23c2fe9fc1925cae8572ba91cf99bcc2b9ece7a2))
+* enable CI builds for macOS on Github Actions ([02b827c](https://github.com/radicle-dev/radicle-upstream/commit/02b827c84fd2e317b5e8d1339f3649bf1268a503))
+* implement "go back" hotkey ([a046a20](https://github.com/radicle-dev/radicle-upstream/commit/a046a201e5c3dcfeda0a70d87ec0b1584860bb65))
+* improve diagnostics screen ([b6e607f](https://github.com/radicle-dev/radicle-upstream/commit/b6e607f3b81d0dd2cd242d28ee94882f53512350))
+* improve search modal ([0a2ce83](https://github.com/radicle-dev/radicle-upstream/commit/0a2ce837b4c5d5db39350a7bb4078b68239063a2))
+* make design-system deployable to Github pages ([5883fe5](https://github.com/radicle-dev/radicle-upstream/commit/5883fe545ba6e00b4b7c1b9453899aa970687916))
+* org explore screen ([#2450](https://github.com/radicle-dev/radicle-upstream/issues/2450)) ([574aac6](https://github.com/radicle-dev/radicle-upstream/commit/574aac648c7f2ad78c4c3c2942b2104b45d98b82)), closes [#2460](https://github.com/radicle-dev/radicle-upstream/issues/2460) [#2471](https://github.com/radicle-dev/radicle-upstream/issues/2471)
+* properly shutdown proxy when app is closed ([23f43b8](https://github.com/radicle-dev/radicle-upstream/commit/23f43b88b40492728670d482bc9f40a4a22543d2))
+* show loading animation on project screen ([e5f7753](https://github.com/radicle-dev/radicle-upstream/commit/e5f775332520a63d5c9894775a9b311b2755d5ae))
+* show user hovercard on PeerSelector hover ([904eb43](https://github.com/radicle-dev/radicle-upstream/commit/904eb432a575ee2a0e0448c9bd12c76cc3d59857))
+* store dismissed notifications ([db4c2a8](https://github.com/radicle-dev/radicle-upstream/commit/db4c2a8c29d0fe266738661838e33f4e6cc7587f))
+* use rad-identities to get person information ([8deb07d](https://github.com/radicle-dev/radicle-upstream/commit/8deb07d235ebeff09ad4e506702053d8a3e16ca3)), closes [#2432](https://github.com/radicle-dev/radicle-upstream/issues/2432)
+* view org when not connected to a wallet ([9740d4b](https://github.com/radicle-dev/radicle-upstream/commit/9740d4b391321d82358ce43ec5bd443df3a73c9e))
+
+
+### Bug Fixes
+
+* disable yarn log grouping on CI ([238fa1d](https://github.com/radicle-dev/radicle-upstream/commit/238fa1d7286f9156940991793ddd7f5b3daa1798))
+* don't show diagnostics on devtools hotkey ([d63b1e0](https://github.com/radicle-dev/radicle-upstream/commit/d63b1e0b287b1ae964396268c1b541f29784e13b))
+* force kill test nodes ([cad4e12](https://github.com/radicle-dev/radicle-upstream/commit/cad4e1204f2a7071a897618525d89324676e82d6))
+* ignore cargo-deny advisories ([abea957](https://github.com/radicle-dev/radicle-upstream/commit/abea957eca6585334fcca770f21664f4702560cd))
+* ignore RUSTSEC-2020-0071 ([10c3053](https://github.com/radicle-dev/radicle-upstream/commit/10c3053af7c97043114008cbcb972762d57ca650))
+* reduce spec flakiness ([a9983f1](https://github.com/radicle-dev/radicle-upstream/commit/a9983f1e5fc4246f9a049685b70a664b7125c36b))
+* relative positioning for tooltips ([20136cf](https://github.com/radicle-dev/radicle-upstream/commit/20136cf890bfb32bc6eafe320e28dd4a3ceccfcb))
+* show commit not found screen instead of error ([0619c51](https://github.com/radicle-dev/radicle-upstream/commit/0619c51c5a80512a07fa234e60f69996aeba96d6))
+* show handle from metadata if none is passed via props ([b3e33e8](https://github.com/radicle-dev/radicle-upstream/commit/b3e33e8538c81cff64c9b8deda87560e2b713c89))
+* use new URL layout for Gnosis Safe deep links ([15c1479](https://github.com/radicle-dev/radicle-upstream/commit/15c1479e41aaaf9a1b49ad27f820368d2870391f))
+* use recommended lang tag to avoid warning ([324bbb2](https://github.com/radicle-dev/radicle-upstream/commit/324bbb225f2c99496fa15067ecc01bbc49f1016c))
+* use upstream container registry ([f16ca79](https://github.com/radicle-dev/radicle-upstream/commit/f16ca79f4fbb4216d1ba133bc789078121041295))
+
 ### [0.2.11](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.10...v0.2.11) (2021-09-29)
 
 
