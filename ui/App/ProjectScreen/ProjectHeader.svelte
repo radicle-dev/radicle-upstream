@@ -74,8 +74,8 @@
 <div class="metadata">
   <BackButton
     on:arrowClick={() => router.pop()}
-    style="padding-left: 1rem;"
-    buttonWrapperStyle="left: -1rem; top: 0.75rem;">
+    style="padding-left: 1rem; left: -1rem;"
+    buttonWrapperStyle="left: -0.5rem; top: 0.75rem;">
     <h1
       data-cy="entity-name"
       class="typo-overflow-ellipsis"
