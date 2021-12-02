@@ -177,45 +177,33 @@ the target computer.
 
 #### Apple notarization
 
-To allow macOS Gatekeeper [to recognise][so] our Upstream packages as genuine,
-which allows users to install and open Upstream without unnecessary
-[security warnings][sw], we have to [sign and notarize][sn] our macOS packages.
+We do Apple notarization manually on developer machines.
+To set it up for the first time you'll need:
 
-This notarization step is automated using our custom macOS build host for
-releases.
-
-However, if the build host is not available, it is possible to set up and
-perform notarization locally on Apple hardware.
-
-For this we need:
   - a paid Apple developer account
-  - an Apple ID token for allowing the notarization script to run on behalf of
-    our developer account
-    - [Account Manage][ma] -> APP-SPECIFIC PASSWORDS -> Generate password…
+  - an App-specific password generated from your Apple ID, this allows the
+    notarization script to run on behalf of our developer account
+    - [Account Manage][ma] ->
+    - APP-SPECIFIC PASSWORDS ->
+    - Generate password…
   - a valid "Developer ID Application" certificate
-    - [Certificates Add][ca] -> Developer ID Application
+    - [Certificates Add][ca] ->
+    - Developer ID Application
 
 Once you've created the _Developer ID Application_ certificate, download it
 locally and add it to your keychain by double clicking on the file.
 
-Before building a notarized DMG, make sure you're connected to the internet and
+Before building a notarized DMG, make sure you're connected to the internet,
 then run:
 
-```sh
-git checkout vX.X.X
-CSC_NAME="Monadic GmbH (XXXXXXXXXX)" \
-APPLE_ID="XXXXXXX@monadic.xyz" \
-APPLE_ID_PASSWORD="XXXX-XXXX-XXXX-XXXX" \
+```bash
+git checkout release-candidate/v0.X.XX
+CSC_NAME="<YOUR_FIRST_NAME> <YOUR_LAST_NAME> (XXXXXXXXXX)" \
+APPLE_ID="<YOUR_APPLE_ID_EMAIL>" \
+APPLE_ID_PASSWORD="<APP_SPECIFIC_PASSWORD>" \
 NOTARIZE=true \
 yarn dist
 ```
-
-Don't forget to replace the `X` in the template with the real values:
-  - `vX.X.X` is the version you'd like to build and notarize
-  - `CSC_NAME` is the "Developer ID Application" certificate ID
-  - `APPLE_ID` your Apple account ID
-  - `APPLE_ID_PASSWORD` your Apple account token that you generated in the
-    steps above
 
 
 ### Scripts
@@ -431,27 +419,37 @@ All Github access tokens _must_ have the `public_repo` scope.
        ```
 
 2. Test the release
-    1. Wait for CI of the release candidate PR to pass.
-    2. Publish the CI artifacts as release candidate binaries.
+    1. Wait for the Linux release candidate build on CI to pass.
+    2. Build and notarize the macOS binary on your local machine:
+
+    ```bash
+    CSC_NAME=… \
+    APPLE_ID=… \
+    APPLE_ID_PASSWORD=… \
+    NOTARIZE=true \
+    yarn dist
+    ```
+
+    3. Publish the CI artifacts as release candidate binaries.
 
        ```bash
        ./scripts/release.ts publish-rc-binaries
        ```
 
-    3. Create QA issues for the release that link to the release candidate
+    4. Create QA issues for the release that link to the release candidate
        binaries.
 
        ```bash
        ./scripts/release.ts create-qa-issues
        ```
 
-    4. Test the release by walking through the QA issues.
-    5. (Optional) To fix bugs, create a PR with the fixes based on the release
+    5. Test the release by walking through the QA issues.
+    6. (Optional) To fix bugs, create a PR with the fixes based on the release
        candidate branch. Once it has been approved, squash merge it into the
        release candidate branch (see [“Merging Pull Requests"][merging-prs]).
        Then restart the “Test the release” step. (Skip creating a QA
        issue in 2.3.)
-    6. Close the QA issues.
+    7. Close the QA issues.
 
 3. Publish and announce the release
     1. Publish the release candidate binaries under

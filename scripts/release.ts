@@ -155,10 +155,7 @@ const publishRcBinaries: yargs.CommandModule<unknown, unknown> = {
     console.log("Linux release candidate binary published as");
     console.log(`  https://releases.radicle.xyz/${linuxBinaryPath}`);
 
-    console.log("Build and publish macOS release candidate binaries manually:");
-    console.log(
-      `  CSC_NAME="..." APPLE_ID="..." APPLE_ID_PASSWORD="..." NOTARIZE=true yarn dist`
-    );
+    console.log("Publish macOS release candidate binaries manually:");
     console.log(
       `  gsutil cp dist/radicle-upstream-${version}.dmg gs://${releaseBucket}/radicle-upstream-${version}-rc.dmg`
     );
