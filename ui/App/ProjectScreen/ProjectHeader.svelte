@@ -10,9 +10,12 @@
 
   import dayjs from "dayjs";
 
+  import * as router from "ui/src/router";
+
   import AnchorIcon from "design-system/icons/Anchor.svelte";
   import BranchIcon from "design-system/icons/Branch.svelte";
   import UserIcon from "design-system/icons/User.svelte";
+  import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
 
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
@@ -69,14 +72,19 @@
 </style>
 
 <div class="metadata">
-  <h1
-    data-cy="entity-name"
-    class="typo-overflow-ellipsis"
-    title={name}
-    class:clickable={onClick !== undefined}
-    on:click={() => (onClick ? onClick() : {})}>
-    {name}
-  </h1>
+  <BackButton
+    on:arrowClick={() => router.pop()}
+    style="padding-left: 1rem;"
+    buttonWrapperStyle="left: -1rem; top: 0.75rem;">
+    <h1
+      data-cy="entity-name"
+      class="typo-overflow-ellipsis"
+      title={name}
+      class:clickable={onClick !== undefined}
+      on:click={() => (onClick ? onClick() : {})}>
+      {name}
+    </h1>
+  </BackButton>
   <CopyableIdentifier
     value={urn}
     kind="radicleId"

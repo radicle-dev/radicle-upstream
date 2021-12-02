@@ -130,6 +130,7 @@
   {:else if commitResult.type === "ok"}
     <BackButton
       style="padding: 1rem; z-index: 0;"
+      buttonWrapperStyle="left: -1rem;"
       on:arrowClick={() => router.pop()}>
       <h3 style="margin-bottom: .75rem">
         {commitResult.commit.header.summary}

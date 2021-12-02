@@ -16,10 +16,15 @@
   };
 
   export let style: string | undefined = undefined;
+  export let buttonWrapperStyle: string | undefined = undefined;
 </script>
 
 <style>
   header {
+    position: relative;
+  }
+
+  .button-wrapper {
     position: relative;
   }
 
@@ -51,11 +56,13 @@
 </style>
 
 <header {style}>
-  <div
-    class="back-button"
-    data-cy="back-button"
-    on:click={() => onArrowClick()}>
-    <ArrowLeftIcon />
+  <div style={buttonWrapperStyle} class="button-wrapper">
+    <div
+      class="back-button"
+      data-cy="back-button"
+      on:click={() => onArrowClick()}>
+      <ArrowLeftIcon />
+    </div>
   </div>
   <slot />
 </header>
