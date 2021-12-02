@@ -30,7 +30,7 @@ const isDev = process.env.NODE_ENV === "development";
 const isWindows = process.platform === "win32";
 
 let proxyPath;
-let proxyArgs: string[] = [];
+const proxyArgs: string[] = [];
 
 if (isDev) {
   proxyPath = path.join(__dirname, "../target/debug/radicle-proxy");
@@ -47,10 +47,6 @@ if (isDev) {
   } else {
     proxyPath = path.join(__dirname, "../../radicle-proxy");
   }
-  proxyArgs = [
-    "--default-seed",
-    "hynkyndc6w3p8urucakobzna7sxwgcqny7xxtw88dtx3pkf7m3nrzc@sprout.radicle.xyz:12345",
-  ];
 }
 
 if (isDev && !process.env.RAD_HOME) {
