@@ -52,22 +52,6 @@
     margin: 1.5rem 0;
     max-width: 20rem;
   }
-  button {
-    color: var(--color-foreground-level-5);
-    text-decoration: underline;
-    cursor: pointer;
-  }
-  button:hover {
-    color: var(--color-primary);
-  }
-
-  button:active {
-    color: var(--color-primary-level-6);
-  }
-
-  button:focus {
-    outline-style: none;
-  }
 </style>
 
 <div class="empty-state" data-cy="empty-state" {style}>
@@ -95,7 +79,7 @@
       data-cy="secondary-action"
       style="margin-top: 0.5rem;"
       on:click={() => onSecondaryAction()}>
-      <p>{secondaryActionText}</p>
+      <p class="typo-link">{secondaryActionText}</p>
     </button>
   {/if}
   <div style="margin: 1.5rem;">
