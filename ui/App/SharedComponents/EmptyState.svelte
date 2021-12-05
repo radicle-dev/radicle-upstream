@@ -54,7 +54,7 @@
   }
   button {
     color: var(--color-foreground-level-5);
-    text-decoration: underline;
+    border-bottom1px solid var(--color-foreground-level-5);
     cursor: pointer;
   }
   button:hover {
