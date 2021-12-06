@@ -539,7 +539,7 @@ mod test {
 
         let repo = git2::Repository::open(repo_path)?;
 
-        let branches = repo
+        let mut branches = repo
             .branches(None)?
             .filter_map(|branch_result| {
                 let (branch, _) = branch_result.ok()?;
@@ -548,9 +548,17 @@ mod test {
             })
             .collect::<Vec<String>>();
 
+        branches.sort();
+
         assert_eq!(
             branches,
-            vec!["dev", "master", "origin/dev", "origin/master"]
+            vec![
+                "dev",
+                "master",
+                "origin/HEAD",
+                "origin/dev",
+                "origin/master"
+            ]
         );
 
         let res = request()

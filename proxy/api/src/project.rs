@@ -268,7 +268,7 @@ impl Projects {
             match refs {
                 None => projects.tracked.push(Tracked(project)),
                 Some(refs) => {
-                    if refs.heads.is_empty() {
+                    if refs.heads().next().is_none() {
                         projects.tracked.push(Tracked(project));
                     } else {
                         projects.contributed.push(project);

@@ -7,31 +7,32 @@ members = [
 
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-11-16"
+tag = "cycle/2021-12-07"
 
 [patch.crates-io.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-11-16"
+tag = "cycle/2021-12-07"
 
 [patch.crates-io.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-11-16"
+tag = "cycle/2021-12-07"
 
 [patch.crates-io.rad-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-11-16"
+tag = "cycle/2021-12-07"
 
 [patch.crates-io.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-11-16"
+tag = "cycle/2021-12-07"
 
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-11-16"
+tag = "cycle/2021-12-07"
 
 [patch.crates-io.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-11-16"
+tag = "cycle/2021-12-07"
+
 
 # Uncomment the following lines and comment out the radicle-link patches above
 # to develop against a local copy of `radicle-link`.
@@ -46,21 +47,13 @@ tag = "cycle/2021-11-16"
 # radicle-git-helpers = { path = "../radicle-link/git-helpers" }
 
 # These patches are the same as those listed in
-# https://github.com/radicle-dev/radicle-link/blob/master/Cargo.toml
-
-[patch.crates-io.git2]
-git = "https://github.com/radicle-dev/git2-rs.git"
-rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
-
-[patch.crates-io.libgit2-sys]
-git = "https://github.com/radicle-dev/git2-rs.git"
-rev = "ae027b9e7b125f56397bbb7d8652b3427deeede6"
+# https://github.com/radicle-dev/radicle-link/blob/cycle/2021-12-07/Cargo.toml
 
 [patch.crates-io.thrussh-encoding]
 git = "https://github.com/FintanH/thrussh.git"
 branch = "generic-agent"
 
-# See https://github.com/radicle-dev/radicle-link/blob/cycle/2021-11-16/link-crypto/Cargo.toml#L34
+# See https://github.com/radicle-dev/radicle-link/blob/cycle/2021-12-07/link-crypto/Cargo.toml#L34
 [patch.crates-io.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore"
 rev = "00f8fb6135f8e4cd097a48e6f0700e08ce4abb04"

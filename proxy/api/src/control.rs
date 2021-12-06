@@ -165,12 +165,12 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
                 .name()
                 .expect("unable to get branch name")
                 .expect("branch not present")
-                .get(7..)
+                .strip_prefix("origin/")
                 .expect("unable to extract branch name");
-            let oid = branch.get().target().expect("can't find OID");
-            let commit = platinum_repo.find_commit(oid)?;
 
-            if *name != "master" {
+            if *name != "master" && *name != "HEAD" {
+                let oid = branch.get().target().expect("can't find OID");
+                let commit = platinum_repo.find_commit(oid)?;
                 platinum_repo.branch(name, &commit, false)?;
             }
         }
