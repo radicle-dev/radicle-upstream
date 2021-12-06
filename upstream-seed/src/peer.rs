@@ -90,7 +90,7 @@ impl Peer {
             future::Either::Left((_, listen)) => {
                 stop_accepting();
                 listen.await
-            }
+            },
             future::Either::Right((listen_result, _)) => listen_result,
         };
 
@@ -99,7 +99,7 @@ impl Peer {
             Err(librad::net::protocol::io::error::Accept::Done) => {
                 tracing::info!("peer stopped listening");
                 Ok(())
-            }
+            },
             Err(err) => Err(err).context("peer listening failed"),
             Ok(never) => never,
         }
@@ -161,7 +161,7 @@ impl Peer {
                                 } else {
                                     anyhow::bail!("building fetcher exceeded maximum retries")
                                 }
-                            }
+                            },
                         }
                     };
 
@@ -170,14 +170,14 @@ impl Peer {
                         Ok(replication_output) => {
                             tracing::info!(?replication_output, "fetch identity done");
                             Ok(true)
-                        }
+                        },
                         Err(replication::Error::MissingIdentity) => {
                             tracing::info!("idenitity not found");
                             Ok(false)
-                        }
+                        },
                         Err(err) => {
                             Err(anyhow::Error::new(err).context("librad replication failed"))
-                        }
+                        },
                     }
                 }
             })
@@ -196,7 +196,7 @@ impl Peer {
                 librad::net::peer::ProtocolEvent::Membership(_) => {
                     let librad_peer = librad_peer.clone();
                     async move { Some(librad_peer.membership().await) }.left_future()
-                }
+                },
                 _ => futures::future::ready(None).right_future(),
             }
         })
@@ -275,7 +275,7 @@ impl Peer {
                 Err(err) => {
                     tracing::error!(?err, "failed to read project");
                     continue;
-                }
+                },
             };
             let urn = project.urn();
 
@@ -284,7 +284,7 @@ impl Peer {
                 Err(err) => {
                     tracing::error!(?err, %urn, "failed to get tracked peers");
                     continue;
-                }
+                },
             };
 
             for peer_info in tracked_peers {
@@ -323,7 +323,7 @@ impl Peer {
                         RecvError::Lagged(_) => {
                             tracing::warn!("skipped peer events");
                             Some(None)
-                        }
+                        },
                     },
                 }
             })

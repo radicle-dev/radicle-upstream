@@ -95,7 +95,7 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
                                 origin = ?payload.origin,
                                 "gossip put"
                             )
-                        }
+                        },
                     }
                 };
                 future::ready(())
@@ -140,12 +140,12 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
     });
 
     match task_runner.run().await {
-        Ok(_) => {}
+        Ok(_) => {},
         Err(errs) => {
             for err in errs {
                 tracing::error!(?err, "task failed")
             }
-        }
+        },
     }
 
     Ok(())
@@ -232,8 +232,7 @@ fn install_signal_handler() -> anyhow::Result<impl Future<Output = ()>> {
 
 fn load_or_create_secret_key(path: &std::path::Path) -> anyhow::Result<librad::SecretKey> {
     use librad::keystore::SecretKeyExt as _;
-    use std::io::Write as _;
-    use std::os::unix::prelude::PermissionsExt as _;
+    use std::{io::Write as _, os::unix::prelude::PermissionsExt as _};
 
     if let Some(keys_dir) = path.parent() {
         std::fs::create_dir_all(keys_dir)?;

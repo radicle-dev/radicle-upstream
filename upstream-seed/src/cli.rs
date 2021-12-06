@@ -51,8 +51,7 @@ pub fn from_args() -> Args {
 }
 
 fn parse_bootstrap(value: &str) -> Result<(librad::PeerId, std::net::SocketAddr), String> {
-    use std::net::ToSocketAddrs as _;
-    use std::str::FromStr as _;
+    use std::{net::ToSocketAddrs as _, str::FromStr as _};
 
     let parts = value.splitn(2, '@').collect::<Vec<_>>();
     let id = librad::PeerId::from_str(parts[0]).map_err(|e| e.to_string())?;
