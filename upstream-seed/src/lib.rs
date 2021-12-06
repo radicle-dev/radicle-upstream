@@ -85,15 +85,21 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
                         librad::net::peer::event::upstream::Gossip::Put {
                             provider,
                             payload,
-                            result: _,
+                            result,
                         } => {
+                            use librad::net::protocol::broadcast::PutResult;
+                            let result = match result {
+                                PutResult::Applied(_) => "Applied".to_string(),
+                                result => format!("{:?}", result),
+                            };
                             tracing::debug!(
                                 provider_id = %provider.peer_id,
                                 provider_seen_addrs = ?provider.seen_addrs.clone().into_inner(),
                                 urn = %payload.urn,
                                 rev = ?payload.rev,
                                 origin = ?payload.origin,
-                                "gossip put"
+                                result = %result,
+                                "storage put"
                             )
                         },
                     }
