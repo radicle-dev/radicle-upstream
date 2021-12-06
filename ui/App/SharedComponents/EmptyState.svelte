@@ -54,7 +54,7 @@
   }
   button {
     color: var(--color-foreground-level-5);
-    border-bottom1px solid var(--color-foreground-level-5);
+    text-decoration: underline;
     cursor: pointer;
   }
   button:hover {
@@ -95,7 +95,7 @@
       data-cy="secondary-action"
       style="margin-top: 0.5rem;"
       on:click={() => onSecondaryAction()}>
-      <p>{secondaryActionText}</p>
+      <p class="typo-link">{secondaryActionText}</p>
     </button>
   {/if}
   <div style="margin: 1.5rem;">
