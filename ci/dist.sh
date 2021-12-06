@@ -19,7 +19,19 @@ log-group-end
 
 log-group-start "Building and packaging binaries"
 time yarn dist
-target="$(uname -m)-$(uname -s | tr "[:upper:]" "[:lower:]")"
-mkdir "dist/${target}"
-cp target/release/upstream-seed "dist/${target}/upstream-seed"
 log-group-end
+
+echo "Collect artifacts"
+mkdir artifacts
+shopt -s nullglob
+shopt -u failglob
+cp --archive \
+  --target-directory artifacts \
+  dist/*.dmg \
+  dist/*.AppImage
+
+target="$(uname -m)-$(uname -s | tr "[:upper:]" "[:lower:]")"
+mkdir "artifacts/${target}"
+cp \
+  --target-directory "artifacts/${target}" \
+  target/release/upstream-seed
