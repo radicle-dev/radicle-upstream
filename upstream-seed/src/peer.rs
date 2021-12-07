@@ -120,7 +120,6 @@ impl Peer {
         peer_id: PeerId,
         addrs: Option<Vec<SocketAddr>>,
     ) -> anyhow::Result<bool> {
-        tracing::info!("start fetch identity");
         let addrs = if let Some(addrs) = addrs {
             addrs
         } else {
@@ -168,11 +167,22 @@ impl Peer {
                     let result = replication::replicate(storage, fetcher, cfg, None);
                     match result {
                         Ok(replication_output) => {
-                            tracing::info!(?replication_output, "fetch identity done");
-                            Ok(true)
+                            let mode = replication_output.mode;
+                            let updated_refs = replication_output
+                                .updated_tips
+                                .keys()
+                                .map(|x| x.to_string())
+                                .collect::<HashSet<_>>();
+                            if updated_refs.is_empty() {
+                                tracing::info!("remote does not have identity");
+                                Ok(false)
+                            } else {
+                                tracing::info!(?mode, ?updated_refs, "fetch identity done");
+                                Ok(true)
+                            }
                         },
                         Err(replication::Error::MissingIdentity) => {
-                            tracing::info!("idenitity not found");
+                            tracing::info!("remote does not have identity");
                             Ok(false)
                         },
                         Err(err) => {
@@ -288,12 +298,13 @@ impl Peer {
             };
 
             for peer_info in tracked_peers {
+                let origin = peer_info.peer_id();
                 let payload = librad::net::protocol::gossip::Payload {
                     urn: project.urn(),
                     rev: None,
-                    origin: Some(peer_info.peer_id()),
+                    origin: Some(origin),
                 };
-                tracing::debug!(?payload, "sending announcement");
+                tracing::debug!(%urn, %origin, "sending announcement");
                 self.librad_peer
                     .announce(payload)
                     .map_err(|_| anyhow::anyhow!("librad peer not bound"))?;
