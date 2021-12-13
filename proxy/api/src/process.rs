@@ -365,22 +365,16 @@ fn setup_logging(args: &Args) {
     } else {
         let mut env_filter = tracing_subscriber::EnvFilter::default();
 
-        let mut directives = vec!["info", "quinn=warn"];
+        let mut directives = vec![
+            "info",
+            "quinn=warn",
+            // Silence some noisy debug statements.
+            "librad::net::protocol::io::streams=warn",
+            "librad::net::protocol::io::recv::git=warn",
+        ];
 
         if args.dev_log {
-            directives.extend([
-                "api=debug",
-                "radicle_daemon=debug",
-                "librad=debug",
-                // Silence some noisy debug statements
-                "librad::git::refs=info",
-                "librad::git::include=info",
-                "librad::git::identities::person=info",
-                "librad::git::identities::local=info",
-                "librad::net::protocol::membership::periodic=info",
-                "librad::git::tracking=info",
-                "librad::net::protocol::io::recv::git=warn",
-            ])
+            directives.extend(["api=debug", "radicle_daemon=debug"])
         }
 
         for directive in directives {
