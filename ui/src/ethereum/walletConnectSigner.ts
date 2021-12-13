@@ -25,14 +25,14 @@ export class WalletConnectSigner extends ethers.Signer {
   private walletConnect: WalletConnect;
   private _provider: ethers.providers.Provider;
 
-  constructor(walletConnect: WalletConnect, provider: Provider) {
+  public constructor(walletConnect: WalletConnect, provider: Provider) {
     super();
     defineReadOnly(this, "provider", provider);
     this._provider = provider;
     this.walletConnect = walletConnect;
   }
 
-  async getAddress(): Promise<string> {
+  public async getAddress(): Promise<string> {
     const accountAddress = svelteStore.get(
       this.walletConnect.connection
     )?.accountAddress;
@@ -44,7 +44,7 @@ export class WalletConnectSigner extends ethers.Signer {
     return accountAddress;
   }
 
-  async signMessage(message: ethers.Bytes | string): Promise<string> {
+  public async signMessage(message: ethers.Bytes | string): Promise<string> {
     let messageBytes: Uint8Array;
     if (typeof message === "string") {
       messageBytes = ethers.utils.toUtf8Bytes(message);
@@ -59,7 +59,7 @@ export class WalletConnectSigner extends ethers.Signer {
     return signature;
   }
 
-  async sendTransaction(
+  public async sendTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<TransactionResponse> {
     const tx = await resolveProperties(transaction);
@@ -95,11 +95,14 @@ export class WalletConnectSigner extends ethers.Signer {
     };
   }
 
-  async signTypedData(address: string, typedData: unknown): Promise<string> {
+  public async signTypedData(
+    address: string,
+    typedData: unknown
+  ): Promise<string> {
     return this.walletConnect.signTypedData(address, typedData);
   }
 
-  async signTransaction(
+  public async signTransaction(
     transaction: Deferrable<TransactionRequest>
   ): Promise<string> {
     const tx = await resolveProperties(transaction);
@@ -117,7 +120,7 @@ export class WalletConnectSigner extends ethers.Signer {
     return signedTx;
   }
 
-  connect(_provider: Provider): ethers.Signer {
+  public connect(_provider: Provider): ethers.Signer {
     throw new Error("WalletConnectSigner.connect should never be called");
   }
 }

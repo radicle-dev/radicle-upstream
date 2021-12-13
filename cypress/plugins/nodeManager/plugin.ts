@@ -37,17 +37,17 @@ const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/debug/radicle-proxy");
 const HOST = "127.0.0.1";
 
 class Logger {
-  prefix: string;
-  indentationLevel: number;
+  #prefix: string;
+  #indentationLevel: number;
 
-  constructor({ prefix = "", indentationLevel = 1 }) {
-    this.prefix = prefix;
-    this.indentationLevel = indentationLevel;
+  public constructor({ prefix = "", indentationLevel = 1 }) {
+    this.#prefix = prefix;
+    this.#indentationLevel = indentationLevel;
   }
 
-  log(message: string) {
-    const indentation = " ".repeat(this.indentationLevel * 2);
-    console.log(indentation + this.prefix + message);
+  public log(message: string) {
+    const indentation = " ".repeat(this.#indentationLevel * 2);
+    console.log(indentation + this.#prefix + message);
   }
 }
 
@@ -83,12 +83,12 @@ class Node {
   private logger: Logger;
   private dataDir: string;
 
-  id: NodeId;
-  httpPort: number;
-  peerPort: number;
-  radHome: string;
+  public id: NodeId;
+  public httpPort: number;
+  public peerPort: number;
+  public radHome: string;
 
-  get authToken(): AuthToken {
+  public get authToken(): AuthToken {
     if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
     }
@@ -96,7 +96,7 @@ class Node {
     return this.state.authToken;
   }
 
-  get peerAddress(): PeerAddress {
+  public get peerAddress(): PeerAddress {
     if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
     }
@@ -104,7 +104,7 @@ class Node {
     return this.state.peerAddress;
   }
 
-  get peerId(): PeerId {
+  public get peerId(): PeerId {
     if (this.state.kind !== StateKind.Onboarded) {
       throw new Error("Can't get peerAddress before node is onboarded");
     }
@@ -112,11 +112,11 @@ class Node {
     return this.state.peerId;
   }
 
-  get currentState(): StateKind {
+  public get currentState(): StateKind {
     return this.state.kind;
   }
 
-  constructor(id: NodeId, dataDir: string) {
+  public constructor(id: NodeId, dataDir: string) {
     this.dataDir = dataDir;
     this.logger = new Logger({
       prefix: `[node ${id}]: `,
@@ -129,7 +129,7 @@ class Node {
     this.radHome = path.resolve(dataDir, `node-${id}`);
   }
 
-  async start() {
+  public async start() {
     this.logger.log(`starting node`);
 
     await fs.mkdirs(this.radHome);
@@ -188,7 +188,7 @@ class Node {
     this.logger.log("node started successfully");
   }
 
-  async onboard(options: {
+  public async onboard(options: {
     handle: string;
     passphrase: string;
   }): Promise<NodeSession> {
@@ -266,7 +266,7 @@ class Node {
     };
   }
 
-  async stop(): Promise<void> {
+  public async stop(): Promise<void> {
     if (this.state.kind !== StateKind.Configured) {
       this.logger.log("stopping node");
       // We don’t shutdown the process properly to make it faster. We don’t care
@@ -285,7 +285,7 @@ class NodeManager implements NodeManagerPlugin {
   private logger: Logger;
   private nextPort: number = 17000;
 
-  constructor() {
+  public constructor() {
     this.logger = new Logger({ prefix: `[nodeManager] ` });
   }
 
@@ -301,7 +301,7 @@ class NodeManager implements NodeManagerPlugin {
     return node;
   }
 
-  async startNode(dataDir: string): Promise<number> {
+  public async startNode(dataDir: string): Promise<number> {
     const id = this.nextPort++;
     const node = new Node(id, dataDir);
     await node.start();
@@ -310,7 +310,7 @@ class NodeManager implements NodeManagerPlugin {
     return id;
   }
 
-  async onboardNode(options: OnboardNodeOptions): Promise<NodeSession> {
+  public async onboardNode(options: OnboardNodeOptions): Promise<NodeSession> {
     this.logger.log("onboardNode");
 
     const node = this.getNode(options.id);
@@ -321,7 +321,7 @@ class NodeManager implements NodeManagerPlugin {
     });
   }
 
-  async connectNodes(options: ConnectNodeOptions): Promise<null> {
+  public async connectNodes(options: ConnectNodeOptions): Promise<null> {
     this.logger.log("connectNodes");
 
     if (options.nodeIds.length < 2) {
@@ -351,7 +351,7 @@ class NodeManager implements NodeManagerPlugin {
     return null;
   }
 
-  async stopAllNodes(): Promise<null> {
+  public async stopAllNodes(): Promise<null> {
     this.logger.log("stopAllNodes");
 
     await Promise.all(this.managedNodes.map(node => node.stop()));
@@ -387,11 +387,11 @@ exitHook(() => {
 class LinePrefix extends stream.Transform {
   private buffer: string = "";
   private stringDecoder = new StringDecoder();
-  constructor(private prefix: string) {
+  public constructor(private prefix: string) {
     super();
   }
 
-  _transform(data: Buffer, _encoding: string, next: () => void) {
+  public _transform(data: Buffer, _encoding: string, next: () => void) {
     const str = this.buffer + this.stringDecoder.write(data);
     const lines = str.split(/\r?\n/);
     this.buffer = lines.pop() || "";
@@ -399,7 +399,7 @@ class LinePrefix extends stream.Transform {
     next();
   }
 
-  _flush(done: () => void) {
+  public _flush(done: () => void) {
     this.push(`${this.prefix}${this.buffer}${this.stringDecoder.end()}\n`);
     done();
   }

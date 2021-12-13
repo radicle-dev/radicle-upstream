@@ -80,11 +80,12 @@ function prefix(pfx: string): string {
 export class LinePrefix extends stream.Transform {
   private buffer: string = "";
   private stringDecoder = new StringDecoder();
-  constructor(private prefix: string) {
+
+  public constructor(private prefix: string) {
     super();
   }
 
-  _transform(data: Buffer, _encoding: string, next: () => void) {
+  public _transform(data: Buffer, _encoding: string, next: () => void) {
     const str = this.buffer + this.stringDecoder.write(data);
     const lines = str.split(/\r?\n/);
     this.buffer = lines.pop() || "";
@@ -98,7 +99,7 @@ export class LinePrefix extends stream.Transform {
     next();
   }
 
-  _flush(done: () => void) {
+  public _flush(done: () => void) {
     this.push(`${this.prefix}${this.buffer}${this.stringDecoder.end()}\n`);
     done();
   }

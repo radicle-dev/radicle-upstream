@@ -50,21 +50,24 @@ const claimsContractCache = new LruCache<string, ClaimsContractCacheEntry>({
 });
 
 export class ClaimsContract {
-  contract: Claims;
+  #contract: Claims;
 
-  constructor(signerOrProvider: Signer | wallet.Provider, address: string) {
-    this.contract = ClaimsFactory.connect(address, signerOrProvider);
+  public constructor(
+    signerOrProvider: Signer | wallet.Provider,
+    address: string
+  ) {
+    this.#contract = ClaimsFactory.connect(address, signerOrProvider);
   }
 
-  async claim(urn: string): Promise<void> {
+  public async claim(urn: string): Promise<void> {
     const payload = Urn.urnToSha1(urn);
-    const tx = await this.contract.claim(FORMAT_SHA1, payload);
+    const tx = await this.#contract.claim(FORMAT_SHA1, payload);
     transaction.add(transaction.claimRadicleIdentity(tx, urn));
   }
 
   // Fetches the identity claimed by the given Ethereum address.
   // Returns `undefined` if currently there's no valid claim.
-  async getClaimed(address: string): Promise<Uint8Array | undefined> {
+  public async getClaimed(address: string): Promise<Uint8Array | undefined> {
     const normalisedAddress = address.toLowerCase();
     const cached: ClaimsContractCacheEntry | undefined =
       claimsContractCache.get(normalisedAddress);
@@ -73,8 +76,8 @@ export class ClaimsContract {
       return cached.value;
     }
 
-    const filter = this.contract.filters.Claimed(address);
-    const lastEvent = (await this.contract.queryFilter(filter)).pop();
+    const filter = this.#contract.filters.Claimed(address);
+    const lastEvent = (await this.#contract.queryFilter(filter)).pop();
     if (!lastEvent) {
       claimsContractCache.set(normalisedAddress, { value: undefined });
       return undefined;
@@ -101,11 +104,11 @@ export class ClaimsContract {
   // Returns the current claim (or `undefined` if the address hasn’t
   // claimed anything) and a function that stops watching the claims.
   // Throws if the current claim is invalid.
-  async watchClaimed(
+  public async watchClaimed(
     address: string,
     onClaimed: (claimed?: Uint8Array) => void
   ): Promise<[claimed: Uint8Array | undefined, unwatch: () => void]> {
-    const filter = this.contract.filters.Claimed(address);
+    const filter = this.#contract.filters.Claimed(address);
 
     const getClaim = mutexExecutor.createWorker((txHash: string) => {
       return this.getClaimedByTx(txHash, address);
@@ -114,9 +117,9 @@ export class ClaimsContract {
     const listener = async (_: unknown, event: ethers.Event) => {
       getClaim.submit(event.transactionHash);
     };
-    this.contract.on(filter, listener);
+    this.#contract.on(filter, listener);
 
-    const lastEvent = (await this.contract.queryFilter(filter)).pop();
+    const lastEvent = (await this.#contract.queryFilter(filter)).pop();
     let claimed;
     if (lastEvent) {
       getClaim.submit(lastEvent.transactionHash);
@@ -126,7 +129,7 @@ export class ClaimsContract {
 
     const unwatch = () => {
       unsubOnClaimed();
-      this.contract.off(filter, listener);
+      this.#contract.off(filter, listener);
     };
     return [claimed, unwatch];
   }
@@ -137,7 +140,7 @@ export class ClaimsContract {
     txHash: string,
     address: string
   ): Promise<Uint8Array> {
-    const tx = await this.contract.provider.getTransaction(txHash);
+    const tx = await this.#contract.provider.getTransaction(txHash);
     if (tx === null) {
       throw new error.Error({ message: "Claim transaction not found" });
     }
@@ -151,13 +154,13 @@ export class ClaimsContract {
         },
       });
     }
-    if (tx.to?.toLowerCase() !== this.contract.address.toLowerCase()) {
+    if (tx.to?.toLowerCase() !== this.#contract.address.toLowerCase()) {
       throw new error.Error({
         message: "Claim transaction sent to an invalid contract",
         details: { tx: txHash },
       });
     }
-    const args = this.contract.interface.decodeFunctionData("claim", tx.data);
+    const args = this.#contract.interface.decodeFunctionData("claim", tx.data);
     if (FORMAT_SHA1.eq(args[0]) === false) {
       throw new error.Error({
         message: "Bad claim transaction payload format version",

@@ -104,13 +104,13 @@ class ClaimWatcher {
   private unwatch?: () => void;
   private lastClaimed?: Uint8Array;
 
-  constructor(signer: Signer, contractAddr: string) {
+  public constructor(signer: Signer, contractAddr: string) {
     this.contract = new ClaimsContract(signer, contractAddr);
     this.ethAddr = undefined;
     this.lastClaimed = undefined;
   }
 
-  async claimed(ethAddr: string): Promise<Uint8Array | undefined> {
+  public async claimed(ethAddr: string): Promise<Uint8Array | undefined> {
     if (ethAddr !== this.ethAddr) {
       this.ethAddr = ethAddr;
       if (this.unwatch) {

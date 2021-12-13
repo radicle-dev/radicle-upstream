@@ -23,21 +23,22 @@ export function install(provider: ethers.providers.Provider): void {
 class EthereumDebug {
   private provider: ethers.providers.JsonRpcProvider;
 
-  constructor(provider: ethers.providers.JsonRpcProvider) {
+  public constructor(provider: ethers.providers.JsonRpcProvider) {
     this.provider = provider;
   }
-  async mineBlocks(blocks = 1) {
+
+  public async mineBlocks(blocks = 1) {
     while (blocks) {
       blocks -= 1;
       await this.provider.send("evm_mine", []);
     }
   }
 
-  async setBlockTime(seconds = 5) {
+  public async setBlockTime(seconds = 5) {
     await this.provider.send("evm_setTime", [seconds]);
   }
 
-  async increaseTime(seconds = 5) {
+  public async increaseTime(seconds = 5) {
     await this.provider.send("evm_increaseTime", [seconds]);
   }
 }

@@ -55,11 +55,11 @@ export const remoteIdentitySchema = zod.object({
 export class Client {
   private fetcher: Fetcher;
 
-  constructor(fetcher: Fetcher) {
+  public constructor(fetcher: Fetcher) {
     this.fetcher = fetcher;
   }
 
-  async create(
+  public async create(
     params: { handle: string },
     options?: RequestOptions
   ): Promise<Identity> {
@@ -74,7 +74,10 @@ export class Client {
     );
   }
 
-  async update(params: Metadata, options?: RequestOptions): Promise<Identity> {
+  public async update(
+    params: Metadata,
+    options?: RequestOptions
+  ): Promise<Identity> {
     return this.fetcher.fetchOk(
       {
         method: "PUT",

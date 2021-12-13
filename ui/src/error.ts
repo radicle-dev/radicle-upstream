@@ -36,17 +36,17 @@ interface ErrorParams {
 // contextual information.
 export class Error extends globalThis.Error {
   // A unique code for easy identification of the error.
-  readonly code?: Code;
+  public readonly code?: Code;
   // Message that is displayed to the user if the error is shown.
-  readonly message: string;
+  public readonly message: string;
   // An optional stack trace
-  stack?: string;
+  public stack?: string;
   // Arbitrary additional information associated with the error
-  readonly details?: unknown;
+  public readonly details?: unknown;
   // The error that caused this error
-  readonly source?: Error;
+  public readonly source?: Error;
 
-  constructor(params: ErrorParams) {
+  public constructor(params: ErrorParams) {
     super(params.message);
     Object.defineProperty(this, "stack", {
       enumerable: true,

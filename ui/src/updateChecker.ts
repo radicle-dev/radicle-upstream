@@ -66,7 +66,7 @@ class UpdateChecker {
   //
   // If the user has not configured update checking we ask them to do
   // so after onboarding.
-  static init(): UpdateChecker {
+  public static init(): UpdateChecker {
     const updateChecker = new UpdateChecker();
     if (svelteStore.get(isEnabledStore)) {
       updateChecker.enable();

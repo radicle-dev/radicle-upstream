@@ -96,7 +96,7 @@ export class WalletConnectClient implements WalletConnect {
 
   public connection: svelteStore.Readable<Connection | undefined>;
 
-  constructor() {
+  public constructor() {
     // `this.connector` is set by `reinit()`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.connector = undefined as any;
@@ -110,7 +110,7 @@ export class WalletConnectClient implements WalletConnect {
     }
   }
 
-  async connect(qrDisplay: QrDisplay): Promise<boolean> {
+  public async connect(qrDisplay: QrDisplay): Promise<boolean> {
     return tryRunExclusive(this.connectionMutex, async () => {
       this.qrDisplayRequest.first().onValue(({ uri, onClose }) => {
         qrDisplay.show(uri, onClose);
@@ -138,7 +138,7 @@ export class WalletConnectClient implements WalletConnect {
     });
   }
 
-  async disconnect(): Promise<void> {
+  public async disconnect(): Promise<void> {
     return tryRunExclusive(this.connectionMutex, async () => {
       await this.connector.killSession().catch(() => {
         // When the user disconnects wallet-side, calling `killSession`
@@ -149,20 +149,20 @@ export class WalletConnectClient implements WalletConnect {
     });
   }
 
-  signMessage(address: string, message: Uint8Array): Promise<string> {
+  public signMessage(address: string, message: Uint8Array): Promise<string> {
     const messageDigest = ethers.utils.hashMessage(message);
     return this.connector.signMessage([address, messageDigest]);
   }
 
-  signTypedData(address: string, typedData: unknown): Promise<string> {
+  public signTypedData(address: string, typedData: unknown): Promise<string> {
     return this.connector.signTypedData([address, JSON.stringify(typedData)]);
   }
 
-  sendTransaction(tx: ITxData): Promise<string> {
+  public sendTransaction(tx: ITxData): Promise<string> {
     return this.connector.sendTransaction(tx);
   }
 
-  signTransaction(tx: ITxData): Promise<string> {
+  public signTransaction(tx: ITxData): Promise<string> {
     return this.connector.sendTransaction(tx);
   }
 
@@ -258,7 +258,7 @@ export class TestClient implements WalletConnect {
   // If `chain` id is 1 (i.e. mainnet) then we submit transactions to a
   // local node. Otherwise, we submit transaction to the Rinkeby
   // testnet.
-  constructor(mnemonic: string, chainId: number) {
+  public constructor(mnemonic: string, chainId: number) {
     this.connection = svelteStore.derived(this._connection, x => x);
     this.wallet = ethers.Wallet.fromMnemonic(mnemonic);
     this.chainId = chainId;
@@ -278,7 +278,7 @@ export class TestClient implements WalletConnect {
     }
   }
 
-  async connect(): Promise<boolean> {
+  public async connect(): Promise<boolean> {
     this._connection.set({
       accountAddress: this.wallet.address,
       chainId: this.chainId,
@@ -287,12 +287,15 @@ export class TestClient implements WalletConnect {
     return true;
   }
 
-  async disconnect(): Promise<void> {
+  public async disconnect(): Promise<void> {
     testClientConnected.set(false);
     this._connection.set(undefined);
   }
 
-  async signMessage(address: string, message: Uint8Array): Promise<string> {
+  public async signMessage(
+    address: string,
+    message: Uint8Array
+  ): Promise<string> {
     if (svelteStore.get(this.connection) === undefined) {
       throw new Error.Error({
         message: "Cannot sign message. Wallet is not connected",
@@ -308,19 +311,19 @@ export class TestClient implements WalletConnect {
     return this.wallet.signMessage(message);
   }
 
-  signTypedData(_address: string, _typedData: unknown): Promise<string> {
+  public signTypedData(_address: string, _typedData: unknown): Promise<string> {
     throw new Error.Error({
       message: "TestClient.signTypedData is not implemented",
     });
   }
 
-  async sendTransaction(tx: ITxData): Promise<string> {
+  public async sendTransaction(tx: ITxData): Promise<string> {
     const signedTx = await this.signTransaction(tx);
     const response = await this.provider.sendTransaction(signedTx);
     return response.hash;
   }
 
-  async signTransaction(tx: ITxData): Promise<string> {
+  public async signTransaction(tx: ITxData): Promise<string> {
     if (svelteStore.get(this.connection) === undefined) {
       throw new Error.Error({
         message: "Cannot sign transaction. Wallet is not connected",

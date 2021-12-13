@@ -19,7 +19,7 @@ export class ResponseError extends Error {
   // is present in all proxy API errors.
   public variant: string | undefined;
 
-  constructor(response: Response, body_: unknown) {
+  public constructor(response: Response, body_: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body: any = body_;
     if (
@@ -53,7 +53,7 @@ export class ResponseParseError extends Error {
   public body: unknown;
   public zodIssues: zod.ZodIssue[];
 
-  constructor(
+  public constructor(
     method: string,
     path: string,
     body: unknown,
@@ -87,7 +87,7 @@ type Method = "GET" | "POST" | "PUT" | "DELETE";
 export class Fetcher {
   private baseUrl: string;
 
-  constructor(baseUrl: string) {
+  public constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
   }
 
@@ -96,7 +96,7 @@ export class Fetcher {
   //
   // Throws `ResponseError` if the response status code is not `200`.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async fetchOk<T extends zod.ZodType<any>>(
+  public async fetchOk<T extends zod.ZodType<any>>(
     params: FetchParams,
     schema: T
   ): Promise<zod.infer<T>> {
@@ -124,7 +124,7 @@ export class Fetcher {
   // Execute a fetch and ignore the response body.
   //
   // Throws `ResponseError` if the response status code is not `200`.
-  async fetchOkNoContent(params: FetchParams): Promise<void> {
+  public async fetchOkNoContent(params: FetchParams): Promise<void> {
     const response = await this.fetch(params);
 
     if (!response.ok) {

@@ -178,11 +178,11 @@ const patchSchema: zod.ZodSchema<Patch> = zod.object({
 export class Client {
   private fetcher: Fetcher;
 
-  constructor(fetcher: Fetcher) {
+  public constructor(fetcher: Fetcher) {
     this.fetcher = fetcher;
   }
 
-  async create(params: CreateParams): Promise<Project> {
+  public async create(params: CreateParams): Promise<Project> {
     return this.fetcher.fetchOk(
       {
         method: "POST",
@@ -193,7 +193,7 @@ export class Client {
     );
   }
 
-  async get(urn: string): Promise<Project> {
+  public async get(urn: string): Promise<Project> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -203,7 +203,7 @@ export class Client {
     );
   }
 
-  async listFailed(): Promise<FailedProject[]> {
+  public async listFailed(): Promise<FailedProject[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -213,7 +213,7 @@ export class Client {
     );
   }
 
-  async listTracked(): Promise<Project[]> {
+  public async listTracked(): Promise<Project[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -223,7 +223,7 @@ export class Client {
     );
   }
 
-  async listContributed(): Promise<Project[]> {
+  public async listContributed(): Promise<Project[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -233,7 +233,7 @@ export class Client {
     );
   }
 
-  async listForUser(userUrn: string): Promise<Project[]> {
+  public async listForUser(userUrn: string): Promise<Project[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -242,7 +242,7 @@ export class Client {
       zod.array(projectSchema)
     );
   }
-  async requestsList(): Promise<Request[]> {
+  public async requestsList(): Promise<Request[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -252,14 +252,14 @@ export class Client {
     );
   }
 
-  async requestCancel(urn: string): Promise<void> {
+  public async requestCancel(urn: string): Promise<void> {
     return this.fetcher.fetchOkNoContent({
       method: "DELETE",
       path: `projects/requests/${urn}`,
     });
   }
 
-  async requestSubmit(projectUrn: string): Promise<Request> {
+  public async requestSubmit(projectUrn: string): Promise<Request> {
     return this.fetcher.fetchOk(
       {
         method: "PUT",
@@ -269,7 +269,7 @@ export class Client {
     );
   }
 
-  async listPeers(
+  public async listPeers(
     projectUrn: string,
     options?: RequestOptions
   ): Promise<Peer[]> {
@@ -283,7 +283,7 @@ export class Client {
     );
   }
 
-  async peerTrack(urn: string, peerId: string): Promise<boolean> {
+  public async peerTrack(urn: string, peerId: string): Promise<boolean> {
     return this.fetcher.fetchOk(
       {
         method: "PUT",
@@ -293,7 +293,7 @@ export class Client {
     );
   }
 
-  async peerUntrack(urn: string, peerId: string): Promise<boolean> {
+  public async peerUntrack(urn: string, peerId: string): Promise<boolean> {
     return this.fetcher.fetchOk(
       {
         method: "PUT",
@@ -303,7 +303,7 @@ export class Client {
     );
   }
 
-  async checkout(urn: string, params: CheckoutParams): Promise<string> {
+  public async checkout(urn: string, params: CheckoutParams): Promise<string> {
     return this.fetcher.fetchOk(
       {
         method: "POST",
@@ -314,7 +314,7 @@ export class Client {
     );
   }
 
-  async patchList(projectUrn: string): Promise<Patch[]> {
+  public async patchList(projectUrn: string): Promise<Patch[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",

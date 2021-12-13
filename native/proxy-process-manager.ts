@@ -35,14 +35,14 @@ export class ProxyProcessManager {
   private shutdownInProgress: boolean = false;
   private readonly options: Options;
 
-  constructor(options: Options) {
+  public constructor(options: Options) {
     this.options = options;
   }
 
   // Run the proxy process and return `ProcessResult` when it exits.
   //
   // Throws an error if a process is already running.
-  async run(): Promise<ProcessResult> {
+  public async run(): Promise<ProcessResult> {
     if (this.childProcess !== undefined) {
       throw new Error("Proxy process already started");
     }
@@ -116,7 +116,7 @@ export class ProxyProcessManager {
   }
 
   // Shutdown the process with SIGTERM and wait for it to exit if it is running. Do nothing otherwise.
-  async shutdown(): Promise<void> {
+  public async shutdown(): Promise<void> {
     if (this.childProcess) {
       if (!this.shutdownInProgress) {
         this.childProcess.kill("SIGTERM");

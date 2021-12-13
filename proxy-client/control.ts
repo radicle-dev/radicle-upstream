@@ -15,11 +15,11 @@ interface ProjectCreateParams {
 export class Control {
   private fetcher: Fetcher;
 
-  constructor(fetcher: Fetcher) {
+  public constructor(fetcher: Fetcher) {
     this.fetcher = fetcher;
   }
 
-  async reset(options?: RequestOptions): Promise<void> {
+  public async reset(options?: RequestOptions): Promise<void> {
     return this.fetcher.fetchOkNoContent({
       method: "GET",
       path: "control/reset",
@@ -27,7 +27,7 @@ export class Control {
     });
   }
 
-  async seal(options?: RequestOptions): Promise<void> {
+  public async seal(options?: RequestOptions): Promise<void> {
     return this.fetcher.fetchOkNoContent({
       method: "GET",
       path: "control/seal",
@@ -35,7 +35,7 @@ export class Control {
     });
   }
 
-  async projectCreate(
+  public async projectCreate(
     params: ProjectCreateParams,
     options?: RequestOptions
   ): Promise<void> {

@@ -64,13 +64,13 @@ class WindowManager {
   public window: BrowserWindow | null;
   private messages: MainMessage[];
 
-  constructor() {
+  public constructor() {
     this.window = null;
     this.messages = [];
   }
 
   // Send a message on the "message" channel to the renderer window
-  sendMessage(message: MainMessage) {
+  public sendMessage(message: MainMessage) {
     if (this.window === null || this.window.webContents.isLoading()) {
       this.messages.push(message);
     } else {
@@ -78,13 +78,13 @@ class WindowManager {
     }
   }
 
-  reload() {
+  public reload() {
     if (this.window) {
       this.window.reload();
     }
   }
 
-  open() {
+  public open() {
     if (this.window) {
       return;
     }
@@ -137,7 +137,7 @@ class WindowManager {
     this.window = window;
   }
 
-  focus() {
+  public focus() {
     if (!this.window) {
       return;
     }
@@ -149,7 +149,7 @@ class WindowManager {
     this.window.focus();
   }
 
-  close() {
+  public close() {
     if (this.window) {
       this.window.close();
     }

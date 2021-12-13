@@ -62,7 +62,7 @@ class MutexExecutor {
   private runningTaskId = 0;
   private abortController: AbortController | null = null;
 
-  async run<T>(
+  public async run<T>(
     f: (abortSignal: AbortSignal) => Promise<T>
   ): Promise<T | undefined> {
     this.runningTaskId += 1;
@@ -97,11 +97,13 @@ class MutexWorker<In, Out> {
 
   public output: Bacon.EventStream<Out>;
 
-  constructor(private fn: (x: In, abortSignal: AbortSignal) => Promise<Out>) {
+  public constructor(
+    private fn: (x: In, abortSignal: AbortSignal) => Promise<Out>
+  ) {
     this.output = this.outputBus.toEventStream();
   }
 
-  async submit(x: In) {
+  public async submit(x: In) {
     const output = await this.executor.run(abort => this.fn(x, abort));
     if (output !== undefined) {
       this.outputBus.push(output);

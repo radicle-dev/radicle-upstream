@@ -13,7 +13,7 @@ import execa from "execa";
 
 // Error that is shown without a stacktrace to the user
 class UserError extends Error {
-  constructor(public message: string) {
+  public constructor(public message: string) {
     super(message);
   }
 }

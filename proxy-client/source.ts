@@ -157,11 +157,11 @@ interface CommitGetParams {
 export class Client {
   private fetcher: Fetcher;
 
-  constructor(fetcher: Fetcher) {
+  public constructor(fetcher: Fetcher) {
     this.fetcher = fetcher;
   }
 
-  async blobGet(
+  public async blobGet(
     params: BlobGetParams,
     options?: RequestOptions
   ): Promise<Blob> {
@@ -181,7 +181,7 @@ export class Client {
     );
   }
 
-  async branchesGet(
+  public async branchesGet(
     params: RefsGetParams,
     options?: RequestOptions
   ): Promise<string[]> {
@@ -198,7 +198,7 @@ export class Client {
     );
   }
 
-  async treeGet(
+  public async treeGet(
     params: TreeGetParams,
     options?: RequestOptions
   ): Promise<Tree> {
@@ -217,7 +217,7 @@ export class Client {
     );
   }
 
-  async tagsGet(
+  public async tagsGet(
     params: RefsGetParams,
     options?: RequestOptions
   ): Promise<string[]> {
@@ -234,7 +234,7 @@ export class Client {
     );
   }
 
-  async commitsGet(
+  public async commitsGet(
     params: CommitsGetParams,
     options?: RequestOptions
   ): Promise<CommitSummary> {
@@ -254,7 +254,7 @@ export class Client {
     );
   }
 
-  async commitGet(
+  public async commitGet(
     params: CommitGetParams,
     options?: RequestOptions
   ): Promise<Commit> {
@@ -268,7 +268,7 @@ export class Client {
     );
   }
 
-  async localStateGet(
+  public async localStateGet(
     path: string,
     options?: RequestOptions
   ): Promise<LocalState> {

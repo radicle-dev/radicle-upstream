@@ -54,7 +54,7 @@ export class ProxyClient {
   public source: source.Client;
   public identity: identity.Client;
 
-  constructor(baseUrl: string) {
+  public constructor(baseUrl: string) {
     this.fetcher = new Fetcher(baseUrl);
     this.control = new control.Control(this.fetcher);
     this.project = new project.Client(this.fetcher);
@@ -62,7 +62,7 @@ export class ProxyClient {
     this.identity = new identity.Client(this.fetcher);
   }
 
-  async diagnosticsGet(options?: RequestOptions): Promise<Diagnostics> {
+  public async diagnosticsGet(options?: RequestOptions): Promise<Diagnostics> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -73,7 +73,7 @@ export class ProxyClient {
     );
   }
 
-  async sessionGet(options?: RequestOptions): Promise<Session> {
+  public async sessionGet(options?: RequestOptions): Promise<Session> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -84,7 +84,7 @@ export class ProxyClient {
     );
   }
 
-  async personGet(
+  public async personGet(
     urn: string,
     options?: RequestOptions
   ): Promise<identity.RemoteIdentity> {
@@ -98,7 +98,7 @@ export class ProxyClient {
     );
   }
 
-  async keyStoreUnseal(
+  public async keyStoreUnseal(
     params: KeyStoreUnsealParams,
     options?: RequestOptions
   ): Promise<void> {
@@ -110,7 +110,7 @@ export class ProxyClient {
     });
   }
 
-  async keyStoreCreate(
+  public async keyStoreCreate(
     params: KeyStoreCreateParams,
     options?: RequestOptions
   ): Promise<void> {
@@ -122,7 +122,7 @@ export class ProxyClient {
     });
   }
 
-  async seedsGet(options?: RequestOptions): Promise<string[]> {
+  public async seedsGet(options?: RequestOptions): Promise<string[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
@@ -133,7 +133,10 @@ export class ProxyClient {
     );
   }
 
-  async seedsPut(seeds: string[], options?: RequestOptions): Promise<void> {
+  public async seedsPut(
+    seeds: string[],
+    options?: RequestOptions
+  ): Promise<void> {
     return this.fetcher.fetchOkNoContent({
       method: "PUT",
       path: "session/seeds",
