@@ -15,7 +15,7 @@ use tokio::sync::RwLock;
 
 use link_crypto::BoxedSigner;
 
-use crate::{keystore, notification::Notification, service};
+use crate::{keystore, service};
 
 /// Container to pass down dependencies into HTTP filter chains.
 #[derive(Clone)]
@@ -160,8 +160,8 @@ pub struct Unsealed {
     pub peer_control: radicle_daemon::PeerControl,
     /// [`radicle_daemon::net::peer::Peer`] to operate on the local monorepo.
     pub peer: radicle_daemon::net::peer::Peer<BoxedSigner>,
+    pub peer_events: async_broadcast::InactiveReceiver<radicle_daemon::PeerEvent>,
     pub rest: Sealed,
-    pub notifications: tokio::sync::broadcast::Sender<Notification>,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -188,14 +188,14 @@ pub struct Sealed {
 }
 
 impl Unsealed {
-    /// Return a stream that emits notifications from the peer.
+    /// Return a stream that emits peer events.
     ///
     /// The stream ends when API server is shut down.
-    pub fn notifications(&self) -> impl Stream<Item = Notification> + Send + 'static {
+    pub fn peer_events(&self) -> impl Stream<Item = radicle_daemon::PeerEvent> + Send + 'static {
         let shutdown = self.rest.shutdown.clone();
-        tokio_stream::wrappers::BroadcastStream::new(self.notifications.subscribe())
+        self.peer_events
+            .activate_cloned()
             .take_until(async move { shutdown.notified().await })
-            .filter_map(|result| future::ready(result.ok()))
     }
 
     /// Initialises a new [`Unsealed`] context with the store and coco state in the given temporary
@@ -244,6 +244,7 @@ impl Unsealed {
             Self {
                 peer_control,
                 peer,
+                peer_events: async_broadcast::broadcast(1).1.deactivate(),
                 rest: Sealed {
                     store,
                     test: false,
@@ -256,7 +257,6 @@ impl Unsealed {
                     paths,
                     shutdown: Arc::new(tokio::sync::Notify::new()),
                 },
-                notifications: tokio::sync::broadcast::channel(1).0,
             },
             run_handle,
         ))

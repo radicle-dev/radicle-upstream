@@ -12,9 +12,9 @@ use std::{sync::Arc, time::Duration};
 
 use anyhow::Context;
 use futures::prelude::*;
-use tokio::sync::{broadcast, watch, RwLock};
+use tokio::sync::{watch, RwLock};
 
-use crate::{cli::Args, config, context, git_helper, http, notification, service, session};
+use crate::{cli::Args, config, context, git_helper, http, service, session};
 
 /// Run the proxy process
 ///
@@ -144,8 +144,6 @@ async fn run_session(
         shutdown: Arc::new(tokio::sync::Notify::new()),
     };
 
-    let (peer_events_sender, _) = tokio::sync::broadcast::channel(32);
-
     let mut shutdown_runner = crate::shutdown_runner::ShutdownRunner::new();
 
     // Trigger a shutdown when the restart signal resolves
@@ -175,19 +173,30 @@ async fn run_session(
             radicle_daemon::RunConfig::default(),
         )?;
 
+        let (peer_events_tx, peer_events_rx) = async_broadcast::broadcast(32);
+        tokio::task::spawn(forward_broadcast(peer.subscribe(), peer_events_tx));
+
+        tokio::task::spawn(peer_events_rx.clone().for_each(|event| {
+            match event {
+                radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) => {
+                    tracing::debug!(event = ?transition.event, "waiting room transition")
+                },
+
+                radicle_daemon::peer::Event::GossipFetched { gossip, result, .. } => {
+                    tracing::debug!(?gossip, ?result, "gossip received")
+                },
+                _ => {},
+            };
+            future::ready(())
+        }));
+
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
             peer_control,
             peer: peer.peer.clone(),
+            peer_events: peer_events_rx.deactivate(),
             rest: sealed,
-            notifications: peer_events_sender.clone(),
         });
-
-        shutdown_runner.add_without_shutdown(
-            send_peer_events(peer.subscribe(), peer_events_sender)
-                .map(Ok)
-                .boxed(),
-        );
 
         shutdown_runner.add_with_shutdown(move |shutdown_signal| {
             let (peer_shutdown, peer_run) = peer.start();
@@ -246,21 +255,37 @@ async fn session_seeds(
         }))
 }
 
-async fn send_peer_events(
-    mut peer_events: broadcast::Receiver<radicle_daemon::PeerEvent>,
-    peer_events_sender: broadcast::Sender<notification::Notification>,
+/// Forward messages from a `tokio` broadcast receiver to an `async_broadcast` sender with message
+/// overflow enabled.
+///
+/// The future is done and stops forwarding when either channel is closed.
+async fn forward_broadcast<T: Clone>(
+    mut tokio_receiver: tokio::sync::broadcast::Receiver<T>,
+    mut async_sender: async_broadcast::Sender<T>,
 ) {
-    while let Ok(event) = peer_events.recv().await {
-        if let radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) = event {
-            tracing::debug!(event = ?transition.event, "waiting room transition")
-        }
-
-        if let radicle_daemon::peer::Event::GossipFetched { gossip, result, .. } = &event {
-            tracing::debug!(?gossip, ?result, "gossip received")
-        }
-
-        if let Some(notification) = notification::from_peer_event(event) {
-            let _result = peer_events_sender.send(notification).err();
+    async_sender.set_overflow(true);
+    loop {
+        use tokio::sync::broadcast::error::RecvError;
+        match tokio_receiver.recv().await {
+            Ok(item) => {
+                if let Err(err) = async_sender.try_broadcast(item) {
+                    match err {
+                        async_broadcast::TrySendError::Full(_) => {
+                            panic!("broadcast channel in overflow mode cannot be full")
+                        },
+                        async_broadcast::TrySendError::Closed(_) => {
+                            break;
+                        },
+                        async_broadcast::TrySendError::Inactive(_) => {},
+                    }
+                }
+            },
+            Err(err) => match err {
+                RecvError::Closed => {
+                    break;
+                },
+                RecvError::Lagged(_) => {},
+            },
         }
     }
 }

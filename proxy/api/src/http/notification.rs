@@ -40,10 +40,14 @@ mod handler {
             new: current_status,
         }]);
 
+        let notifications = ctx
+            .peer_events()
+            .filter_map(|event| future::ready(crate::notification::from_peer_event(event)));
+
         Ok(sse::reply(
             sse::keep_alive().stream(
                 initial
-                    .chain(ctx.notifications())
+                    .chain(notifications)
                     .map(|event| sse::Event::default().json_data(event)),
             ),
         ))
