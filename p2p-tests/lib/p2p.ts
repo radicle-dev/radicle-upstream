@@ -341,7 +341,7 @@ export async function runTestcase({
 }: RunTestcaseParams): Promise<void> {
   const scriptPath = path.join(P2P_TEST_PATH, networkScript);
 
-  execa.commandSync(`${scriptPath} start`);
+  execa.commandSync(`${scriptPath} start`, { stdio: "inherit" });
 
   const testDataDir = path.join(P2P_TEST_PATH, "workspace", dataDirName);
   fs.removeSync(testDataDir);
@@ -357,7 +357,7 @@ export async function runTestcase({
     fs.removeSync(testDataDir);
   }
 
-  execa.commandSync(`${scriptPath} stop`);
+  execa.commandSync(`${scriptPath} stop`, { stdio: "inherit" });
 
   if (maybeError) {
     process.exit(1);

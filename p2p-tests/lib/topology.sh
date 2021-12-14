@@ -53,6 +53,40 @@ function status {
   return 0
 }
 
+function create_peer () {
+  declare -r namespace="upstream-test-$1"
+  declare -r addr="$2"
+
+  ip netns add "$namespace"
+
+  ip netns exec "$namespace" ip link set lo up
+  ip netns exec "$namespace" ip addr add 127.0.0.1 dev lo
+  ip netns exec "$namespace" ip route add default via 127.0.0.1
+
+  ip link add macv link upstr-test-br type macvlan mode bridge
+  ip link set macv netns "$namespace"
+
+  ip netns exec "$namespace" ip link set dev macv up
+  ip netns exec "$namespace" ip addr add "$addr" dev macv
+}
+
+function create_bridge () {
+  ip link add upstr-test-br type dummy
+  ip link set dev upstr-test-br up
+
+  ip link add upstr-test link upstr-test-br type macvlan mode bridge
+  ip link set dev upstr-test up
+  ip addr add 10.0.0.254/24 dev upstr-test
+}
+
+function clean_up_bridge () {
+  set +e
+  ip link delete upstr-test-br > /dev/null 2>&1
+  ip link delete upstr-test > /dev/null 2>&1
+  set -e
+}
+
+
 function usage {
   cat <<EOF
 Usage: sudo $(basename "${BASH_SOURCE[0]}") start | stop
