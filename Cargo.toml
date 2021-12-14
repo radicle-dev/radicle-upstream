@@ -7,35 +7,35 @@ members = [
 
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 [patch.crates-io.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 [patch.crates-io.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 [patch.crates-io.rad-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 [patch.crates-io.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 [patch.crates-io.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 [patch.crates-io.rad-exe]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-07"
+tag = "cycle/2021-12-14"
 
 
 # Uncomment the following lines and comment out the radicle-link patches above
@@ -51,13 +51,13 @@ tag = "cycle/2021-12-07"
 # radicle-git-helpers = { path = "../radicle-link/git-helpers" }
 
 # These patches are the same as those listed in
-# https://github.com/radicle-dev/radicle-link/blob/cycle/2021-12-07/Cargo.toml
+# https://github.com/radicle-dev/radicle-link/blob/cycle/2021-12-14/Cargo.toml
 
 [patch.crates-io.thrussh-encoding]
 git = "https://github.com/FintanH/thrussh.git"
 branch = "generic-agent"
 
-# See https://github.com/radicle-dev/radicle-link/blob/cycle/2021-12-07/link-crypto/Cargo.toml#L34
+# See https://github.com/radicle-dev/radicle-link/blob/cycle/2021-12-14/link-crypto/Cargo.toml#L34
 [patch.crates-io.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore"
-rev = "00f8fb6135f8e4cd097a48e6f0700e08ce4abb04"
+rev = "293ef5d076b27ae3d8f9cff7fd8a5234b2604199"

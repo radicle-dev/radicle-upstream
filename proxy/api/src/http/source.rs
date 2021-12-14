@@ -180,8 +180,8 @@ mod handler {
         let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
-        let commit = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::commit(&mut browser, *sha1)
+        let commit = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::commit(browser, *sha1)
         })
         .map_err(error::Error::from)?;
 
@@ -199,8 +199,8 @@ mod handler {
         let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
             .await
             .map_err(error::Error::from)?;
-        let commits = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::commits(&mut browser, revision)
+        let commits = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::commits(browser, revision)
         })
         .map_err(error::Error::from)?;
 
@@ -248,8 +248,8 @@ mod handler {
         let branch = radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
             .await
             .map_err(error::Error::from)?;
-        let tree = browser::using(&ctx.peer, branch, |mut browser| {
-            radicle_source::tree(&mut browser, revision, prefix)
+        let tree = browser::using(&ctx.peer, branch, |browser| {
+            radicle_source::tree(browser, revision, prefix)
         })
         .map_err(error::Error::from)?;
 
@@ -312,7 +312,7 @@ pub struct TreeQuery {
 #[serde(rename_all = "camelCase")]
 pub struct TagQuery {
     /// PeerId to scope the query by.
-    peer_id: Option<PeerId>,
+    pub peer_id: Option<PeerId>,
 }
 
 /// Syntax highlighting theme
@@ -356,8 +356,8 @@ mod test {
         let arrows = "text/arrows.txt";
         let default_branch =
             radicle_daemon::state::find_default_branch(&ctx.peer, urn.clone()).await?;
-        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::blob(&mut browser, Some(revision.clone()), arrows)
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::blob(browser, Some(revision.clone()), arrows)
         })?;
 
         let query = super::BlobQuery {
@@ -494,8 +494,8 @@ mod test {
             .await;
 
         let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::blob(&mut browser, Some(revision), path)
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::blob(browser, Some(revision), path)
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -548,8 +548,8 @@ mod test {
             .await;
 
         let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::commit::header(&mut browser, *sha1)
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::commit::header(browser, *sha1)
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -603,8 +603,8 @@ mod test {
             .await;
 
         let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::commits(&mut browser, Some(revision.clone()))
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::commits(browser, Some(revision.clone()))
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -703,8 +703,8 @@ mod test {
         let res = request().method("GET").path(&path).reply(&api).await;
 
         let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::tree(&mut browser, Some(revision), Some(prefix.to_string()))
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::tree(browser, Some(revision), Some(prefix.to_string()))
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
@@ -774,8 +774,8 @@ mod test {
         let res = request().method("GET").path(&path).reply(&api).await;
 
         let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
-        let want = browser::using(&ctx.peer, default_branch, |mut browser| {
-            radicle_source::tree(&mut browser, Some(revision), None)
+        let want = browser::using(&ctx.peer, default_branch, |browser| {
+            radicle_source::tree(browser, Some(revision), None)
         })?;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {

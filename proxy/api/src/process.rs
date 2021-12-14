@@ -124,7 +124,7 @@ async fn run_session(
             environment.coco_profile.id(),
             std::env::var_os("RAD_HOME")
                 .as_ref()
-                .map(|value| std::path::Path::new(value)),
+                .map(std::path::Path::new),
         )
     };
 

@@ -194,7 +194,6 @@ impl Error {
     /// used to decrypt the secret key.
     #[must_use]
     pub const fn is_invalid_passphrase(&self) -> bool {
-        #[allow(clippy::wildcard_enum_match_arm)]
         matches!(self.inner, FileError::Crypto(SecretBoxError::InvalidKey))
     }
 
@@ -202,7 +201,6 @@ impl Error {
     /// store.
     #[must_use]
     pub const fn is_key_exists(&self) -> bool {
-        #[allow(clippy::wildcard_enum_match_arm)]
         matches!(self.inner, FileError::KeyExists(_))
     }
 }

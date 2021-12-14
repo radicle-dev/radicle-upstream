@@ -70,15 +70,6 @@ mod handler {
                         "promoteInterval": protocol_config.membership.promote_interval
                     },
                     "network": protocol_config.network.to_string(),
-                    "replication": {
-                        "fetchLimit": {
-                            "peek": protocol_config.replication.fetch_limit.peek,
-                            "data": protocol_config.replication.fetch_limit.data
-                        }
-                    },
-                    "fetch": {
-                        "fetchSlotWaitTimeout": protocol_config.fetch.fetch_slot_wait_timeout
-                    },
                 },
                 "membership": {
                     "active": membership.active,

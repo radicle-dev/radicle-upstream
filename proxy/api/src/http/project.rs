@@ -437,7 +437,7 @@ mod test {
             include_path,
             format!(
                 "{}/git-includes/{}.inc",
-                tmp_dir.path().display().to_string(),
+                tmp_dir.path().display(),
                 urn.encode_id()
             ),
         );

@@ -10,7 +10,6 @@ use anyhow::Context as _;
 use futures::prelude::*;
 
 use librad::{
-    git::{replication, storage::fetcher, tracking},
     net::{
         discovery::{self, Discovery as _},
         protocol, Network,
@@ -40,10 +39,7 @@ impl Peer {
     /// Create a new client.
     pub fn new(config: Config) -> Self {
         let storage = librad::net::peer::config::Storage {
-            protocol: librad::net::peer::config::ProtocolStorage {
-                fetch_slot_wait_timeout: Default::default(),
-                pool_size: 4,
-            },
+            protocol: librad::net::peer::config::ProtocolStorage { pool_size: 4 },
             user: librad::net::peer::config::UserStorage { pool_size: 4 },
         };
 
@@ -55,8 +51,7 @@ impl Peer {
                 advertised_addrs: None, // TODO: Should we use this?
                 membership: Default::default(),
                 network: Network::Main,
-                replication: replication::Config::default(),
-                fetch: Default::default(),
+                replication: librad::net::replication::Config::default(),
                 rate_limits: Default::default(),
             },
             storage,
@@ -101,7 +96,7 @@ impl Peer {
                 Ok(())
             },
             Err(err) => Err(err).context("peer listening failed"),
-            Ok(never) => never,
+            Ok(infallible) => match infallible {},
         }
     }
 
@@ -131,68 +126,53 @@ impl Peer {
                 .clone()
         };
 
-        let cfg = self.librad_peer.protocol_config().replication;
-
-        let fetched = self
-            .librad_peer
+        self.librad_peer
             .using_storage({
                 let urn = urn.clone();
+                let peer_id = peer_id;
                 move |storage| {
-                    tracking::track(storage, &urn, peer_id).context("failed to track identity")?;
-
-                    // Retry 20 times every 100ms.
-                    let mut retries =
-                        std::iter::repeat(std::time::Duration::from_millis(100)).take(20);
-
-                    let fetcher = loop {
-                        let fetcher_result =
-                            fetcher::PeerToPeer::new(urn.clone(), peer_id, addrs.clone())
-                                .build(storage)
-                                .context("failed to build fetcher")?;
-
-                        match fetcher_result {
-                            Ok(fetcher) => break fetcher,
-                            Err(_) => {
-                                if let Some(delay) = retries.next() {
-                                    std::thread::sleep(delay);
-                                    tracing::debug!(%urn, %peer_id, "retrying fetch");
-                                    continue;
-                                } else {
-                                    anyhow::bail!("building fetcher exceeded maximum retries")
-                                }
-                            },
-                        }
-                    };
-
-                    let result = replication::replicate(storage, fetcher, cfg, None);
-                    match result {
-                        Ok(replication_output) => {
-                            let mode = replication_output.mode;
-                            let updated_refs = replication_output
-                                .updated_tips
-                                .keys()
-                                .map(|x| x.to_string())
-                                .collect::<HashSet<_>>();
-                            if updated_refs.is_empty() {
-                                tracing::info!("remote does not have identity");
-                                Ok(false)
-                            } else {
-                                tracing::info!(?mode, ?updated_refs, "fetch identity done");
-                                Ok(true)
-                            }
-                        },
-                        Err(replication::Error::MissingIdentity) => {
-                            tracing::info!("remote does not have identity");
-                            Ok(false)
-                        },
-                        Err(err) => {
-                            Err(anyhow::Error::new(err).context("librad replication failed"))
-                        },
-                    }
+                    librad::git::tracking::track(storage, &urn, peer_id)
+                        .context("failed to track identity")
                 }
             })
             .await??;
-        Ok(fetched)
+
+        let result = self
+            .librad_peer
+            .replicate((peer_id, addrs), urn, None)
+            .await;
+        match result {
+            Ok(replication_output) => {
+                let mode = replication_output.mode;
+                let updated_refs = replication_output
+                    .updated_tips
+                    .keys()
+                    .map(|x| x.to_string())
+                    .collect::<HashSet<_>>();
+                if updated_refs.is_empty() {
+                    tracing::info!("remote does not have identity");
+                    Ok(false)
+                } else {
+                    tracing::info!(?mode, ?updated_refs, "fetch identity done");
+                    Ok(true)
+                }
+            },
+            Err(err) => {
+                let is_missing_identity_err = matches!(
+                    err,
+                    librad::net::peer::error::Replicate::Replicate(
+                        librad::net::replication::error::Replicate::Replication(
+                            librad::git::replication::Error::MissingIdentity,
+                        ),
+                    )
+                );
+                if is_missing_identity_err {
+                    Ok(false)
+                } else {
+                    Err(anyhow::Error::new(err).context("librad replication failed"))
+                }
+            },
+        }
     }
 
     /// Returns stream that emits an item whenever the membership of the gossip layer changes.
