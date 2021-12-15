@@ -21,3 +21,4 @@ sandbox
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
+.vagrant

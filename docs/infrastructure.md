@@ -182,21 +182,6 @@ The peer address is `hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@34.8
 
 For more details see the [readme](../infra/seed-node/README.md).
 
-## seed-node development instance
-
-For upstream-seed testing and development we have another VM. To save costs, we
-start and stop it on demand whenever we need to test something.
-
-Connect to the VM via: `ssh seednode@35.228.122.189`.
-
-The seed node uses the following resources
-* GCE VM `seed-node`
-  * 4 vCPUs, 4GB RAM, 50GB SSD disk
-* External IP Address `seed-node`
-  * bound to the VM instance `seed-node`
-  * reachable under `35.228.122.189`
-* Firewall rule `seed-node` to allow traffic to the `seed-node` VM.
-
 
 [do]: https://docs.docker.com/engine/install/debian
 [os]: https://github.com/radicle-dev/radicle-client-services#setting-up-an-org-seed-node

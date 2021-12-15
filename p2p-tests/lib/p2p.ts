@@ -47,7 +47,13 @@ const assignedColors: Record<string, typeof Color> = {};
 
 const ROOT_PATH = path.join(__dirname, "..", "..");
 const P2P_TEST_PATH = path.join(ROOT_PATH, "p2p-tests");
-const BIN_PATH = path.join(ROOT_PATH, "target", "debug");
+function binPath(): string {
+  if (process.env.CARGO_TARGET_DIR === undefined) {
+    return path.join(ROOT_PATH, "target", "debug");
+  } else {
+    return path.join(process.env.CARGO_TARGET_DIR, "debug");
+  }
+}
 
 function prefix(pfx: string): string {
   if (assignedColors[pfx] === undefined) {
@@ -127,7 +133,7 @@ export class RadicleProxy {
     fs.mkdirsSync(this.radHome);
 
     const initResult = JSON.parse(
-      execa.sync(path.join(BIN_PATH, "radicle-proxy-init"), [
+      execa.sync(path.join(binPath(), "radicle-proxy-init"), [
         this.name,
         "--key-passphrase",
         this.passphrase,
@@ -152,7 +158,7 @@ export class RadicleProxy {
     this.#childProcess = spawnInNamespace(
       this.name,
       [
-        path.join(BIN_PATH, "radicle-proxy"),
+        path.join(binPath(), "radicle-proxy"),
         "--peer-listen",
         `${this.#ipAddress}:8776`,
         "--http-listen",
@@ -224,7 +230,7 @@ export class UpstreamSeed {
     this.#childProcess = spawnInNamespace(
       this.name,
       [
-        path.join(BIN_PATH, "upstream-seed"),
+        path.join(binPath(), "upstream-seed"),
         "--rad-home",
         this.radHome,
         "--listen",
@@ -317,7 +323,7 @@ export function pushRad({
       RADICLE_UNSAFE_FAST_KEYSTORE: "1",
       RAD_HOME: radHome,
       KEY_PASSPHRASE: keyPassphrase,
-      GIT_EXEC_PATH: BIN_PATH,
+      GIT_EXEC_PATH: binPath(),
     },
   });
 }
@@ -372,7 +378,7 @@ interface RadCliParams {
 }
 
 export function radCli({ radHome, args }: RadCliParams): unknown {
-  const radBinaryPath = path.join(BIN_PATH, "rad");
+  const radBinaryPath = path.join(binPath(), "rad");
   const result = execa.sync(radBinaryPath, args, {
     env: {
       RAD_HOME: radHome,
