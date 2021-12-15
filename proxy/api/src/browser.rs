@@ -7,7 +7,6 @@
 use std::convert::TryFrom as _;
 
 use librad::git::types::{Reference, Single};
-use link_crypto::BoxedSigner;
 use radicle_source::{error, surf::vcs::git};
 
 use crate::error::Error;
@@ -24,7 +23,7 @@ use crate::error::Error;
 ///   * If we could not initialise the `Browser`.
 ///   * If the callback provided returned an error.
 pub fn using<T, F>(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
+    peer: &crate::peer::Peer,
     reference: Reference<Single>,
     callback: F,
 ) -> Result<T, Error>
@@ -48,7 +47,7 @@ where
         ),
     };
 
-    let monorepo = radicle_daemon::state::monorepo(peer);
+    let monorepo = radicle_daemon::state::monorepo(peer.librad_peer());
     let repo = git::Repository::new(monorepo).map_err(error::Error::from)?;
     let mut browser =
         git::Browser::new_with_namespace(&repo, &namespace, branch).map_err(error::Error::from)?;

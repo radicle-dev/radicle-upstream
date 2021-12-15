@@ -12,7 +12,6 @@ use nonempty::NonEmpty;
 
 use radicle_source::surf::vcs::git::git2;
 
-use link_crypto::BoxedSigner;
 use radicle_daemon::{
     librad::{
         git::{
@@ -25,7 +24,6 @@ use radicle_daemon::{
         },
         git_ext::OneLevel,
         identities::Project,
-        net::peer::Peer,
         refspec_pattern,
     },
     project,
@@ -43,12 +41,13 @@ pub use test::*;
 /// Will return [`Error`] if any of the git interaction fail, or the initialisation of
 /// the coco project.
 pub async fn replicate_platinum(
-    peer: &Peer<BoxedSigner>,
+    peer: &crate::peer::Peer,
     owner: &LocalIdentity,
     name: &str,
     description: &str,
     default_branch: OneLevel,
 ) -> Result<Project, Error> {
+    let peer = peer.librad_peer();
     // Construct path for fixtures to clone into.
     let monorepo = state::monorepo(peer);
     let workspace = monorepo.join("../workspace");
@@ -183,8 +182,8 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
 mod test {
     use radicle_daemon::{
         librad::{
-            git::identities::local::LocalIdentity, git_ext::OneLevel, identities::Project,
-            net::peer::Peer, reflike, PeerId,
+            git::identities::local::LocalIdentity, git_ext::OneLevel, identities::Project, reflike,
+            PeerId,
         },
         state::Error,
     };
@@ -210,7 +209,7 @@ mod test {
     /// Will error if filesystem access is not granted or broken for the configured
     /// [`librad::paths::Paths`].
     pub async fn setup_fixtures(
-        peer: &Peer<link_crypto::BoxedSigner>,
+        peer: &crate::peer::Peer,
         owner: &LocalIdentity,
     ) -> Result<Vec<Project>, Error> {
         let infos = vec![

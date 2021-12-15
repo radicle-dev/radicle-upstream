@@ -187,7 +187,7 @@ mod handler {
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = http::guard_self_peer_id(&ctx.peer, peer_id);
-        let path = radicle_daemon::state::checkout(&ctx.peer, urn, peer_id, path)
+        let path = radicle_daemon::state::checkout(ctx.peer.librad_peer(), urn, peer_id, path)
             .await
             .map_err(Error::from)?;
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
@@ -199,13 +199,13 @@ mod handler {
         owner: radicle_daemon::LocalIdentity,
         input: radicle_daemon::project::Create,
     ) -> Result<impl Reply, Rejection> {
-        let project = radicle_daemon::state::init_project(&ctx.peer, &owner, input)
+        let project = radicle_daemon::state::init_project(ctx.peer.librad_peer(), &owner, input)
             .await
             .map_err(Error::from)?;
         let urn = project.urn();
 
         let branch = radicle_daemon::state::get_branch(
-            &ctx.peer,
+            ctx.peer.librad_peer(),
             urn,
             None,
             project.subject().default_branch.clone(),
@@ -262,12 +262,13 @@ mod handler {
 
     /// List the remote peers for a project.
     pub async fn peers(ctx: context::Unsealed, urn: Urn) -> Result<impl Reply, Rejection> {
-        let peers: Vec<project::Peer> = radicle_daemon::state::list_project_peers(&ctx.peer, urn)
-            .await
-            .map_err(Error::from)?
-            .into_iter()
-            .map(project::Peer::from)
-            .collect::<Vec<_>>();
+        let peers: Vec<project::Peer> =
+            radicle_daemon::state::list_project_peers(ctx.peer.librad_peer(), urn)
+                .await
+                .map_err(Error::from)?
+                .into_iter()
+                .map(project::Peer::from)
+                .collect::<Vec<_>>();
 
         Ok(reply::json(&peers))
     }
@@ -278,7 +279,7 @@ mod handler {
         peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        radicle_daemon::state::track(&ctx.peer, urn, peer_id)
+        radicle_daemon::state::track(ctx.peer.librad_peer(), urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -290,7 +291,7 @@ mod handler {
         peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        radicle_daemon::state::untrack(&ctx.peer, urn, peer_id)
+        radicle_daemon::state::untrack(ctx.peer.librad_peer(), urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -365,7 +366,7 @@ mod test {
         let urn = {
             let handle = "cloudhead";
             let owner = radicle_daemon::state::init_owner(
-                &ctx.peer,
+                ctx.peer.librad_peer(),
                 Person {
                     name: handle.into(),
                 },
@@ -373,7 +374,11 @@ mod test {
             .await?;
             session::initialize(
                 &ctx.rest.store,
-                (ctx.peer.peer_id(), owner.clone().into_inner().into_inner()).into(),
+                (
+                    ctx.peer.librad_peer().peer_id(),
+                    owner.clone().into_inner().into_inner(),
+                )
+                    .into(),
                 &ctx.rest.default_seeds,
             )?;
 
@@ -459,7 +464,7 @@ mod test {
                 handle: "cloudhead".to_string(),
                 ethereum: None,
             };
-            let id = identity::create(&ctx.peer, metadata).await?;
+            let id = identity::create(ctx.peer.librad_peer(), metadata).await?;
 
             session::initialize(&ctx.rest.store, id, &ctx.rest.default_seeds)?;
         };
@@ -522,7 +527,7 @@ mod test {
                 handle: "cloudhead".to_string(),
                 ethereum: None,
             };
-            let id = identity::create(&ctx.peer, metadata).await?;
+            let id = identity::create(ctx.peer.librad_peer(), metadata).await?;
             session::initialize(&ctx.rest.store, id, &ctx.rest.default_seeds)?;
         };
 
@@ -604,7 +609,7 @@ mod test {
 
         let urn = {
             let owner = radicle_daemon::state::init_owner(
-                &ctx.peer,
+                ctx.peer.librad_peer(),
                 Person {
                     name: "cloudhead".into(),
                 },
@@ -643,7 +648,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let owner = radicle_daemon::state::init_owner(
-            &ctx.peer,
+            ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),
             },
@@ -674,7 +679,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let owner = radicle_daemon::state::init_owner(
-            &ctx.peer,
+            ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),
             },
@@ -708,7 +713,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let owner = radicle_daemon::state::init_owner(
-            &ctx.peer,
+            ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),
             },
@@ -742,7 +747,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let owner = radicle_daemon::state::init_owner(
-            &ctx.peer,
+            ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),
             },

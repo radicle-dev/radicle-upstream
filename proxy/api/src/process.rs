@@ -150,11 +150,7 @@ async fn run_session(
     shutdown_runner.add_without_shutdown(restart_signal.map(Ok));
 
     let ctx = if let Some(key) = environment.key.clone() {
-        let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
-
-        let config = radicle_daemon::config::configure(paths.clone(), signer, args.peer_listen);
-
-        let disco = if let Some(ref seeds) = sealed.seeds {
+        let discovery = if let Some(ref seeds) = sealed.seeds {
             let seeds = radicle_daemon::seed::resolve(seeds)
                 .await
                 .context("failed to parse and resolve seeds")?;
@@ -166,47 +162,24 @@ async fn run_session(
             disco
         };
 
-        let peer = radicle_daemon::Peer::new(
-            config,
-            disco,
-            store.clone(),
-            radicle_daemon::RunConfig::default(),
-        )?;
+        let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
+            paths: paths.clone(),
+            key,
+            store,
+            discovery,
+            listen: args.peer_listen,
+        })?;
 
-        let (peer_events_tx, peer_events_rx) = async_broadcast::broadcast(32);
-        tokio::task::spawn(forward_broadcast(peer.subscribe(), peer_events_tx));
+        tokio::task::spawn(log_daemon_peer_events(peer.events()));
 
-        tokio::task::spawn(log_daemon_peer_events(peer_events_rx.clone()));
-
-        let peer_control = peer.control();
-        let ctx = context::Context::Unsealed(context::Unsealed {
-            peer_control,
-            peer: peer.peer.clone(),
-            peer_events: peer_events_rx.deactivate(),
-            rest: sealed,
+        shutdown_runner.add_with_shutdown(|shutdown| {
+            peer_runner
+                .run(shutdown)
+                .map_err(|err| anyhow::Error::new(err).context("failed to run peer"))
+                .boxed()
         });
 
-        shutdown_runner.add_with_shutdown(move |shutdown_signal| {
-            let (peer_shutdown, peer_run) = peer.start();
-            let peer_run = peer_run.fuse();
-            let mut shutdown_signal = shutdown_signal.fuse();
-            async move {
-                futures::pin_mut!(peer_run);
-                futures::select! {
-                    _ = shutdown_signal => {
-                        drop(peer_shutdown);
-                        peer_run.await
-                    }
-                    result = peer_run => {
-                        result
-                    }
-                }
-            }
-            .map_err(|e| anyhow::Error::new(e).context("peer failed"))
-            .boxed()
-        });
-
-        ctx
+        context::Context::Unsealed(context::Unsealed { peer, rest: sealed })
     } else {
         context::Context::Sealed(sealed)
     };
@@ -241,41 +214,6 @@ async fn session_seeds(
             tracing::error!(?seeds, ?err, "Error parsing seed list");
             vec![]
         }))
-}
-
-/// Forward messages from a `tokio` broadcast receiver to an `async_broadcast` sender with message
-/// overflow enabled.
-///
-/// The future is done and stops forwarding when either channel is closed.
-async fn forward_broadcast<T: Clone>(
-    mut tokio_receiver: tokio::sync::broadcast::Receiver<T>,
-    mut async_sender: async_broadcast::Sender<T>,
-) {
-    async_sender.set_overflow(true);
-    loop {
-        use tokio::sync::broadcast::error::RecvError;
-        match tokio_receiver.recv().await {
-            Ok(item) => {
-                if let Err(err) = async_sender.try_broadcast(item) {
-                    match err {
-                        async_broadcast::TrySendError::Full(_) => {
-                            panic!("broadcast channel in overflow mode cannot be full")
-                        },
-                        async_broadcast::TrySendError::Closed(_) => {
-                            break;
-                        },
-                        async_broadcast::TrySendError::Inactive(_) => {},
-                    }
-                }
-            },
-            Err(err) => match err {
-                RecvError::Closed => {
-                    break;
-                },
-                RecvError::Lagged(_) => {},
-            },
-        }
-    }
 }
 
 /// Create a [`radicle_daemon::config::StreamDiscovery`] that emits new peer addresses whenever the

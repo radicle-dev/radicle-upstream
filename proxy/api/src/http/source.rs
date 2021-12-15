@@ -141,9 +141,10 @@ mod handler {
             super::HighlightTheme::H4x0r => "base16-ocean.h4x0r",
         });
 
-        let branch = radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
-            .await
-            .map_err(error::Error::from)?;
+        let branch =
+            radicle_daemon::state::get_branch(ctx.peer.librad_peer(), project_urn, peer_id, None)
+                .await
+                .map_err(error::Error::from)?;
         let blob = browser::using(&ctx.peer, branch, |browser| {
             radicle_source::blob::highlighting::blob(browser, revision, &path, theme)
         })
@@ -160,7 +161,7 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
         let default_branch =
-            radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
+            radicle_daemon::state::get_branch(ctx.peer.librad_peer(), project_urn, peer_id, None)
                 .await
                 .map_err(error::Error::from)?;
         let branches = browser::using(&ctx.peer, default_branch, |browser| {
@@ -177,9 +178,10 @@ mod handler {
         sha1: Oid,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
-            .await
-            .map_err(error::Error::from)?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), project_urn)
+                .await
+                .map_err(error::Error::from)?;
         let commit = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::commit(browser, *sha1)
         })
@@ -196,9 +198,10 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
-            .await
-            .map_err(error::Error::from)?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), project_urn)
+                .await
+                .map_err(error::Error::from)?;
         let commits = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::commits(browser, revision)
         })
@@ -224,9 +227,10 @@ mod handler {
         _query: super::TagQuery,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        let branch = radicle_daemon::state::find_default_branch(&ctx.peer, project_urn)
-            .await
-            .map_err(error::Error::from)?;
+        let branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), project_urn)
+                .await
+                .map_err(error::Error::from)?;
         let tags = browser::using(&ctx.peer, branch, |browser| radicle_source::tags(browser))
             .map_err(error::Error::from)?;
 
@@ -245,9 +249,10 @@ mod handler {
     ) -> Result<impl Reply, Rejection> {
         let peer_id = super::http::guard_self_peer_id(&ctx.peer, peer_id);
         let revision = super::http::guard_self_revision(&ctx.peer, revision);
-        let branch = radicle_daemon::state::get_branch(&ctx.peer, project_urn, peer_id, None)
-            .await
-            .map_err(error::Error::from)?;
+        let branch =
+            radicle_daemon::state::get_branch(ctx.peer.librad_peer(), project_urn, peer_id, None)
+                .await
+                .map_err(error::Error::from)?;
         let tree = browser::using(&ctx.peer, branch, |browser| {
             radicle_source::tree(browser, revision, prefix)
         })
@@ -355,7 +360,7 @@ mod test {
         };
         let arrows = "text/arrows.txt";
         let default_branch =
-            radicle_daemon::state::find_default_branch(&ctx.peer, urn.clone()).await?;
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn.clone()).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::blob(browser, Some(revision.clone()), arrows)
         })?;
@@ -413,7 +418,7 @@ mod test {
         // Get binary blob.
         let ls = "bin/ls";
         let default_branch =
-            radicle_daemon::state::find_default_branch(&ctx.peer, urn.clone()).await?;
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn.clone()).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::blob(browser, Some(revision.clone()), ls)
         })?;
@@ -493,7 +498,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::blob(browser, Some(revision), path)
         })?;
@@ -518,7 +524,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::branches(browser, RefScope::All)
         })?;
@@ -547,7 +554,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::commit::header(browser, *sha1)
         })?;
@@ -602,7 +610,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::commits(browser, Some(revision.clone()))
         })?;
@@ -667,7 +676,8 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::tags(browser)
         })?;
@@ -702,7 +712,8 @@ mod test {
         let path = format!("/tree/{}?{}", urn, serde_qs::to_string(&query).unwrap());
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::tree(browser, Some(revision), Some(prefix.to_string()))
         })?;
@@ -773,7 +784,8 @@ mod test {
         );
         let res = request().method("GET").path(&path).reply(&api).await;
 
-        let default_branch = radicle_daemon::state::find_default_branch(&ctx.peer, urn).await?;
+        let default_branch =
+            radicle_daemon::state::find_default_branch(ctx.peer.librad_peer(), urn).await?;
         let want = browser::using(&ctx.peer, default_branch, |browser| {
             radicle_source::tree(browser, Some(revision), None)
         })?;
@@ -787,7 +799,7 @@ mod test {
 
     async fn replicate_platinum(ctx: &context::Unsealed) -> Result<Urn, error::Error> {
         let owner = radicle_daemon::state::init_owner(
-            &ctx.peer,
+            ctx.peer.librad_peer(),
             link_identities::payload::Person {
                 name: "cloudhead".into(),
             },

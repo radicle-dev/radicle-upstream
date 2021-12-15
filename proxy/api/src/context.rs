@@ -13,8 +13,6 @@ use futures::prelude::*;
 use rand::Rng as _;
 use tokio::sync::RwLock;
 
-use link_crypto::BoxedSigner;
-
 use crate::{keystore, service};
 
 /// Container to pass down dependencies into HTTP filter chains.
@@ -155,12 +153,7 @@ impl From<Sealed> for Context {
 /// Context for HTTP requests with access to coco peer APIs.
 #[derive(Clone)]
 pub struct Unsealed {
-    /// Handle to inspect state and perform actions on the currently running local
-    /// [`radicle_daemon::Peer`].
-    pub peer_control: radicle_daemon::PeerControl,
-    /// [`radicle_daemon::net::peer::Peer`] to operate on the local monorepo.
-    pub peer: radicle_daemon::net::peer::Peer<BoxedSigner>,
-    pub peer_events: async_broadcast::InactiveReceiver<radicle_daemon::PeerEvent>,
+    pub peer: crate::peer::Peer,
     pub rest: Sealed,
 }
 
@@ -193,8 +186,8 @@ impl Unsealed {
     /// The stream ends when API server is shut down.
     pub fn peer_events(&self) -> impl Stream<Item = radicle_daemon::PeerEvent> + Send + 'static {
         let shutdown = self.rest.shutdown.clone();
-        self.peer_events
-            .activate_cloned()
+        self.peer
+            .events()
             .take_until(async move { shutdown.notified().await })
     }
 
@@ -212,39 +205,31 @@ impl Unsealed {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let key = link_crypto::SecretKey::new();
-        let signer = BoxedSigner::from(link_crypto::SomeSigner { signer: key });
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
-        let (peer_control, peer, run_handle) = {
-            let config = radicle_daemon::config::default(signer, tmp_dir.path())?;
-            let disco = radicle_daemon::config::static_seed_discovery(&[]);
-            let coco_peer = radicle_daemon::Peer::new(
-                config,
-                disco,
-                store.clone(),
-                radicle_daemon::RunConfig::default(),
-            )?;
-            let peer = coco_peer.peer.clone();
+        let seeds_watch = tokio::sync::watch::channel(vec![]).1;
 
-            let peer_control = coco_peer.control();
-            let run_handle = async move {
-                let (shutdown, run) = coco_peer.start();
-                // We spawn a task for `run` so that it is run to completion even if this future is
-                // dropped.
-                let run = tokio::task::spawn(run);
-                if let Err(err) = run.await {
-                    tracing::error!(?err, "peer run error");
-                }
-                drop(shutdown);
-            };
-            (peer_control, peer, run_handle)
+        let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
+            paths: paths.clone(),
+            key,
+            store: store.clone(),
+            discovery: radicle_daemon::config::StreamDiscovery::new(seeds_watch),
+            listen: "127.0.0.1:0".parse().expect("invalid IP address"),
+        })
+        .unwrap();
+
+        let run_handle = async move {
+            let (shutdown_tx, shutdown_rx) = futures::channel::oneshot::channel::<()>();
+            let run = tokio::task::spawn(peer_runner.run(shutdown_rx.map(|_| ()).boxed()));
+            if let Err(err) = run.await {
+                tracing::error!(?err, "peer run error");
+            }
+            drop(shutdown_tx);
         };
 
         Ok((
             Self {
-                peer_control,
                 peer,
-                peer_events: async_broadcast::broadcast(1).1.deactivate(),
                 rest: Sealed {
                     store,
                     test: false,

@@ -11,7 +11,6 @@ use std::{collections::HashSet, convert::TryFrom, ops::Deref};
 
 use serde::{Deserialize, Serialize};
 
-use link_crypto::BoxedSigner;
 use link_identities::{git::Urn, Person, Project as LinkProject};
 use radicle_source::surf::vcs::git::Stats;
 
@@ -218,19 +217,17 @@ impl Projects {
     ///   * We couldn't get the list of projects
     ///   * We couldn't inspect the `signed_refs` of the project
     ///   * We couldn't get stats for a project
-    pub async fn list(
-        peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
-    ) -> Result<Self, error::Error> {
+    pub async fn list(peer: &crate::peer::Peer) -> Result<Self, error::Error> {
         let mut projects = Self {
             tracked: vec![],
             contributed: vec![],
             failures: vec![],
         };
 
-        for project in radicle_daemon::state::list_projects(peer).await? {
+        for project in radicle_daemon::state::list_projects(peer.librad_peer()).await? {
             let project = Project::try_from(project)?;
             let default_branch = match radicle_daemon::state::find_default_branch(
-                peer,
+                peer.librad_peer(),
                 project.urn.clone(),
             )
             .await
@@ -256,14 +253,17 @@ impl Projects {
 
             let project = project.fulfill(stats);
 
-            let refs = match radicle_daemon::state::load_refs(peer, project.urn.clone()).await {
-                Err(err) => {
-                    tracing::warn!(project_urn = %project.urn, ?err, "cannot load refs");
-                    projects.failures.push(Failure::SignedRefs(project));
-                    continue;
-                },
-                Ok(refs) => refs,
-            };
+            let refs =
+                match radicle_daemon::state::load_refs(peer.librad_peer(), project.urn.clone())
+                    .await
+                {
+                    Err(err) => {
+                        tracing::warn!(project_urn = %project.urn, ?err, "cannot load refs");
+                        projects.failures.push(Failure::SignedRefs(project));
+                        continue;
+                    },
+                    Ok(refs) => refs,
+                };
 
             match refs {
                 None => projects.tracked.push(Tracked(project)),
@@ -343,15 +343,13 @@ impl Iterator for IntoIter {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub async fn get(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
-    project_urn: Urn,
-) -> Result<Full, error::Error> {
-    let project = radicle_daemon::state::get_project(peer, project_urn.clone())
+pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Full, error::Error> {
+    let project = radicle_daemon::state::get_project(peer.librad_peer(), project_urn.clone())
         .await?
         .ok_or(crate::error::Error::ProjectNotFound)?;
 
-    let branch = radicle_daemon::state::find_default_branch(peer, project_urn.clone()).await?;
+    let branch =
+        radicle_daemon::state::find_default_branch(peer.librad_peer(), project_urn.clone()).await?;
     let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
 
     Full::try_from((project, project_stats))
@@ -373,13 +371,13 @@ pub async fn get(
 /// * We couldn't get project stats.
 /// * We couldn't determine the tracking peers of a project.
 pub async fn list_for_user(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
+    peer: &crate::peer::Peer,
     user: &Urn,
 ) -> Result<Vec<Full>, error::Error> {
     let mut projects = vec![];
 
-    for project in radicle_daemon::state::list_projects(peer).await? {
-        let tracked = radicle_daemon::state::tracked(peer, project.urn())
+    for project in radicle_daemon::state::list_projects(peer.librad_peer()).await? {
+        let tracked = radicle_daemon::state::tracked(peer.librad_peer(), project.urn())
             .await?
             .into_iter()
             .filter_map(radicle_daemon::project::Peer::replicated_remote)
@@ -387,7 +385,7 @@ pub async fn list_for_user(
         if let Some((peer_id, _)) = tracked {
             let subject = project.subject();
             let branch = radicle_daemon::state::get_branch(
-                peer,
+                peer.librad_peer(),
                 project.urn(),
                 peer_id,
                 subject.default_branch.clone(),

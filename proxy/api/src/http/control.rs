@@ -76,9 +76,10 @@ mod handler {
         .await
         .map_err(error::Error::from)?;
 
-        let branch = radicle_daemon::state::get_branch(&ctx.peer, meta.urn(), None, None)
-            .await
-            .map_err(error::Error::from)?;
+        let branch =
+            radicle_daemon::state::get_branch(ctx.peer.librad_peer(), meta.urn(), None, None)
+                .await
+                .map_err(error::Error::from)?;
         let stats = browser::using(&ctx.peer, branch, |browser| Ok(browser.get_stats()?))
             .map_err(error::Error::from)?;
         let project = project::Full::try_from((meta, stats))?;

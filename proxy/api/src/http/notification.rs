@@ -33,7 +33,7 @@ mod handler {
 
     /// Sets up local peer events notification stream.
     pub async fn local_peer_events(mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let current_status = ctx.peer_control.current_status().await;
+        let current_status = ctx.peer.daemon_control().current_status().await;
 
         let initial = futures::stream::iter([Notification::StatusChanged {
             old: current_status.clone(),

@@ -64,7 +64,8 @@ mod handler {
 
     /// Abort search for an ongoing request.
     pub async fn cancel(urn: Urn, mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        ctx.peer_control
+        ctx.peer
+            .daemon_control()
             .cancel_project_request(&urn, SystemTime::now())
             .await
             .map_err(error::Error::from)?;
@@ -78,7 +79,8 @@ mod handler {
     /// `200` if there was a request present for the urn.
     pub async fn create(urn: Urn, mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let request = ctx
-            .peer_control
+            .peer
+            .daemon_control()
             .request_project(&urn, SystemTime::now())
             .await;
 
@@ -87,7 +89,7 @@ mod handler {
 
     /// List all project requests the current user has issued.
     pub async fn list(mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let requests = ctx.peer_control.get_project_requests().await;
+        let requests = ctx.peer.daemon_control().get_project_requests().await;
 
         Ok(reply::json(&requests))
     }
@@ -117,7 +119,8 @@ mod test {
         )?);
 
         let _request = ctx
-            .peer_control
+            .peer
+            .daemon_control()
             .request_project(&urn, SystemTime::now())
             .await;
         let res = request()
@@ -148,7 +151,7 @@ mod test {
             .path(&format!("/{}", urn))
             .reply(&api)
             .await;
-        let want = ctx.peer_control.get_project_request(&urn).await;
+        let want = ctx.peer.daemon_control().get_project_request(&urn).await;
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(have, json!(want));
@@ -170,7 +173,8 @@ mod test {
         )?);
 
         let want = ctx
-            .peer_control
+            .peer
+            .daemon_control()
             .request_project(&urn, SystemTime::now())
             .await;
         let res = request().method("GET").path("/").reply(&api).await;

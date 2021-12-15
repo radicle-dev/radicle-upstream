@@ -9,7 +9,7 @@
 use serde::Deserialize;
 use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
 
-use link_crypto::{BoxedSigner, PeerId};
+use link_crypto::PeerId;
 
 use crate::context;
 
@@ -111,10 +111,11 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(radicle_daemon::Local
             let session =
                 crate::session::get_current(&ctx.rest.store)?.ok_or(error::Routing::NoSession)?;
 
-            let user = radicle_daemon::state::get_local(&ctx.peer, session.identity.urn)
-                .await
-                .expect("failed to get local identity")
-                .expect("the local identity is missing");
+            let user =
+                radicle_daemon::state::get_local(ctx.peer.librad_peer(), session.identity.urn)
+                    .await
+                    .expect("failed to get local identity")
+                    .expect("the local identity is missing");
 
             Ok::<_, Rejection>(user)
         })
@@ -221,12 +222,9 @@ where
 
 /// Guard against access of wrong paths by the owners peer id.
 #[must_use]
-pub fn guard_self_peer_id(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
-    peer_id: Option<PeerId>,
-) -> Option<PeerId> {
+pub fn guard_self_peer_id(peer: &crate::peer::Peer, peer_id: Option<PeerId>) -> Option<PeerId> {
     match peer_id {
-        Some(peer_id) if peer_id == peer.peer_id() => None,
+        Some(peer_id) if peer_id == peer.librad_peer().peer_id() => None,
         Some(peer_id) => Some(peer_id),
         None => None,
     }
@@ -235,7 +233,7 @@ pub fn guard_self_peer_id(
 /// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
 #[must_use]
 pub fn guard_self_revision(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
+    peer: &crate::peer::Peer,
     revision: Option<radicle_source::Revision<PeerId>>,
 ) -> Option<radicle_source::Revision<PeerId>> {
     revision.map(|r| {

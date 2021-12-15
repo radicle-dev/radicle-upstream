@@ -76,7 +76,7 @@ mod handler {
             .into());
         }
 
-        let id = identity::create(&ctx.peer, metadata).await?;
+        let id = identity::create(ctx.peer.librad_peer(), metadata).await?;
 
         session::initialize(&ctx.rest.store, id.clone(), &ctx.rest.default_seeds)?;
 
@@ -89,7 +89,7 @@ mod handler {
         metadata: identity::Metadata,
     ) -> Result<impl Reply, Rejection> {
         session::get_current(&ctx.rest.store)?.ok_or(http::error::Routing::NoSession)?;
-        let id = identity::update(&ctx.peer, metadata).await?;
+        let id = identity::update(ctx.peer.librad_peer(), metadata).await?;
         session::update_identity(&ctx.rest.store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::OK))
@@ -150,17 +150,17 @@ mod test {
             session.identity.urn
         };
 
-        let peer_id = ctx.peer.peer_id();
+        let peer_id = ctx.peer.librad_peer().peer_id();
 
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                radicle_daemon::state::default_owner(&ctx.peer)
+                radicle_daemon::state::default_owner(ctx.peer.librad_peer())
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                radicle_daemon::state::get_local(&ctx.peer, urn.clone())
+                radicle_daemon::state::get_local(ctx.peer.librad_peer(), urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -226,17 +226,17 @@ mod test {
             session.identity.urn
         };
 
-        let peer_id = ctx.peer.peer_id();
+        let peer_id = ctx.peer.librad_peer().peer_id();
 
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                radicle_daemon::state::default_owner(&ctx.peer)
+                radicle_daemon::state::default_owner(ctx.peer.librad_peer())
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                radicle_daemon::state::get_local(&ctx.peer, urn.clone())
+                radicle_daemon::state::get_local(ctx.peer.librad_peer(), urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()
@@ -302,17 +302,17 @@ mod test {
             session.identity.urn
         };
 
-        let peer_id = ctx.peer.peer_id();
+        let peer_id = ctx.peer.librad_peer().peer_id();
 
         // Assert that we set the default owner and it's the same one as the session
         {
             assert_eq!(
-                radicle_daemon::state::default_owner(&ctx.peer)
+                radicle_daemon::state::default_owner(ctx.peer.librad_peer())
                     .await?
                     .unwrap()
                     .into_inner()
                     .into_inner(),
-                radicle_daemon::state::get_local(&ctx.peer, urn.clone())
+                radicle_daemon::state::get_local(ctx.peer.librad_peer(), urn.clone())
                     .await?
                     .unwrap()
                     .into_inner()

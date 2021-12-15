@@ -105,14 +105,18 @@ pub fn update_seeds(store: &kv::Store, seeds: Vec<String>) -> Result<(), error::
 #[cfg(test)]
 pub async fn initialize_test(ctx: &crate::context::Unsealed, owner_handle: &str) -> Session {
     let owner = radicle_daemon::state::init_owner(
-        &ctx.peer,
+        ctx.peer.librad_peer(),
         link_identities::payload::Person {
             name: owner_handle.into(),
         },
     )
     .await
     .expect("cannot init owner identity");
-    let identity = (ctx.peer.peer_id(), owner.into_inner().into_inner()).into();
+    let identity = (
+        ctx.peer.librad_peer().peer_id(),
+        owner.into_inner().into_inner(),
+    )
+        .into();
     initialize(&ctx.rest.store, identity, &ctx.rest.default_seeds)
         .expect("failed to initialize session")
 }

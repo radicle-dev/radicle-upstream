@@ -22,6 +22,7 @@ mod context;
 mod control;
 pub mod env;
 mod error;
+mod peer;
 mod shutdown_runner;
 mod ethereum {
     pub mod address;

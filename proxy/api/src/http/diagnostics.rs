@@ -37,9 +37,9 @@ mod handler {
     /// Get diagnostics information.
     #[allow(clippy::unused_async)]
     pub async fn get(mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let listen_addrs = ctx.peer_control.listen_addrs().await;
-        let protocol_config = ctx.peer.protocol_config();
-        let membership = ctx.peer.membership().await;
+        let listen_addrs = ctx.peer.daemon_control().listen_addrs().await;
+        let protocol_config = ctx.peer.librad_peer().protocol_config();
+        let membership = ctx.peer.librad_peer().membership().await;
         let git_dir = ctx.rest.paths.git_dir();
         let refs_tree = WalkDir::new(git_dir.join("refs"))
             .into_iter()

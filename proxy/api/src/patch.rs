@@ -11,7 +11,7 @@ use radicle_git_ext::Oid;
 use radicle_source::surf::git::RefScope;
 use serde::Serialize;
 
-use link_crypto::{BoxedSigner, PeerId};
+use link_crypto::PeerId;
 use link_identities::git::Urn;
 
 use crate::project;
@@ -44,13 +44,13 @@ pub struct Patch {
 /// * Cannot access the monorepo
 /// * Cannot find references within the monorepo
 pub async fn list(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
+    peer: &crate::peer::Peer,
     project_urn: Urn,
 ) -> Result<Vec<Patch>, crate::error::Error> {
     let mut patches = Vec::new();
 
     let default_branch_head_commit_id = {
-        let project = radicle_daemon::state::get_project(peer, project_urn.clone())
+        let project = radicle_daemon::state::get_project(peer.librad_peer(), project_urn.clone())
             .await?
             .ok_or_else(|| radicle_daemon::state::Error::ProjectNotFound(project_urn.clone()))?;
         let maintainer = project
@@ -63,7 +63,7 @@ pub async fn list(
             .next()
             .expect("missing delegation");
         let default_branch = radicle_daemon::state::get_branch(
-            peer,
+            peer.librad_peer(),
             project_urn.clone(),
             Some(PeerId::from(*maintainer)),
             None,
@@ -75,7 +75,8 @@ pub async fn list(
         .id
     };
 
-    for project_peer in radicle_daemon::state::list_project_peers(peer, project_urn.clone()).await?
+    for project_peer in
+        radicle_daemon::state::list_project_peers(peer.librad_peer(), project_urn.clone()).await?
     {
         let remote = match &project_peer {
             radicle_daemon::project::Peer::Local { .. } => None,
@@ -90,7 +91,7 @@ pub async fn list(
         };
 
         let branch = match radicle_daemon::state::get_branch(
-            peer,
+            peer.librad_peer(),
             project_urn.clone(),
             remote,
             None,
