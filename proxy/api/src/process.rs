@@ -176,19 +176,7 @@ async fn run_session(
         let (peer_events_tx, peer_events_rx) = async_broadcast::broadcast(32);
         tokio::task::spawn(forward_broadcast(peer.subscribe(), peer_events_tx));
 
-        tokio::task::spawn(peer_events_rx.clone().for_each(|event| {
-            match event {
-                radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) => {
-                    tracing::debug!(event = ?transition.event, "waiting room transition")
-                },
-
-                radicle_daemon::peer::Event::GossipFetched { gossip, result, .. } => {
-                    tracing::debug!(?gossip, ?result, "gossip received")
-                },
-                _ => {},
-            };
-            future::ready(())
-        }));
+        tokio::task::spawn(log_daemon_peer_events(peer_events_rx.clone()));
 
         let peer_control = peer.control();
         let ctx = context::Context::Unsealed(context::Unsealed {
@@ -353,6 +341,41 @@ fn serve(
         server.await;
         Ok(())
     }
+}
+
+async fn log_daemon_peer_events(events: impl Stream<Item = radicle_daemon::peer::Event>) {
+    events
+        .for_each(|event| {
+            match event {
+                radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) => {
+                    tracing::debug!(event = ?transition.event, "waiting room transition")
+                },
+
+                radicle_daemon::peer::Event::GossipFetched {
+                    gossip,
+                    result,
+                    provider,
+                } => {
+                    use librad::net::protocol::broadcast::PutResult;
+                    let result = match result {
+                        PutResult::Applied(_) => "Applied".to_string(),
+                        result => format!("{:?}", result),
+                    };
+                    tracing::debug!(
+                        provider_id = %provider.peer_id,
+                        provider_seen_addrs = ?provider.seen_addrs.clone().into_inner(),
+                        urn = %gossip.urn,
+                        rev = ?gossip.rev,
+                        origin = ?gossip.origin,
+                        result = %result,
+                        "storage put"
+                    )
+                },
+                _ => {},
+            };
+            future::ready(())
+        })
+        .await;
 }
 
 fn setup_logging(args: &Args) {

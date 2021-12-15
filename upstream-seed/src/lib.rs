@@ -76,38 +76,7 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
     let mut task_runner = TaskRunner::new();
     task_runner.add_vital(shutdown_signal.map(Ok));
 
-    task_runner.add_cancel({
-        peer.clone()
-            .events()
-            .for_each(|event| {
-                if let librad::net::peer::ProtocolEvent::Gossip(gossip) = event {
-                    match *gossip {
-                        librad::net::peer::event::upstream::Gossip::Put {
-                            provider,
-                            payload,
-                            result,
-                        } => {
-                            use librad::net::protocol::broadcast::PutResult;
-                            let result = match result {
-                                PutResult::Applied(_) => "Applied".to_string(),
-                                result => format!("{:?}", result),
-                            };
-                            tracing::debug!(
-                                provider_id = %provider.peer_id,
-                                provider_seen_addrs = ?provider.seen_addrs.clone().into_inner(),
-                                urn = %payload.urn,
-                                rev = ?payload.rev,
-                                origin = ?payload.origin,
-                                result = %result,
-                                "storage put"
-                            )
-                        },
-                    }
-                };
-                future::ready(())
-            })
-            .map(Ok)
-    });
+    task_runner.add_cancel(log_events(peer.clone()).map(Ok));
 
     task_runner.add_cancel({
         peer.clone()
@@ -194,7 +163,12 @@ async fn fetch_from_connected(
                             .fetch_identity_from_peer(project.clone(), peer_id, None)
                             .await;
                         if let Err(err) = result {
-                            tracing::error!(?err, "failed to track project from peer")
+                            tracing::error!(
+                                %peer_id,
+                                %project,
+                                ?err,
+                                "failed to track project from peer"
+                            )
                         }
                     }
                 }
@@ -234,6 +208,38 @@ fn install_signal_handler() -> anyhow::Result<impl Future<Output = ()>> {
     });
 
     Ok(shutdown_rx.map(|_| ()))
+}
+
+async fn log_events(peer: crate::peer::Peer) {
+    peer.events()
+        .for_each(|event| {
+            if let librad::net::peer::ProtocolEvent::Gossip(gossip) = event {
+                match *gossip {
+                    librad::net::peer::event::upstream::Gossip::Put {
+                        provider,
+                        payload,
+                        result,
+                    } => {
+                        use librad::net::protocol::broadcast::PutResult;
+                        let result = match result {
+                            PutResult::Applied(_) => "Applied".to_string(),
+                            result => format!("{:?}", result),
+                        };
+                        tracing::debug!(
+                            provider_id = %provider.peer_id,
+                            provider_seen_addrs = ?provider.seen_addrs.clone().into_inner(),
+                            urn = %payload.urn,
+                            rev = ?payload.rev,
+                            origin = ?payload.origin,
+                            result = %result,
+                            "storage put"
+                        )
+                    },
+                }
+            };
+            future::ready(())
+        })
+        .await
 }
 
 fn load_or_create_secret_key(path: &std::path::Path) -> anyhow::Result<librad::SecretKey> {
