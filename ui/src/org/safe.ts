@@ -10,7 +10,6 @@ import SafeServiceClient, {
   SafeMultisigTransactionResponse,
 } from "@gnosis.pm/safe-service-client";
 
-import { memoizeLru } from "ui/src/memoizeLru";
 import * as Ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import type { Wallet } from "ui/src/wallet";
@@ -27,40 +26,6 @@ export async function getPendingTransactions(
   // of a bug in the safe client.
   // https://github.com/gnosis/safe-core-sdk/pull/31#issuecomment-863245875
   return response.results || [];
-}
-
-export interface Metadata {
-  threshold: number;
-  members: string[];
-}
-
-export const getMetadata = memoizeLru(
-  async (
-    ethEnv: Ethereum.Environment,
-    safeAddress: string
-  ): Promise<Metadata> => {
-    safeAddress = ethers.utils.getAddress(safeAddress);
-    const safeServiceClient = createSafeServiceClient(ethEnv);
-    const response = await safeServiceClient.getSafeInfo(safeAddress);
-
-    return {
-      threshold: response.threshold,
-      members: response.owners,
-    };
-  },
-  (_ethEnv, safeAddress) => safeAddress,
-  { max: 1000, maxAge: 15 * 60 * 1000 } // TTL 15 minutes
-);
-
-export async function getSafesByOwner(
-  ethEnv: Ethereum.Environment,
-  ownerAddress: string
-): Promise<string[]> {
-  ownerAddress = ethers.utils.getAddress(ownerAddress);
-  const safeServiceClient = createSafeServiceClient(ethEnv);
-  const response = await safeServiceClient.getSafesByOwner(ownerAddress);
-
-  return response.safes;
 }
 
 export interface TransactionData {

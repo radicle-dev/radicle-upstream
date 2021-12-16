@@ -14,7 +14,6 @@
   import * as svelteStore from "ui/src/svelteStore";
   import * as ethereum from "ui/src/ethereum";
   import * as Wallet from "ui/src/wallet";
-  import * as Safe from "ui/src/org/safe";
   import * as graph from "ui/src/org/theGraphApi";
   import {
     getCachedRegistrationByAddress,
@@ -55,11 +54,11 @@
       return;
     }
 
-    const gnosisSafeWallets = await Safe.getSafesByOwner(
-      wallet.environment,
-      address
-    );
-    ownedOrgs = await graph.getOwnedOrgs([address, ...gnosisSafeWallets]);
+    const gnosisSafeWallets = await graph.getSafesByOwner(address);
+    ownedOrgs = await graph.getOwnedOrgs([
+      address,
+      ...gnosisSafeWallets.map(safe => safe.id),
+    ]);
     if (ownedOrgs) {
       ownedOrgs.map(async org => {
         const registration = await getCachedRegistrationByAddress(org.id);

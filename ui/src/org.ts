@@ -354,12 +354,12 @@ export async function fetchOrgs(): Promise<void> {
 
     const walletAddress = wallet_.connected.address;
 
-    const gnosisSafeWallets = await Safe.getSafesByOwner(
-      walletStore.environment,
-      walletAddress
-    );
+    const gnosisSafeWallets = await graph.getSafesByOwner(walletAddress);
 
-    return await graph.getOwnedOrgs([walletAddress, ...gnosisSafeWallets]);
+    return await graph.getOwnedOrgs([
+      walletAddress,
+      ...gnosisSafeWallets.map(safe => safe.id),
+    ]);
   });
 
   if (sortedOrgs) {
@@ -393,7 +393,10 @@ export type Owner = { type: "wallet"; address: string } | GnosisSafeOwner;
 interface GnosisSafeOwner {
   type: "gnosis-safe";
   address: string;
-  metadata: Safe.Metadata;
+  metadata: {
+    threshold: number;
+    members: string[];
+  };
 }
 
 // Determines the owner of an org at the given address.
@@ -401,8 +404,12 @@ export async function getOwner(orgAddress: string): Promise<Owner> {
   const walletStore = svelteStore.get(wallet.store);
   const address = await Contract.getOwner(orgAddress, walletStore.provider);
   if (await isMultiSig(address)) {
-    const metadata = await Safe.getMetadata(walletStore.environment, address);
-    return { type: "gnosis-safe", address, metadata };
+    const metadata = await graph.getSafeMetadata(address);
+    return {
+      type: "gnosis-safe",
+      address,
+      metadata: { threshold: metadata.threshold, members: metadata.owners },
+    };
   } else {
     return { type: "wallet", address };
   }

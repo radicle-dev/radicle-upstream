@@ -14,6 +14,8 @@ import * as apolloCore from "@apollo/client/core";
 import * as svelteStore from "svelte/store";
 import * as ethers from "ethers";
 
+import { memoizeLru } from "ui/src/memoizeLru";
+
 import * as error from "ui/src/error";
 import * as ethereum from "ui/src/ethereum";
 import * as wallet from "ui/src/wallet";
@@ -60,6 +62,74 @@ export interface Org {
   timestamp: number;
   projectCount?: number;
 }
+
+export interface Safe {
+  id: string;
+  owners: string[];
+  threshold: number;
+}
+
+export async function getSafesByOwner(owner: string): Promise<Safe[]> {
+  const safesResponse = await orgsSubgraphClient().query<{
+    safes: Array<{
+      // Safe address.
+      id: string;
+      // Safe owner addresses.
+      owners: string[];
+      // Number of signatures required for quorum.
+      threshold: string;
+    }>;
+  }>({
+    query: apolloCore.gql`
+      query GetSafesByOwners($owners: [String!]!) {
+        safes(where: { owners_contains: $owners }) {
+          id
+          owners
+          threshold
+        }
+      }
+      `,
+    variables: { owners: [owner.toLowerCase()] },
+  });
+
+  return safesResponse.data.safes.map(safe => ({
+    ...safe,
+    threshold: Number(safe.threshold),
+  }));
+}
+
+export const getSafeMetadata = memoizeLru(
+  async (address: string): Promise<Safe> => {
+    const safesResponse = await orgsSubgraphClient().query<{
+      safe: {
+        // Safe address.
+        id: string;
+        // Safe owner addresses.
+        owners: string[];
+        // Number of signatures required for quorum.
+        threshold: string;
+      };
+    }>({
+      query: apolloCore.gql`
+      query GetSafe($address: ID!) {
+        safe(id: $address) {
+          id
+          owners
+          threshold
+        }
+      }
+      `,
+      variables: { address: address.toLowerCase() },
+    });
+
+    return {
+      ...safesResponse.data.safe,
+      threshold: Number(safesResponse.data.safe.threshold),
+    };
+  },
+  safeAddress => safeAddress,
+  { max: 1000, maxAge: 15 * 60 * 1000 } // TTL 15 minutes
+);
 
 export async function getOwnedOrgs(owners: string[]): Promise<Org[]> {
   const orgsResponse = await orgsSubgraphClient().query<{
