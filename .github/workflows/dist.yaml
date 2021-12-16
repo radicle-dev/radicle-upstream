@@ -3,7 +3,6 @@ on:
   push:
     branches:
     - main
-    - "**"
     - release-candidate/**
 
 jobs:
@@ -11,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04]
+        os: [ubuntu-18.04, macos-11]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@master

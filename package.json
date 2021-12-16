@@ -15,7 +15,7 @@
   },
   "build": {
     "appId": "xyz.radicle.radicle-upstream",
-    "artifactName": "${name}-${version}.${ext}",
+    "artifactName": "${name}.${ext}",
     "afterSign": "builder/notarize.js",
     "files": [
       "public/**/*",

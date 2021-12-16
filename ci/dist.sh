@@ -27,14 +27,14 @@ echo "Collect artifacts"
 mkdir artifacts
 shopt -s nullglob
 shopt -u failglob
-cp --archive \
-  --target-directory artifacts \
+cp -a \
   dist/*.dmg \
-  dist/*.AppImage
+  dist/*.AppImage \
+  artifacts
 
 target="$(uname -m)-$(uname -s | tr "[:upper:]" "[:lower:]")"
 mkdir "artifacts/${target}"
-cp \
-  --target-directory "artifacts/${target}" \
+cp -a \
   target/release/upstream-seed \
-  target/release/rad
+  target/release/rad \
+  "artifacts/${target}" \

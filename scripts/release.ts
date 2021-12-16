@@ -143,7 +143,7 @@ const publishRcBinaries: yargs.CommandModule<unknown, unknown> = {
     const version = await getReleaseCandidateVersion();
     const sha = await getCommitSha();
 
-    const buildArtifactPrefix = `gs://${buildArtifactBucket}/v1/by-commit/${sha}/radicle-upstream-${version}`;
+    const buildArtifactPrefix = `gs://${buildArtifactBucket}/v1/by-commit/${sha}/radicle-upstream`;
 
     const linuxBinaryPath = `radicle-upstream-${version}-rc.AppImage`;
     await runVerbose("gsutil", [
