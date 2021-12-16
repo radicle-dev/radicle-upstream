@@ -29,6 +29,7 @@ import * as stream from "stream";
 import execa from "execa";
 import chalk, { Color } from "chalk";
 import { StringDecoder } from "string_decoder";
+import onExit from "exit-hook";
 
 import { retryOnError } from "ui/src/retryOnError";
 
@@ -47,6 +48,17 @@ const assignedColors: Record<string, typeof Color> = {};
 
 const ROOT_PATH = path.join(__dirname, "..", "..");
 const P2P_TEST_PATH = path.join(ROOT_PATH, "p2p-tests");
+
+// Processes that should be SIGKILLed when the Node process shutsdown.
+// We add all proxy and seed instances that we spawn to this list.
+const processes: execa.ExecaChildProcess[] = [];
+
+onExit(() => {
+  for (const process of processes) {
+    process.kill("SIGKILL");
+  }
+});
+
 function binPath(): string {
   if (process.env.CARGO_TARGET_DIR === undefined) {
     return path.join(ROOT_PATH, "target", "debug");
@@ -176,6 +188,8 @@ export class RadicleProxy {
         RAD_HOME: this.radHome,
       }
     );
+
+    processes.push(this.#childProcess);
   }
 
   public async stop(): Promise<void> {
@@ -242,6 +256,8 @@ export class UpstreamSeed {
       ],
       {}
     );
+
+    processes.push(this.#childProcess);
   }
 
   public async stop(): Promise<void> {
