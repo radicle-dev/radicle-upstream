@@ -48,6 +48,7 @@
     }
 
     await updateSeeds(seeds => [...seeds, seedInputValue]);
+    seedInputValue = "";
   }
 
   async function fetchSeeds() {

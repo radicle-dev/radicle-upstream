@@ -320,6 +320,9 @@ context("p2p networking", () => {
       commands.pick("add-seed").click();
       cy.get(".seeds").find(".seed").should("have.length", 1);
 
+      cy.log("the input is cleared after a seed is added");
+      commands.pick("seed-input").should("have.value", "");
+
       cy.log("persists adding a seed across app start");
       commands.restartAndUnlock();
       commands.pick("sidebar", "network").click();
