@@ -11,5 +11,5 @@
 </script>
 
 {#await proxy.client.diagnosticsGet() then result}
-  <Json title="Storage locations" data={result} />
+  <Json title="Storage locations" data={result.storage} />
 {/await}

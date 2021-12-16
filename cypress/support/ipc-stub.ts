@@ -38,6 +38,7 @@ export function setup(window: Window): void {
   let clipboard = "";
 
   const electronStubs: ElectronStubs = {
+    getProxyLogs: sinon.stub().returns(Promise.resolve("Dummy log line")),
     getVersion: sinon.stub().returns(Promise.resolve("v1.2.3")),
     selectDirectory: sinon.stub().throws(new Error("not implemented")),
     openPath: sinon.stub().throws(new Error("not implemented")),

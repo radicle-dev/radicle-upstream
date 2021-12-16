@@ -11,6 +11,7 @@ import * as userProfileRoute from "ui/App/UserProfileScreen/route";
 export type DiagnosticsTab =
   | "connections"
   | "notificationHistory"
+  | "proxyLogs"
   | "storage"
   | "waitingRoom";
 export type WalletTab = "transactions";

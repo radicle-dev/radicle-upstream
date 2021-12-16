@@ -29,6 +29,8 @@ export const getDirectoryPath = mainProcess.selectDirectory;
 
 export const getVersion = mainProcess.getVersion;
 
+export const getProxyLogs = mainProcess.getProxyLogs;
+
 export const copyToClipboard = mainProcess.clipboardWriteText;
 
 export const openPath = mainProcess.openPath;

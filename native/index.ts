@@ -170,6 +170,9 @@ function installMainProcessHandler(handler: MainProcess) {
 }
 
 installMainProcessHandler({
+  async getProxyLogs(): Promise<string> {
+    return proxyProcessManager.getOutputBuffer();
+  },
   async clipboardWriteText(text: string): Promise<void> {
     clipboard.writeText(text);
   },

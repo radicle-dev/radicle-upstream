@@ -20,7 +20,9 @@
   import Button from "design-system/Button.svelte";
 
   import CopyIcon from "design-system/icons/Copy.svelte";
+  import FileIcon from "design-system/icons/File.svelte";
   import FolderIcon from "design-system/icons/Folder.svelte";
+  import InfoCircleIcon from "design-system/icons/InfoCircle.svelte";
   import NetworkIcon from "design-system/icons/Network.svelte";
   import TransactionsIcon from "design-system/icons/Transactions.svelte";
 
@@ -29,9 +31,10 @@
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ConnectionsTab from "./DiagnosticsScreen/Connections.svelte";
+  import NotificationHistoryTab from "./DiagnosticsScreen/NotificationHistory.svelte";
+  import ProxyLogsTab from "./DiagnosticsScreen/ProxyLogs.svelte";
   import StorageTab from "./DiagnosticsScreen/Storage.svelte";
   import WaitingRoomTab from "./DiagnosticsScreen/WaitingRoom.svelte";
-  import NotificationHistoryTab from "./DiagnosticsScreen/NotificationHistory.svelte";
 
   export let activeTab: router.DiagnosticsTab;
 
@@ -63,9 +66,17 @@
     {
       title: "Notification History",
       active: active === "notificationHistory",
-      icon: TransactionsIcon,
+      icon: InfoCircleIcon,
       onClick: () => {
         router.push({ type: "diagnostics", activeTab: "notificationHistory" });
+      },
+    },
+    {
+      title: "Proxy Logs",
+      active: active === "proxyLogs",
+      icon: FileIcon,
+      onClick: () => {
+        router.push({ type: "diagnostics", activeTab: "proxyLogs" });
       },
     },
   ];
@@ -75,15 +86,19 @@
     ipc.copyToClipboard(
       JSON.stringify(
         {
+          upstreamVersion: await ipc.getVersion(),
           storage: diagnostics.storage,
-          identity: Session.unsealed().identity,
-          localPeer: {
-            ...diagnostics,
-            state: $localPeerState,
+          p2pConnections: {
+            yourIdentity: Session.unsealed().identity,
+            connectionStatus: $localPeerState,
+            yourPeer: diagnostics.peer,
           },
-          waitingRoomState: $waitingRoomState,
-          waitingRoomEventLog: $waitingRoomEventLog,
+          waitingRoom: {
+            latestState: $waitingRoomState,
+            stateTransitions: $waitingRoomEventLog,
+          },
           notificationHistory: $notificationHistory,
+          proxyLogs: (await ipc.getProxyLogs()).split("\n"),
         },
         null,
         2
@@ -101,18 +116,36 @@
     min-width: var(--content-min-width);
     padding: 1rem var(--content-padding) 2rem var(--content-padding);
   }
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+  .version {
+    color: var(--color-foreground-level-6);
+  }
+
+  .copy-button {
+    display: flex;
+    align-self: center;
+  }
 </style>
 
 <ScreenLayout contentStyle="padding: 0;">
   <div slot="header" style="display: flex;">
-    <h1>Diagnostics</h1>
-    <Button
-      variant="outline"
-      icon={CopyIcon}
-      style="margin-left: auto; align-self: center"
-      on:click={copyEverythingToClipboard}>
-      Copy all debug info to clipboard
-    </Button>
+    <div style="width: -webkit-fill-available;">
+      <h1>Diagnostics</h1>
+      {#await ipc.getVersion() then version}
+        <span class="version">Upstream version: {version}</span>
+      {/await}
+    </div>
+    <div class="copy-button">
+      <Button
+        variant="outline"
+        icon={CopyIcon}
+        style="margin-left: auto; align-self: center"
+        on:click={copyEverythingToClipboard}>
+        Copy all debug info to clipboard
+      </Button>
+    </div>
   </div>
 
   <ActionBar>
@@ -130,6 +163,8 @@
       <WaitingRoomTab />
     {:else if activeTab === "notificationHistory"}
       <NotificationHistoryTab />
+    {:else if activeTab === "proxyLogs"}
+      <ProxyLogsTab />
     {:else}
       {unreachable(activeTab)}
     {/if}

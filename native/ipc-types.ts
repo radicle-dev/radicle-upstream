@@ -36,6 +36,7 @@ export interface CustomProtocolInvocation {
 export interface MainProcess {
   clipboardWriteText(text: string): Promise<void>;
   getVersion(): Promise<string>;
+  getProxyLogs(): Promise<string>;
   openPath(path: string): Promise<void>;
   openUrl(path: string): Promise<void>;
   // Open a system dialog to select a directory and returns the
@@ -48,6 +49,7 @@ export interface MainProcess {
 export const mainProcessMethods: Array<keyof MainProcess> = [
   "clipboardWriteText",
   "getVersion",
+  "getProxyLogs",
   "openPath",
   "openUrl",
   "selectDirectory",

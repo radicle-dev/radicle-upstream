@@ -34,9 +34,18 @@ export class ProxyProcessManager {
   private childProcess: execa.ExecaChildProcess | undefined;
   private shutdownInProgress: boolean = false;
   private readonly options: Options;
+  private outputBuffer: CircularBuffer<string>;
 
   public constructor(options: Options) {
     this.options = options;
+    this.outputBuffer = new CircularBuffer<string>(
+      Array,
+      this.options.lineLimit
+    );
+  }
+
+  public getOutputBuffer(): string {
+    return Array.from(this.outputBuffer).join("\n");
   }
 
   // Run the proxy process and return `ProcessResult` when it exits.
@@ -46,10 +55,6 @@ export class ProxyProcessManager {
     if (this.childProcess !== undefined) {
       throw new Error("Proxy process already started");
     }
-    const outputBuffer = new CircularBuffer<string>(
-      Array,
-      this.options.lineLimit
-    );
 
     const childProcess = execa(this.options.proxyPath, this.options.proxyArgs, {
       stdio: ["ignore", "pipe", "pipe"],
@@ -71,7 +76,7 @@ export class ProxyProcessManager {
       split[0] = stdoutBuf + split[0];
       stdoutBuf = split.pop() || "";
       for (const line of split) {
-        outputBuffer.push(stripAnsi(line));
+        this.outputBuffer.push(stripAnsi(line));
       }
     });
 
@@ -87,7 +92,7 @@ export class ProxyProcessManager {
       split[0] = stderrBuf + split[0];
       stderrBuf = split.pop() || "";
       for (const line of split) {
-        outputBuffer.push(stripAnsi(line));
+        this.outputBuffer.push(stripAnsi(line));
       }
     });
 
@@ -100,7 +105,7 @@ export class ProxyProcessManager {
 
     await Promise.all([stdoutDone, stderrDone]);
 
-    let output = Array.from(outputBuffer).join("\n");
+    let output = this.getOutputBuffer();
     if (stderrBuf) {
       output = `${output}\n${stderrBuf}`;
     }
