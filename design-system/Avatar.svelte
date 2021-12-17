@@ -139,6 +139,7 @@
     align-items: center;
     user-select: none;
     flex-shrink: 0;
+    background-color: var(--color-foreground-level-3);
   }
 
   .pulsate {
