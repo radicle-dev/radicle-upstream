@@ -63,10 +63,14 @@ export function submitCreateOrgTx(
   }
 }
 
-export function parseOrgCreatedReceipt(receipt: TransactionReceipt): string {
+export function parseOrgCreatedReceipt(receipt: TransactionReceipt): {
+  orgAddress: string;
+  safeAddress: string;
+} {
   const iface = new ethers.utils.Interface(orgFactoryAbi);
 
   let orgAddress: string | undefined;
+  let safeAddress: string | undefined;
 
   receipt.logs.forEach(log => {
     try {
@@ -74,6 +78,7 @@ export function parseOrgCreatedReceipt(receipt: TransactionReceipt): string {
 
       if (parsed.name === "OrgCreated") {
         orgAddress = parsed.args[0].toLowerCase();
+        safeAddress = parsed.args[1].toLowerCase();
       }
     } catch {
       // Ignore parsing errors.
@@ -82,12 +87,17 @@ export function parseOrgCreatedReceipt(receipt: TransactionReceipt): string {
 
   if (!orgAddress) {
     throw new error.Error({
-      code: error.Code.OrgCreateNotFoundInInterfaceLogs,
-      message: "Org not found in interface logs",
+      message: "Could not extract org address from transaction receipt",
     });
   }
 
-  return orgAddress;
+  if (!safeAddress) {
+    throw new error.Error({
+      message: "Could not extract Safe address from transaction receipt",
+    });
+  }
+
+  return { orgAddress, safeAddress };
 }
 
 export const getOwner = memoizeLru(

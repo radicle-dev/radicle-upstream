@@ -292,7 +292,7 @@ export async function createOrg(
   });
 
   const receipt = await walletStore.provider.waitForTransaction(response.hash);
-  const orgAddress = Contract.parseOrgCreatedReceipt(receipt);
+  const { orgAddress, safeAddress } = Contract.parseOrgCreatedReceipt(receipt);
 
   await svelteStore.waitUntil(orgSidebarStore, store => {
     if (store.type === "initial") {
@@ -303,6 +303,10 @@ export async function createOrg(
       return undefined;
     }
   });
+
+  // Wait for Gnosis Safe API to pick up the newly created safe.
+  await Safe.waitUntilSafeIsReady(safeAddress, walletStore.environment);
+
   creationNotification.remove();
   pendingOrgs.update(x => x - 1);
   // Reset org list polling to default interval.

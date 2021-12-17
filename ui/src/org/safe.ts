@@ -10,10 +10,31 @@ import SafeServiceClient, {
   SafeMultisigTransactionResponse,
 } from "@gnosis.pm/safe-service-client";
 
+import { sleep } from "ui/src/sleep";
 import * as Ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import type { Wallet } from "ui/src/wallet";
 import type { OperationType } from "@gnosis.pm/safe-core-sdk-types";
+
+export async function waitUntilSafeIsReady(
+  safeAddress: string,
+  ethEnv: Ethereum.Environment
+): Promise<void> {
+  safeAddress = ethers.utils.getAddress(safeAddress);
+  const safeServiceClient = createSafeServiceClient(ethEnv);
+  let tries = 360; // 30 min
+
+  while (tries > 0) {
+    try {
+      await safeServiceClient.getSafeInfo(safeAddress);
+      return;
+    } catch {
+      // Ignore exception.
+    }
+    tries -= 1;
+    await sleep(5000);
+  }
+}
 
 export async function getPendingTransactions(
   ethEnv: Ethereum.Environment,
