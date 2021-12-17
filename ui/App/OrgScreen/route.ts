@@ -65,7 +65,8 @@ export async function load(params: Params): Promise<LoadedRoute> {
       const showWriteActions =
         !!walletAddress &&
         owner.metadata.members.some(
-          memberAddress => memberAddress === walletAddress
+          memberAddress =>
+            memberAddress.toLowerCase() === walletAddress.toLowerCase()
         );
       if (params.view === "projects") {
         return {
