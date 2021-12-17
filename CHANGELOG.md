@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.13](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.12...v0.2.13) (2021-12-17)
+
+
+### Features
+
+* add proxy logs tab to diagnostics screen ([b8233e1](https://github.com/radicle-dev/radicle-upstream/commit/b8233e1a1d51c9a0e1818dfbf802373bfc0ee73c))
+* move attestation widget beneath wallet balance ([ba1ec00](https://github.com/radicle-dev/radicle-upstream/commit/ba1ec00afaed48848b242051dc95c5ca3c1ee5dc))
+
+
+### Bug Fixes
+
+* add default bg color for image avatars with transparency ([599179f](https://github.com/radicle-dev/radicle-upstream/commit/599179fcf27552c287a9a5a67334c3040785f36b))
+* clear seed input after adding seed ([0ce1de7](https://github.com/radicle-dev/radicle-upstream/commit/0ce1de729316edeb1ca85aa94a828b4f93a5e51f))
+* fix multisig org anchor buttons ([834f9f2](https://github.com/radicle-dev/radicle-upstream/commit/834f9f28061a8972d7b35edd9d7390e39a011951))
+* show newly created org only after Gnosis API picks it up ([0ce7ff4](https://github.com/radicle-dev/radicle-upstream/commit/0ce7ff48bfea45e497d0b03d6a4bc6ff22a6cb0d))
+* use the Graph for Gnosis Safe queries ([7342afe](https://github.com/radicle-dev/radicle-upstream/commit/7342afe0802ce06417b70ccbcd34a4273770eb99))
+
 ### [0.2.12](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.11...v0.2.12) (2021-12-01)
 
 
