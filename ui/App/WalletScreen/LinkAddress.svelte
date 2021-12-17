@@ -6,9 +6,18 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import {
+    selectedEnvironment as ethereumEnvironment,
+    supportedNetwork,
+  } from "ui/src/ethereum";
+  import {
+    attestationStatus,
+    AttestationStatus,
+  } from "ui/src/attestation/status";
   import { lastClaimed } from "ui/src/attestation/lastClaimed";
   import { store as walletStore } from "ui/src/wallet";
   import * as modal from "ui/src/modal";
+  import { store, Status } from "ui/src/wallet";
 
   import Button from "design-system/Button.svelte";
   import Emoji from "design-system/Emoji.svelte";
@@ -20,6 +29,9 @@
   function onLink(): void {
     modal.toggle(LinkAddressModal);
   }
+
+  $: wallet = $store;
+  $: w = $wallet;
 </script>
 
 <style>
@@ -30,8 +42,8 @@
     align-items: center;
 
     text-align: center;
-    padding: 10vh 0;
-    margin-top: 3.75rem;
+    padding: 3rem 0;
+    margin-top: 1.5rem;
 
     border: 1px solid var(--color-foreground-level-2);
     box-sizing: border-box;
@@ -44,14 +56,11 @@
     flex-direction: column;
     justify-content: space-around;
     align-items: center;
-
-    width: 23.75rem;
     margin: 0 auto;
   }
 
   p {
-    margin-top: 1rem;
-    margin-bottom: 1.25rem;
+    margin: 1rem 1rem 1.25rem 1rem;
   }
 
   .spinner-wrapper {
@@ -61,21 +70,37 @@
   }
 </style>
 
-<div class="wrapper">
-  <div class="inner">
-    <Emoji emoji="👛" size="huge" />
-    <p class="typo-text">
-      In order to use Ethereum features, you need to link your Radicle ID and
-      Ethereum address.
-    </p>
-    {#if !$lastClaimed || $lastClaimed !== address}
-      <Button on:click={onLink} dataCy="link-button"
-        >Link your Radicle ID</Button>
-    {:else}
-      <div class="spinner-wrapper">
-        Linking your Radicle ID…
-        <Button variant="transparent" on:click={onLink}>Retry</Button>
+{#if w.status === Status.Connected}
+  {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
+    <div class="wrapper">
+      <div class="inner">
+        {#if $attestationStatus === AttestationStatus.Fetching}
+          <Emoji emoji="🧦" size="huge" />
+          <p class="typo-text">
+            Checking whether your Radicle ID and Ethereum address are linked…
+          </p>
+        {:else if $attestationStatus === AttestationStatus.Valid}
+          <Emoji emoji="🧦" size="huge" />
+          <p class="typo-text">
+            Your Radicle ID and Ethereum address are linked.
+          </p>
+        {:else}
+          <Emoji emoji="👛" size="huge" />
+          <p class="typo-text">
+            To use Ethereum features, you need to link your Radicle ID and
+            Ethereum address.
+          </p>
+          {#if !$lastClaimed || $lastClaimed !== address}
+            <Button on:click={onLink} dataCy="link-button"
+              >Link your Radicle ID</Button>
+          {:else}
+            <div class="spinner-wrapper">
+              Linking your Radicle ID…
+              <Button variant="transparent" on:click={onLink}>Retry</Button>
+            </div>
+          {/if}
+        {/if}
       </div>
-    {/if}
-  </div>
-</div>
+    </div>
+  {/if}
+{/if}

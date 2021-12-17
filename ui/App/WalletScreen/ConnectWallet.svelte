@@ -34,7 +34,7 @@
 <div class="wrapper" class:connecting>
   <Emoji emoji="👛" size="huge" />
   <p class="typo-text">
-    In order to use Ethereum features, you need to connect a wallet.
+    To use Ethereum features, you need to connect a wallet.
   </p>
   <Button disabled={connecting} on:click={onConnect} dataCy="connect-wallet">
     Connect your wallet

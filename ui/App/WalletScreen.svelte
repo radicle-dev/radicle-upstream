@@ -16,16 +16,11 @@
     selectedEnvironment as ethereumEnvironment,
     supportedNetwork,
   } from "ui/src/ethereum";
-  import {
-    watchAttestationStatus,
-    attestationStatus,
-    AttestationStatus,
-  } from "ui/src/attestation/status";
+  import { watchAttestationStatus } from "ui/src/attestation/status";
   import { store, Status, accountBalancesStore } from "ui/src/wallet";
 
   import TransactionsIcon from "design-system/icons/Transactions.svelte";
 
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
@@ -108,28 +103,20 @@
           eth={$accountBalancesStore.eth}
           rad={$accountBalancesStore.rad}
           address={w.connected.address} />
+        <LinkAddress />
       </div>
       {#if supportedNetwork($ethereumEnvironment) === w.connected.network}
-        {#if $attestationStatus === AttestationStatus.Fetching}
-          <EmptyState
-            text="Checking whether you have attested your Ethereum address…"
-            style="height: 30rem; margin-top: 3.75rem;"
-            emoji="🧦" />
-        {:else if $attestationStatus === AttestationStatus.Valid}
-          <div class="right-column">
-            <TabBar
-              slot="left"
-              tabs={tabs(activeTab)}
-              style="padding: 0.5rem 0; margin-bottom: 1rem;" />
-            {#if activeTab === "transactions"}
-              <Transactions />
-            {:else}
-              {unreachable(activeTab)}
-            {/if}
-          </div>
-        {:else}
-          <LinkAddress />
-        {/if}
+        <div class="right-column">
+          <TabBar
+            slot="left"
+            tabs={tabs(activeTab)}
+            style="padding: 0.5rem 0; margin-bottom: 1rem;" />
+          {#if activeTab === "transactions"}
+            <Transactions />
+          {:else}
+            {unreachable(activeTab)}
+          {/if}
+        </div>
       {:else}
         <WrongNetwork
           walletNetwork={w.connected.network}

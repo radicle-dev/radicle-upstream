@@ -11,6 +11,8 @@
   import type { Tx } from "ui/src/transaction";
 
   import TransactionList from "./Transactions/TransactionList.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+
   interface Section {
     key: string;
     title: string;
@@ -70,10 +72,19 @@
         <TransactionList title="Rejected transactions" txs={rejectedTxs} />
       </div>
     {/if}
-    <div class="list" data-cy="transactions">
-      {#each txMonthSections as section}
-        <TransactionList title={section.title} txs={section.items} />
-      {/each}
+    {#if txMonthSections.length > 0}
+      <div class="list" data-cy="transactions">
+        {#each txMonthSections as section}
+          <TransactionList title={section.title} txs={section.items} />
+        {/each}
+      </div>
+    {/if}
+  {:else}
+    <div class="list">
+      <EmptyState
+        emoji="📜"
+        text="You don't have any transactions yet."
+        style="min-height: 32rem;" />
     </div>
   {/if}
 </div>
