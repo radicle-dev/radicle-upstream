@@ -32,9 +32,10 @@ Prerequisites
 * [Yarn](https://yarnpkg.com/getting-started/install)
 * [Rustup](https://github.com/rust-lang/rustup)
 
-To build upstream run
+To build Upstream, run
 
 ```bash
+yarn install
 yarn run dist
 ```
 
