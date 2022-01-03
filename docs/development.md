@@ -537,4 +537,4 @@ All Github access tokens _must_ have the `public_repo` scope.
 [tp]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [wa]: https://github.com/seanmonstar/warp
 [commit-sign-gpg]: https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification/signing-commits
-[doc-rfc]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
+[dco-rfc]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
