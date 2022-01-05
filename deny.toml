@@ -49,6 +49,8 @@ ignore = [
   # https://rustsec.org/advisories/RUSTSEC-2020-0071
   "RUSTSEC-2020-0071",
   "RUSTSEC-2020-0159",
+  # Bug in `lru`. Will be fixed in cycle 2020-01-04 of `radicle-link`
+  "RUSTSEC-2021-0130",
   # "RUSTSEC-2021-0080"
 
 ]
