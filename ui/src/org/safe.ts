@@ -6,15 +6,15 @@
 
 import * as ethers from "ethers";
 import EthersSafe, { EthersAdapter } from "@gnosis.pm/safe-core-sdk";
+import type { OperationType } from "@gnosis.pm/safe-core-sdk-types";
 import SafeServiceClient, {
   SafeMultisigTransactionResponse,
 } from "@gnosis.pm/safe-service-client";
 
-import { sleep } from "ui/src/sleep";
 import * as Ethereum from "ui/src/ethereum";
 import * as error from "ui/src/error";
 import type { Wallet } from "ui/src/wallet";
-import type { OperationType } from "@gnosis.pm/safe-core-sdk-types";
+import { retryOnError } from "ui/src/retryOnError";
 
 export async function waitUntilSafeIsReady(
   safeAddress: string,
@@ -22,17 +22,20 @@ export async function waitUntilSafeIsReady(
 ): Promise<void> {
   safeAddress = ethers.utils.getAddress(safeAddress);
   const safeServiceClient = createSafeServiceClient(ethEnv);
-  let tries = 360; // 30 min
-
-  while (tries > 0) {
-    try {
-      await safeServiceClient.getSafeInfo(safeAddress);
-      return;
-    } catch {
-      // Ignore exception.
-    }
-    tries -= 1;
-    await sleep(5000);
+  try {
+    // retry for 30 mins
+    await retryOnError(
+      () => safeServiceClient.getSafeInfo(safeAddress),
+      () => true,
+      5000,
+      360
+    );
+  } catch (err: unknown) {
+    throw new error.Error({
+      message: "Cannot fetch Gnosis Safe info",
+      details: { safeAddress },
+      source: err,
+    });
   }
 }
 
