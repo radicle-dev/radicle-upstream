@@ -17,6 +17,8 @@
     text = "maintainer";
   } else if (user.type === PeerType.Local) {
     text = "you";
+  } else {
+    text = "";
   }
 </script>
 
