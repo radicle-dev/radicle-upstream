@@ -28,6 +28,6 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
 # radicle-link dependencies. These are patched in the workspace.
-librad = { version = "0" }
+librad = { version = "0", features = ["replication-v3"] }
 link-identities = { version = "0" }
 rad-identities = { version = "0" }

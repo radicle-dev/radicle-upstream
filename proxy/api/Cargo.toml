@@ -44,7 +44,7 @@ walkdir = "2"
 warp = { version = "0.3", default-features = false }
 
 # radicle-link dependencies. These are patched in the workspace
-librad = "0.1"
+librad = { version ="0.1", features = ["replication-v3"] }
 link-crypto = "0.1"
 link-identities = "0.1"
 rad-identities = "0.1"
