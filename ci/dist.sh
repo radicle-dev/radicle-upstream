@@ -36,4 +36,5 @@ target="$(uname -m)-$(uname -s | tr "[:upper:]" "[:lower:]")"
 mkdir "artifacts/${target}"
 cp \
   --target-directory "artifacts/${target}" \
-  target/release/upstream-seed
+  target/release/upstream-seed \
+  target/release/rad
