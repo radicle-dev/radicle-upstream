@@ -51,6 +51,7 @@
 
   .file-content {
     flex-grow: 1;
+    overflow: hidden;
   }
 </style>
 
