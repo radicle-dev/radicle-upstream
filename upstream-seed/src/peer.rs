@@ -257,8 +257,9 @@ impl Peer {
             .storage()
             .await
             .context("failed to access librad storage")?;
-        let projects =
-            rad_identities::project::list(storage.as_ref()).context("failed to list projects")?;
+        let projects = rad_identities::project::list(storage.as_ref())
+            .context("failed to list projects")?
+            .collect::<Vec<_>>();
         for project_result in projects {
             let project = match project_result {
                 Ok(project) => project,
@@ -286,8 +287,13 @@ impl Peer {
                 };
                 tracing::debug!(%urn, %origin, "sending announcement");
                 self.librad_peer
-                    .announce(payload)
+                    .announce(payload.clone())
                     .map_err(|_| anyhow::anyhow!("librad peer not bound"))?;
+
+                // If we don't sleep librad might be overwhelmed by too many announcements and not
+                // send some of them out.
+                // https://github.com/radicle-dev/radicle-upstream/issues/2713
+                tokio::time::sleep(std::time::Duration::from_millis(2)).await;
             }
         }
 
