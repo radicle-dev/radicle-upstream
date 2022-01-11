@@ -50,9 +50,6 @@ ignore = [
   "RUSTSEC-2020-0071",
   "RUSTSEC-2020-0159",
 
-  # Bug in `lru`. Will be fixed in cycle 2020-01-04 of `radicle-link`
-  "RUSTSEC-2021-0130",
-
   # Vulnerability in `dashmap` that may cause segfault.
   #
   # No fix yet available.

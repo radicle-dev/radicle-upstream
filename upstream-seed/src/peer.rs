@@ -131,11 +131,19 @@ impl Peer {
                 let urn = urn.clone();
                 let peer_id = peer_id;
                 move |storage| {
-                    librad::git::tracking::track(storage, &urn, peer_id)
-                        .context("failed to track identity")
+                    librad::git::tracking::track(
+                        storage,
+                        &urn,
+                        Some(peer_id),
+                        Default::default(),
+                        librad::git::tracking::policy::Track::Any,
+                    )
+                    .context("failed to track identity")?
+                    .context("failed to track identity inner")
                 }
             })
-            .await??;
+            .await
+            .context("failed to obtain storage")??;
 
         let result = self
             .librad_peer
