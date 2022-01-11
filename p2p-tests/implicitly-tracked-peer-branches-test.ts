@@ -9,23 +9,17 @@
 import * as path from "path";
 import { strict as strictAssert } from "assert";
 
-import * as source from "proxy-client/source";
 import { sleep } from "ui/src/sleep";
 import {
   RadicleProxy,
   UpstreamSeed,
-  commit,
-  getLatestCommitSha,
-  pushRad,
   radCli,
   runTestcase,
   withRetry,
 } from "./lib/p2p";
 
-// Test that updates to a project from the contributor are replicated back to
-// the maintainer via a seed.
-//
-// The contributor and maintainer are never connected to the seed at the same time.
+// Test that that the branches of contributors tracked by the maintainer are
+// replicated by any other peer.
 async function testcase(dataPath: string) {
   const project = {
     name: "my-fancy-project",
@@ -53,8 +47,21 @@ async function testcase(dataPath: string) {
     dataPath,
   });
 
+  const contributor2 = new RadicleProxy({
+    name: "contributor2",
+    ipAddress: "10.0.0.103",
+    seed: seed.seedAddress,
+    dataPath,
+  });
+
   seed.start();
+
   maintainer.start();
+  contributor.start();
+  contributor2.start();
+
+  // Without this the test fails, not sure why.
+  await sleep(3000);
 
   // Maintainer creates a new project.
   await withRetry(async () => {
@@ -89,10 +96,7 @@ async function testcase(dataPath: string) {
   });
 
   // Without this the test fails, not sure why.
-  await sleep(1000);
-
-  await maintainer.stop();
-  contributor.start();
+  await sleep(3000);
 
   // Contributor follows the project.
   await withRetry(async () => {
@@ -103,53 +107,29 @@ async function testcase(dataPath: string) {
   await withRetry(async () => {
     const result = await contributor.proxyClient.project.get(project.urn);
 
-    strictAssert.deepStrictEqual(result, {
-      urn: project.urn,
-      metadata: {
-        name: project.name,
-        description: "",
-        defaultBranch: "main",
-        maintainers: [maintainer.identityUrn],
-      },
-      stats: { commits: 1, branches: 0, contributors: 1 },
-    });
+    strictAssert.deepStrictEqual(result.urn, project.urn);
   });
 
   // Contributor forks the project.
-  const contributorCheckoutPath =
-    await contributor.proxyClient.project.checkout(project.urn, {
-      path: contributor.checkoutPath,
-      peerId: maintainer.peerId,
-    });
-
-  // Contributor publishes a new commit.
-  commit({
-    author: contributor.name,
-    checkoutPath: contributorCheckoutPath,
-  });
-  pushRad({
-    radHome: contributor.radHome,
-    checkoutPath: contributorCheckoutPath,
-    keyPassphrase: contributor.passphrase,
+  await contributor.proxyClient.project.checkout(project.urn, {
+    path: contributor.checkoutPath,
+    peerId: maintainer.peerId,
   });
 
-  // Assert that the seed received the contributor's fork and latest commit.
+  // Assert that the seed received the contributor's fork.
   await withRetry(async () => {
     const result = radCli({
       radHome: seed.radHome,
       args: ["identities", "project", "tracked", "--urn", project.urn],
     });
 
-    strictAssert.strictEqual(
+    strictAssert.deepStrictEqual(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (result as any).find((x: any) => x.peerId === contributor.peerId).status
-        .user.refs.heads.main,
-      getLatestCommitSha(contributorCheckoutPath)
+        .type,
+      "replicated"
     );
   });
-
-  await contributor.stop();
-  maintainer.start();
 
   // Maintainer adds contributor as a remote to the project.
   await withRetry(async () => {
@@ -163,24 +143,42 @@ async function testcase(dataPath: string) {
   await withRetry(async () => {
     const result = await maintainer.proxyClient.project.listPeers(project.urn);
 
-    strictAssert.strictEqual(
+    strictAssert.deepStrictEqual(
       result.find(x => x.peerId === contributor.peerId)?.status.type,
       "replicated"
     );
   });
 
-  // Assert that the maintainer received the contributor's latest commit.
+  // Assert that the maintainer can view the contributor's branch.
   await withRetry(async () => {
-    const commitList = await maintainer.proxyClient.source.commitsGet({
+    const branches = await maintainer.proxyClient.source.branchesGet({
       projectUrn: project.urn,
       peerId: contributor.peerId,
-      revision: { type: source.RevisionType.Branch, name: "main" },
     });
 
-    strictAssert.strictEqual(
-      commitList.headers[0].sha1,
-      getLatestCommitSha(contributorCheckoutPath)
-    );
+    strictAssert.deepStrictEqual(branches, ["main"]);
+  });
+
+  // Contributor2 follows the project.
+  await withRetry(async () => {
+    await contributor2.proxyClient.project.requestSubmit(project.urn);
+  });
+
+  // Assert that contributor2 received the project.
+  await withRetry(async () => {
+    const result = await contributor2.proxyClient.project.get(project.urn);
+
+    strictAssert.deepStrictEqual(result.urn, project.urn);
+  });
+
+  // Assert that contributor2 can view contributor's branch.
+  await withRetry(async () => {
+    const branches = await contributor2.proxyClient.source.branchesGet({
+      projectUrn: project.urn,
+      peerId: contributor.peerId,
+    });
+
+    strictAssert.deepStrictEqual(branches, ["main"]);
   });
 }
 

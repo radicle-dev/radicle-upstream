@@ -170,7 +170,7 @@ async function testcase(dataPath: string) {
     );
   });
 
-  // Assert that the contributor found the remote.
+  // Assert that the maintainer found the remote.
   await withRetry(async () => {
     const result = await maintainer.proxyClient.project.listPeers(project.urn);
 

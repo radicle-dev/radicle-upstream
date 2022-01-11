@@ -42,4 +42,8 @@ log-group-start "contributor-fork-replication-2-test.ts"
 time sudo -E FORCE_COLOR=1 ./p2p-tests/contributor-fork-replication-2-test.ts
 log-group-end
 
+log-group-start "implicitly-tracked-peer-branches-test.ts"
+time sudo -E FORCE_COLOR=1 ./p2p-tests/implicitly-tracked-peer-branches-test.ts
+log-group-end
+
 clean-cargo-build-artifacts
