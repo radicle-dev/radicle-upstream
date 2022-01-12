@@ -43,43 +43,7 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     }
 
     #[cfg(unix)]
-    {
-        use tokio::signal::unix::{signal, SignalKind};
-        let mut sighup = signal(SignalKind::hangup())?;
-
-        let mut handle = service_manager.handle();
-        tokio::spawn(async move {
-            loop {
-                if sighup.recv().await.is_some() {
-                    tracing::info!("SIGHUP received, reloading...");
-                    handle.reset();
-                } else {
-                    break;
-                }
-            }
-        });
-
-        let mut sigterm = signal(SignalKind::terminate())?;
-        let mut sigint = signal(SignalKind::interrupt())?;
-
-        let mut handle = service_manager.handle();
-        tokio::spawn(async move {
-            futures::future::select(Box::pin(sigterm.recv()), Box::pin(sigint.recv())).await;
-            tracing::info!(
-                "shutting down. send SIGINT or SIGTERM again in 5 seconds to force shutdown"
-            );
-            handle.shutdown();
-            let grace_period_start = std::time::Instant::now();
-            let grace_period = std::time::Duration::from_secs(5);
-            loop {
-                futures::future::select(Box::pin(sigterm.recv()), Box::pin(sigint.recv())).await;
-                let now = std::time::Instant::now();
-                if now - grace_period_start > grace_period {
-                    std::process::exit(5);
-                }
-            }
-        });
-    }
+    install_signal_handlers(&service_manager)?;
 
     let auth_token = Arc::new(RwLock::new(None));
     loop {
@@ -314,6 +278,51 @@ async fn log_daemon_peer_events(events: impl Stream<Item = radicle_daemon::peer:
             future::ready(())
         })
         .await;
+}
+
+/// Install signal handlers.
+///
+/// On `SIGHUP` the service is restarted. On `SIGTERM` or `SIGINT` the service is asked to
+/// shutdown. If `SIGTERM` or `SIGINT` is received a second time after more than five seconds, the
+/// process is exited immediately.
+fn install_signal_handlers(service_manager: &service::Manager) -> Result<(), anyhow::Error> {
+    use tokio::signal::unix::{signal, SignalKind};
+    let mut sighup = signal(SignalKind::hangup())?;
+
+    let mut handle = service_manager.handle();
+    tokio::spawn(async move {
+        loop {
+            if sighup.recv().await.is_some() {
+                tracing::info!("SIGHUP received, reloading...");
+                handle.reset();
+            } else {
+                break;
+            }
+        }
+    });
+
+    let mut sigterm = signal(SignalKind::terminate())?;
+    let mut sigint = signal(SignalKind::interrupt())?;
+
+    let mut handle = service_manager.handle();
+    tokio::spawn(async move {
+        futures::future::select(Box::pin(sigterm.recv()), Box::pin(sigint.recv())).await;
+        tracing::info!(
+            "shutting down. send SIGINT or SIGTERM again in 5 seconds to force shutdown"
+        );
+        handle.shutdown();
+        let grace_period_start = std::time::Instant::now();
+        let grace_period = std::time::Duration::from_secs(5);
+        loop {
+            futures::future::select(Box::pin(sigterm.recv()), Box::pin(sigint.recv())).await;
+            let now = std::time::Instant::now();
+            if now - grace_period_start > grace_period {
+                std::process::exit(5);
+            }
+        }
+    });
+
+    Ok(())
 }
 
 fn setup_logging(args: &Args) {
