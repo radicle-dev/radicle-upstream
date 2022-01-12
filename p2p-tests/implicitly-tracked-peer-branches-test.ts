@@ -171,6 +171,21 @@ async function testcase(dataPath: string) {
     strictAssert.deepStrictEqual(result.urn, project.urn);
   });
 
+  // Assert that contributor is in contributor2's remote list.
+  await withRetry(async () => {
+    const peers = await contributor2.proxyClient.project.listPeers(project.urn);
+
+    console.log("maint: ", maintainer.peerId);
+    console.log("cont2: ", contributor2.peerId);
+    console.log("cont: ", contributor.peerId);
+    console.log(peers);
+    console.log(peers.find(x => x.peerId === contributor.peerId)?.status.type);
+    strictAssert.deepStrictEqual(
+      peers.find(x => x.peerId === contributor.peerId)?.status.type,
+      "replicated"
+    );
+  });
+
   // Assert that contributor2 can view contributor's branch.
   await withRetry(async () => {
     const branches = await contributor2.proxyClient.source.branchesGet({
