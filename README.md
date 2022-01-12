@@ -1,7 +1,7 @@
 # Upstream
 
-[![build][bb]][bu]
-[![dist][db]][dd]
+[![Is the "build" Action succeeding?][bb]][bu]
+[![Is the "dist" Action succeeding?][db]][dd]
 
 Upstream is a cross-platform desktop client for the radicle code collaboration
 protocol.
