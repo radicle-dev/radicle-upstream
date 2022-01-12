@@ -1,8 +1,8 @@
 # Accepting Contributions Workflow
 
-This document outlines the user flow for users who want to contribute code to
+_This document outlines the user flow for users who want to contribute code to
 Upstream via Upstream for the first time. We intend to use this to create a
-user guide that allows users to successfully contribute.
+user guide that allows users to successfully contribute._
 
 - Contributor decides to work on an [open issue](https://github.com/radicle-dev/radicle-upstream/issues)
   or wants to propose changes to Upstream
