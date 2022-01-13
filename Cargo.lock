@@ -4707,6 +4707,7 @@ dependencies = [
  "git2",
  "librad",
  "link-identities",
+ "link-replication",
  "rad-identities",
  "rustc-hex",
  "serde",

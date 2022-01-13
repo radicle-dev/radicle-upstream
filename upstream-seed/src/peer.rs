@@ -156,7 +156,11 @@ impl Peer {
                     tracing::info!("remote does not have identity");
                     Ok(false)
                 } else {
-                    tracing::info!(?updated_refs, "fetch identity done");
+                    let ref_names = updated_refs.iter().map(|x| match x {
+                        link_replication::Updated::Direct { name, target: _ } => name,
+                        link_replication::Updated::Symbolic { name, target: _ } => name,
+                    });
+                    tracing::info!(?ref_names, "fetch identity done");
                     Ok(true)
                 }
             },
