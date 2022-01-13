@@ -34,6 +34,34 @@ source ./scripts/env
 
 Make sure to source the script from the repository root.
 
+## Run and connect multiple instances
+
+We provide the `scripts/devnet.ts` tool for running, connecting and
+managing multiple Upstream instances on a local machine.
+
+The devnet tool uses numbers from 1 to 100 to identify and reference instances.
+
+```bash
+scripts/devnet.ts upstream 1
+```
+
+This will start an Upstream instance. The instance will be fully initialized
+with user name `1`. The `RAD_HOME` for the instance is `./sandbox/devnet/1`. The
+peer ID is derived from the instance ID.
+
+To connect a second instance to the first one run
+
+```bash
+scripts/devnet.ts upstream 2 --boostrap 1
+```
+
+Make sure you rebuild the project before running instances
+
+```bash
+cargo build
+yarn run webpack --config-name ui
+```
+
 ## Merging changes into main branch
 
 Maintainers are responsible for adding contribution to the `main` branch on
@@ -123,37 +151,6 @@ To run the p2p network test suite locally:
 ```bash
 sudo FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-test.ts
 ```
-
-
-### Running multiple Upstream instances on the same machine
-
-For testing purposes it is possible to launch multiple Upstream instances at
-the same time. At the moment this is only possible in development mode.
-
-```
-mkdir /Users/rudolfs/work/19000
-mkdir /Users/rudolfs/work/20000
-
-# Launch the first instance.
-
-RAD_HOME="/Users/rudolfs/work/19000" \
-RADICLE_PROXY_HTTP_LISTEN="127.0.0.1:19000" \
-RADICLE_PROXY_PEER_LISTEN="0.0.0.0:19000" \
-RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:19000" \
-yarn start
-
-# And then in a separate shell, launch the second instance.
-
-RAD_HOME="/Users/rudolfs/work/20000" \
-RADICLE_PROXY_HTTP_LISTEN="127.0.0.1:20000" \
-RADICLE_PROXY_PEER_LISTEN="0.0.0.0:20000" \
-RADICLE_UPSTREAM_UI_PROXY_ADDRESS="localhost:20000" \
-yarn start
-```
-
-You can also let the the OS choose a free peer port by using
-`RADICLE_PROXY_PEER_LISTEN="0.0.0.0:0"`.
-
 
 ### Running on Windows (experimental)
 

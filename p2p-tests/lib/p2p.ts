@@ -179,7 +179,7 @@ export class RadicleProxy {
         this.passphrase,
         "--skip-remote-helper-install",
         "--unsafe-fast-keystore",
-        "--insecure-http-api",
+        "--insecure-http-api=true",
         "--dev-log",
         "--seed",
         this.#seed,

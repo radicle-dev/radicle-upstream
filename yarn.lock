@@ -10922,6 +10922,7 @@ __metadata:
     ts-node: ^10.4.0
     tsconfig-paths-webpack-plugin: ^3.5.2
     tslib: ^2.3.1
+    tweetnacl: ^1.0.3
     twemoji: 13.1.0
     typescript: ^4.5.2
     util: ^0.12.4
@@ -12953,6 +12954,13 @@ __metadata:
   version: 0.14.5
   resolution: "tweetnacl@npm:0.14.5"
   checksum: 6061daba1724f59473d99a7bb82e13f211cdf6e31315510ae9656fefd4779851cb927adad90f3b488c8ed77c106adc0421ea8055f6f976ff21b27c5c4e918487
+  languageName: node
+  linkType: hard
+
+"tweetnacl@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "tweetnacl@npm:1.0.3"
+  checksum: e4a57cac188f0c53f24c7a33279e223618a2bfb5fea426231991652a13247bea06b081fd745d71291fcae0f4428d29beba1b984b1f1ce6f66b06a6d1ab90645c
   languageName: node
   linkType: hard
 

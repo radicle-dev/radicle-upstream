@@ -52,7 +52,7 @@ pub struct Args {
 
     /// Passphrase to unlock the keystore. If not provided the keystore must be unlocked via the
     /// HTTP API.
-    #[structopt(long)]
+    #[structopt(long, env = "RADICLE_PROXY_KEY_PASSPHRASE")]
     pub key_passphrase: Option<String>,
 
     /// Enables fast but unsafe encryption of the keystore for development builds
@@ -60,7 +60,7 @@ pub struct Args {
     pub unsafe_fast_keystore: bool,
 
     /// If `true`, the HTTP api will accept any request without checking the auth token.
-    #[structopt(long)]
+    #[structopt(long, env = "RADICLE_PROXY_INSECURE_HTTP_API")]
     pub insecure_http_api: bool,
 
     /// Enables more verbose logging for development
