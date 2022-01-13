@@ -148,7 +148,7 @@
     "@types/lodash": "^4.14.177",
     "@types/lru-cache": "^5.1.1",
     "@types/marked": "^4.0.1",
-    "@types/node": "^14.17.34",
+    "@types/node": "^16.11.7",
     "@types/node-fetch": "^2.5.12",
     "@types/prompts": "^2.4.0",
     "@types/qs": "^6.9.7",

@@ -1882,14 +1882,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*":
-  version: 16.11.10
-  resolution: "@types/node@npm:16.11.10"
-  checksum: 9c79419c5c3d92d5825bffa30f3668533f598d8b63a73ea7fc24e47f162bdbed92b0f8e4f4261cc3314b39cee050e303366d2aa154abc95c63a572a110b8c160
+"@types/node@npm:*, @types/node@npm:^16.11.7":
+  version: 16.11.19
+  resolution: "@types/node@npm:16.11.19"
+  checksum: a9ba0cd1e61c8ad50f3fc9c2b37b795bf0286dacb39dcc985da90328abf0c5151dffe9932d20bc9a6a52c3ce7bfc1e5a7c2dc1416480fb84f1c2d70e25caeba0
   languageName: node
   linkType: hard
 
-"@types/node@npm:^14.14.31, @types/node@npm:^14.17.34, @types/node@npm:^14.6.2":
+"@types/node@npm:^14.14.31, @types/node@npm:^14.6.2":
   version: 14.17.34
   resolution: "@types/node@npm:14.17.34"
   checksum: 803a7532b6998aca6aa1b3e6239f280e82612d4f641d38fbf08962c905ea9d1b278b2f09d396beac5120a4e68f33d7467298b197f2f00150ec1dcd546de02a89
@@ -10843,7 +10843,7 @@ __metadata:
     "@types/lodash": ^4.14.177
     "@types/lru-cache": ^5.1.1
     "@types/marked": ^4.0.1
-    "@types/node": ^14.17.34
+    "@types/node": ^16.11.7
     "@types/node-fetch": ^2.5.12
     "@types/prompts": ^2.4.0
     "@types/qs": ^6.9.7

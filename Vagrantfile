@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
       jq \
       procps; \
 
-    curl -sfLS https://deb.nodesource.com/setup_14.x | bash -; \
+    curl -sfLS https://deb.nodesource.com/setup_16.x | bash -; \
     apt-get -y update; \
     apt-get -y --no-install-recommends install nodejs; \
     apt-get autoremove; \
