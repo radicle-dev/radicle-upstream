@@ -1503,13 +1503,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsconfig/svelte@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@tsconfig/svelte@npm:2.0.1"
-  checksum: b866a3e2a40eed8e4ab9f062a70086d3ab564e7b359545802bdd092f077a268ef715c58408c1b5ef0846efaf3884cc3a26fcb43df6e37195ec0d93392302c431
-  languageName: node
-  linkType: hard
-
 "@types/babel__core@npm:^7.0.0, @types/babel__core@npm:^7.1.14":
   version: 7.1.18
   resolution: "@types/babel__core@npm:7.1.18"
@@ -10822,7 +10815,6 @@ __metadata:
     "@gnosis.pm/safe-core-sdk": ^0.3.1
     "@gnosis.pm/safe-core-sdk-types": ^0.1.1
     "@gnosis.pm/safe-service-client": ^0.1.1
-    "@tsconfig/svelte": ^2.0.1
     "@types/big.js": ^6.1.2
     "@types/cookie": ^0.4.1
     "@types/copy-webpack-plugin": ^10.1.0

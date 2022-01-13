@@ -1,5 +1,4 @@
 {
-  "extends": "@tsconfig/svelte/tsconfig.json",
   "include": [
     "ui/**/*",
     "native/**/*",
@@ -97,7 +96,7 @@
     /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */
     "allowSyntheticDefaultImports": true,
     /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */
-    "esModuleInterop": true
+    "esModuleInterop": true,
     /* Do not resolve the real path of symlinks. */
     // "preserveSymlinks": true,
     /* Source Map Options */
@@ -114,6 +113,7 @@
     // "experimentalDecorators": true,
     /* Enables experimental support for emitting type metadata for decorators. */
     // "emitDecoratorMetadata": true,
+    "skipLibCheck": true
   },
   "ts-node": {
     "compilerOptions": {

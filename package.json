@@ -141,7 +141,6 @@
   },
   "devDependencies": {
     "@ethersproject/cli": "^5.5.0",
-    "@tsconfig/svelte": "^2.0.1",
     "@types/big.js": "^6.1.2",
     "@types/cookie": "^0.4.1",
     "@types/copy-webpack-plugin": "^10.1.0",
