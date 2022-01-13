@@ -61,8 +61,7 @@
       <span class="typo-mono-bold">{patch.TAG_PREFIX}</span>
     </p>
     <Copyable name="command" style="margin-bottom: 1rem;">
-      <pre
-        class="typo-text-small-mono instruction">
+      <pre class="typo-text-small-mono instruction">
         {`git tag --force --annotate ${patch.TAG_PREFIX}<name>`}
       </pre>
     </Copyable>
@@ -76,8 +75,7 @@
       your changes.
     </p>
     <Copyable name="command" style="margin-bottom: 1rem;">
-      <pre
-        class="typo-text-small-mono instruction">
+      <pre class="typo-text-small-mono instruction">
         {`git push --force rad tag ${patch.TAG_PREFIX}<name>`}
       </pre>
     </Copyable>

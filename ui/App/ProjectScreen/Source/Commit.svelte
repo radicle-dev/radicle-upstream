@@ -162,14 +162,10 @@
       </div>
     </BackButton>
     <div class="commit-header" data-cy="commit-header">
-      <pre
-        class="typo-mono"
-        style="margin-bottom: 1rem">
+      <pre class="typo-mono" style="margin-bottom: 1rem">
         {commitResult.commit.header.summary}
       </pre>
-      <pre
-        class="description"
-        style="margin-bottom: 1rem">
+      <pre class="description" style="margin-bottom: 1rem">
         {commitResult.commit.header.description}
       </pre>
       <hr />

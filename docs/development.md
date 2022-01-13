@@ -366,9 +366,10 @@ On pushes of the master branch we also build and upload distribution artifacts.
    * The following packages cannot be upgraded to the next major version because
      we don’t support ES modules yet. See [#2227](https://github.com/radicle-dev/radicle-upstream/issues/2227).
      If possible, do a minor version upgrade.
-     * `node-fetch` and `@types/node`
+     * `node-fetch` and `@types/node-fetch`
      * `exit-hook`
      * `strip-ansi`
+     * `execa`
    * Don’t update `radicle-contracts`.
    * Don’t do a major upgrade of `@types/node`.
    * `electron-builder` shows `^22.14.5` as the latest version. This is

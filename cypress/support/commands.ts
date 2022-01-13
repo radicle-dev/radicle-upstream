@@ -9,6 +9,7 @@ import * as ProxyClient from "proxy-client";
 import { sleep } from "ui/src/sleep";
 import { createPlugin } from "cypress/support/plugin";
 import * as ethereumDevNodeApi from "cypress/plugins/ethereumDevNode/api";
+import { retryFetch } from "ui/src/retryOnError";
 
 const proxyClient = new ProxyClient.ProxyClient("http://127.0.0.1:17246");
 
@@ -121,7 +122,7 @@ export const onboardUser = (
 ): Cypress.Chainable<void> => {
   return cy.then(async () => {
     await proxyClient.keyStoreCreate({ passphrase: "radicle-upstream" });
-    await proxyClient.identity.create({ handle });
+    await retryFetch(() => proxyClient.identity.create({ handle }), 10, 300);
   });
 };
 
@@ -151,7 +152,7 @@ function getCurrentTestName() {
 
 // Wait until the proxy has been re-sealed or reset.
 async function waitSealed() {
-  let remainingTries = 100;
+  let remainingTries = 500;
   for (;;) {
     remainingTries -= 1;
     if (remainingTries < 0) {
