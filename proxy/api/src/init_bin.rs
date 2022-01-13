@@ -5,26 +5,25 @@
 // LICENSE file.
 
 use anyhow::Context as _;
-use structopt::StructOpt;
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 /// Initialize a Radicle Proxy profile with a key and local identity.
 struct Args {
     /// Local identity handle and key seed.
     handle: String,
 
-    #[structopt(long, env)]
+    #[clap(long, env)]
     /// Location of profile.
     rad_home: std::path::PathBuf,
 
-    #[structopt(long, default_value = "asdf")]
+    #[clap(long, default_value = "asdf")]
     /// Passphrase to encrypt the key with
     key_passphrase: String,
 }
 
 #[tokio::main]
 pub async fn main() -> anyhow::Result<()> {
-    let args = Args::from_args();
+    let args = <Args as clap::Parser>::parse();
 
     let profile = librad::profile::Profile::from_root(&args.rad_home, None)
         .context("failed to load profile")?;

@@ -13,6 +13,7 @@ keywords = [ "radicle", "upstream" ]
 [dependencies]
 anyhow = "1.0"
 async-shutdown = "0.1.2"
+clap = { version = "3.0", features = ["derive", "env"] }
 either = { version = "1.6" }
 futures = { version = "0.3" }
 futures-delay-queue = "0.5"
@@ -20,7 +21,6 @@ git2 = { version = "0.13", default-features = false }
 rustc-hex = { version = "2.1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
-structopt = "0.3"
 thiserror = { version = "1" }
 tokio = { version = "1", features = ["macros", "time", "rt", "rt-multi-thread", "signal"] }
 tokio-stream = { version = "0.1.8", features = ["time"] }

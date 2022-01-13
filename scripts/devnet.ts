@@ -99,7 +99,7 @@ const upstreamCommand: yargs.CommandModule<
           "--bin=radicle-proxy",
           "--",
           "--skip-remote-helper-install",
-          "--insecure-http-api=true",
+          "--insecure-http-api",
           "--unsafe-fast-keystore",
           "--dev-log",
         ],
