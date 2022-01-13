@@ -20,8 +20,8 @@ The contribution process goes as follows:
   - Author creates and publishes an Upstream patch according to the
     instructions that appear when “New patch” is clicked in Upstream
     - Switch to the branch that contains the changes
-    - Run `git tag --annotate radicle-patch/<name>` where `<name>` is the name of
-      the patch.
+    - Run `git tag --force --annotate radicle-patch/<name>` where `<name>` is
+      the name of the patch.
     - Add a title for the patch in the editor that opens.
     - Add a description in the editor. The description should include a link to
       the CI build. The link has the following form:
@@ -29,8 +29,8 @@ The contribution process goes as follows:
       Also reference relevant Github issues by including their URL in the
       description.
     - Close the editor
-    - Run `git push rad tag radicle-patch/<name>` to publish the patch to the
-      Radicle network.
+    - Run `git push --force rad tag radicle-patch/<name>` to publish the patch
+      to the Radicle network.
 - Author selects a reviewer from the team and informs the reviewer via Discord
   that there is a new patch that they want to merge.
 - Reviewer confirms that they can see the patch in Upstream.
@@ -43,7 +43,7 @@ The contribution process goes as follows:
     E.g.
 
     ```bash
-    git fetch rad remotes/hyd5xybasxyicg3ap4izs8jyg1u4ardy95xaddd6yu4mzqb1oqtiye/tags/radicle-patch/cmake-dependency:tags/radicle-patch/yorgos/cmake-dependency
+    git fetch --force rad remotes/hyd5xybasxyicg3ap4izs8jyg1u4ardy95xaddd6yu4mzqb1oqtiye/tags/radicle-patch/cmake-dependency:tags/radicle-patch/yorgos/cmake-dependency
     git checkout tags/radicle-patch/yorgos/cmake-dependency
     ```
 
@@ -73,8 +73,15 @@ The contribution process goes as follows:
 
   If a fast-forward merge is not possible, the `--ff-only` option can be
   omitted.
-- The merge coordinator publishes their updates to the main branch by running
-  `git push rad main`.
+- The merge coordinator publishes their updates to the main branch to Radicle
+  and Github by running
+  `git push rad main` and `git push origin main`.
 - All other maintainers pull updates to the main branch from the merge
   coordinator through Radicle and then push their updated main branches to
   Radicle.
+
+  ```bash
+  git switch main
+  git pull --ff-only peername@hrnkfoo main
+  git push rad main
+  ```

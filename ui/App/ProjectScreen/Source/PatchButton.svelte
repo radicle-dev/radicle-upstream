@@ -63,7 +63,7 @@
     <Copyable name="command" style="margin-bottom: 1rem;">
       <pre
         class="typo-text-small-mono instruction">
-        {`git tag --annotate ${patch.TAG_PREFIX}<name>`}
+        {`git tag --force --annotate ${patch.TAG_PREFIX}<name>`}
       </pre>
     </Copyable>
     <p>
@@ -78,7 +78,7 @@
     <Copyable name="command" style="margin-bottom: 1rem;">
       <pre
         class="typo-text-small-mono instruction">
-        git push --tags rad
+        {`git push --force rad tag ${patch.TAG_PREFIX}<name>`}
       </pre>
     </Copyable>
     <p>4. Your Patch is now public. 🎉</p>

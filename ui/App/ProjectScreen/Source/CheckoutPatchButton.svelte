@@ -40,7 +40,7 @@
     if (patch.peerId !== myPeerId) {
       remoteRef = `remotes/${patch.peerId}/${remoteRef}`;
     }
-    instructions = `git fetch rad ${remoteRef}:${localRef}\ngit checkout ${localRef}`;
+    instructions = `git fetch --force rad ${remoteRef}:${localRef}\ngit checkout ${localRef}`;
   }
 </script>
 
