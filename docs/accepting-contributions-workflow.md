@@ -35,7 +35,7 @@ user guide that allows users to successfully contribute._
 - Patch is replicated by the seed node
 - Author informs the merge coordinator, that there is a new patch that they
   want to merge by posting their Device ID and optionally the patch name via
-  Discord or the [Github issue]
+  Discord or the [GitHub issue]
 - The merge coordinator adds the contributor’s Device ID to the project’s
   remotes
 - The merge coordinator replicates patch from seed and sees it in Upstream
@@ -44,7 +44,7 @@ user guide that allows users to successfully contribute._
   [internal process](https://www.notion.so/Upstream-Collaboration-Workflow-9f04a70ec5c44356ad1b905b193e5f8e)
 - If the merge coordinator requests changes
     - The merge coordinator informs the author of the requested changes through
-      discord or the [Github issue]
+      Discord or the [GitHub issue]
     - Author updates the patch
         - Add a commit to the patch branch or otherwise change the head of the
           patch branch. (E.g. by amending the commit)
