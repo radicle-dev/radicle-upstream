@@ -35,7 +35,7 @@ user guide that allows users to successfully contribute._
 - Patch is replicated by the seed node
 - Author informs the merge coordinator, that there is a new patch that they
   want to merge by posting their Device ID and optionally the patch name via
-  Discord or [Github issue]
+  Discord or the [Github issue]
 - The merge coordinator adds the contributor’s Device ID to the project’s
   remotes
 - The merge coordinator replicates patch from seed and sees it in Upstream
