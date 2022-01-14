@@ -35,7 +35,7 @@ user guide that allows users to successfully contribute._
 - Patch is replicated by the seed node
 - Author informs the merge coordinator, that there is a new patch that they
   want to merge by posting their Device ID and optionally the patch name via
-  Discord or [Github issue](https://github.com/radicle-dev/radicle-upstream/issues/1958)
+  Discord or [Github issue]
 - The merge coordinator adds the contributor’s Device ID to the project’s
   remotes
 - The merge coordinator replicates patch from seed and sees it in Upstream
@@ -44,7 +44,7 @@ user guide that allows users to successfully contribute._
   [internal process](https://www.notion.so/Upstream-Collaboration-Workflow-9f04a70ec5c44356ad1b905b193e5f8e)
 - If the merge coordinator requests changes
     - The merge coordinator informs the author of the requested changes through
-      discord or the [Github issue](https://github.com/radicle-dev/radicle-upstream/issues/1958)
+      discord or the [Github issue]
     - Author updates the patch
         - Add a commit to the patch branch or otherwise change the head of the
           patch branch. (E.g. by amending the commit)
@@ -59,3 +59,6 @@ user guide that allows users to successfully contribute._
 - All other maintainers pull updates to the `main` branch from the merge
   coordinator through Radicle and then push their updated `main` branches to
   Radicle
+
+
+[Github issue]: https://github.com/radicle-dev/radicle-upstream/issues/1958
