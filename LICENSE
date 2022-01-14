@@ -7,11 +7,14 @@ Origin (DCO).
 
 By making your contribution, you are (1) making the declaration set
 out in the Linux Foundation’s Developer Certificate of Origin
-version 1.1 as set out below, in which the “open source licence indicated
-in the file” is GPLv3 with the Radicle Linking Exception, and (2) granting the
-additional permission referred to in the Radicle Linking Exception to
-downstream recipients of current and future versions of radicle-upstream
-released by the Radicle Foundation.
+version 1.1, in which the “open source licence indicated in the file” is GPLv3
+with the Radicle Linking Exception, and (2) granting the additional permission
+referred to in the Radicle Linking Exception to downstream recipients of
+current and future versions of radicle-upstream released by the Radicle
+Foundation.
+
+A copy of Radicle Linking Exception and the GPLv3 can be found below. A copy of
+the DCO can be found in the file named “DCO”.
 
                         Radicle Linking Exception
 
