@@ -82,6 +82,7 @@ The contribution process goes as follows:
 
   ```bash
   git switch main
-  git pull --ff-only peername@hrnkfoo main
+  git fetch peername@hrnkfoo
+  git merge --ff-only peername@hrnkfoo/heads/main
   git push rad main
   ```
