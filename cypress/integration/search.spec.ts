@@ -50,7 +50,7 @@ context("search", () => {
     context("when the Radicle ID is not valid", () => {
       it("does not follow the project when the [enter] key is pressed", () => {
         cy.intercept(
-          "http://localhost:17246/v1/projects/requests/invalid-project-id",
+          "http://localhost:30000/v1/projects/requests/invalid-project-id",
           cy.spy().as("projectRequest")
         );
 

@@ -49,7 +49,7 @@ function getConfig(): Config {
   const config = loadPartialConfig();
   return {
     isDev: isNodeTestEnv || isCypressTestEnv,
-    proxyAddress: "127.0.0.1:17246",
+    proxyAddress: isCypressTestEnv ? "127.0.0.1:30000" : "127.0.0.1:17246",
     ...config,
   };
 }

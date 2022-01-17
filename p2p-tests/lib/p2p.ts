@@ -158,7 +158,7 @@ export class RadicleProxy {
     this.peerId = initResult.peerId;
 
     this.proxyClient = new ProxyClient.ProxyClient(
-      `http://${this.#ipAddress}:17246`
+      `http://${this.#ipAddress}:30000`
     );
   }
 
@@ -174,7 +174,7 @@ export class RadicleProxy {
         "--peer-listen",
         `${this.#ipAddress}:8776`,
         "--http-listen",
-        `${this.#ipAddress}:17246`,
+        `${this.#ipAddress}:30000`,
         "--key-passphrase",
         this.passphrase,
         "--skip-remote-helper-install",

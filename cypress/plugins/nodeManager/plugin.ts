@@ -283,7 +283,9 @@ class Node {
 class NodeManager implements NodeManagerPlugin {
   private managedNodes: Node[] = [];
   private logger: Logger;
-  private nextPort: number = 17000;
+  // A radicle-proxy is running on port 30000 for any other Cypress tests
+  // that aren't managed by nodeManager.
+  private nextPort: number = 30001;
 
   public constructor() {
     this.logger = new Logger({ prefix: `[nodeManager] ` });
@@ -358,7 +360,9 @@ class NodeManager implements NodeManagerPlugin {
 
     this.managedNodes = [];
 
-    this.nextPort = 17000;
+    // A radicle-proxy is running on port 30000 for any other Cypress tests
+    // that aren't managed by nodeManager.
+    this.nextPort = 30001;
 
     return null;
   }

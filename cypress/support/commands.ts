@@ -11,7 +11,7 @@ import { createPlugin } from "cypress/support/plugin";
 import * as ethereumDevNodeApi from "cypress/plugins/ethereumDevNode/api";
 import { retryFetch } from "ui/src/retryOnError";
 
-const proxyClient = new ProxyClient.ProxyClient("http://127.0.0.1:17246");
+const proxyClient = new ProxyClient.ProxyClient("http://127.0.0.1:30000");
 
 export const resetProxyState = (): void => {
   cy.then(async () => {

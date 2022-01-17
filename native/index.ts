@@ -38,7 +38,9 @@ if (isDev) {
   proxyArgs.push(
     "--skip-remote-helper-install",
     "--unsafe-fast-keystore",
-    "--dev-log"
+    "--dev-log",
+    "--http-listen",
+    "127.0.0.1:40000"
   );
 } else {
   // Packaged app, i.e. production.
@@ -376,15 +378,16 @@ function execAsync(cmd: string): Promise<{ stdout: string; stderr: string }> {
 
 function buildConfig(): Partial<Config> {
   const config: Partial<Config> = {};
+  if (isDev) {
+    config.isDev = true;
+    config.proxyAddress = "127.0.0.1:40000";
+  }
   if (process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS) {
     config.proxyAddress = process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS;
   }
   if (process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC) {
     config.testWalletMnemonic =
       process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC;
-  }
-  if (isDev) {
-    config.isDev = true;
   }
   return config;
 }
