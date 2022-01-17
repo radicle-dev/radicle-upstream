@@ -43,6 +43,6 @@ Vagrant.configure("2") do |config|
     # Setting cargo target directory to point outside of this repository, so
     # the Linux and macOS binaries don't end up in the same target folder.
     # This also prevents cargo warnings about hardlinking in the guest.
-    echo "export CARGO_TARGET_DIR=/home/vagrant/target" >> /home/vagrant/.bashrc
+    echo "export CARGO_TARGET_DIR=/vagrant/target/vagrant" >> /home/vagrant/.bashrc
   SHELL
 end
