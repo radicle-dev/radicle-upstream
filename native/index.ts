@@ -16,7 +16,10 @@ import {
 import fs from "fs";
 import path from "path";
 import qs from "qs";
-import { ProxyProcessManager } from "./proxy-process-manager";
+import {
+  ProxyProcessManager,
+  Options as ProxyProcessOptions,
+} from "./proxy-process-manager";
 import {
   MainMessage,
   MainMessageKind,
@@ -24,39 +27,13 @@ import {
   mainProcessMethods,
 } from "./ipc-types";
 import { parseRadicleUrl, throttled } from "./nativeCustomProtocolHandler";
-import type { Config } from "ui/src/config";
+import type { Config as UiConfig } from "ui/src/config";
+import { config, Config } from "./config";
 
-const isDev = process.env.NODE_ENV === "development";
 const isWindows = process.platform === "win32";
 
-let proxyPath;
-const proxyArgs: string[] = [];
-
-if (isDev) {
-  proxyPath = path.join(__dirname, "../target/debug/radicle-proxy");
-
-  proxyArgs.push(
-    "--skip-remote-helper-install",
-    "--unsafe-fast-keystore",
-    "--dev-log",
-    "--http-listen",
-    "127.0.0.1:40000"
-  );
-} else {
-  // Packaged app, i.e. production.
-  if (isWindows) {
-    proxyPath = path.join(__dirname, "../../radicle-proxy.exe");
-  } else {
-    proxyPath = path.join(__dirname, "../../radicle-proxy");
-  }
-}
-
-if (isDev && !process.env.RAD_HOME) {
-  process.env.RAD_HOME = path.resolve(__dirname, "..", "sandbox", "rad_home");
-}
-
-if (process.env.RAD_HOME) {
-  const electronPath = path.resolve(process.env.RAD_HOME, "electron");
+if (config.radHome) {
+  const electronPath = path.resolve(config.radHome, "electron");
   fs.mkdirSync(electronPath, { recursive: true });
   app.setPath("userData", electronPath);
   app.setPath("appData", electronPath);
@@ -130,7 +107,7 @@ class WindowManager {
     });
 
     const query = qs.stringify({
-      config: JSON.stringify(buildConfig()),
+      config: JSON.stringify(buildUiConfig(config)),
     });
 
     const htmlPath = path.resolve(__dirname, "..", "public", "index.html");
@@ -158,12 +135,43 @@ class WindowManager {
   }
 }
 
+function proxyProcessOptions(config: Config): ProxyProcessOptions {
+  let proxyPath;
+  let proxyArgs: string[] = [];
+
+  if (config.environment === "development") {
+    proxyPath = path.join(__dirname, "../target/debug/radicle-proxy");
+
+    proxyArgs = [
+      "--skip-remote-helper-install",
+      "--unsafe-fast-keystore",
+      "--dev-log",
+      "--http-listen",
+      config.httpAddr,
+    ];
+  } else {
+    // Packaged app, i.e. production.
+    if (isWindows) {
+      proxyPath = path.join(__dirname, "../../radicle-proxy.exe");
+    } else {
+      proxyPath = path.join(__dirname, "../../radicle-proxy");
+    }
+  }
+
+  return {
+    proxyPath,
+    proxyArgs,
+    lineLimit: 500,
+    env: {
+      RAD_HOME: config.radHome,
+    },
+  };
+}
+
 const windowManager = new WindowManager();
-const proxyProcessManager = new ProxyProcessManager({
-  proxyPath,
-  proxyArgs,
-  lineLimit: 500,
-});
+const proxyProcessManager = new ProxyProcessManager(
+  proxyProcessOptions(config)
+);
 
 function installMainProcessHandler(handler: MainProcess) {
   mainProcessMethods.forEach(method => {
@@ -179,7 +187,7 @@ installMainProcessHandler({
     clipboard.writeText(text);
   },
   async getVersion(): Promise<string> {
-    if (isDev) {
+    if (config.environment === "development") {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const version = require("../package.json")["version"];
       const { stdout, stderr } = await execAsync("git rev-parse HEAD");
@@ -327,7 +335,7 @@ if (app.requestSingleInstanceLock()) {
       });
     });
 
-    if (isDev) {
+    if (config.environment === "development") {
       setupWatcher();
     }
 
@@ -376,18 +384,15 @@ function execAsync(cmd: string): Promise<{ stdout: string; stderr: string }> {
   });
 }
 
-function buildConfig(): Partial<Config> {
-  const config: Partial<Config> = {};
-  if (isDev) {
-    config.isDev = true;
-    config.proxyAddress = "127.0.0.1:40000";
+function buildUiConfig(config: Config): Partial<UiConfig> {
+  const uiConfig: Partial<UiConfig> = {
+    proxyAddress: config.httpAddr,
+  };
+  if (config.environment === "development") {
+    uiConfig.isDev = true;
   }
-  if (process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS) {
-    config.proxyAddress = process.env.RADICLE_UPSTREAM_UI_PROXY_ADDRESS;
+  if (config.testWalletMnemonic) {
+    uiConfig.testWalletMnemonic = config.testWalletMnemonic;
   }
-  if (process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC) {
-    config.testWalletMnemonic =
-      process.env.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC;
-  }
-  return config;
+  return uiConfig;
 }

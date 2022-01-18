@@ -15,11 +15,13 @@ export interface ProcessResult {
   output: string;
 }
 
-interface Options {
+export interface Options {
   // Path to the executables
   proxyPath: string;
   // Arguments passed to the executable
   proxyArgs: string[];
+  // Process environment;
+  env?: NodeJS.ProcessEnv;
   // Maximum number of log lines we store
   lineLimit: number;
 }
@@ -59,6 +61,7 @@ export class ProxyProcessManager {
     const childProcess = execa(this.options.proxyPath, this.options.proxyArgs, {
       stdio: ["ignore", "pipe", "pipe"],
       buffer: false,
+      env: this.options.env,
     });
 
     this.childProcess = childProcess;

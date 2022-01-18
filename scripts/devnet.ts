@@ -113,7 +113,7 @@ const upstreamCommand: yargs.CommandModule<
         stdio: "inherit",
         env: {
           NODE_ENV: "development",
-          RADICLE_UPSTREAM_UI_PROXY_ADDRESS: `127.0.0.1:${peerConfig.httpPort}`,
+          RADICLE_UPSTREAM_HTTP_PORT: peerConfig.httpPort.toString(),
           ...getProxyEnv(peerConfig, seedAddress),
         },
       });
