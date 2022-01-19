@@ -135,8 +135,8 @@ test fixtures which are included in this repository as a git submodule:
 ./scripts/test-setup.sh
 ```
 
-💡 *You'll have to run the previous commands every time there are any updates
-to the test fixture repository.*
+💡 *You'll have to run the previous command every time there are any updates to
+the test fixture repository.*
 
 We use [Cypress](https://www.cypress.io/) for integration tests and
 [Jest](jestjs.io) for unit tests. You can find integration tests in the
