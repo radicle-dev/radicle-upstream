@@ -98,7 +98,7 @@ started:
 [do]: ../DCO
 [gh]: https://guides.github.com/introduction/flow/
 [ob]: https://github.com/radicle-dev/radicle-docs/issues/new/choose
-[oi]: https://github.com/radicle-dev/radicle-docs/issues
+[oi]: https://github.com/radicle-dev/radicle-upstream/issues
 [pr]: https://github.com/radicle-dev/radicle-upstream/pulls
 [ra]: https://radicle.xyz
 [rd]: https://docs.radicle.xyz
