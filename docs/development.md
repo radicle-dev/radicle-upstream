@@ -274,8 +274,8 @@ same styles to other html elements you can use the matching classes
 
 For text we you can use the classes that start with `typo-text`. These come
 in 2 sizes, the normal one and `typo-text-small`. Check out
-[typography.css](./public/typography.css) to get an idea of the possible
-combinations. All the ones we're using in Figma are represented here.
+[typography.css](../design-system/static/typography.css) to get an idea of the
+possible combinations. All the ones we're using in Figma are represented here.
 
 The modifiers give us some flexibility and allow us to create classes for
 certain css functionality we use over and over. Such as,
