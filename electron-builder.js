@@ -19,22 +19,7 @@ module.exports = {
     buildResources: "public",
   },
   extraResources: [
-    {
-      from: "target/release/radicle-proxy",
-      to: "./",
-    },
-    {
-      from: "target/release/git-remote-rad",
-      to: "./",
-    },
-    {
-      from: "target/release/radicle-proxy.exe",
-      to: "./",
-    },
-    {
-      from: "target/release/git-remote-rad.exe",
-      to: "./",
-    },
+    ...rustBinaryResources(["radicle-proxy", "git-remote-rad", "upstream"]),
     {
       from: "proxy/assets",
       to: "assets",
@@ -58,6 +43,14 @@ module.exports = {
     minimumSystemVersion: "10.14",
   },
 };
+
+function rustBinaryResources(binNames) {
+  const ext = process.platform === "win32" ? ".exe" : "";
+  return binNames.map(binName => ({
+    from: `target/release/${binName}${ext}`,
+    to: "./",
+  }));
+}
 
 async function notarizeApp(context) {
   if (process.env.NOTARIZE !== "true") {

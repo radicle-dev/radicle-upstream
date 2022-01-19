@@ -8,6 +8,8 @@ import { app, type App, ipcMain, dialog, clipboard, shell } from "electron";
 import fs from "fs";
 import path from "path";
 import execa from "execa";
+import * as os from "os";
+
 import {
   ProxyProcessManager,
   Options as ProxyProcessOptions,
@@ -18,6 +20,11 @@ import { openExternalLink, WindowManager } from "./windowManager";
 import { config, Config } from "./config";
 
 const isWindows = process.platform === "win32";
+
+const distBinPath =
+  config.environment === "development"
+    ? path.join(__dirname, "..", "target", "debug")
+    : path.join(__dirname, "..", "..");
 
 main(app, config).catch(err => {
   console.error("Failed to start app");
@@ -66,6 +73,10 @@ async function main(app: App, config: Config) {
   // event.
   if (!app.requestSingleInstanceLock()) {
     app.quit();
+  }
+
+  if (config.environment === "production") {
+    await installPrograms();
   }
 
   installMainProcessHandler(createMainProcessIpcHandlers());
@@ -169,11 +180,14 @@ async function main(app: App, config: Config) {
 
 function proxyProcessOptions(config: Config): ProxyProcessOptions {
   let proxyPath;
-  let proxyArgs: string[] = [];
+  if (isWindows) {
+    proxyPath = path.join(distBinPath, "radicle-proxy.exe");
+  } else {
+    proxyPath = path.join(distBinPath, "radicle-proxy");
+  }
 
+  let proxyArgs: string[];
   if (config.environment === "development") {
-    proxyPath = path.join(__dirname, "../target/debug/radicle-proxy");
-
     proxyArgs = [
       "--skip-remote-helper-install",
       "--unsafe-fast-keystore",
@@ -182,12 +196,7 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
       config.httpAddr,
     ];
   } else {
-    // Packaged app, i.e. production.
-    if (isWindows) {
-      proxyPath = path.join(__dirname, "../../radicle-proxy.exe");
-    } else {
-      proxyPath = path.join(__dirname, "../../radicle-proxy");
-    }
+    proxyArgs = [];
   }
 
   return {
@@ -265,4 +274,18 @@ function createMainProcessIpcHandlers(): MainProcess {
       }
     },
   };
+}
+
+async function installPrograms(): Promise<void> {
+  const targetBinFolder = path.join(os.homedir(), ".radicle", "bin");
+  await fs.promises.mkdir(targetBinFolder, { recursive: true });
+
+  const programs = ["upstream", "git-remote-rad"];
+
+  for (const program of programs) {
+    await fs.promises.copyFile(
+      path.join(distBinPath, program),
+      path.join(targetBinFolder, program)
+    );
+  }
 }

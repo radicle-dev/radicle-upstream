@@ -16,7 +16,6 @@
   import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let patch: Patch.Patch;
-  export let myPeerId: string;
 
   let expanded = false;
   let copyable: Copyable;
@@ -30,18 +29,10 @@
     copyable.copy();
     toggleDropdown();
   };
-  let instructions: string;
-  $: {
-    const peerLabel = patch.identity
-      ? patch.identity.metadata.handle
-      : patch.peerId;
-    const localRef = `tags/${Patch.TAG_PREFIX}${peerLabel}/${patch.id}`;
-    let remoteRef = `tags/${Patch.TAG_PREFIX}${patch.id}`;
-    if (patch.peerId !== myPeerId) {
-      remoteRef = `remotes/${patch.peerId}/${remoteRef}`;
-    }
-    instructions = `git fetch --force rad ${remoteRef}:${localRef}\ngit checkout ${localRef}`;
-  }
+  $: instructions = [
+    `upstream patch fetch ${Patch.handle(patch)}`,
+    `git checkout ${Patch.TAG_PREFIX}${Patch.handle(patch)}`,
+  ].join("\n");
 </script>
 
 <style>
@@ -73,7 +64,8 @@
 <Overlay {expanded} on:hide={hide} style="position: relative;">
   <div class="request-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">
-      To check out this Patch locally, run this in your terminal:
+      To fetch and check out this patch in your working copy, run the following
+      command:
     </p>
     <Copyable name="command" bind:this={copyable}>
       <p class="typo-text-small-mono instructions">{instructions}</p>

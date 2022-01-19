@@ -6,21 +6,19 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { Patch } from "ui/src/project/patch";
+  import * as Patch from "ui/src/project/patch";
 
   import RevisionIcon from "design-system/icons/Revision.svelte";
 
   import CompareBranches from "./CompareBranches.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
-  export let patch: Patch;
+  export let patch: Patch.Patch;
   export let defaultBranch: string;
 
   $: iconColor = patch.merged
     ? "var(--color-negative)"
     : "var(--color-positive)";
-
-  $: peerLabel = patch.identity ? patch.identity.metadata.handle : patch.peerId;
 </script>
 
 <style>
@@ -87,5 +85,5 @@
   </div>
   <CompareBranches
     baseBranch={defaultBranch}
-    compareBranch={`${peerLabel}/${patch.id}`} />
+    compareBranch={Patch.handle(patch)} />
 </div>

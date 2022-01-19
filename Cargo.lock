@@ -4576,6 +4576,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a156c684c91ea7d62626509bce3cb4e1d9ed5c4d978f7b4352658f96a4c26b4a"
 
 [[package]]
+name = "upstream-cli"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "clap 3.0.12",
+ "librad",
+]
+
+[[package]]
 name = "upstream-seed"
 version = "0.1.0"
 dependencies = [

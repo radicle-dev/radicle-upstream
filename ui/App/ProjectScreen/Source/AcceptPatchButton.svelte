@@ -16,7 +16,6 @@
   import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let patch: Patch.Patch;
-  export let myPeerId: string;
 
   let expanded = false;
   let copyable: Copyable;
@@ -31,14 +30,7 @@
     toggleDropdown();
   };
 
-  let instructions: string;
-  $: {
-    let remoteRef = `tags/${Patch.TAG_PREFIX}${patch.id}`;
-    if (patch.peerId !== myPeerId) {
-      remoteRef = `remotes/${patch.peerId}/${remoteRef}`;
-    }
-    instructions = `git pull rad ${remoteRef}`;
-  }
+  $: patchHandle = Patch.handle(patch);
 </script>
 
 <style>
@@ -52,14 +44,11 @@
     box-shadow: var(--color-shadows);
     padding: 1rem;
     width: 25rem;
-  }
-
-  p {
     color: var(--color-foreground-level-6);
     user-select: none;
   }
 
-  .instructions {
+  .command-line {
     color: var(--color-foreground-level-6);
     overflow-x: scroll;
     padding: 0.5rem 0.5rem 0.5rem 0.25rem;
@@ -69,10 +58,14 @@
 <Overlay {expanded} on:hide={hide} style="position: relative;">
   <div class="request-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">
-      To merge this Patch, run this in your terminal:
+      To merge this patch and publish the changes, run this in your terminal:
     </p>
     <Copyable name="command" bind:this={copyable}>
-      <p class="typo-text-small-mono instructions">{instructions}</p>
+      <div class="typo-text-small-mono command-line">
+        upstream patch fetch {patchHandle}<br />
+        git merge {Patch.TAG_PREFIX}{patchHandle}
+        git push rad
+      </div>
     </Copyable>
     <Button
       style="display: block; margin: 1rem auto 0; width: 100%;"

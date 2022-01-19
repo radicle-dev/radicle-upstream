@@ -11,7 +11,7 @@
   import type { Project } from "ui/src/project";
   import type { UnsealedSession } from "ui/src/session";
   import type { GroupedCommitsHistory } from "ui/src/source";
-  import type { Patch } from "ui/src/project/patch";
+  import * as Patch from "ui/src/project/patch";
 
   import RevisionIcon from "design-system/icons/Revision.svelte";
   import Markdown from "design-system/Markdown.svelte";
@@ -24,15 +24,13 @@
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let project: Project;
-  export let patch: Patch;
+  export let patch: Patch.Patch;
   export let commits: GroupedCommitsHistory;
   export let session: UnsealedSession;
 
   $: iconColor = patch.merged
     ? "var(--color-negative);"
     : "var(--color-positive);";
-
-  $: peerLabel = patch.identity ? patch.identity.metadata.handle : patch.peerId;
 </script>
 
 <style>
@@ -112,11 +110,11 @@
   <div class="action-box">
     <CompareBranches
       baseBranch={project.metadata.defaultBranch}
-      compareBranch={`${peerLabel}/${patch.id}`} />
+      compareBranch={Patch.handle(patch)} />
     <div class="buttons">
-      <CheckoutPatchButton {patch} myPeerId={session.identity.peerId} />
+      <CheckoutPatchButton {patch} />
       {#if isMaintainer(session.identity.urn, project) && !patch.merged}
-        <AcceptPatchButton {patch} myPeerId={session.identity.peerId} />
+        <AcceptPatchButton {patch} />
       {/if}
     </div>
   </div>

@@ -10,7 +10,7 @@ import * as commands from "cypress/support/commands";
 import * as nodeManager from "cypress/support/nodeManager";
 
 const commitMessage = "Adding something new";
-const patchId = "my-patch/fix";
+const patchName = "my-patch/fix";
 const patchTitle = "Title";
 const patchDescription = "Description.";
 
@@ -57,10 +57,9 @@ context("patches", () => {
           commands.pick("project-list-entry-new-project").should("exist");
           nodeManager.exec(
             `cd "${tempDirPath}/new-project"
-            git checkout -b my-branch
+            git checkout -b "${patchName}"
             git commit --allow-empty -m "${commitMessage}"
-            git tag -a radicle-patch/${patchId} -m "${patchTitle}\n\n${patchDescription}"
-            git push --tag rad;`,
+            upstream patch create -m "${patchTitle}\n\n${patchDescription}"`,
             node
           );
           commands.pick("sidebar", "profile").click();
@@ -72,17 +71,17 @@ context("patches", () => {
 
           cy.log("verifying the contents of the patch list page");
           commands
-            .pick(`patch-card-${patchId}`)
-            .should("contain", patchId)
+            .pick(`patch-card-${patchName}`)
+            .should("contain", patchName)
             .should("contain", "Opened")
             .should("contain", "rudolfs");
           commands
-            .pick(`patch-card-${patchId}`, "compare-branches")
+            .pick(`patch-card-${patchName}`, "compare-branches")
             .should("contain", "main")
-            .should("contain", patchId);
+            .should("contain", patchName);
 
           cy.log("checking the navigation");
-          commands.pick(`patch-card-${patchId}`).click();
+          commands.pick(`patch-card-${patchName}`).click();
           commands.pick("patch-page").should("exist");
           commands
             .pickWithContent(
@@ -97,7 +96,7 @@ context("patches", () => {
           commands.pick("patch-list").should("exist");
 
           cy.log("verifying the contents of the patch page");
-          commands.pick(`patch-card-${patchId}`).click();
+          commands.pick(`patch-card-${patchName}`).click();
           commands
             .pickWithContent(["checkout-patch-modal-toggle"], "Checkout")
             .should("exist");
@@ -114,7 +113,7 @@ context("patches", () => {
             .pickWithContent(["patch-page", "compare-branches"], "main")
             .should("exist");
           commands
-            .pickWithContent(["patch-page", "compare-branches"], patchId)
+            .pickWithContent(["patch-page", "compare-branches"], patchName)
             .should("exist");
 
           cy.log("verify that only the single patch commit is displayed");
@@ -145,10 +144,9 @@ context("patches", () => {
           commands.pick("project-list-entry-new-project").should("exist");
           nodeManager.exec(
             `cd "${tempDirPath}/new-project"
-            git checkout -b my-branch
+            git checkout -b "${patchName}"
             git commit --allow-empty -m "${commitMessage}"
-            git tag radicle-patch/${patchId} -m ""
-            git push --tag rad;`,
+            upstream patch create -m ""`,
             node
           );
           commands.pick("sidebar", "profile").click();
@@ -157,18 +155,18 @@ context("patches", () => {
 
           cy.log("verifying the contents of the patch list page");
           commands
-            .pick(`patch-card-${patchId}`)
-            .should("contain", patchId)
+            .pick(`patch-card-${patchName}`)
+            .should("contain", patchName)
             .should("contain", "Opened")
             .should("contain", "rudolfs");
           commands
-            .pick(`patch-card-${patchId}`, "compare-branches")
+            .pick(`patch-card-${patchName}`, "compare-branches")
             .should("contain", "main")
-            .should("contain", patchId);
+            .should("contain", patchName);
 
-          commands.pick(`patch-card-${patchId}`).click();
+          commands.pick(`patch-card-${patchName}`).click();
           commands
-            .pickWithContent(["patch-page", "patch-title"], patchId)
+            .pickWithContent(["patch-page", "patch-title"], patchName)
             .should("exist");
         }
       );
@@ -262,15 +260,13 @@ context("patches", () => {
             contributorProjectsDir,
             projectName
           );
-          const patchTag = "feature-1";
           const patchMessage = "This is an awesome feature";
 
           nodeManager.exec(
             `cd "${forkedProjectPath}"
-            git checkout -b my-branch
+            git checkout -b "${patchName}"
             git commit --allow-empty -m "${patchCommitSubject}"
-            git tag -a --message "${patchMessage}" radicle-patch/${patchTag} HEAD
-            git push --tag rad`,
+            upstream patch create -m "${patchMessage}"`,
             contributorNode
           );
 
@@ -330,13 +326,13 @@ context("patches", () => {
     });
   });
 
-  it.skip("updates maintainer view when a patch has been received", () => {
+  it("merge patch", () => {
     const maintainer = {
-      handle: "rudolfs",
+      handle: "maintainer",
       passphrase: "1111",
     };
     const contributor = {
-      handle: "abbey",
+      handle: "contributor",
       passphrase: "2222",
     };
 
@@ -385,7 +381,6 @@ context("patches", () => {
           cy.get<string>("@projectUrn").then(urn => {
             cy.log("contributor checks out the project");
             cy.then(() => contributorNode.client.project.requestSubmit(urn));
-            commands.pick("following-tab").click();
             commands.pick(`project-list-entry-${projectName}`).should("exist");
 
             cy.exec(`mkdir -p "${contributorProjectsDir}"`);
@@ -416,19 +411,21 @@ context("patches", () => {
             contributorProjectsDir,
             projectName
           );
-          const patchId = "feature-1";
 
           nodeManager.exec(
             `cd "${forkedProjectPath}"
-            git checkout -b my-branch
+            git checkout -b "${patchName}"
             git commit --allow-empty -m "commit message"
-            git tag -a --message "patch message" radicle-patch/${patchId} HEAD
-            git push --tag rad`,
+            upstream patch create --message "patch message"`,
             contributorNode
           );
 
+          // Patch view is not automatically updated when new data
+          // arrives. We reload explicitly
+          cy.wait(1000);
+          cy.reload();
           commands.pick("patches-tab", "counter").should("contain", "1");
-          commands.pickWithContent(["patch-list"], patchId).should("exist");
+          commands.pickWithContent(["patch-list"], patchName).should("exist");
 
           cy.log("maintainer merges patch in background");
           nodeManager.asNode(contributorNode);
@@ -437,19 +434,24 @@ context("patches", () => {
 
           nodeManager.exec(
             `cd "${contributorProjectsDir}/${projectName}"
+              upstream patch fetch "${contributorNode.peerId}/${patchName}"
               git checkout main
-              git pull rad "remotes/${contributorNode.peerId}/tags/radicle-patch/${patchId}"
+              git merge --ff-only "radicle-patch/${contributorNode.peerId}/${patchName}"
               git push rad`,
             maintainerNode
           );
 
+          // Patch view is not automatically updated when new data
+          // arrives. We reload explicitly
+          cy.wait(1000);
+          cy.reload();
           commands
             .pickWithContent(
               ["patch-filter-tabs", "segmented-control-option"],
               "Closed"
             )
             .click();
-          commands.pick(`patch-card-${patchId}`).should("exist");
+          commands.pick(`patch-card-${patchName}`).should("exist");
         }
       );
     });

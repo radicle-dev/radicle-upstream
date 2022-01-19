@@ -26,6 +26,13 @@ export interface PatchDetails {
   commits: source.GroupedCommitsHistory;
 }
 
+// Handle to reference the patch, for example on the command line.
+//
+// The handle of a patch is `<peer id>/<patch name>`.
+export function handle(patch: Patch): string {
+  return `${patch.peerId}/${patch.id}`;
+}
+
 function makePatch(proxyPatch: proxyProject.Patch): Patch {
   const messageLines = proxyPatch.message ? proxyPatch.message.split("\n") : [];
   const title = messageLines.shift() || null;

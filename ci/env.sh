@@ -30,10 +30,15 @@ function clean-cargo-build-artifacts () {
     echo "skipping build artifacts clean-up on macOS"
   else
     echo "clean up cargo build artifacts"
-    find target/*/deps -type f -perm -a=x -not -name "*.so" -exec rm {} \;
-    rm \
-      target/*/deps/libapi-* \
-      target/*/deps/libupstream_seed-*
+    find target/*/deps -type f -perm -a=x -not -name "*.so" -exec rm "{}" ";"
+    (
+      shopt -s nullglob
+      shopt -u failglob
+      rm \
+        target/*/deps/libapi-* \
+        target/*/deps/libupstream_seed-* \
+        target/*/deps/libupstream-*
+    )
   fi
 }
 
