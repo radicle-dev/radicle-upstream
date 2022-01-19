@@ -109,7 +109,7 @@ const upstreamCommand: yargs.CommandModule<
     }
 
     if (opts.headless) {
-      await execa(
+      await exec(
         "cargo",
         [
           "run",
@@ -126,7 +126,7 @@ const upstreamCommand: yargs.CommandModule<
         }
       );
     } else {
-      await execa("yarn", ["run", "electron", "./native/index.js"], {
+      await exec("yarn", ["run", "electron", "./native/index.js"], {
         stdio: "inherit",
         env: {
           NODE_ENV: "development",
@@ -173,7 +173,7 @@ const seedCommand: yargs.CommandModule<
       await Fs.writeFile(keyPath, seedDigest, "binary");
     }
 
-    await execa(
+    await exec(
       "cargo",
       [
         "run",
@@ -263,4 +263,25 @@ function getProxyEnv(
     RADICLE_PROXY_SEEDS: seeds,
     RADICLE_PROXY_KEY_PASSPHRASE: "asdf",
   };
+}
+
+// Similar to `execa` but registers signal handlers so that on SIGTERM
+// and SIGINT we wait for the child process to exit properly.
+function exec(
+  file: string,
+  args: string[],
+  options?: execa.Options
+): execa.ExecaChildProcess {
+  const child = execa(file, args, options);
+
+  const signals = ["SIGINT", "SIGTERM"];
+  for (const signal of signals) {
+    process.once(signal, async () => {
+      child.kill(signal);
+      await child;
+      process.exit(0);
+    });
+  }
+
+  return child;
 }
