@@ -142,7 +142,7 @@ We use [Cypress](https://www.cypress.io/) for integration tests and
 [Jest](https://jestjs.io/) for unit tests. You can find integration tests in
 the `cypress/` directory and unit tests next to the modules they correspond to.
 
-- To run all ui tests call: `yarn test`.
+- To run all UI tests run: `yarn test`.
 - To troubleshoot integration tests via the Cypress GUI, run:
   `yarn test:integration:debug`.
 - To isolate a single integration test for debugging purposes, use
