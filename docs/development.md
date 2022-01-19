@@ -139,8 +139,8 @@ test fixtures which are included in this repository as a git submodule:
 the test fixture repository.*
 
 We use [Cypress](https://www.cypress.io/) for integration tests and
-[Jest](jestjs.io) for unit tests. You can find integration tests in the
-`cypress/` directory and unit tests next to the modules they correspond to.
+[Jest](https://jestjs.io/) for unit tests. You can find integration tests in
+the `cypress/` directory and unit tests next to the modules they correspond to.
 
 - To run all ui tests call: `yarn test`.
 - To troubleshoot integration tests via the Cypress GUI, run:
