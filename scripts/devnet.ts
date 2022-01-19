@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --require ts-node/register/transpile-only --require tsconfig-paths/register
+#!/usr/bin/env -S node --require ts-node/register/transpile-only
 
 // Copyright © 2022 The Radicle Upstream Contributors
 //
@@ -18,6 +18,7 @@ import TweetNacl from "tweetnacl";
 async function main() {
   yargs
     .command(upstreamCommand)
+    .command(seedCommand)
     // Don’t show a version and the --version flag
     .version(false)
     .strict()
@@ -37,7 +38,13 @@ async function main() {
 
 const upstreamCommand: yargs.CommandModule<
   unknown,
-  { id: number; reset: boolean; bootstrap?: number; headless: boolean }
+  {
+    id: number;
+    reset: boolean;
+    bootstrap?: number;
+    headless: boolean;
+    seedBootstrap: boolean;
+  }
 > = {
   command: "upstream <id>",
   describe: "Run an upstream instance",
@@ -53,6 +60,11 @@ const upstreamCommand: yargs.CommandModule<
         bootstrap: {
           type: "number",
           describe: "Use the instance identified by the ID as a boostrap peer",
+        },
+        seedBootstrap: {
+          type: "boolean",
+          default: true,
+          describe: "Add the seed node to the bootstrap addresses",
         },
         reset: {
           type: "boolean",
@@ -86,9 +98,12 @@ const upstreamCommand: yargs.CommandModule<
       );
     }
 
-    let seedAddress: string | undefined;
+    const seedAddresses: string[] = [];
+    if (opts.seedBootstrap) {
+      seedAddresses.push(getPeerAddress(makePeerSeedConfig()));
+    }
     if (opts.bootstrap !== undefined) {
-      seedAddress = getPeerAddress(makePeerConfig(opts.bootstrap));
+      seedAddresses.push(getPeerAddress(makePeerConfig(opts.bootstrap)));
     }
 
     if (opts.headless) {
@@ -105,7 +120,7 @@ const upstreamCommand: yargs.CommandModule<
         ],
         {
           stdio: "inherit",
-          env: getProxyEnv(peerConfig, seedAddress),
+          env: getProxyEnv(peerConfig, seedAddresses),
         }
       );
     } else {
@@ -114,10 +129,64 @@ const upstreamCommand: yargs.CommandModule<
         env: {
           NODE_ENV: "development",
           RADICLE_UPSTREAM_HTTP_PORT: peerConfig.httpPort.toString(),
-          ...getProxyEnv(peerConfig, seedAddress),
+          ...getProxyEnv(peerConfig, seedAddresses),
         },
       });
     }
+  },
+};
+
+const seedCommand: yargs.CommandModule<
+  unknown,
+  { reset: boolean; project?: string }
+> = {
+  command: "seed",
+  describe: "Run upstream-see",
+  builder: yargs => {
+    return yargs.options({
+      reset: {
+        type: "boolean",
+        default: false,
+        describe: "Delete existing data for the seed and re-initialize it",
+      },
+      project: {
+        type: "string",
+        describe: "URN of the project to track",
+      },
+    });
+  },
+  handler: async opts => {
+    const peerConfig = makePeerSeedConfig();
+    const missing = await Fs.access(peerConfig.radHome).catch(() => true);
+    if (opts.reset && !missing) {
+      await Fs.rm(peerConfig.radHome, { recursive: true });
+    }
+
+    const keyPath = Path.join(peerConfig.radHome, "identity.key");
+    if ((await Fs.access(keyPath).catch(() => false)) === false) {
+      await Fs.mkdir(Path.dirname(keyPath), { recursive: true });
+      const seedHash = Crypto.createHash("sha256");
+      seedHash.update("seed");
+      const seedDigest = seedHash.digest();
+      await Fs.writeFile(keyPath, seedDigest, "binary");
+    }
+
+    await execa(
+      "cargo",
+      [
+        "run",
+        "--bin=upstream-seed",
+        "--",
+        "--identity-key",
+        keyPath,
+        `--listen=127.0.0.1:${peerConfig.p2pPort}`,
+        "--rad-home",
+        peerConfig.radHome,
+      ],
+      {
+        stdio: "inherit",
+      }
+    );
   },
 };
 
@@ -157,8 +226,20 @@ function makePeerConfig(id: number): PeerConfig {
   return {
     userHandle: id.toString(),
     peerId: peerIdFromKeySeed(id.toString()),
-    httpPort: 10000 + id,
-    p2pPort: 20000 + id,
+    httpPort: 24500 + id,
+    p2pPort: 24600 + id,
+    radHome,
+  };
+}
+
+function makePeerSeedConfig(): PeerConfig {
+  const id = "seed";
+  const radHome = Path.resolve(__dirname, "..", "sandbox", "devnet", id);
+  return {
+    userHandle: id,
+    peerId: peerIdFromKeySeed(id),
+    httpPort: 24500,
+    p2pPort: 24600,
     radHome,
   };
 }
@@ -169,14 +250,15 @@ function getPeerAddress(peerConfig: PeerConfig) {
 
 function getProxyEnv(
   peerConfig: PeerConfig,
-  seedAddress?: string
+  seedAddresses: string[] = []
 ): Record<string, string | undefined> {
+  const seeds = seedAddresses.length > 0 ? seedAddresses.join(",") : undefined;
   return {
     RAD_HOME: peerConfig.radHome,
     RADICLE_PROXY_HTTP_LISTEN: `127.0.0.1:${peerConfig.httpPort}`,
     RADICLE_PROXY_PEER_LISTEN: `127.0.0.1:${peerConfig.p2pPort}`,
     RADICLE_PROXY_INSECURE_HTTP_API: "true",
-    RADICLE_PROXY_SEEDS: seedAddress,
+    RADICLE_PROXY_SEEDS: seeds,
     RADICLE_PROXY_KEY_PASSPHRASE: "asdf",
   };
 }
