@@ -320,7 +320,7 @@ application package by [electron-builder][eb].
 ### Running the proxy in stand-alone mode
 
 To be able to build the proxy first install all required dependencies from the
-[Running Upstream](#running-upstream) section.
+[Running Upstream](#running-upstream-from-source) section.
 
 To start the proxy binary, run `cargo run`.
 
