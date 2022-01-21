@@ -99,11 +99,13 @@ const upstreamCommand: yargs.CommandModule<
     }
 
     const seedAddresses: string[] = [];
-    if (opts.seedBootstrap) {
-      seedAddresses.push(getPeerAddress(makePeerSeedConfig()));
-    }
+
     if (opts.bootstrap !== undefined) {
       seedAddresses.push(getPeerAddress(makePeerConfig(opts.bootstrap)));
+    }
+
+    if (opts.seedBootstrap) {
+      seedAddresses.push(getPeerAddress(makePeerSeedConfig()));
     }
 
     if (opts.headless) {
