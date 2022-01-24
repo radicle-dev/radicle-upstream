@@ -36,7 +36,7 @@ cp ci/gitconfig "$HOME/.gitconfig"
 log-group-end
 
 log-group-start "License compliance"
-time ./scripts/license-header.ts check
+time node -r ts-node/register/transpile-only ./scripts/license-header.ts check
 time cargo deny check
 log-group-end
 

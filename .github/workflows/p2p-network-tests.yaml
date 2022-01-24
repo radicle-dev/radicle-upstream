@@ -4,7 +4,7 @@ on:
     branches: ["**"]
 jobs:
   p2p-network-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@master
       - name: Cache Yarn
@@ -26,5 +26,5 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v5-${{ hashFiles('Cargo.lock') }}
+          key: build-${{ runner.os }}-rust-v6-${{ hashFiles('Cargo.lock') }}
       - run: ci/p2p-network-tests.sh
