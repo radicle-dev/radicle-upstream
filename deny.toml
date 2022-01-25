@@ -49,10 +49,24 @@ ignore = [
   # https://rustsec.org/advisories/RUSTSEC-2020-0071
   "RUSTSEC-2020-0071",
   "RUSTSEC-2020-0159",
+
   # Bug in `lru`. Will be fixed in cycle 2020-01-04 of `radicle-link`
   "RUSTSEC-2021-0130",
-  # "RUSTSEC-2021-0080"
 
+  # Vulnerability in `dashmap` that may cause segfault.
+  #
+  # No fix yet available.
+  #
+  # See https://github.com/xacrimon/dashmap/issues/167
+  "RUSTSEC-2022-0002",
+
+  # Vulnerability in `rustc-serialize` that causes stack overflow. We
+  # only use this crate when validating an Ethereum address with
+  # `eip55`. It should be impossible to trigger the vulnerability.
+  #
+  # This is unlikely to be resolved since `rust-crypto` is
+  # unmaintained.
+  "RUSTSEC-2022-0004",
 ]
 # Threshold for security vulnerabilities, any vulnerability with a CVSS score
 # lower than the range specified will be ignored. Note that ignored advisories
