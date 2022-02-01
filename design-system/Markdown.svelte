@@ -7,8 +7,23 @@
 -->
 <script lang="ts">
   import { marked } from "marked";
+  import sanitizeHtml from "sanitize-html";
 
   export let content: string;
+
+  $: sanitizedHtml = sanitizeHtml(marked.parse(content), {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+      "img",
+      "audio",
+      "video",
+    ]),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      video: ["src"],
+      audio: ["src"],
+    },
+    disallowedTagsMode: "escape",
+  });
 </script>
 
 <style>
@@ -219,8 +234,6 @@
   }
 </style>
 
-{#if content}
-  <div class="markdown">
-    {@html marked.parse(content)}
-  </div>
-{/if}
+<div class="markdown">
+  {@html sanitizedHtml}
+</div>
