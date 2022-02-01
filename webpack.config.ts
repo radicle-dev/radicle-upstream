@@ -70,6 +70,21 @@ function electronMain(_env: unknown, argv: Argv): webpack.Configuration {
 function ui(_env: unknown, argv: Argv): webpack.Configuration {
   const mode = argv.mode || "development";
   const isProduction = mode === "production";
+  const contentSecurityPolicies = [
+    "default-src 'self'",
+    "connect-src *",
+    // Inline styles are used by svelte and user generated markdown
+    "style-src 'unsafe-inline'",
+    // Show images from all sources for user avatars and markdown
+    "media-src *",
+    "img-src *",
+  ];
+
+  if (!isProduction) {
+    // Use unsafe-eval in development to make source maps work
+    contentSecurityPolicies.push("script-src 'self' 'unsafe-eval'");
+  }
+
   return {
     name: "ui",
     entry: {
@@ -102,9 +117,7 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
         meta: {
           "Content-Security-Policy": {
             "http-equiv": "Content-Security-Policy",
-            content: isProduction
-              ? "script-src 'self'"
-              : "script-src 'self' 'unsafe-eval'",
+            content: contentSecurityPolicies.join("; "),
           },
         },
       }),
