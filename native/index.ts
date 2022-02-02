@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import childProcess from "child_process";
 import {
   app,
   BrowserWindow,
@@ -16,6 +15,7 @@ import {
 import fs from "fs";
 import path from "path";
 import qs from "qs";
+import execa from "execa";
 import {
   ProxyProcessManager,
   Options as ProxyProcessOptions,
@@ -190,7 +190,7 @@ installMainProcessHandler({
     if (config.environment === "development") {
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const version = require("../package.json")["version"];
-      const { stdout, stderr } = await execAsync("git rev-parse HEAD");
+      const { stdout, stderr } = await execa("git", ["rev-parse", "HEAD"]);
 
       if (!version || stderr) {
         return "0.0.0";
@@ -209,9 +209,12 @@ installMainProcessHandler({
   },
   async getGitGlobalDefaultBranch(): Promise<string | undefined> {
     try {
-      const { stdout, stderr } = await execAsync(
-        "git config --global --get init.defaultBranch"
-      );
+      const { stdout, stderr } = await execa("git", [
+        "config",
+        "--global",
+        "--get",
+        "init.defaultBranch",
+      ]);
       return stderr ? undefined : stdout.trim();
     } catch (error: unknown) {
       return undefined;
@@ -370,18 +373,6 @@ async function shutdown() {
   isShuttingDown = true;
   await proxyProcessManager.shutdown().catch(e => console.error(e));
   app.exit();
-}
-
-function execAsync(cmd: string): Promise<{ stdout: string; stderr: string }> {
-  return new Promise((resolve, reject) => {
-    childProcess.exec(cmd, (error, stdout, stderr) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve({ stdout, stderr });
-      }
-    });
-  });
 }
 
 function buildUiConfig(config: Config): Partial<UiConfig> {
