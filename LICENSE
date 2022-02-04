@@ -5,27 +5,26 @@ License (GPLv3) with the Radicle Linking Exception. Any contribution to
 radicle-upstream must be made subject to the Developer Certificate of
 Origin (DCO).
 
-By making your contribution, you are (1) making the declaration set
-out in the Linux Foundation’s Developer Certificate of Origin
-version 1.1, in which the “open source licence indicated in the file” is GPLv3
-with the Radicle Linking Exception, and (2) granting the additional permission
+By making your contribution, you are (1) making the declaration set out in
+the Linux Foundation’s Developer Certificate of Origin version 1.1, in
+which the “open source licence indicated in the file” is GPLv3 with the
+Radicle Linking Exception, and (2) granting the additional permission
 referred to in the Radicle Linking Exception to downstream recipients of
 current and future versions of radicle-upstream released by the Radicle
 Foundation.
 
-A copy of Radicle Linking Exception and the GPLv3 can be found below. A copy of
-the DCO can be found in the file named “DCO”.
+A copy of Radicle Linking Exception and the GPLv3 can be found below. A
+copy of the DCO can be found in the file named “DCO”.
 
                         Radicle Linking Exception
 
-In addition to the permissions in the GNU General Public License,
-the authors give you unlimited permission to link the compiled
-version of this unmodified program into combinations with other programs,
-and to distribute those combinations without any restriction
-coming from the use of this program. (The General Public License
-restrictions do apply in other respects; for example, they cover
-modification of this program, and distribution when not linked into
-a combined executable.)
+In addition to the permissions in the GNU General Public License, the
+authors give you unlimited permission to link the compiled version of this
+unmodified program into combinations with other programs, and to
+distribute those combinations without any restriction coming from the use
+of this program. (The General Public License restrictions do apply in
+other respects; for example, they cover modification of this program, and
+distribution when not linked into a combined executable.)
 
                       GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
