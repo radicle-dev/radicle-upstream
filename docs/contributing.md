@@ -67,26 +67,23 @@ or [contribute][cd]
 ## Contributing to the Design
 
 Since Radicle is an open source project, anyone can contribute. This is normal
-in open source development, but we do it for design too! Here's how you can get
-started:
+in open source development, but we do it for design too!
 
-- I’d suggest starting by joining our [Discord server][dc] to chat with me or
-  anyone on the team and ask any questions you have. It’s all public and open
-  for anyone to join and chat in. We even have our “internal” chats public on
-  there where we chat all day about features. The #Upstream channel is an
-  example of that.
+- Start by joining our [Discord server][dc] to chat with anyone on the core
+  team and ask any questions you have. It’s all public and open for anyone to
+  join and chat. We even have our “internal” chats in public where we chat
+  regularly about features. The #Upstream channel is an example of that.
 - There are also a lot of issues on our GitHub marked as “Design needed” which
   are open for anyone to grab and submit a solution for. You can find them
   [here][dn]. Some are easier than others. Feel free to read through those and
-  ask any questions you have directly on the GitHub issue.
-- You can also reach out directly on Discord with any questions you have. If you
+  ask any questions directly on the GitHub issue.
+- You can also reach out directly on Discord with any questions. If you
   need any help getting set up with our [Figma file][ff] just ask one of the
-  core designer on the team ([@brandonhaslegs][bo] and [@juliendonck][jd])!
+  core designers on the team ([@brandonhaslegs][bo] and [@juliendonck][jd]).
   You’ll need to duplicate the file and make changes in your own private file.
   If we accept them, we’ll integrate them into the official file.
-- If you want to submit a design solution on GitHub, just post screenshots of
-  your solution and a description on the issue (see here for an example of this
-  in action)
+- Please submit design solutions on GitHub. Just post screenshots, videos, or
+  Figma prototype links of your solution and a description on the issue.
 
 
 [ar]: http://docs.radicle.xyz/docs/using-radicle/tracking-and-viewing#adding-remotes
