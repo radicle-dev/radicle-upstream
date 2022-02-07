@@ -37,13 +37,14 @@ Make sure to source the script from the repository root.
 ## Run and connect multiple instances
 
 We provide the `scripts/devnet.ts` tool for running, connecting and managing
-multiple Upstream instances and a seed peer on a local machine.
+multiple Upstream instances and a seed peer on a local machine. Run `yarn run
+devent --help` for a list of all commands.
 
 The devnet tool uses numbers from 1 to 100 to identify and reference Upstream
 instances.
 
 ```bash
-scripts/devnet.ts upstream 1
+yarn run devnet upstream 1
 ```
 
 This command will start an Upstream instance. The instance will be fully
@@ -53,7 +54,7 @@ initialized with user name `1`. The `RAD_HOME` for the instance is
 To connect a second instance to the first one run
 
 ```bash
-scripts/devnet.ts upstream 2 --bootstrap 1
+yarn run devnet upstream 2 --bootstrap 1
 ```
 
 Make sure you rebuild the project before running instances
@@ -66,7 +67,7 @@ yarn run webpack --config-name ui
 You can also run a seed peer that tracks a certain project.
 
 ```bash
-scripts/devnet.ts seed --project <urn>
+yarn run devnet seed --project <urn>
 ```
 
 By default, all Upstream instances include the seed address as a bootstrap peer.

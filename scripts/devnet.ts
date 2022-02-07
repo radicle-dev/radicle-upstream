@@ -19,6 +19,7 @@ async function main() {
   yargs
     .command(upstreamCommand)
     .command(seedCommand)
+    .command(shellCommand)
     // Don’t show a version and the --version flag
     .version(false)
     .strict()
@@ -39,18 +40,18 @@ async function main() {
 const upstreamCommand: yargs.CommandModule<
   unknown,
   {
-    id: number;
+    PEER_NO: number;
     reset: boolean;
     bootstrap?: number;
     headless: boolean;
-    seedBootstrap: boolean;
+    "seed-bootstrap": boolean;
   }
 > = {
-  command: "upstream <id>",
+  command: "upstream PEER_NO",
   describe: "Run an upstream instance",
-  builder: yargs => {
-    return yargs
-      .positional("id", {
+  builder: yargs =>
+    yargs
+      .positional("PEER_NO", {
         demandOption: true,
         type: "number",
         describe:
@@ -61,7 +62,7 @@ const upstreamCommand: yargs.CommandModule<
           type: "number",
           describe: "Use the instance identified by the ID as a boostrap peer",
         },
-        seedBootstrap: {
+        "seed-bootstrap": {
           type: "boolean",
           default: true,
           describe: "Add the seed node to the bootstrap addresses",
@@ -77,10 +78,9 @@ const upstreamCommand: yargs.CommandModule<
           default: false,
           describe: "Only run radicle-proxy and not the frontend",
         },
-      });
-  },
+      }),
   handler: async opts => {
-    const peerConfig = makePeerConfig(opts.id);
+    const peerConfig = makePeerConfig(opts.PEER_NO);
     const missing = await Fs.access(peerConfig.radHome).catch(() => true);
     if (opts.reset && !missing) {
       await Fs.rm(peerConfig.radHome, { recursive: true });
@@ -104,7 +104,7 @@ const upstreamCommand: yargs.CommandModule<
       seedAddresses.push(getPeerAddress(makePeerConfig(opts.bootstrap)));
     }
 
-    if (opts.seedBootstrap) {
+    if (opts["seed-bootstrap"]) {
       seedAddresses.push(getPeerAddress(makePeerSeedConfig()));
     }
 
@@ -138,12 +138,39 @@ const upstreamCommand: yargs.CommandModule<
   },
 };
 
+const shellCommand: yargs.CommandModule<unknown, { PEER_NO: number }> = {
+  command: "shell PEER_NO",
+  describe: [
+    `Print a shell script that adds radicle programs to the search path and has
+    them use the given peers identity and data.`,
+    `Run this command as eval $(devnet shell 1)`,
+  ]
+    .map(r => r.replace(/\s+/g, " "))
+    .join("\n\n"),
+  builder: yargs =>
+    yargs.positional("PEER_NO", {
+      demandOption: true,
+      type: "number",
+      describe:
+        "Number identifying the instance. This is used to derive the peer configuration. Must be between 1 and 100",
+    }),
+  handler: async opts => {
+    const peerConfig = makePeerConfig(opts.PEER_NO);
+    console.log(`export RAD_HOME="${peerConfig.radHome}"`);
+
+    const devBinPath = Path.resolve(__dirname, "..", "target", "debug");
+    console.log(`export PATH="${devBinPath}:$PATH"`);
+
+    console.log("export RADICLE_UNSAFE_FAST_KEYSTORE=1");
+  },
+};
+
 const seedCommand: yargs.CommandModule<
   unknown,
   { reset: boolean; project?: string }
 > = {
   command: "seed",
-  describe: "Run upstream-see",
+  describe: "Run upstream-seed",
   builder: yargs => {
     return yargs.options({
       reset: {
@@ -199,6 +226,7 @@ interface PeerConfig {
   peerId: string;
   httpPort: number;
   p2pPort: number;
+  // Absolute path to RAD_HOME
   radHome: string;
 }
 
