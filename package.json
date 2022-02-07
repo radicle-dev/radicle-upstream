@@ -93,7 +93,7 @@
     "ds:deploy": "scripts/deploy-design-system.sh",
     "_private:test:integration": "wait-on tcp:127.0.0.1:30000 && yarn run webpack build --config-name ui && yarn run cypress run",
     "_private:test:integration:debug": "wait-on ./public/bundle.js tcp:127.0.0.1:30000 && yarn run cypress open",
-    "_private:electron:start": "wait-on ./public/bundle.js && NODE_ENV='development' electron native/index.js",
+    "_private:electron:start": "wait-on ./public/bundle.js && electron native/index.js",
     "_private:dist:clean": "rimraf ./dist && mkdir ./dist",
     "_private:prettier": "prettier \"**/*.@(js|ts|json|svelte|css|html)\" --ignore-path .gitignore",
     "_private:proxy:start:test": "cargo build --all-features --bins && cargo run --all-features -- --test --unsafe-fast-keystore --http-listen 127.0.0.1:30000",
