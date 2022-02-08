@@ -119,8 +119,6 @@ export function withTwoOnboardedNodes(
 export const asNode = (node: NodeSession): void => {
   cy.log(`switching UI to node ${node.id}`);
 
-  cy.setCookie("auth-token", node.authToken);
-
   const config: Partial<Config> = {
     // NB: it is important that we pass `localhost` instead of `127.0.0.1` here.
     // I haven't figured out why, but when we use `127.0.0.1` instead of

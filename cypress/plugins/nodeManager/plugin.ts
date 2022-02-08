@@ -8,12 +8,12 @@ import * as stream from "stream";
 import { StringDecoder } from "string_decoder";
 import * as path from "path";
 import exitHook from "exit-hook";
-import fetch, { FetchError } from "node-fetch";
 import waitOn from "wait-on";
 import * as fs from "fs-extra";
 import execa from "execa";
-import * as cookie from "cookie";
+import fetch, { Headers, Request, Response, FetchError } from "node-fetch";
 
+import { ProxyClient } from "proxy-client";
 import { retryOnError } from "ui/src/retryOnError";
 
 import {
@@ -22,6 +22,22 @@ import {
   type NodeSession,
   type StartNodeOptions,
 } from "./shared";
+
+if (!globalThis.fetch) {
+  // This might be due to https://github.com/microsoft/TypeScript/issues/43990.
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  globalThis.fetch = fetch;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  globalThis.Headers = Headers;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  globalThis.Request = Request;
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  globalThis.Response = Response;
+}
 
 const ROOT_PATH = path.join(__dirname, "../../../");
 
@@ -116,10 +132,6 @@ class NodeManager implements NodeManagerPlugin {
 
     stderr.pipe(prependNodeId).pipe(combinedLog);
 
-    await waitOn({ resources: [`tcp:${HOST}:${id}`] });
-
-    logger.log("node started successfully");
-
     const gitConfigSet = (name: string, value: string) =>
       execa("git", ["config", "--global", name, value], {
         env: { HOME: radHome },
@@ -132,48 +144,26 @@ class NodeManager implements NodeManagerPlugin {
     await gitConfigSet("user.name", options.handle);
     await gitConfigSet("user.email", `${options.handle}@example.com`);
 
-    const keystoreResponse = await fetch(`http://${HOST}:${id}/v1/keystore`, {
-      method: "post",
-      body: JSON.stringify({ passphrase: options.passphrase }),
-      headers: { "Content-Type": "application/json" },
-    });
+    await waitOn({ resources: [`tcp:${HOST}:${id}`] });
+    logger.log("node started successfully");
 
-    if (!keystoreResponse) {
-      throw new Error("No response from keystore request");
-    }
+    const proxyClient = new ProxyClient(`http://${HOST}:${id}`);
+    await proxyClient.keyStoreCreate({ passphrase: options.passphrase });
 
-    const cookieData = keystoreResponse.headers.get("set-cookie");
-    const cookies = cookie.parse(cookieData || "");
-    const authToken = cookies["auth-token"];
-    if (!authToken) {
-      throw new Error("Response did not contain an auth cookie");
-    }
-
-    const identitiesResponse = await retryOnError(
-      () =>
-        fetch(`http://${HOST}:${id}/v1/identities`, {
-          method: "post",
-          body: JSON.stringify({ handle: options.handle }),
-          headers: {
-            Cookie: `auth-token=${authToken}`,
-            "Content-Type": "application/json",
-          },
-        }),
+    const identity = await retryOnError(
+      () => proxyClient.identity.create({ handle: options.handle }),
       err => err instanceof FetchError && err.code === "ECONNREFUSED",
       25,
       40
     );
-    const json = await identitiesResponse.json();
-    const peerId = json.peerId;
 
     logger.log("node onboarded successfully");
 
     return {
       id,
-      authToken,
       httpPort: id,
       radHome: radHome,
-      peerId,
+      peerId: identity.peerId,
     };
   }
 

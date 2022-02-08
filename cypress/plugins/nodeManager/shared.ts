@@ -13,7 +13,6 @@
 export interface NodeSession {
   id: number;
   peerId: string;
-  authToken: string;
   httpPort: number;
   radHome: string;
 }
