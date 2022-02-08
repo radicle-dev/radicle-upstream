@@ -13,66 +13,6 @@
     "type": "git",
     "url": "https://github.com/radicle-dev/radicle-upstream.git"
   },
-  "build": {
-    "appId": "xyz.radicle.radicle-upstream",
-    "artifactName": "${name}.${ext}",
-    "afterSign": "builder/notarize.js",
-    "files": [
-      "public/**/*",
-      "native/bundle.js",
-      "native/bundle.js.map",
-      "native/bundle.licenses.txt",
-      "native/preload.js"
-    ],
-    "directories": {
-      "buildResources": "public"
-    },
-    "extraResources": [
-      {
-        "from": "target/release/radicle-proxy",
-        "to": "./"
-      },
-      {
-        "from": "target/release/git-remote-rad",
-        "to": "./"
-      },
-      {
-        "from": "target/release/radicle-proxy.exe",
-        "to": "./"
-      },
-      {
-        "from": "target/release/git-remote-rad.exe",
-        "to": "./"
-      },
-      {
-        "from": "proxy/assets",
-        "to": "assets"
-      }
-    ],
-    "protocols": [
-      {
-        "name": "radicle",
-        "schemes": [
-          "radicle"
-        ]
-      }
-    ],
-    "linux": {
-      "target": [
-        "Appimage"
-      ]
-    },
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false,
-      "entitlements": "builder/entitlements.mac.plist",
-      "entitlementsInherit": "builder/entitlements.mac.plist",
-      "minimumSystemVersion": "10.14"
-    }
-  },
   "main": "./native/bundle.js",
   "scripts": {
     "start": "cargo build --all-features --all-targets && yarn run-p --race _private:webpack:ui:watch _private:electron:start",

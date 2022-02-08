@@ -1,5 +1,6 @@
 {
   "include": [
+    "*.js",
     "ui/**/*",
     "native/**/*",
     "scripts/**/*.ts",

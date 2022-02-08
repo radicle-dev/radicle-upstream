@@ -31,6 +31,12 @@ module.exports = {
         "@typescript-eslint/no-var-requires": "off",
       },
     },
+    {
+      files: ["*.js", "*.mjs"],
+      rules: {
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+      },
+    },
   ],
   rules: {
     // Disallow Unused Variables
