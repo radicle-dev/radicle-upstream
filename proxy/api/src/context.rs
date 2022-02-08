@@ -42,14 +42,6 @@ impl Context {
         }
     }
 
-    /// Returns the [`kv::Store`] for persistent storage.
-    pub const fn store(&self) -> &kv::Store {
-        match self {
-            Self::Sealed(sealed) => &sealed.store,
-            Self::Unsealed(unsealed) => &unsealed.rest.store,
-        }
-    }
-
     /// Returns a mutable reference to the authentication cookie value.
     pub fn auth_token(&self) -> Arc<RwLock<Option<String>>> {
         match self {

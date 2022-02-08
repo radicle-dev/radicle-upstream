@@ -40,6 +40,9 @@ pub trait Keystore {
     /// * Errors if backend fails to retrieve the data.
     /// * Errors if there is no key in the storage yet.
     fn get(&self, passphrase: SecUtf8) -> Result<link_crypto::SecretKey, Error>;
+
+    /// Returns true if the keystore has a key.
+    fn has_key(&self) -> bool;
 }
 
 /// Create a [`Keystore`] that is backed by an encrypted file on disk.
@@ -126,6 +129,10 @@ impl Keystore for FileStore {
         let key_pair = self.store(passphrase).get_key()?;
         Ok(key_pair.secret_key)
     }
+
+    fn has_key(&self) -> bool {
+        self.path.exists()
+    }
 }
 
 /// Create an insecure in-memory [`Keystore`] for testing.
@@ -174,6 +181,13 @@ impl Keystore for MemoryStore {
         } else {
             Err(FileError::NoSuchKey(PathBuf::new()).into())
         }
+    }
+
+    fn has_key(&self) -> bool {
+        self.key_and_passphrase
+            .lock()
+            .expect("failed to lock")
+            .is_some()
     }
 }
 

@@ -58,17 +58,15 @@ pub async fn main() -> anyhow::Result<()> {
     rad_identities::local::set(&storage, local_identity).context("failed to set local identity")?;
 
     let peer_id = librad::PeerId::from(secret_key);
-    let identity = crate::identity::Identity::from((peer_id, person));
-    let identity_urn = identity.urn.clone();
 
     let store_path = crate::config::store_dir(profile.id(), Some(args.rad_home.as_path()));
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
-    crate::session::initialize(&store, identity, &[]).context("failed to initialize session")?;
+    crate::session::initialize(&store, &[]).context("failed to initialize session")?;
 
     let output = serde_json::json!({
         "peerId": peer_id,
-        "identityUrn": identity_urn,
+        "identityUrn": person.urn(),
     });
 
     println!(

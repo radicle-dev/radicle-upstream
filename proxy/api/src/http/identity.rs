@@ -78,7 +78,7 @@ mod handler {
 
         let id = identity::create(ctx.peer.librad_peer(), metadata).await?;
 
-        session::initialize(&ctx.rest.store, id.clone(), &ctx.rest.default_seeds)?;
+        session::initialize(&ctx.rest.store, &ctx.rest.default_seeds)?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }
@@ -88,9 +88,7 @@ mod handler {
         ctx: context::Unsealed,
         metadata: identity::Metadata,
     ) -> Result<impl Reply, Rejection> {
-        session::get_current(&ctx.rest.store)?.ok_or(http::error::Routing::NoSession)?;
         let id = identity::update(ctx.peer.librad_peer(), metadata).await?;
-        session::update_identity(&ctx.rest.store, id.clone())?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::OK))
     }
@@ -121,7 +119,7 @@ mod test {
     use std::convert::TryInto;
     use warp::{http::StatusCode, test::request};
 
-    use crate::{context, error, http, identity, session};
+    use crate::{context, error, http, identity};
 
     #[tokio::test]
     async fn create() -> Result<(), error::Error> {
@@ -145,35 +143,18 @@ mod test {
             .reply(&api)
             .await;
 
-        let urn = {
-            let session = session::get_current(&ctx.rest.store)?.expect("no session exists");
-            session.identity.urn
-        };
-
         let peer_id = ctx.peer.librad_peer().peer_id();
-
-        // Assert that we set the default owner and it's the same one as the session
-        {
-            assert_eq!(
-                radicle_daemon::state::default_owner(ctx.peer.librad_peer())
-                    .await?
-                    .unwrap()
-                    .into_inner()
-                    .into_inner(),
-                radicle_daemon::state::get_local(ctx.peer.librad_peer(), urn.clone())
-                    .await?
-                    .unwrap()
-                    .into_inner()
-                    .into_inner()
-            );
-        }
+        let default_owner = radicle_daemon::state::default_owner(ctx.peer.librad_peer())
+            .await
+            .unwrap()
+            .unwrap();
 
         http::test::assert_response(&res, StatusCode::CREATED, |have| {
             assert_eq!(
                 have,
                 json!({
                     "peerId": peer_id,
-                    "urn": urn,
+                    "urn": default_owner.urn(),
                     "metadata": {
                         "handle": "cloudhead",
                         "ethereum": {
@@ -221,35 +202,19 @@ mod test {
             .reply(&api)
             .await;
 
-        let urn = {
-            let session = session::get_current(&ctx.rest.store)?.expect("no session exists");
-            session.identity.urn
-        };
+        let default_owner = radicle_daemon::state::default_owner(ctx.peer.librad_peer())
+            .await
+            .unwrap()
+            .unwrap();
 
         let peer_id = ctx.peer.librad_peer().peer_id();
-
-        // Assert that we set the default owner and it's the same one as the session
-        {
-            assert_eq!(
-                radicle_daemon::state::default_owner(ctx.peer.librad_peer())
-                    .await?
-                    .unwrap()
-                    .into_inner()
-                    .into_inner(),
-                radicle_daemon::state::get_local(ctx.peer.librad_peer(), urn.clone())
-                    .await?
-                    .unwrap()
-                    .into_inner()
-                    .into_inner()
-            );
-        }
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
                 json!({
                     "peerId": peer_id,
-                    "urn": urn,
+                    "urn": default_owner.urn(),
                     "metadata": {
                         "handle": "cloudhead_next",
                         "ethereum": {
@@ -297,35 +262,18 @@ mod test {
             .reply(&api)
             .await;
 
-        let urn = {
-            let session = session::get_current(&ctx.rest.store)?.expect("no session exists");
-            session.identity.urn
-        };
-
         let peer_id = ctx.peer.librad_peer().peer_id();
-
-        // Assert that we set the default owner and it's the same one as the session
-        {
-            assert_eq!(
-                radicle_daemon::state::default_owner(ctx.peer.librad_peer())
-                    .await?
-                    .unwrap()
-                    .into_inner()
-                    .into_inner(),
-                radicle_daemon::state::get_local(ctx.peer.librad_peer(), urn.clone())
-                    .await?
-                    .unwrap()
-                    .into_inner()
-                    .into_inner()
-            );
-        }
+        let default_owner = radicle_daemon::state::default_owner(ctx.peer.librad_peer())
+            .await
+            .unwrap()
+            .unwrap();
 
         http::test::assert_response(&res, StatusCode::OK, |have| {
             assert_eq!(
                 have,
                 json!({
                     "peerId": peer_id,
-                    "urn": urn,
+                    "urn": default_owner.urn(),
                     "metadata": {
                         "handle": "cloudhead",
                         "ethereum": null

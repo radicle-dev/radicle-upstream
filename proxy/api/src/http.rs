@@ -108,14 +108,13 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(radicle_daemon::Local
     warp::any()
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {
-            let session =
-                crate::session::get_current(&ctx.rest.store)?.ok_or(error::Routing::NoSession)?;
-
-            let user =
-                radicle_daemon::state::get_local(ctx.peer.librad_peer(), session.identity.urn)
-                    .await
-                    .expect("failed to get local identity")
-                    .expect("the local identity is missing");
+            let user = ctx
+                .peer
+                .librad_peer()
+                .using_storage(rad_identities::local::default)
+                .await
+                .expect("failed to get storage")
+                .expect("failed to get local identity");
 
             Ok::<_, Rejection>(user)
         })

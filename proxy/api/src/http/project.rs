@@ -372,15 +372,7 @@ mod test {
                 },
             )
             .await?;
-            session::initialize(
-                &ctx.rest.store,
-                (
-                    ctx.peer.librad_peer().peer_id(),
-                    owner.clone().into_inner().into_inner(),
-                )
-                    .into(),
-                &ctx.rest.default_seeds,
-            )?;
+            session::initialize(&ctx.rest.store, &ctx.rest.default_seeds)?;
 
             let platinum_project = crate::control::replicate_platinum(
                 &ctx.peer,
@@ -459,15 +451,11 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        {
-            let metadata = identity::Metadata {
-                handle: "cloudhead".to_string(),
-                ethereum: None,
-            };
-            let id = identity::create(ctx.peer.librad_peer(), metadata).await?;
-
-            session::initialize(&ctx.rest.store, id, &ctx.rest.default_seeds)?;
+        let metadata = identity::Metadata {
+            handle: "cloudhead".to_string(),
+            ethereum: None,
         };
+        identity::create(ctx.peer.librad_peer(), metadata).await?;
 
         let project = radicle_daemon::project::Create {
             repo: radicle_daemon::project::Repo::New {
@@ -522,14 +510,11 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        {
-            let metadata = identity::Metadata {
-                handle: "cloudhead".to_string(),
-                ethereum: None,
-            };
-            let id = identity::create(ctx.peer.librad_peer(), metadata).await?;
-            session::initialize(&ctx.rest.store, id, &ctx.rest.default_seeds)?;
+        let metadata = identity::Metadata {
+            handle: "cloudhead".to_string(),
+            ethereum: None,
         };
+        identity::create(ctx.peer.librad_peer(), metadata).await?;
 
         let project = radicle_daemon::project::Create {
             repo: radicle_daemon::project::Repo::Existing {

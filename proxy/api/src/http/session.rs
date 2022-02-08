@@ -57,14 +57,40 @@ mod handler {
 
     use crate::{context, error, http, session};
 
+    #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Session {
+        pub identity: crate::identity::Identity,
+    }
+
     /// Fetch the [`session::Session`].
     #[allow(clippy::unused_async)]
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let sess =
-            crate::session::get_current(ctx.store())?.ok_or(http::error::Routing::NoSession)?;
         match ctx {
-            context::Context::Unsealed(_) => Ok(reply::json(&sess)),
-            context::Context::Sealed(_) => Err(Rejection::from(error::Error::KeystoreSealed)),
+            context::Context::Unsealed(ctx) => {
+                let person = ctx
+                    .peer
+                    .librad_peer()
+                    .using_storage(rad_identities::local::default)
+                    .await
+                    .expect("failed to get storage")
+                    .expect("failed to get local identity");
+
+                Ok(reply::json(&Session {
+                    identity: (
+                        ctx.peer.librad_peer().peer_id(),
+                        person.into_inner().into_inner(),
+                    )
+                        .into(),
+                }))
+            },
+            context::Context::Sealed(ctx) => {
+                if ctx.keystore.has_key() {
+                    Err(Rejection::from(error::Error::KeystoreSealed))
+                } else {
+                    Err(Rejection::from(http::error::Routing::NoSession))
+                }
+            },
         }
     }
 
@@ -73,9 +99,9 @@ mod handler {
         let seeds = if let Some(seeds) = ctx.rest.seeds {
             seeds
         } else {
-            match session::get_current(&ctx.rest.store)? {
+            match session::seeds(&ctx.rest.store)? {
                 None => vec![],
-                Some(session) => session.settings.coco.seeds,
+                Some(seeds) => seeds,
             }
         };
 
@@ -98,30 +124,5 @@ mod handler {
             }
             .into())
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use pretty_assertions::assert_eq;
-    use warp::{http::StatusCode, test::request};
-
-    use crate::{context, session};
-
-    #[tokio::test]
-    async fn get() -> Result<(), Box<dyn std::error::Error>> {
-        let tmp_dir = tempfile::tempdir()?;
-        let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
-        let api = super::filters(ctx.clone().into());
-        let session = session::initialize_test(&ctx, "xla").await;
-
-        let res = request().method("GET").path("/").reply(&api).await;
-        assert_eq!(res.status(), StatusCode::OK);
-
-        let session_response = serde_json::from_slice::<session::Session>(res.body())?;
-
-        assert_eq!(session_response, session);
-
-        Ok(())
     }
 }

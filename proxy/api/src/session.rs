@@ -4,12 +4,11 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-//! Management of local session state like the currently used identity, wallet related data and
-//! configuration of all sorts.
+//! Legacy "session". Now only holds settings
 
 use serde::{Deserialize, Serialize};
 
-use crate::{error, identity};
+use crate::error;
 
 pub mod settings;
 
@@ -22,8 +21,6 @@ const KEY_CURRENT: &str = "current";
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Session {
-    /// The currently used [`identity::Identity`].
-    pub identity: identity::Identity,
     /// User controlled parameters to control the behaviour and state of the application.
     pub settings: settings::Settings,
 }
@@ -56,13 +53,8 @@ pub fn get_current(store: &kv::Store) -> Result<Option<Session>, error::Error> {
 /// # Errors
 ///
 /// * Errors when we cannot write to the store.
-pub fn initialize(
-    store: &kv::Store,
-    identity: identity::Identity,
-    default_seeds: &[String],
-) -> Result<Session, error::Error> {
+pub fn initialize(store: &kv::Store, default_seeds: &[String]) -> Result<Session, error::Error> {
     let mut session = Session {
-        identity,
         settings: settings::Settings::default(),
     };
 
@@ -72,53 +64,12 @@ pub fn initialize(
     Ok(session)
 }
 
-/// Update the current session with the given identity.
-/// Does nothing if there is no session yet.
-///
-/// # Errors
-///
-/// * Errors when we cannot write to the store.
-pub fn update_identity(
-    store: &kv::Store,
-    identity: identity::Identity,
-) -> Result<(), error::Error> {
-    if let Some(mut session) = get_current(store)? {
-        session.identity = identity;
-        set_current(store, session)?;
-    }
-    Ok(())
-}
-
 pub fn update_seeds(store: &kv::Store, seeds: Vec<String>) -> Result<(), error::Error> {
     if let Some(mut session) = get_current(store)? {
         session.settings.coco.seeds = seeds;
         set_current(store, session)?;
     }
     Ok(())
-}
-
-/// Initialize a session for tests.
-///
-/// Creates an owner identity for the session using `owner_handle` and stores the current session.
-///
-/// Panics if anything goes wrong.
-#[cfg(test)]
-pub async fn initialize_test(ctx: &crate::context::Unsealed, owner_handle: &str) -> Session {
-    let owner = radicle_daemon::state::init_owner(
-        ctx.peer.librad_peer(),
-        link_identities::payload::Person {
-            name: owner_handle.into(),
-        },
-    )
-    .await
-    .expect("cannot init owner identity");
-    let identity = (
-        ctx.peer.librad_peer().peer_id(),
-        owner.into_inner().into_inner(),
-    )
-        .into();
-    initialize(&ctx.rest.store, identity, &ctx.rest.default_seeds)
-        .expect("failed to initialize session")
 }
 
 /// Stores the session as the current session
