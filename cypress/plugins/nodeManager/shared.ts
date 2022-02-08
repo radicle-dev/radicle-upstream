@@ -28,10 +28,6 @@ export interface OnboardNodeOptions {
   passphrase: string;
 }
 
-export interface ConnectNodeOptions {
-  nodeIds: NodeId[];
-}
-
 // We us `Promise<null>` because Cypress complains if we use
 // `Promise<void>` or `Promise<undefined>`.
 //
@@ -44,7 +40,6 @@ export interface NodeManagerPlugin {
   // related data.
   startNode: (dataDir: string) => Promise<number>;
   onboardNode: (options: OnboardNodeOptions) => Promise<NodeSession>;
-  connectNodes: (options: ConnectNodeOptions) => Promise<null>;
   stopAllNodes: () => Promise<null>;
 }
 
@@ -52,5 +47,4 @@ export const pluginMethods: Array<keyof NodeManagerPlugin> = [
   "startNode",
   "onboardNode",
   "stopAllNodes",
-  "connectNodes",
 ];

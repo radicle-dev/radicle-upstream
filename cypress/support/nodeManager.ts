@@ -64,13 +64,14 @@ interface WithTwoOnboardedNodesOptions {
   node2User: OnboardedUser;
 }
 
-export const connectTwoNodes = (
-  node1: NodeSession,
-  node2: NodeSession
-): void => {
+export function connectTwoNodes(node1: NodeHandle, node2: NodeHandle): void {
   cy.log(`adding node ${node2.id} as seed to node ${node1.id}`);
-  nodeManagerPlugin.connectNodes({ nodeIds: [node1.id, node2.id] });
-};
+  cy.then(async () => {
+    await node1.client.seedsPut([
+      `${node2.peerId}@127.0.0.1:${node2.httpPort}`,
+    ]);
+  });
+}
 
 // Executes a shell command in the context of a node session.
 //

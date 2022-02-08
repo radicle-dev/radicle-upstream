@@ -17,7 +17,6 @@ import * as cookie from "cookie";
 import { retryOnError } from "ui/src/retryOnError";
 
 import type {
-  ConnectNodeOptions,
   NodeId,
   NodeManagerPlugin,
   NodeSession,
@@ -88,34 +87,6 @@ class Node {
   public peerPort: number;
   public radHome: string;
 
-  public get authToken(): AuthToken {
-    if (this.state.kind !== StateKind.Onboarded) {
-      throw new Error("Can't get peerAddress before node is onboarded");
-    }
-
-    return this.state.authToken;
-  }
-
-  public get peerAddress(): PeerAddress {
-    if (this.state.kind !== StateKind.Onboarded) {
-      throw new Error("Can't get peerAddress before node is onboarded");
-    }
-
-    return this.state.peerAddress;
-  }
-
-  public get peerId(): PeerId {
-    if (this.state.kind !== StateKind.Onboarded) {
-      throw new Error("Can't get peerAddress before node is onboarded");
-    }
-
-    return this.state.peerId;
-  }
-
-  public get currentState(): StateKind {
-    return this.state.kind;
-  }
-
   public constructor(id: NodeId, dataDir: string) {
     this.dataDir = dataDir;
     this.logger = new Logger({
@@ -143,6 +114,7 @@ class Node {
         `${HOST}:${this.peerPort}`,
         "--skip-remote-helper-install",
         "--unsafe-fast-keystore",
+        "--insecure-http-api",
       ],
       {
         buffer: false,
@@ -321,36 +293,6 @@ class NodeManager implements NodeManagerPlugin {
       handle: options.handle,
       passphrase: options.passphrase,
     });
-  }
-
-  public async connectNodes(options: ConnectNodeOptions): Promise<null> {
-    this.logger.log("connectNodes");
-
-    if (options.nodeIds.length < 2) {
-      throw new Error("Supply at least 2 node IDs");
-    }
-
-    this.managedNodes.forEach(node => {
-      if (node.currentState !== StateKind.Onboarded) {
-        throw new Error("Can't connect nodes that are not onboarded");
-      }
-    });
-
-    const firstNode = this.getNode(options.nodeIds[0]);
-    const remainingNodes = this.managedNodes.filter(node => {
-      return firstNode.id !== node.id;
-    });
-
-    await fetch(`http://${HOST}:${firstNode.httpPort}/v1/session/seeds`, {
-      method: "PUT",
-      body: JSON.stringify(remainingNodes.map(node => node.peerAddress)),
-      headers: {
-        Cookie: `auth-token=${firstNode.authToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    return null;
   }
 
   public async stopAllNodes(): Promise<null> {
