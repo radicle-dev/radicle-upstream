@@ -41,7 +41,7 @@ if (!globalThis.fetch) {
 
 const ROOT_PATH = path.join(__dirname, "../../../");
 
-const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/debug/radicle-proxy");
+const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/debug/upstream-proxy");
 
 // IP to which all started processes will bind to.
 const HOST = "127.0.0.1";
@@ -63,8 +63,8 @@ class Logger {
 
 class NodeManager implements NodeManagerPlugin {
   private logger: Logger;
-  // A radicle-proxy is running on port 30000 for any other Cypress tests
-  // that aren't managed by nodeManager.
+  // upstream-proxy is running on port 30000 for any other Cypress tests that
+  // aren't managed by nodeManager.
   private nextPort: number = 30001;
   #processes: execa.ExecaChildProcess[] = [];
 
@@ -175,7 +175,7 @@ class NodeManager implements NodeManagerPlugin {
     }
     this.#processes = [];
 
-    // A radicle-proxy is running on port 30000 for any other Cypress tests
+    // upstream-proxy is running on port 30000 for any other Cypress tests
     // that aren't managed by nodeManager.
     this.nextPort = 30001;
 
@@ -196,7 +196,7 @@ function createNodeManagerPlugin(plugin: NodeManagerPlugin): NodeManagerPlugin {
 
 export const nodeManagerPlugin = createNodeManagerPlugin(nodeManager);
 
-// Clean up any lingering radicle-proxy processes when closing Cypress.
+// Clean up any lingering upstream-proxy processes when closing Cypress.
 exitHook(() => {
   nodeManager.stopAllNodes();
 });

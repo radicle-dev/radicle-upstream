@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
-  "proxy/api",
+  "upstream-proxy",
   "upstream-seed",
   "upstream-cli",
 ]

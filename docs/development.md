@@ -302,7 +302,7 @@ Read more about the colors used in Upstream in the [Color System post][cg].
 ## Proxy
 
 All of Upstream's business logic tying together the Radicle code collaboration
-is provided to the UI via an HTTP API by a rust binary called `radicle-proxy`.
+is provided to the UI via an HTTP API by a rust binary called `upstream-proxy`.
 It uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To

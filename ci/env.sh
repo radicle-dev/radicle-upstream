@@ -31,14 +31,7 @@ function clean-cargo-build-artifacts () {
   else
     echo "clean up cargo build artifacts"
     find target/*/deps -type f -perm -a=x -not -name "*.so" -exec rm "{}" ";"
-    (
-      shopt -s nullglob
-      shopt -u failglob
-      rm \
-        target/*/deps/libapi-* \
-        target/*/deps/libupstream_seed-* \
-        target/*/deps/libupstream-*
-    )
+    rm target/*/deps/libupstream*
   fi
 }
 

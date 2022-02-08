@@ -76,7 +76,7 @@ const upstreamCommand: yargs.CommandModule<
         headless: {
           type: "boolean",
           default: false,
-          describe: "Only run radicle-proxy and not the frontend",
+          describe: "Only run upstream-proxy and not the frontend",
         },
       }),
   handler: async opts => {
@@ -88,7 +88,7 @@ const upstreamCommand: yargs.CommandModule<
     if (missing || opts.reset) {
       await execa(
         "cargo",
-        ["run", "--bin", "radicle-proxy-init", "--", peerConfig.userHandle],
+        ["run", "--bin", "upstream-proxy-init", "--", peerConfig.userHandle],
         {
           stdio: "inherit",
           env: {
@@ -113,7 +113,7 @@ const upstreamCommand: yargs.CommandModule<
         "cargo",
         [
           "run",
-          "--bin=radicle-proxy",
+          "--bin=upstream-proxy",
           "--",
           "--insecure-http-api",
           "--unsafe-fast-keystore",
@@ -231,7 +231,7 @@ interface PeerConfig {
 
 // Get a peer ID from a private key seed.
 //
-// Uses the same algorithm as `radicle-proxy-init`.
+// Uses the same algorithm as `upstream-proxy-init`.
 function peerIdFromKeySeed(seed: string): string {
   const seedHash = Crypto.createHash("sha256");
   seedHash.update(seed);

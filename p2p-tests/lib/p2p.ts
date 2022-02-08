@@ -145,7 +145,7 @@ export class RadicleProxy {
     fs.mkdirsSync(this.radHome);
 
     const initResult = JSON.parse(
-      execa.sync(path.join(binPath(), "radicle-proxy-init"), [
+      execa.sync(path.join(binPath(), "upstream-proxy-init"), [
         this.name,
         "--key-passphrase",
         this.passphrase,
@@ -170,7 +170,7 @@ export class RadicleProxy {
     this.#childProcess = spawnInNamespace(
       this.name,
       [
-        path.join(binPath(), "radicle-proxy"),
+        path.join(binPath(), "upstream-proxy"),
         "--peer-listen",
         `${this.#ipAddress}:8776`,
         "--http-listen",

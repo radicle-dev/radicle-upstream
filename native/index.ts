@@ -181,9 +181,9 @@ async function main(app: App, config: Config) {
 function proxyProcessOptions(config: Config): ProxyProcessOptions {
   let proxyPath;
   if (isWindows) {
-    proxyPath = path.join(distBinPath, "radicle-proxy.exe");
+    proxyPath = path.join(distBinPath, "upstream-proxy.exe");
   } else {
-    proxyPath = path.join(distBinPath, "radicle-proxy");
+    proxyPath = path.join(distBinPath, "upstream-proxy");
   }
 
   let proxyArgs: string[];

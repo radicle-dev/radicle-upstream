@@ -60,54 +60,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94a45b455c14666b85fc40a019e8ab9eb75e3a124e05494f5397122bc9eb06e0"
 
 [[package]]
-name = "api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-broadcast",
- "bytes 1.1.0",
- "chrono",
- "clap 3.0.14",
- "data-encoding",
- "directories 4.0.1",
- "eip55",
- "either",
- "futures 0.3.21",
- "http",
- "kv",
- "lazy_static",
- "librad",
- "link-crypto",
- "link-identities",
- "nonempty 0.6.0",
- "percent-encoding",
- "pretty_assertions",
- "rad-exe",
- "rad-identities",
- "radicle-daemon",
- "radicle-git-ext",
- "radicle-git-helpers",
- "radicle-keystore",
- "radicle-source",
- "rand 0.8.5",
- "secstr",
- "serde",
- "serde_json",
- "serde_qs",
- "sha2",
- "tempfile",
- "thiserror",
- "tokio",
- "tokio-stream",
- "tokio-test",
- "tracing",
- "tracing-subscriber",
- "url",
- "walkdir",
- "warp",
-]
-
-[[package]]
 name = "arc-swap"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4692,6 +4644,54 @@ dependencies = [
  "anyhow",
  "clap 3.0.14",
  "librad",
+]
+
+[[package]]
+name = "upstream-proxy"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-broadcast",
+ "bytes 1.1.0",
+ "chrono",
+ "clap 3.0.14",
+ "data-encoding",
+ "directories 4.0.1",
+ "eip55",
+ "either",
+ "futures 0.3.21",
+ "http",
+ "kv",
+ "lazy_static",
+ "librad",
+ "link-crypto",
+ "link-identities",
+ "nonempty 0.6.0",
+ "percent-encoding",
+ "pretty_assertions",
+ "rad-exe",
+ "rad-identities",
+ "radicle-daemon",
+ "radicle-git-ext",
+ "radicle-git-helpers",
+ "radicle-keystore",
+ "radicle-source",
+ "rand 0.8.5",
+ "secstr",
+ "serde",
+ "serde_json",
+ "serde_qs",
+ "sha2",
+ "tempfile",
+ "thiserror",
+ "tokio",
+ "tokio-stream",
+ "tokio-test",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "walkdir",
+ "warp",
 ]
 
 [[package]]
