@@ -2,32 +2,29 @@
 
 ## Learn more about Upstream
 
-To familiarise yourself with the Upstream app and the Radicle ecosystem, have a
-look at the following resources:
+To familiarise yourself with Upstream and the Radicle ecosystem, have a look at
+the following resources:
 
-- [development.md][dm] for more information about hacking on the project.
+- [development.md][dm] for more information on building Upstream locally
 - [Discord][dc]
 - [radicle.xyz][ra]
 - [Radicle documentation][rd]
 
-## Your first bugfix
+## Your first contribution to Upstream
 
-If you have found a bug or see an [issue][oi] you'd like to fix, we are keen on
+If you find a bug or see an [issue][oi] you'd like to fix, we are keen on
 receiving a contribution from you.
 
-We are currently accepting [PR's through GitHub][pr] while we make our own
-infrastructure more robust. If it's your first time using GitHub Pull Requests,
-learn more about it [here][gh].
+We accept contributions through Upstream Patches -- our first version
+of Pull Requests in Upstream. Follow [this guide][tg] to create your first
+patch.
 
-We also accept contributions through [Upstream Patches][up] -- our first version
-of Pull Requests in Upstream. Learn more about the contribution flow [here][cb].
-For us to see you've contributed a Patch, we need to [add your Device ID as a
-remote][ar] to our repo. You can either add it to the [Remotes to track
-issue][rt] or post it in [#upstream on Discord][dc].
+In case there's an issue with Upstream Patches, we are also accepting
+[Pull Requests through GitHub][pr] as a fallback option.
 
-## Creating a commit
+## Commit hygene
 
-For you commits to be accepted they have to follow a couple of guidelines.
+Commits have to adhere to the following guidelines to be accepted.
 
 ### Conventional commit message
 
@@ -55,14 +52,8 @@ commits must include the following line at the end.
 
 You can create commits with this line by running `git commit -s`.
 
-The DCO was created by the Linux Kernel community and is a simple statement that
-you, as a contributor, have the legal right to make the contribution.
-
-## Documentation
-
-We're writing documentation as we are developing new features. If you find
-something that is confusing or not covered at all, feel free to [open a bug][ob]
-or [contribute][cd]
+The DCO was created by the Linux Kernel community and is a simple statement
+that you, as a contributor, have the legal right to make the contribution.
 
 ## Contributing to the Design
 
@@ -86,22 +77,17 @@ in open source development, but we do it for design too!
   Figma prototype links of your solution and a description on the issue.
 
 
-[ar]: http://docs.radicle.xyz/docs/using-radicle/tracking-and-viewing#adding-remotes
-[cb]: https://docs.radicle.xyz/docs/using-radicle/overview
+[bo]: https://github.com/brandonhaslegs
 [cc]: https://www.conventionalcommits.org/en/v1.0.0
-[cd]: https://github.com/radicle-dev/radicle-docs#readme
 [dc]: https://discord.com/channels/841318878125490186/843873418205331506
 [dm]: development.md
+[dn]: https://github.com/radicle-dev/radicle-upstream/issues?q=is%3Aopen+is%3Aissu+label%3Adesign-needed
 [do]: ../DCO
-[gh]: https://guides.github.com/introduction/flow/
+[ff]: https://www.figma.com/file/owmgsbs6lnUt8R1bixstCA/Radicle-Upstream?node-id=4147%3A7246
+[jd]: https://github.com/juliendonck
 [ob]: https://github.com/radicle-dev/radicle-docs/issues/new/choose
 [oi]: https://github.com/radicle-dev/radicle-upstream/issues
 [pr]: https://github.com/radicle-dev/radicle-upstream/pulls
 [ra]: https://radicle.xyz
 [rd]: https://docs.radicle.xyz
-[rt]: https://github.com/radicle-dev/radicle-upstream/issues/1958
-[up]: http://docs.radicle.xyz/docs/using-radicle/creating-patches
-[dn]: https://github.com/radicle-dev/radicle-upstream/issues?q=is%3Aopen+is%3Aissu+label%3Adesign-needed
-[ff]: https://www.figma.com/file/owmgsbs6lnUt8R1bixstCA/Radicle-Upstream?node-id=4147%3A7246
-[bo]: https://github.com/brandonhaslegs
-[jd]: https://github.com/juliendonck
+[tg]: submit-patch-using-upstream.md
