@@ -31,6 +31,10 @@ Cypress.on("window:load", win => {
   win.localStorage.setItem("radicle.settings.updateChecker.isEnabled", "false");
 });
 
+Cypress.Keyboard.defaults({
+  keystrokeDelay: 0,
+});
+
 // If a test was successful we unload the app so it stops running. If the test
 // was failed we want to keep the app around so we can inspect it.
 //
