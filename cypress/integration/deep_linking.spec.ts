@@ -7,6 +7,10 @@
 import * as commands from "cypress/support/commands";
 import * as ipcStub from "cypress/support/ipc-stub";
 import * as ipcTypes from "native/ipc-types";
+import * as nodeManager from "cypress/support/nodeManager";
+
+const patchTitle = "Title";
+const patchDescription = "Description.";
 
 context("deep linking", () => {
   beforeEach(() => {
@@ -15,7 +19,70 @@ context("deep linking", () => {
     cy.visit("./public/index.html");
   });
 
-  context("when passing in a valid URL", () => {
+  context("when passing in a valid patch url", () => {
+    it("navigates to patch", () => {
+      commands.resetProxyState();
+      commands.withTempDir(tempDirPath => {
+        nodeManager.withOneOnboardedNode(
+          { dataDir: tempDirPath, handle: "rudolfs" },
+          node => {
+            nodeManager.asNode(node);
+            cy.then(() => {
+              node.client.project.create({
+                repo: {
+                  type: "new",
+                  path: tempDirPath,
+                  name: "new-project",
+                },
+                description: "",
+                defaultBranch: "main",
+              });
+            });
+            commands.pick("sidebar", "settings").click();
+            commands.pick("sidebar", "profile").click();
+            commands.pick("project-list-entry-new-project").should("exist");
+            nodeManager.exec(
+              `cd "${tempDirPath}/new-project"
+            git checkout -b my-branch
+            git commit --allow-empty -m "Adding something new"
+            git tag -a radicle-patch/my-patch -m "${patchTitle}\n\n${patchDescription}"
+            git push --tag rad;`,
+              node
+            );
+
+            commands.pick("sidebar", "profile").click();
+            commands.pick("project-list-entry-new-project").click();
+            commands.pick("patches-tab").click();
+            commands.pick("shareable-patch-link").click();
+
+            // Navigate away from the patch screen.
+            commands.pick("sidebar", "settings").click();
+
+            ipcStub.getStubs().then(stubs => {
+              const patchUrl = stubs.getClipboard();
+              ipcStub.getStubs().then(stubs => {
+                stubs.sendMessage({
+                  kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+                  data: {
+                    url: patchUrl,
+                  },
+                });
+              });
+            });
+
+            commands
+              .pickWithContent(["patch-page"], patchTitle, { timeout: 20000 })
+              .should("exist");
+            commands
+              .pickWithContent(["patch-page"], patchDescription)
+              .should("exist");
+          }
+        );
+      });
+    });
+  });
+
+  context("when passing in a valid project url", () => {
     it("opens the search modal and pre-fills the input field with the Radicle ID", () => {
       ipcStub.getStubs().then(stubs => {
         stubs.sendMessage({
@@ -35,7 +102,7 @@ context("deep linking", () => {
     });
   });
 
-  context("when passing in an invalid URL", () => {
+  context("when passing in an invalid url", () => {
     it("shows an error notification", () => {
       ipcStub.getStubs().then(stubs => {
         stubs.sendMessage({
@@ -49,48 +116,6 @@ context("deep linking", () => {
       commands
         .pick("notification")
         .should("contain", "Could not parse the provided URL");
-
-      ipcStub.getStubs().then(stubs => {
-        stubs.sendMessage({
-          kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-          data: {
-            url: "radicle://ethereum/v0/",
-          },
-        });
-      });
-
-      commands
-        .pick("notification")
-        .should(
-          "contain",
-          `The custom protocol namespace "ethereum" is not supported`
-        );
-
-      ipcStub.getStubs().then(stubs => {
-        stubs.sendMessage({
-          kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-          data: {
-            url: "radicle://link/v1/",
-          },
-        });
-      });
-
-      commands
-        .pick("notification")
-        .should("contain", "The custom protocol version v1 is not supported");
-
-      ipcStub.getStubs().then(stubs => {
-        stubs.sendMessage({
-          kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-          data: {
-            url: "radicle://link/v0/",
-          },
-        });
-      });
-
-      commands
-        .pick("notification")
-        .should("contain", "The provided URL does not contain a Radicle ID");
     });
   });
 });

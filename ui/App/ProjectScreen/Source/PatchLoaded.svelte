@@ -6,12 +6,13 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import * as router from "ui/src/router";
-  import { isMaintainer } from "ui/src/project";
   import type { Project } from "ui/src/project";
   import type { UnsealedSession } from "ui/src/session";
   import type { GroupedCommitsHistory } from "ui/src/source";
+
+  import { isMaintainer } from "ui/src/project";
   import * as Patch from "ui/src/project/patch";
+  import * as router from "ui/src/router";
 
   import RevisionIcon from "design-system/icons/Revision.svelte";
   import Markdown from "design-system/Markdown.svelte";
@@ -110,6 +111,17 @@
   <div class="action-box">
     <CompareBranches
       baseBranch={project.metadata.defaultBranch}
+      patchUrl={router.routeToCustomProtocolUrl({
+        type: "project",
+        params: {
+          urn: project.urn,
+          activeView: {
+            type: "patch",
+            peerId: patch.peerId,
+            id: patch.id,
+          },
+        },
+      })}
       compareBranch={Patch.handle(patch)} />
     <div class="buttons">
       <CheckoutPatchButton {patch} />

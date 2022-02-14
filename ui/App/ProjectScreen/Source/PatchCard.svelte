@@ -15,6 +15,7 @@
 
   export let patch: Patch.Patch;
   export let defaultBranch: string;
+  export let patchUrl: string;
 
   $: iconColor = patch.merged
     ? "var(--color-negative)"
@@ -84,6 +85,7 @@
     </div>
   </div>
   <CompareBranches
+    {patchUrl}
     baseBranch={defaultBranch}
     compareBranch={Patch.handle(patch)} />
 </div>

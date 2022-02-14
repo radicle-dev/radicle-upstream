@@ -12,8 +12,11 @@ import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as notification from "ui/src/notification";
 import * as bacon from "ui/src/bacon";
 
-import { Route, LoadedRoute, loadRoute, routeToPath } from "./definition";
+import { Route, LoadedRoute, loadRoute } from "./definition";
+import { routeToPath } from "./path";
+
 export * from "./definition";
+export * from "./path";
 
 // This is only respected by Safari.
 const DOCUMENT_TITLE = "Radicle Upstream";
@@ -93,7 +96,7 @@ async function setHistory(history: Route[]): Promise<void> {
     // This sets `window.location.href`. At the moment it's not used by
     // Upstream, but when we switch to a browser environment it'll be
     // displayed in the URL bar.
-    routeToPath(targetRoute)
+    `#${routeToPath(targetRoute)}`
   );
 }
 

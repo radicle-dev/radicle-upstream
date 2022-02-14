@@ -6,11 +6,11 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import * as router from "ui/src/router";
-  import { unreachable } from "ui/src/unreachable";
-
   import type { Project } from "ui/src/project";
   import type { Patch } from "ui/src/project/patch";
+
+  import { unreachable } from "ui/src/unreachable";
+  import * as router from "ui/src/router";
 
   import List from "design-system/List.svelte";
   import SegmentedControl from "design-system/SegmentedControl.svelte";
@@ -115,7 +115,20 @@
       let:item={patch}
       style="margin: 2rem; overflow: visible;">
       <div class="list-item" data-cy={`project-list-entry-${patch}`}>
-        <PatchCard {defaultBranch} {patch} />
+        <PatchCard
+          {defaultBranch}
+          {patch}
+          patchUrl={router.routeToCustomProtocolUrl({
+            type: "project",
+            params: {
+              urn: project.urn,
+              activeView: {
+                type: "patch",
+                peerId: patch.peerId,
+                id: patch.id,
+              },
+            },
+          })} />
       </div>
     </List>
   {:else}

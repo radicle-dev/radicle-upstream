@@ -10,6 +10,7 @@
 
   export let name: string;
   export let style: string | undefined = undefined;
+  export let dataCy: string | undefined = undefined;
 </script>
 
 <style>
@@ -23,7 +24,7 @@
   }
 </style>
 
-<div class="branch" {style}>
+<div class="branch" {style} data-cy={dataCy}>
   <BranchIcon />
   <p class="typo-text-bold" style="color: var(--color-foreground-level-6);">
     {name}

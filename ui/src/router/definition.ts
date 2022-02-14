@@ -49,22 +49,6 @@ export type LoadedRoute =
   | { type: "orgs" }
   | { type: "settings" };
 
-export function routeToPath(route: Route): string {
-  let subRoute = "";
-
-  if (route.type === "org") {
-    subRoute = `/${route.params.address}/${route.params.view}`;
-  } else if (route.type === "diagnostics" || route.type === "wallet") {
-    subRoute = `/${route.activeTab}`;
-  } else if (route.type === "userProfile") {
-    subRoute = `/${route.params.urn}`;
-  } else if (route.type === "project") {
-    subRoute = `/${route.params.urn}/${route.params.activeView.type}`;
-  }
-
-  return `#/${route.type}${subRoute}`;
-}
-
 export async function loadRoute(route: Route): Promise<LoadedRoute> {
   switch (route.type) {
     case "org":

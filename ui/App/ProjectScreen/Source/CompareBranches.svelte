@@ -8,9 +8,11 @@
 <script lang="ts">
   import ArrowLeftIcon from "design-system/icons/ArrowLeft.svelte";
   import BranchBox from "./BranchBox.svelte";
+  import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let baseBranch: string;
   export let compareBranch: string;
+  export let patchUrl: string;
 </script>
 
 <style>
@@ -25,5 +27,7 @@
 <div class="branches" data-cy="compare-branches">
   <BranchBox name={baseBranch} />
   <ArrowLeftIcon />
-  <BranchBox name={compareBranch} />
+  <Copyable name="shareable link" clipboardContent={patchUrl}>
+    <BranchBox name={compareBranch} dataCy="shareable-patch-link" />
+  </Copyable>
 </div>

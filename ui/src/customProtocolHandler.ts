@@ -8,71 +8,65 @@ import * as error from "./error";
 import * as ipc from "./ipc";
 import * as modal from "./modal";
 import * as notification from "./notification";
+import * as router from "./router";
 import * as session from "./session";
 
 import SearchModal from "ui/App/SearchModal.svelte";
 
-export const register = (): void => {
+export function register(): void {
   ipc.listenCustomProtocolInvocation(async message => {
     await session.waitUnsealed();
     handleMessage(message);
   });
-};
+}
 
-const handleMessage = (message: ipc.CustomProtocolInvocation): void => {
-  const match = message.url.match(
-    /^radicle:\/\/(\w+)\/v([\d+])\/?(rad:git:[1-9A-HJ-NP-Za-km-z]{37})?/
+function showError(url: string) {
+  notification.showException(
+    new error.Error({
+      code: error.Code.CustomProtocolParseError,
+      message: "Could not parse the provided URL",
+      details: { url },
+    })
   );
+}
+
+function handleMessage(message: ipc.CustomProtocolInvocation): void {
+  const match = message.url.match(/^radicle:\/\/(\w+)\//);
 
   if (!match) {
-    notification.showException(
-      new error.Error({
-        code: error.Code.CustomProtocolParseError,
-        message: "Could not parse the provided URL",
-        details: { url: message.url },
-      })
-    );
-
+    showError(message.url);
     return;
   }
 
-  const [namespace, version, urn] = match.slice(1);
+  const namespace = match.slice(1)[0];
 
-  if (namespace !== "link") {
-    notification.showException(
-      new error.Error({
-        code: error.Code.CustomProtocolUnsupportedNamespace,
-        message: `The custom protocol namespace "${namespace}" is not supported`,
-        details: { url: message.url },
-      })
+  if (namespace === "link") {
+    const match = message.url.match(
+      /^radicle:\/\/link\/v0\/(rad:git:[1-9A-HJ-NP-Za-km-z]{37})/
     );
-
-    return;
+    if (match) {
+      const urn = match.slice(1)[0];
+      if (urn) {
+        modal.show(SearchModal, () => {}, { searchQuery: urn });
+        return;
+      }
+    }
   }
 
-  if (Number(version) !== 0) {
-    notification.showException(
-      new error.Error({
-        code: error.Code.CustomProtocolUnsupportedVersion,
-        message: `The custom protocol version v${version} is not supported`,
-        details: { url: message.url },
-      })
-    );
+  if (namespace === "upstream") {
+    const match = message.url.match(/^radicle:\/\/upstream\/v0\/(.*)/);
 
-    return;
+    if (match) {
+      const path = match.slice(1)[0];
+      if (path) {
+        const route = router.pathToRoute(path);
+        if (route) {
+          router.push(route);
+          return;
+        }
+      }
+    }
   }
 
-  if (!urn) {
-    notification.showException(
-      new error.Error({
-        code: error.Code.CustomProtocolParseError,
-        message: "The provided URL does not contain a Radicle ID",
-        details: { url: message.url },
-      })
-    );
-
-    return;
-  }
-
-  modal.show(SearchModal, () => {}, { searchQuery: urn });
-};
+  showError(message.url);
+}
