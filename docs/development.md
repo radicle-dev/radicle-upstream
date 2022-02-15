@@ -180,11 +180,6 @@ Microsoft.
 You can build and package Upstream with: `yarn dist`. The generated package
 will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|exe}`.
 
-On Windows you can do `yarn run dist:win:static` to [pre-compile][pc]
-`vcruntime140.dll` to avoid the need to install Visual C++ Redistributable on
-the target computer.
-
-
 #### Apple notarization
 
 We do Apple notarization manually on developer machines.
