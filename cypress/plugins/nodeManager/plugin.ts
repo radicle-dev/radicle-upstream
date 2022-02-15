@@ -89,7 +89,6 @@ class NodeManager implements NodeManagerPlugin {
         `${HOST}:${id}`,
         "--peer-listen",
         `${HOST}:${id}`,
-        "--skip-remote-helper-install",
         "--unsafe-fast-keystore",
         "--insecure-http-api",
       ],

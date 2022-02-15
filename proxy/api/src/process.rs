@@ -14,7 +14,7 @@ use anyhow::Context;
 use futures::prelude::*;
 use tokio::sync::{watch, RwLock};
 
-use crate::{cli::Args, config, context, git_helper, http, service, session};
+use crate::{cli::Args, config, context, http, service, session};
 
 /// Run the proxy process
 ///
@@ -23,12 +23,6 @@ use crate::{cli::Args, config, context, git_helper, http, service, session};
 /// Errors when the setup or any of the services fatally fails.
 pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     setup_logging(&args);
-
-    let proxy_path = config::proxy_path()?;
-    let bin_dir = config::bin_dir()?;
-    if !args.skip_remote_helper_install {
-        git_helper::setup(&proxy_path, &bin_dir)?;
-    }
 
     let mut service_manager = service::Manager::new(service::EnvironmentConfig {
         test_mode: args.test,

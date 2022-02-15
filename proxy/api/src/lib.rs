@@ -28,7 +28,6 @@ mod ethereum {
     pub mod address;
     pub mod claim_ext;
 }
-mod git_helper;
 mod http;
 mod identifier;
 mod identity;

@@ -43,10 +43,6 @@ pub struct Args {
     #[clap(long, env = "RADICLE_PROXY_SEEDS", long = "seed", use_delimiter = true)]
     pub seeds: Option<Vec<String>>,
 
-    /// Don’t install the git-remote-rad binary
-    #[clap(long)]
-    pub skip_remote_helper_install: bool,
-
     /// Passphrase to unlock the keystore. If not provided the keystore must be unlocked via the
     /// HTTP API.
     #[clap(long, env = "RADICLE_PROXY_KEY_PASSPHRASE")]

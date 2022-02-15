@@ -177,7 +177,6 @@ export class RadicleProxy {
         `${this.#ipAddress}:30000`,
         "--key-passphrase",
         this.passphrase,
-        "--skip-remote-helper-install",
         "--unsafe-fast-keystore",
         "--insecure-http-api",
         "--dev-log",

@@ -21,10 +21,11 @@ import { config, Config } from "./config";
 
 const isWindows = process.platform === "win32";
 
+// Folder where the companion binaries live
 const distBinPath =
   config.environment === "development"
     ? path.join(__dirname, "..", "target", "debug")
-    : path.join(__dirname, "..", "..");
+    : process.resourcesPath;
 
 main(app, config).catch(err => {
   console.error("Failed to start app");
@@ -189,7 +190,6 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
   let proxyArgs: string[];
   if (config.environment === "development") {
     proxyArgs = [
-      "--skip-remote-helper-install",
       "--unsafe-fast-keystore",
       "--dev-log",
       "--http-listen",
