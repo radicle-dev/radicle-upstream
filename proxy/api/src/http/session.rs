@@ -88,7 +88,11 @@ mod handler {
                 if ctx.keystore.has_key() {
                     Err(Rejection::from(error::Error::KeystoreSealed))
                 } else {
-                    Err(Rejection::from(http::error::Routing::NoSession))
+                    Err(Rejection::from(http::error::Response {
+                        status_code: StatusCode::NOT_FOUND,
+                        variant: "NO_FOUND",
+                        message: "no locale identity found".to_string(),
+                    }))
                 }
             },
         }

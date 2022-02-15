@@ -13,33 +13,6 @@ use warp::http::StatusCode;
 
 use crate::error;
 
-/// HTTP layer specific rejections.
-#[derive(Debug, thiserror::Error)]
-pub enum Routing {
-    /// The keystore is sealed, context does not have a signer.
-    #[error("no session has been created yet")]
-    NoSession,
-    /// Query part of the URL cannot be deserialized.
-    ///
-    /// Used by [`crate::http::with_qs`] and [`crate::http::with_qs_opt`].
-    #[error("invalid query string \"{query}\": {error}")]
-    InvalidQuery {
-        /// The original query string
-        query: String,
-        /// Error message describing the deserialization error.
-        // We can’t use `serde_qs::Error` here because it is not `Sync` which is
-        // required to implement `reject::Reject`. Instead we
-        error: String,
-    },
-    /// A query string is required but missing
-    ///
-    /// Used by [`crate::http::with_qs`].
-    #[error("required query string is missing")]
-    QueryMissing,
-}
-
-impl warp::reject::Reject for Routing {}
-
 impl warp::reject::Reject for error::Error {}
 
 #[derive(Debug, Clone)]
@@ -85,8 +58,6 @@ pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallibl
         }
     } else if let Some(err) = err.find::<error::Error>() {
         Response::from(err)
-    } else if let Some(err) = err.find::<Routing>() {
-        Response::from(err)
     } else if let Some(err) = err.find::<Response>() {
         err.clone()
     } else {
@@ -110,21 +81,6 @@ pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallibl
         warp::reply::json(&body),
         error_response.status_code,
     ))
-}
-
-impl From<&Routing> for Response {
-    fn from(err: &Routing) -> Self {
-        let (status_code, variant) = match err {
-            Routing::NoSession => (StatusCode::NOT_FOUND, "NOT_FOUND"),
-            Routing::InvalidQuery { .. } => (StatusCode::BAD_REQUEST, "INVALID_QUERY"),
-            Routing::QueryMissing { .. } => (StatusCode::BAD_REQUEST, "QUERY_MISSING"),
-        };
-        Self {
-            status_code,
-            variant,
-            message: err.to_string(),
-        }
-    }
 }
 
 impl From<&crate::keystore::Error> for Response {
