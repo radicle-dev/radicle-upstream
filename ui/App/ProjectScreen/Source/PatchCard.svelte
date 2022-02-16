@@ -65,7 +65,7 @@
     <RevisionIcon style={`margin-right: 0.5rem; fill: ${iconColor};`} />
     <div>
       <div class="info-column">
-        <div class="title-row">
+        <div class="title-row" data-cy={`patch-card-title-${patch.id}`}>
           <p class="typo-text-bold typo-overflow-ellipsis" title={patch.id}>
             {#if patch.title}{patch.title}{:else}{patch.id}{/if}
           </p>

@@ -81,7 +81,7 @@ context("patches", () => {
             .should("contain", patchName);
 
           cy.log("checking the navigation");
-          commands.pick(`patch-card-${patchName}`).click();
+          commands.pick(`patch-card-title-${patchName}`).click();
           commands.pick("patch-page").should("exist");
           commands
             .pickWithContent(
@@ -96,7 +96,7 @@ context("patches", () => {
           commands.pick("patch-list").should("exist");
 
           cy.log("verifying the contents of the patch page");
-          commands.pick(`patch-card-${patchName}`).click();
+          commands.pick(`patch-card-title-${patchName}`).click();
           commands
             .pickWithContent(["checkout-patch-modal-toggle"], "Checkout")
             .should("exist");
@@ -164,7 +164,7 @@ context("patches", () => {
             .should("contain", "main")
             .should("contain", patchName);
 
-          commands.pick(`patch-card-${patchName}`).click();
+          commands.pick(`patch-card-title-${patchName}`).click();
           commands
             .pickWithContent(["patch-page", "patch-title"], patchName)
             .should("exist");
@@ -304,7 +304,7 @@ context("patches", () => {
             .pickWithContent(["patches-tab", "counter"], "1")
             .should("exist");
           commands.pick("patches-tab").click();
-          commands.pickWithContent(["patch-list"], patchMessage).click();
+          commands.pick(`patch-card-title-${patchName}`).click();
 
           cy.log(
             "maintainer can see the patch details & navigate to the commit"
