@@ -27,6 +27,71 @@ const distBinPath =
     ? path.join(__dirname, "..", "target", "debug")
     : process.resourcesPath;
 
+// Handle custom protocol on macOS.
+app.on("open-url", (event, url) => {
+  event.preventDefault();
+
+  const parsedUrl = parseRadicleUrl(url);
+  if (parsedUrl) {
+    throttled(() => {
+      windowManager.sendMessage({
+        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: { url: parsedUrl },
+      });
+    });
+  }
+});
+
+app.on("render-process-gone", (_event, _webContents, details) => {
+  if (details.reason !== "clean-exit") {
+    console.error(`Electron render process is gone. Reason: ${details.reason}`);
+    shutdown();
+  }
+});
+
+app.on("before-quit", event => {
+  windowManager.close();
+  event.preventDefault();
+  shutdown();
+});
+
+// Quit when all windows are closed.
+app.on("window-all-closed", () => {
+  // On macOS it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== "darwin") {
+    shutdown();
+  }
+});
+
+app.on("activate", () => {
+  if (app.isReady() && !windowManager.window) {
+    windowManager.open();
+  }
+});
+
+// Handle custom protocol on Linux when Upstream is already running
+app.on("second-instance", (_event, argv, _workingDirectory) => {
+  const parsedUrl = parseRadicleUrl(argv[1]);
+  if (parsedUrl) {
+    throttled(() => {
+      windowManager.focus();
+      windowManager.sendMessage({
+        kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: { url: parsedUrl },
+      });
+    });
+  }
+});
+
+process.on("SIGINT", () => {
+  shutdown();
+});
+
+process.on("SIGTERM", () => {
+  shutdown();
+});
+
 main(app, config).catch(err => {
   console.error("Failed to start app");
   console.error(err);
@@ -82,65 +147,6 @@ async function main(app: App, config: Config) {
 
   installMainProcessHandler(createMainProcessIpcHandlers());
 
-  app.on("render-process-gone", (_event, _webContents, details) => {
-    if (details.reason !== "clean-exit") {
-      console.error(
-        `Electron render process is gone. Reason: ${details.reason}`
-      );
-      shutdown();
-    }
-  });
-
-  app.on("before-quit", event => {
-    windowManager.close();
-    event.preventDefault();
-    shutdown();
-  });
-
-  // Quit when all windows are closed.
-  app.on("window-all-closed", () => {
-    // On macOS it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== "darwin") {
-      shutdown();
-    }
-  });
-
-  // Handle custom protocol on macOS
-  app.on("open-url", (event, url) => {
-    event.preventDefault();
-
-    const parsedUrl = parseRadicleUrl(url);
-    if (parsedUrl) {
-      throttled(() => {
-        windowManager.sendMessage({
-          kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-          data: { url: parsedUrl },
-        });
-      });
-    }
-  });
-
-  app.on("activate", () => {
-    if (app.isReady() && !windowManager.window) {
-      windowManager.open();
-    }
-  });
-
-  // Handle custom protocol on Linux when Upstream is already running
-  app.on("second-instance", (_event, argv, _workingDirectory) => {
-    const parsedUrl = parseRadicleUrl(argv[1]);
-    if (parsedUrl) {
-      throttled(() => {
-        windowManager.focus();
-        windowManager.sendMessage({
-          kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-          data: { url: parsedUrl },
-        });
-      });
-    }
-  });
-
   // Handle custom protocol on Linux when Upstream is not running
   const parsedUrl = parseRadicleUrl(process.argv[1]);
   if (parsedUrl) {
@@ -153,13 +159,6 @@ async function main(app: App, config: Config) {
   }
 
   await app.whenReady();
-  process.on("SIGINT", () => {
-    shutdown();
-  });
-
-  process.on("SIGTERM", () => {
-    shutdown();
-  });
 
   proxyProcessManager.run().then(({ status, signal, output }) => {
     windowManager.sendMessage({
