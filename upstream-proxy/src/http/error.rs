@@ -48,6 +48,17 @@ impl Response {
 
 impl warp::reject::Reject for Response {}
 
+impl axum::response::IntoResponse for Response {
+    fn into_response(self) -> axum::response::Response {
+        let body = serde_json::json!({
+            "message": self.message,
+            "variant": self.variant,
+        });
+
+        (self.status_code, axum::response::Json(body)).into_response()
+    }
+}
+
 pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallible> {
     let error_response = if err.is_not_found() {
         Response {
@@ -80,30 +91,6 @@ pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallibl
         warp::reply::json(&body),
         error_response.status_code,
     ))
-}
-
-impl From<&crate::keystore::Error> for Response {
-    fn from(err: &crate::keystore::Error) -> Self {
-        if err.is_invalid_passphrase() {
-            Self {
-                status_code: StatusCode::FORBIDDEN,
-                variant: "INCORRECT_PASSPHRASE",
-                message: "That\u{2019}s the wrong passphrase.".to_string(),
-            }
-        } else if err.is_key_exists() {
-            Self {
-                status_code: StatusCode::CONFLICT,
-                variant: "KEY_EXISTS",
-                message: "A key already exists".to_string(),
-            }
-        } else {
-            Self {
-                status_code: StatusCode::INTERNAL_SERVER_ERROR,
-                variant: "INTERNAL_SERVER_ERROR",
-                message: err.to_string(),
-            }
-        }
-    }
 }
 
 impl From<&radicle_source::error::Error> for Response {
@@ -243,7 +230,6 @@ impl From<&error::Error> for Response {
         match err {
             error::Error::State(err) => Self::from(err),
             error::Error::Source(err) => Self::from(err),
-            error::Error::Keystore(keystore_err) => Self::from(keystore_err),
             error::Error::KeystoreSealed => Self {
                 status_code: StatusCode::FORBIDDEN,
                 variant: "FORBIDDEN",

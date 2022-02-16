@@ -14,10 +14,8 @@ use link_crypto::PeerId;
 use crate::context;
 
 mod control;
-mod diagnostics;
-mod error;
+pub mod error;
 mod identity;
-mod keystore;
 mod notification;
 mod project;
 mod session;
@@ -41,7 +39,9 @@ macro_rules! combine {
 }
 
 /// Main entry point for HTTP API.
-pub fn api(ctx: context::Context) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+pub fn api(
+    ctx: context::Context,
+) -> impl Filter<Extract = impl Reply, Error = std::convert::Infallible> + Clone {
     let test = ctx.test();
 
     let control_filter = path("control")
@@ -59,46 +59,18 @@ pub fn api(ctx: context::Context) -> impl Filter<Extract = impl Reply, Error = R
     let notification_filter = path("notifications").and(notification::filters(ctx.clone()));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let session_filter = path("session").and(session::filters(ctx.clone()));
-    let keystore_filter = path("keystore").and(keystore::filters(ctx.clone()));
-    let source_filter = path("source").and(source::filters(ctx.clone()));
-    let diagnostics_filter = path("diagnostics").and(diagnostics::filters(ctx));
+    let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
         control_filter,
-        diagnostics_filter,
         identity_filter,
         notification_filter,
         project_filter,
         session_filter,
-        keystore_filter,
         source_filter
     ));
 
-    let cors = warp::cors()
-        .allow_any_origin()
-        .allow_credentials(true)
-        .allow_headers(&[warp::http::header::CONTENT_TYPE])
-        .allow_methods(&[
-            warp::http::Method::DELETE,
-            warp::http::Method::GET,
-            warp::http::Method::POST,
-            warp::http::Method::PUT,
-            warp::http::Method::OPTIONS,
-        ]);
-    let log = warp::log::custom(|info| {
-        tracing::info!(
-            target: "proxy::http",
-            elapsed = ?info.elapsed(),
-            "{} {} {}",
-            info.method(),
-            info.path(),
-            info.status().as_u16(),
-        );
-    });
-
-    let recovered = api.recover(error::recover);
-
-    recovered.with(cors).with(log)
+    api.recover(error::recover)
 }
 
 /// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and

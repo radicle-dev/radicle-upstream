@@ -58,7 +58,7 @@ impl Context {
     pub async fn unseal_keystore(
         &mut self,
         passphrase: keystore::SecUtf8,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::keystore::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.get(passphrase))
             .await
@@ -76,7 +76,7 @@ impl Context {
     pub async fn create_key(
         &mut self,
         passphrase: keystore::SecUtf8,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::keystore::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.create_key(passphrase))
             .await

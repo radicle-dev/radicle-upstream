@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use futures::prelude::*;
 
-use crate::{cli::Args, config, context, http, service};
+use crate::{cli::Args, config, context, service};
 
 /// Run the proxy process
 ///
@@ -212,7 +212,7 @@ async fn run_session(
         let ctx = ctx.clone();
         let http_listen_addr = args.http_listen;
         move |shutdown_signal| {
-            serve(ctx, http_listen_addr, shutdown_signal)
+            crate::http_next::serve(ctx, http_listen_addr, shutdown_signal)
                 .map_err(|e| e.context("server failed"))
                 .boxed()
         }
@@ -225,28 +225,6 @@ async fn run_session(
     }
 
     Ok(())
-}
-
-fn serve(
-    ctx: context::Context,
-    listen_addr: std::net::SocketAddr,
-    restart_signal: impl Future<Output = ()> + Send + 'static,
-) -> impl Future<Output = anyhow::Result<()>> {
-    let ctx_shutdown = match &ctx {
-        context::Context::Sealed(sealed) => sealed.shutdown.clone(),
-        context::Context::Unsealed(unsealed) => unsealed.rest.shutdown.clone(),
-    };
-    let api = http::api(ctx);
-    async move {
-        let (_, server) = warp::serve(api).try_bind_with_graceful_shutdown(listen_addr, {
-            async move {
-                restart_signal.await;
-                ctx_shutdown.notify_waiters()
-            }
-        })?;
-        server.await;
-        Ok(())
-    }
 }
 
 async fn log_daemon_peer_events(events: impl Stream<Item = crate::daemon::peer::Event>) {

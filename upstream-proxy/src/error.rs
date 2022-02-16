@@ -8,15 +8,9 @@
 
 use std::io;
 
-use crate::keystore;
-
 /// All error variants the API will return.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
-    /// Keystore error.
-    #[error(transparent)]
-    Keystore(#[from] keystore::Error),
-
     /// Error interacting with [`crate::daemon::net::peer::Peer`].
     #[error(transparent)]
     State(#[from] crate::daemon::state::Error),

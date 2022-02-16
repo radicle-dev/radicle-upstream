@@ -23,6 +23,7 @@ mod daemon;
 pub mod env;
 mod error;
 mod git_fetch;
+mod http_next;
 mod peer;
 mod shutdown_runner;
 mod ethereum {
