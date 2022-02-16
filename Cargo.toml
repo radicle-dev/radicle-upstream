@@ -8,39 +8,39 @@ members = [
 
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 [patch.crates-io.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 [patch.crates-io.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 [patch.crates-io.link-replication]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2021-12-14"
+branch = "master"
 
 [patch.crates-io.rad-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 [patch.crates-io.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 [patch.crates-io.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 [patch.crates-io.rad-exe]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+branch = "master"
 
 
 # Uncomment the following lines and comment out the radicle-link patches above
