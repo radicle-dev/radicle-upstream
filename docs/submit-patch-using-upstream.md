@@ -27,12 +27,12 @@ we need some help.
    peer".
 
 
-## Get the source code
+## Get the Upstream project
 
-1. Open to the "Search" dialog by pressing `⌘` + `p` (on macOS) or `ctrl` + `p`
+1. Open the "Search" dialog by pressing `⌘` + `p` (on macOS) or `ctrl` + `p`
    (on Linux).
 
-2. Follow the Upstream project by pasting in its project ID
+2. Follow the Upstream project by pasting its project ID
    `rad:git:hnrk8ueib11sen1g9n1xbt71qdns9n4gipw1o` into the search bar and
    pressing the `enter` key.
 
@@ -53,7 +53,7 @@ we need some help.
 
 3. Click the "Fork" button inside the modal.
    After a while a notification should appear confirming the completion of the
-   checkout saying "radicle-upstream checked out to …"
+   checkout saying "radicle-upstream checked out to …".
 
 
 ## Make Upstream commands available in your terminal
@@ -82,7 +82,7 @@ we need some help.
 
 ## Create a patch
 
-1. In your terminal, navigate to the working copy that you created in the
+1. Navigate to the working copy that you created in the
    "Create a local working copy" section.
    ```
    cd /path/to/working/copy
@@ -90,7 +90,7 @@ we need some help.
 
 2. Create and checkout a new branch that will contain the changes for your
    patch. The branch name should be short and descriptive – it will be used to
-   identify the patch
+   identify the patch.
    ```
    git checkout --branch my-proposed-changes
    ```
@@ -103,7 +103,7 @@ we need some help.
    git commit -s
    ```
 
-5. Publish your patch:
+5. Create your patch:
    ```
    upstream patch create
    ```
@@ -117,9 +117,9 @@ we need some help.
    After entering your passphrase and pressing the `enter` key, the patch will
    be published.
 
-   Note: Upstream should be running in the background for the patch to be
-   synced to the seed node. At the moment there is no visual feedback whether
-   the patch has been synced or not.
+   Upstream should be running in the background for the patch to be synced to
+   the seed node. At the moment there is no visual feedback whether the patch
+   has been synced or not.
 
 6. Verify that the patch shows up in Upstream by refreshing the UI via
    `⌘` + `r` (on macOS) or `ctrl` + `r` (on Linux), navigating to the project
@@ -150,7 +150,7 @@ review, it will be merged and published by the maintainers.
 We'll reach out to you in case there are any changes required.
 To update and re-publish your patch do the following:
 
-1. In your terminal, go to the project checkout directory, and make sure you're
+1. Go to the project checkout directory, and make sure you're
    on the same branch as when you proposed the patch:
    ```
    cd path/to/working/copy
