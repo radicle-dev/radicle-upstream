@@ -1,4 +1,4 @@
-# Creating your first Patch
+# Submit your first patch using Upstream
 
 This guide will walk you through the necessary steps to set up Upstream and
 create your first patch. Have a look at the [issue list][il] for ideas on where
@@ -29,17 +29,17 @@ we need some help.
 
 ## Get the source code
 
-1. Navigate to the "Search" modal by pressing `⌘` + `p` (on macOS) or
-   `ctrl` + `p` (on Linux).
+1. Open to the "Search" dialog by pressing `⌘` + `p` (on macOS) or `ctrl` + `p`
+   (on Linux).
 
-2. Follow the Upstream project by pasting in the following Project ID:
+2. Follow the Upstream project by pasting in its project ID
    `rad:git:hnrk8ueib11sen1g9n1xbt71qdns9n4gipw1o` into the search bar and
    pressing the `enter` key.
 
    Upstream will navigate to your "Profile" screen showing a card with the
    title "Still looking…". Once the project has been fetched from the seed, the
    title of this card will switch to "radicle-upstream". On a broadband
-   connection this should not take longer than a couple of minutes.
+   connection this should not take longer than a couple of seconds.
 
 3. Navigate to the project by clicking the "radicle-upstream" project card.
 
@@ -56,7 +56,7 @@ we need some help.
    checkout saying "radicle-upstream checked out to …"
 
 
-## Set up the Upstream terminal integration
+## Make Upstream commands available in your terminal
 
 1. Add this line to your terminal configuration or the `~/.profile` file:
    ```
@@ -74,7 +74,7 @@ we need some help.
    which git-remote-rad
    /Users/rudolfs/.radicle/bin/git-remote-rad
    ```
-   Note: the paths may differ depending on your OS, the important thing is that
+   The paths may differ depending on your OS, the important thing is that
    the files are found. If the output mentions "upstream not found" or
    "git-remote-rad not found" the terminal integration didn't work and needs
    further troubleshooting.
@@ -88,14 +88,14 @@ we need some help.
    cd /path/to/working/copy
    ```
 
-2. Create a new branch that will contain the changes for your patch. The branch
-   name should be short and descriptive.
+2. Create and checkout a new branch that will contain the changes for your
+   patch. The branch name should be short and descriptive – it will be used to
+   identify the patch
    ```
-   git branch my-proposed-changes
-   git checkout my-proposed-changes
+   git checkout --branch my-proposed-changes
    ```
 
-3. Make your proposed changes to the code.
+3. Make your changes to the code.
 
 4. Commit your changes following the ["Commit hygene" guidelines][co] and
    signing the [DCO][do] for each commit with:
@@ -161,7 +161,7 @@ To update and re-publish your patch do the following:
 
 3. Commit the changes with `git commit -s`.
 
-4. Once you've addressed all the comments, re-publish the patch:
+4. Once you've addressed all the comments, update the patch:
    ```
    upstream patch update
    ```
@@ -178,7 +178,7 @@ patch.
 
 
 [co]: contributing.md
-[dc]: https://discord.com/channels/841318878125490186/843873418205331506
+[dc]: https://discord.gg/radicle
 [do]: ../DCO
 [gh]: https://github.com/radicle-dev/radicle-upstream/issues/1958
 [il]: https://github.com/radicle-dev/radicle-upstream/issues
