@@ -42,19 +42,32 @@ export function uriToRoute(url: string): Route | undefined {
   }
 }
 
-export function pathToRoute(path: string): Route | undefined {
-  const match = path.match(
-    /project\/(rad:git:[1-9A-HJ-NP-Za-km-z]{37})\/patch\/(.*)\/(.*)/
-  );
-  if (!match) {
-    return undefined;
+function pathToRoute(path: string): Route | undefined {
+  const segments = path.split("/");
+  const type = segments.shift();
+  switch (type) {
+    case "project": {
+      const urn = segments.shift();
+      const resource = segments.shift();
+      if (urn && resource === "patch") {
+        const peerId = segments.shift();
+        const patchId = segments.join("/");
+        if (peerId && patchId) {
+          return {
+            type: "project",
+            params: {
+              urn,
+              activeView: { type: "patch", id: patchId, peerId },
+            },
+          };
+        } else {
+          return undefined;
+        }
+      } else {
+        return undefined;
+      }
+    }
+    default:
+      return undefined;
   }
-  const [projectUrn, peerId, patchId] = match.slice(1);
-  return {
-    type: "project",
-    params: {
-      urn: projectUrn,
-      activeView: { type: "patch", id: patchId, peerId },
-    },
-  };
 }

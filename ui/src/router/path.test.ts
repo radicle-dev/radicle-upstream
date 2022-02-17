@@ -20,7 +20,7 @@ describe("uriToRoute", () => {
         activeView: {
           type: "patch",
           peerId: "hyn5r6yejjco8r77yf7gu6gqsetgjsqt5oitpzu5eu791wej6p3xz6",
-          id: "no-session-kv",
+          id: "no-session-kv/patch",
         },
       },
     };
