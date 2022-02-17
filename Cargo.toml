@@ -8,36 +8,35 @@ members = [
 
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [patch.crates-io.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [patch.crates-io.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [patch.crates-io.rad-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [patch.crates-io.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [patch.crates-io.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [patch.crates-io.rad-exe]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-02-15"
-
+rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 # Uncomment the following lines and comment out the radicle-link patches above
 # to develop against a local copy of `radicle-link`.

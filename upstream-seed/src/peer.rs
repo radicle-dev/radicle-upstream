@@ -151,35 +151,16 @@ impl Peer {
             .await;
         match result {
             Ok(replication_output) => {
-                let mode = replication_output.mode;
-                let updated_refs = replication_output
-                    .updated_tips
-                    .keys()
-                    .map(|x| x.to_string())
-                    .collect::<HashSet<_>>();
+                let updated_refs = replication_output.updated_refs();
                 if updated_refs.is_empty() {
                     tracing::info!("remote does not have identity");
                     Ok(false)
                 } else {
-                    tracing::info!(?mode, ?updated_refs, "fetch identity done");
+                    tracing::info!(?updated_refs, "fetch identity done");
                     Ok(true)
                 }
             },
-            Err(err) => {
-                let is_missing_identity_err = matches!(
-                    err,
-                    librad::net::peer::error::Replicate::Replicate(
-                        librad::net::replication::error::Replicate::Replication(
-                            librad::git::replication::Error::MissingIdentity,
-                        ),
-                    )
-                );
-                if is_missing_identity_err {
-                    Ok(false)
-                } else {
-                    Err(anyhow::Error::new(err).context("librad replication failed"))
-                }
-            },
+            Err(err) => Err(anyhow::Error::new(err).context("librad replication failed")),
         }
     }
 

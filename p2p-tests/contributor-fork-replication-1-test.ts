@@ -133,6 +133,14 @@ async function testcase(dataPath: string) {
     keyPassphrase: contributor.passphrase,
   });
 
+  // ALEX: We're not entirely sure when the announcement occurs. The daemon has
+  // a loop which announces every second, but we also need to allow some time
+  // for the announcement to be received by the seed and the replication to
+  // occur. In practice 5 seconds seems to work for me.
+  //
+  // I'm quite unhappy about this
+  await sleep(5000);
+
   // Assert that the seed received the contributor's fork and latest commit.
   await withRetry(async () => {
     const result = radCli({

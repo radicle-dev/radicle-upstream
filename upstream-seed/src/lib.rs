@@ -28,6 +28,9 @@ mod peer;
 pub async fn main() {
     let args = cli::from_args();
 
+    // Only required until signal handling woes in git-tempfile are resolved
+    // https://github.com/Byron/gitoxide/issues/336
+    git_tempfile::force_setup(git_tempfile::SignalHandlerMode::DeleteTempfilesOnTermination);
     init_logging(args.log_json);
 
     if let Err(err) = run(args).await {

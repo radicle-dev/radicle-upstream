@@ -36,6 +36,9 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
         ))?;
     }
 
+    // Only required until signal handling woes in git-tempfile are resolved
+    // https://github.com/Byron/gitoxide/issues/336
+    git_tempfile::force_setup(git_tempfile::SignalHandlerMode::DeleteTempfilesOnTermination);
     #[cfg(unix)]
     install_signal_handlers(&service_manager)?;
 

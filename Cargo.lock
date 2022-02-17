@@ -73,6 +73,7 @@ dependencies = [
  "eip55",
  "either",
  "futures 0.3.21",
+ "git-tempfile",
  "http",
  "kv",
  "lazy_static",
@@ -738,7 +739,7 @@ dependencies = [
 [[package]]
 name = "cob"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "automerge",
  "either",
@@ -1515,9 +1516,9 @@ dependencies = [
 
 [[package]]
 name = "git-odb"
-version = "0.23.0"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "607118e92c496fb7c3458ff1afd2593665f4626e5cb9c8c0d39595fbf08da90e"
+checksum = "452480a78d0a1befe19cd16bf4edf72bce50a3eac7d73dc10a9817b2edc2ac1a"
 dependencies = [
  "btoi",
  "git-features",
@@ -1530,9 +1531,9 @@ dependencies = [
 
 [[package]]
 name = "git-pack"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8aa7eded672fda783b1e248a5db9cc9d9bfc5b3acc1efdf3f28a8bf3789d380"
+checksum = "ee1cf8862969ad70a5ffb2b62378bc193067773bd172816071458ffdac6d6487"
 dependencies = [
  "btoi",
  "byteorder",
@@ -1608,7 +1609,7 @@ dependencies = [
 [[package]]
 name = "git-ref-format"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "git-ref-format-core",
  "git-ref-format-macro",
@@ -1617,7 +1618,7 @@ dependencies = [
 [[package]]
 name = "git-ref-format-core"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "bstr",
  "thiserror",
@@ -1626,7 +1627,7 @@ dependencies = [
 [[package]]
 name = "git-ref-format-macro"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "git-ref-format-core",
  "proc-macro-error",
@@ -1651,7 +1652,7 @@ dependencies = [
 [[package]]
 name = "git-trailers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "nom 5.1.2",
  "thiserror",
@@ -2245,7 +2246,7 @@ dependencies = [
 [[package]]
 name = "librad"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "async-lock",
  "async-stream",
@@ -2262,6 +2263,7 @@ dependencies = [
  "either",
  "futures 0.3.21",
  "futures_codec",
+ "git-ref-format",
  "git-trailers",
  "git2",
  "globset",
@@ -2347,7 +2349,7 @@ dependencies = [
 [[package]]
 name = "link-async"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "blocking",
  "futures 0.3.21",
@@ -2362,7 +2364,7 @@ dependencies = [
 [[package]]
 name = "link-canonical"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "link-canonical-derive",
  "nom 7.1.0",
@@ -2376,7 +2378,7 @@ dependencies = [
 [[package]]
 name = "link-canonical-derive"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "convert_case",
  "proc-macro2",
@@ -2387,7 +2389,7 @@ dependencies = [
 [[package]]
 name = "link-crypto"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "async-trait",
  "dyn-clone",
@@ -2409,7 +2411,7 @@ dependencies = [
 [[package]]
 name = "link-git"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "arc-swap",
  "async-process",
@@ -2444,7 +2446,7 @@ dependencies = [
 [[package]]
 name = "link-identities"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "either",
  "futures-lite",
@@ -2474,7 +2476,7 @@ dependencies = [
 [[package]]
 name = "link-replication"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "async-trait",
  "blocking",
@@ -2496,7 +2498,7 @@ dependencies = [
 [[package]]
 name = "link-tracking"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "cob",
  "either",
@@ -3342,7 +3344,7 @@ dependencies = [
 [[package]]
 name = "rad-clib"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "futures-lite",
  "librad",
@@ -3359,7 +3361,7 @@ dependencies = [
 [[package]]
 name = "rad-exe"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "anyhow",
  "librad",
@@ -3373,7 +3375,7 @@ dependencies = [
 [[package]]
 name = "rad-identities"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "anyhow",
  "clap 2.34.0",
@@ -3399,7 +3401,7 @@ dependencies = [
 [[package]]
 name = "rad-profile"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "anyhow",
  "futures-lite",
@@ -3414,7 +3416,7 @@ dependencies = [
 [[package]]
 name = "radicle-daemon"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -3437,7 +3439,7 @@ dependencies = [
 [[package]]
 name = "radicle-data"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "minicbor",
  "nonempty 0.6.0",
@@ -3449,7 +3451,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "git2",
  "link-git",
@@ -3464,7 +3466,7 @@ dependencies = [
 [[package]]
 name = "radicle-git-helpers"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "anyhow",
  "git2",
@@ -3499,7 +3501,7 @@ dependencies = [
 [[package]]
 name = "radicle-macros"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 dependencies = [
  "proc-macro-error",
  "quote",
@@ -3526,7 +3528,7 @@ dependencies = [
 [[package]]
 name = "radicle-std-ext"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-02-15#913817739e1c021d8ad142e7ea38272839d6bc5c"
+source = "git+https://github.com/radicle-dev/radicle-link.git?rev=ca4f1856b29fa5d2b469c4f7db33ac81fdec2458#ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 
 [[package]]
 name = "radicle-surf"
@@ -4704,6 +4706,7 @@ dependencies = [
  "either",
  "futures 0.3.21",
  "futures-delay-queue",
+ "git-tempfile",
  "git2",
  "librad",
  "link-identities",

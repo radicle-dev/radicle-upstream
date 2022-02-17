@@ -43,8 +43,12 @@ url = "2.1"
 walkdir = "2"
 warp = { version = "0.3", default-features = false }
 
+# Only required until signal handling woes in git-tempfile are resolved
+# https://github.com/Byron/gitoxide/issues/336
+git-tempfile = "1.0.6"
+
 # radicle-link dependencies. These are patched in the workspace
-librad = "0.1"
+librad = { version = "0.1", features = ["replication-v3"] }
 link-crypto = "0.1"
 link-identities = "0.1"
 rad-identities = "0.1"
