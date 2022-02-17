@@ -30,41 +30,23 @@ function showError(url: string) {
   );
 }
 
-function handleMessage(message: ipc.CustomProtocolInvocation): void {
-  const match = message.url.match(/^radicle:\/\/(\w+)\//);
+const LINK_URI_PREFIX = "radicle://link/v0/";
 
-  if (!match) {
-    showError(message.url);
+function handleMessage(message: ipc.CustomProtocolInvocation): void {
+  const route = router.uriToRoute(message.url);
+  if (route) {
+    router.push(route);
     return;
   }
 
-  const namespace = match.slice(1)[0];
-
-  if (namespace === "link") {
-    const match = message.url.match(
-      /^radicle:\/\/link\/v0\/(rad:git:[1-9A-HJ-NP-Za-km-z]{37})/
-    );
-    if (match) {
-      const urn = match.slice(1)[0];
-      if (urn) {
-        modal.show(SearchModal, () => {}, { searchQuery: urn });
-        return;
-      }
-    }
-  }
-
-  if (namespace === "upstream") {
-    const match = message.url.match(/^radicle:\/\/upstream\/v0\/(.*)/);
-
-    if (match) {
-      const path = match.slice(1)[0];
-      if (path) {
-        const route = router.pathToRoute(path);
-        if (route) {
-          router.push(route);
-          return;
-        }
-      }
+  if (message.url.startsWith(LINK_URI_PREFIX)) {
+    const path = message.url.substring(LINK_URI_PREFIX.length);
+    const [urn, ...rest] = path.split("/");
+    const match = urn.match(/^rad:git:[1-9A-HJ-NP-Za-km-z]{37}$/);
+    if (urn && match && rest.length === 0) {
+      const urn = match[0];
+      modal.show(SearchModal, () => {}, { searchQuery: urn });
+      return;
     }
   }
 

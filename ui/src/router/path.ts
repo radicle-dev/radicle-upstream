@@ -6,6 +6,13 @@
 
 import type { Route } from "./definition";
 
+const URI_PREFIX = "radicle://upstream/v0/";
+
+export function routeToUri(route: Route): string {
+  const path = routeToPath(route);
+  return `${URI_PREFIX}${path.substring(1)}`;
+}
+
 export function routeToPath(route: Route): string {
   let subRoute = "";
 
@@ -26,6 +33,15 @@ export function routeToPath(route: Route): string {
   return `/${route.type}${subRoute}`;
 }
 
+export function uriToRoute(url: string): Route | undefined {
+  if (url.startsWith(URI_PREFIX)) {
+    const path = url.substring(URI_PREFIX.length);
+    return pathToRoute(path);
+  } else {
+    return undefined;
+  }
+}
+
 export function pathToRoute(path: string): Route | undefined {
   const match = path.match(
     /project\/(rad:git:[1-9A-HJ-NP-Za-km-z]{37})\/patch\/(.*)\/(.*)/
@@ -41,8 +57,4 @@ export function pathToRoute(path: string): Route | undefined {
       activeView: { type: "patch", id: patchId, peerId },
     },
   };
-}
-
-export function routeToCustomProtocolUrl(route: Route): string {
-  return `radicle://upstream/v0${routeToPath(route)}`;
 }

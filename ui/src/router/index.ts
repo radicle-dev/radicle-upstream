@@ -16,7 +16,7 @@ import { Route, LoadedRoute, loadRoute } from "./definition";
 import { routeToPath } from "./path";
 
 export * from "./definition";
-export * from "./path";
+export { routeToUri, uriToRoute } from "./path";
 
 // This is only respected by Safari.
 const DOCUMENT_TITLE = "Radicle Upstream";

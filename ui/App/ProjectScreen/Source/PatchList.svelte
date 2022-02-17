@@ -118,7 +118,7 @@
         <PatchCard
           {defaultBranch}
           {patch}
-          patchUrl={router.routeToCustomProtocolUrl({
+          patchUrl={router.routeToUri({
             type: "project",
             params: {
               urn: project.urn,

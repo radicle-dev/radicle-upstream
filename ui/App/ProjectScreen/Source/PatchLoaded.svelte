@@ -111,7 +111,7 @@
   <div class="action-box">
     <CompareBranches
       baseBranch={project.metadata.defaultBranch}
-      patchUrl={router.routeToCustomProtocolUrl({
+      patchUrl={router.routeToUri({
         type: "project",
         params: {
           urn: project.urn,

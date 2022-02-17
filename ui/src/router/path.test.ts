@@ -5,11 +5,11 @@
 // LICENSE file.
 
 import type { Route } from "./definition";
-import { routeToPath, pathToRoute } from "./path";
+import { routeToUri, uriToRoute } from "./path";
 
-describe("pathToRoute", () => {
+describe("uriToRoute", () => {
   it("returns undefined if it can't parse the path", () => {
-    expect(pathToRoute("/not/a/recognised/path")).toBeUndefined();
+    expect(uriToRoute("/not/a/recognised/path")).toBeUndefined();
   });
 
   it("parses patch paths", () => {
@@ -24,6 +24,6 @@ describe("pathToRoute", () => {
         },
       },
     };
-    expect(pathToRoute(routeToPath(route))).toEqual(route);
+    expect(uriToRoute(routeToUri(route))).toEqual(route);
   });
 });
