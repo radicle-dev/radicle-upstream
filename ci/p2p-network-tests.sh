@@ -50,4 +50,8 @@ log-group-start "contributor-fork-replication-2-test.ts"
 run-test ./p2p-tests/contributor-fork-replication-2-test.ts
 log-group-end
 
+log-group-start "multiple-project-replication-test.ts"
+run-test ./p2p-tests/multiple-project-replication-test.ts
+log-group-end
+
 clean-cargo-build-artifacts
