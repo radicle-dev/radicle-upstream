@@ -97,7 +97,7 @@ we need some help.
 
 3. Make your changes to the code.
 
-4. Commit your changes following the ["Commit hygene" guidelines][co] and
+4. Commit your changes following the ["Commit hygiene" guidelines][co] and
    signing the [DCO][do] for each commit with:
    ```
    git commit -s

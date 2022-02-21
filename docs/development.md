@@ -52,13 +52,13 @@ initialized with user name `1`. The `RAD_HOME` for the instance is
 `./sandbox/devnet/1`. The peer ID is derived from the instance ID. The default
 passphrase for all devnet Upstream instances is `asdf`.
 
-To connect a second instance to the first one run
+To connect a second instance to the first one run:
 
 ```bash
 yarn run devnet upstream 2 --bootstrap 1
 ```
 
-Make sure you rebuild the project before running instances
+Make sure you rebuild the project before running instances:
 
 ```bash
 cargo build
