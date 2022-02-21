@@ -27,6 +27,13 @@ const distBinPath =
     ? path.join(__dirname, "..", "target", "debug")
     : process.resourcesPath;
 
+const windowManager = new WindowManager();
+const proxyProcessManager = new ProxyProcessManager(
+  proxyProcessOptions(config)
+);
+
+let isShuttingDown = false;
+
 // Handle custom protocol on macOS.
 app.on("open-url", (event, url) => {
   event.preventDefault();
@@ -98,11 +105,6 @@ main(app, config).catch(err => {
   process.exit(2);
 });
 
-const windowManager = new WindowManager();
-const proxyProcessManager = new ProxyProcessManager(
-  proxyProcessOptions(config)
-);
-
 function setupWatcher() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const chokidar = require("chokidar");
@@ -114,8 +116,6 @@ function setupWatcher() {
     windowManager.reload();
   });
 }
-
-let isShuttingDown = false;
 
 async function shutdown() {
   if (isShuttingDown) {
