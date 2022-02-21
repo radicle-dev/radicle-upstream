@@ -9,15 +9,20 @@ import fs from "fs";
 import path from "path";
 import execa from "execa";
 import * as os from "os";
+import * as zod from "zod";
 
 import {
   ProxyProcessManager,
   Options as ProxyProcessOptions,
 } from "./proxy-process-manager";
 import { MainMessageKind, MainProcess, mainProcessMethods } from "./ipc-types";
-import { parseRadicleUrl, throttled } from "./nativeCustomProtocolHandler";
+import { radicleUrlSchema, throttled } from "./nativeCustomProtocolHandler";
 import { openExternalLink, WindowManager } from "./windowManager";
 import { config, Config } from "./config";
+
+interface Args {
+  url?: string;
+}
 
 const isWindows = process.platform === "win32";
 
@@ -27,6 +32,8 @@ const distBinPath =
     ? path.join(__dirname, "..", "target", "debug")
     : process.resourcesPath;
 
+const args = parseArgs();
+
 const windowManager = new WindowManager();
 const proxyProcessManager = new ProxyProcessManager(
   proxyProcessOptions(config)
@@ -34,16 +41,21 @@ const proxyProcessManager = new ProxyProcessManager(
 
 let isShuttingDown = false;
 
+const argsSchema: zod.Schema<Args> = zod.object({
+  url: radicleUrlSchema,
+});
+
 // Handle custom protocol on macOS.
 app.on("open-url", (event, url) => {
   event.preventDefault();
 
-  const parsedUrl = parseRadicleUrl(url);
-  if (parsedUrl) {
+  const parsedUrl = radicleUrlSchema.safeParse(url);
+  if (parsedUrl.success) {
+    const radicleUrl = parsedUrl.data;
     throttled(() => {
       windowManager.sendMessage({
         kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-        data: { url: parsedUrl },
+        data: { url: radicleUrl },
       });
     });
   }
@@ -78,14 +90,20 @@ app.on("activate", () => {
 });
 
 // Handle custom protocol on Linux when Upstream is already running
-app.on("second-instance", (_event, argv, _workingDirectory) => {
-  const parsedUrl = parseRadicleUrl(argv[1]);
-  if (parsedUrl) {
+app.on("second-instance", (_event, _argv, _workingDirectory, rawArgs) => {
+  const argsResult = argsSchema.safeParse(rawArgs);
+  if (argsResult.success === false) {
+    console.error("invalid second instance parameters", argsResult.error);
+    return;
+  }
+
+  if (argsResult.data.url) {
+    const url = argsResult.data.url;
     throttled(() => {
       windowManager.focus();
       windowManager.sendMessage({
         kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-        data: { url: parsedUrl },
+        data: { url },
       });
     });
   }
@@ -137,7 +155,7 @@ async function main(app: App, config: Config) {
 
   // The first instance will handle this via the `second-instance`
   // event.
-  if (!app.requestSingleInstanceLock()) {
+  if (!app.requestSingleInstanceLock(args)) {
     app.quit();
   }
 
@@ -148,12 +166,12 @@ async function main(app: App, config: Config) {
   installMainProcessHandler(createMainProcessIpcHandlers());
 
   // Handle custom protocol on Linux when Upstream is not running
-  const parsedUrl = parseRadicleUrl(process.argv[1]);
-  if (parsedUrl) {
+  if (args.url) {
+    const url = args.url;
     throttled(() => {
       windowManager.sendMessage({
         kind: MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-        data: { url: parsedUrl },
+        data: { url },
       });
     });
   }
@@ -286,5 +304,26 @@ async function installPrograms(): Promise<void> {
       path.join(distBinPath, program),
       path.join(targetBinFolder, program)
     );
+  }
+}
+
+function parseArgs(): Args {
+  let args;
+  if (config.environment === "development") {
+    // In development the app is run as `.../electron native/index.js
+    // ...ARGS`. We ignore the script parameter.
+    args = process.argv.slice(2);
+  } else {
+    args = process.argv.slice(1);
+  }
+
+  if (args.length === 0) {
+    return {};
+  }
+  if (args.length === 1) {
+    const url = radicleUrlSchema.parse(args[0]);
+    return { url };
+  } else {
+    throw new Error("invalid number of arguments");
   }
 }
