@@ -132,14 +132,16 @@ You have two options to announce your patch:
 - on the [#Upstream][dc] discord channel
 - on this [GitHub issue][gh]
 
-You should include your Device ID and Patch ID in the message, e.g.:
-```
-Patch: `hyy4aj3wiqq1o6m5un17sq4m74i4btx8w4ypryri91nrauz9odhfis/upstream-contrib-docs-names`,
-Device ID: `hydqsnkr181w1zfidtocgosxghdu8n8d1wsemzgtszhzjru55ggazk`
-```
+Please include the patch URL in your message.
 
-You can find your Device ID in the settings screen `⌘` + `,` (on macOS) or
-`ctrl` + `,` (on Linux) and the Patch ID in the "Patches" tab of the project.
+You can copy the patch URL by clicking the patch ID which is visible
+in both the patch list screen as well as the patch screen. The button looks
+something like this:
+`hyn5r6yejjco8r77yf7gu6gqsetgjsqt5oitpzu5eu791wej6p3xz6/no-session-error`
+and says "Copy shareable link to clipboard" when you hover it.
+
+A patch URL has the following format:
+radicle://upstream/v0/project/<PROJECT_ID>/patch/<PEER_ID>/<PATCH_ID>
 
 
 ## Address requested changes if needed
