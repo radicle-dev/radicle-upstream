@@ -383,9 +383,6 @@ On pushes of the master branch we also build and upload distribution artifacts.
      not the latest version. Choose the version from the “Range” column.
    * Don’t update `graphql` to v16. v15 is required as a peer dependency for
      `@apollo/client`.
-   * Don’t update `license-webpack-plugin` from v3. v4 has [a
-     bugs](https://github.com/xz64/license-webpack-plugin/issues/118) that
-     prevents it from working correctly.
 
 3. Update transitive dependencies: Remove `yarn.lock` and run `yarn install`.
 
