@@ -157,7 +157,7 @@ const publishRcBinaries: yargs.CommandModule<unknown, unknown> = {
 
     console.log("Publish macOS release candidate binaries manually:");
     console.log(
-      `  gsutil cp dist/radicle-upstream-${version}.dmg gs://${releaseBucket}/radicle-upstream-${version}-rc.dmg`
+      `  gsutil cp dist/radicle-upstream.dmg gs://${releaseBucket}/radicle-upstream-${version}-rc.dmg`
     );
   },
 };
