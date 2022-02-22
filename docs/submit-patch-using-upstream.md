@@ -20,7 +20,7 @@ we need some help.
 
 4. Add our seed node to the list of seeds:
    ```
-   hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@34.88.37.244:8776
+   hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@seed.upstream.radicle.xyz:8776
    ```
    Once you do that, the network status indicator on the right-hand side should
    switch from "You’re not connected to any peers" to "You’re connected to 1

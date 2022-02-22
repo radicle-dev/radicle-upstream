@@ -1,0 +1,12 @@
+[Unit]
+Description=Radicle client services HTTP API
+
+[Service]
+ExecStart=/usr/local/bin/radicle-http-api \
+  --listen 127.0.0.1:18777 \
+  --root /var/local/upstream-seed/46ce5abf-555d-4ea4-b989-96c68cef22fd
+User=1000
+Group=1000
+
+[Install]
+WantedBy=multi-user.target
