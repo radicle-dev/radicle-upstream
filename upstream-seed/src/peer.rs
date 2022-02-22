@@ -48,8 +48,12 @@ impl Peer {
             protocol: protocol::Config {
                 paths: config.rad_paths,
                 listen_addr: config.listen,
-                advertised_addrs: None, // TODO: Should we use this?
-                membership: Default::default(),
+                advertised_addrs: None,
+                membership: protocol::membership::Params {
+                    max_active: 30,
+                    max_passive: 60,
+                    ..Default::default()
+                },
                 network: Network::Main,
                 replication: librad::net::replication::Config::default(),
                 rate_limits: Default::default(),
