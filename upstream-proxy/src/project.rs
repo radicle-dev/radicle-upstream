@@ -67,53 +67,17 @@ impl TryFrom<LinkProject> for Metadata {
 /// See [`Projects`] for a detailed breakdown of both kinds of projects.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Project<S> {
+pub struct Project {
     /// Unique identifier of the project in the network.
     pub urn: Urn,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
     /// High-level statistics about the project
-    pub stats: S,
-}
-
-/// A `Partial` project is one where we _weren't_ able to fetch the [`Stats`] for it.
-pub type Partial = Project<()>;
-
-/// A `Full` project is one where we _were_ able to fetch the [`Stats`] for it.
-pub type Full = Project<Stats>;
-
-impl Partial {
-    /// Convert a `Partial` project into a `Full` one by providing the `stats` for the project.
-    #[allow(clippy::missing_const_for_fn)]
-    pub fn fulfill(self, stats: Stats) -> Full {
-        Project {
-            urn: self.urn,
-            metadata: self.metadata,
-            stats,
-        }
-    }
+    pub stats: Stats,
 }
 
 /// Construct a Project from its metadata and stats
-impl TryFrom<LinkProject> for Partial {
-    type Error = error::Error;
-
-    /// Create a `Project` given a [`LinkProject`] and the [`Stats`]
-    /// for the repository.
-    fn try_from(project: LinkProject) -> Result<Self, Self::Error> {
-        let urn = project.urn();
-        let metadata = Metadata::try_from(project)?;
-
-        Ok(Self {
-            urn,
-            metadata,
-            stats: (),
-        })
-    }
-}
-
-/// Construct a Project from its metadata and stats
-impl TryFrom<(LinkProject, Stats)> for Full {
+impl TryFrom<(LinkProject, Stats)> for Project {
     type Error = error::Error;
 
     /// Create a `Project` given a [`LinkProject`] and the [`Stats`]
@@ -162,10 +126,10 @@ impl From<radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Sta
 /// See [`Projects`] for a detailed breakdown of both kinds of projects.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Tracked(Full);
+pub struct Tracked(Project);
 
 impl Deref for Tracked {
-    type Target = Full;
+    type Target = Project;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -177,12 +141,12 @@ impl Deref for Tracked {
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Failure {
     /// We couldn't get a default branch for the project.
-    DefaultBranch(Partial),
+    DefaultBranch { urn: Urn, metadata: Metadata },
     /// We couldn't get the stats for the project.
-    Stats(Partial),
+    Stats { urn: Urn, metadata: Metadata },
     /// We couldn't get the signed refs of the project, and so we can't determine if it's tracked
     /// or contributed.
-    SignedRefs(Full),
+    SignedRefs(Project),
 }
 
 /// All projects contained in a user's monorepo.
@@ -200,7 +164,7 @@ pub struct Projects {
     ///
     /// The conditions imply that a project is "contributed" if I am the maintainer or I have
     /// contributed to the project.
-    pub contributed: Vec<Full>,
+    pub contributed: Vec<Project>,
 
     /// A project that failed partially when trying to retrieve metadata for it.
     pub failures: Vec<Failure>,
@@ -224,34 +188,38 @@ impl Projects {
             failures: vec![],
         };
 
-        for project in radicle_daemon::state::list_projects(peer.librad_peer()).await? {
-            let project = Project::try_from(project)?;
-            let default_branch = match radicle_daemon::state::find_default_branch(
-                peer.librad_peer(),
-                project.urn.clone(),
-            )
-            .await
-            {
-                Err(err) => {
-                    tracing::warn!(project_urn = %project.urn, ?err, "cannot find default branch");
-                    projects.failures.push(Failure::DefaultBranch(project));
-                    continue;
-                },
-                Ok(branch) => branch,
-            };
+        for link_project in radicle_daemon::state::list_projects(peer.librad_peer()).await? {
+            let urn = link_project.urn();
+            let metadata = Metadata::try_from(link_project)?;
+            let default_branch =
+                match radicle_daemon::state::find_default_branch(peer.librad_peer(), urn.clone())
+                    .await
+                {
+                    Err(err) => {
+                        tracing::warn!(project_urn = %urn, ?err, "cannot find default branch");
+                        projects
+                            .failures
+                            .push(Failure::DefaultBranch { urn, metadata });
+                        continue;
+                    },
+                    Ok(branch) => branch,
+                };
 
-            let stats = match browser::using(peer, default_branch, |browser| {
-                Ok(browser.get_stats()?)
-            }) {
-                Err(err) => {
-                    tracing::warn!(project_urn = %project.urn, ?err, "cannot get project stats");
-                    projects.failures.push(Failure::Stats(project));
-                    continue;
-                },
-                Ok(stats) => stats,
-            };
+            let stats =
+                match browser::using(peer, default_branch, |browser| Ok(browser.get_stats()?)) {
+                    Err(err) => {
+                        tracing::warn!(project_urn = %urn, ?err, "cannot get project stats");
+                        projects.failures.push(Failure::Stats { urn, metadata });
+                        continue;
+                    },
+                    Ok(stats) => stats,
+                };
 
-            let project = project.fulfill(stats);
+            let project = Project {
+                urn,
+                metadata,
+                stats,
+            };
 
             let refs =
                 match radicle_daemon::state::load_refs(peer.librad_peer(), project.urn.clone())
@@ -286,7 +254,7 @@ impl Projects {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Full, error::Error> {
+pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Project, error::Error> {
     let project = radicle_daemon::state::get_project(peer.librad_peer(), project_urn.clone())
         .await?
         .ok_or(crate::error::Error::ProjectNotFound)?;
@@ -295,7 +263,7 @@ pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Full, err
         radicle_daemon::state::find_default_branch(peer.librad_peer(), project_urn.clone()).await?;
     let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
 
-    Full::try_from((project, project_stats))
+    Project::try_from((project, project_stats))
 }
 
 /// This lists all the projects for a given `user`. This `user` should not be your particular
@@ -316,7 +284,7 @@ pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Full, err
 pub async fn list_for_user(
     peer: &crate::peer::Peer,
     user: &Urn,
-) -> Result<Vec<Full>, error::Error> {
+) -> Result<Vec<Project>, error::Error> {
     let mut projects = vec![];
 
     for project in radicle_daemon::state::list_projects(peer.librad_peer()).await? {
@@ -335,7 +303,7 @@ pub async fn list_for_user(
             )
             .await?;
             let stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
-            let full = Full::try_from((project, stats))?;
+            let full = Project::try_from((project, stats))?;
 
             projects.push(full);
         }

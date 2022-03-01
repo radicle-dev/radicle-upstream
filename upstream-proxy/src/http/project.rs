@@ -216,7 +216,7 @@ mod handler {
             browser.get_stats().map_err(radicle_source::Error::from)
         })
         .map_err(Error::from)?;
-        let project = project::Full::try_from((project, stats))?;
+        let project = project::Project::try_from((project, stats))?;
 
         Ok(reply::with_status(
             reply::json(&project),
