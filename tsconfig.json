@@ -7,6 +7,7 @@
     "webpack.config.ts",
     "proxy-client/**/*.ts",
     "design-system/*.ts",
+    "test/**/*.ts",
     "p2p-tests/**/*.ts"
   ],
   "exclude": ["native/bundle.js", "node_modules/*", "public/*"],
@@ -86,6 +87,7 @@
       "proxy-client": ["proxy-client/index.ts"],
       "design-system/*": ["design-system/*"],
       "design-system": ["design-system/index.ts"],
+      "p2p-tests/*": ["p2p-tests/*"],
       "*": ["./typings/*"]
     },
     /* List of root folders whose combined content represents the structure of the project at runtime. */

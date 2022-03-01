@@ -58,31 +58,18 @@
   const profileProjectsStore = remote.createStore<ProfileProjects>();
   profileProjectsStore.loading();
 
-  const fetchProfileProjectsExecutor = mutexExecutor.create();
+  const loadProfileProjectsExecutor = mutexExecutor.create();
 
-  fetchProfileProjects();
+  loadProfileProjects();
   const unsubPeerEvents = localPeer.requestEvents.subscribe(() => {
-    fetchProfileProjects();
+    loadProfileProjects();
   });
   onDestroy(unsubPeerEvents);
 
-  async function fetchProfileProjects(): Promise<void> {
+  async function loadProfileProjects(): Promise<void> {
     try {
-      const profileProjects = await fetchProfileProjectsExecutor.run(
-        async () => {
-          const [cloned, follows, allRequests] = await Promise.all([
-            proxy.client.project.listContributed(),
-            proxy.client.project.listTracked(),
-            proxy.client.project.requestsList(),
-          ]);
-          const requests = allRequests.filter(
-            req =>
-              req.type !== project.RequestStatus.Cloned &&
-              req.type !== project.RequestStatus.Cancelled &&
-              req.type !== project.RequestStatus.TimedOut
-          );
-          return { cloned, follows, requests };
-        }
+      const profileProjects = await loadProfileProjectsExecutor.run(
+        fetchProfileProjects
       );
       if (profileProjects) {
         profileProjectsStore.success(profileProjects);
@@ -92,6 +79,25 @@
         new error.Error({ message: "Failed to fetch projects.", source: err })
       );
     }
+  }
+
+  async function fetchProfileProjects(): Promise<ProfileProjects> {
+    const [cloned, follows, allRequests] = await Promise.all([
+      proxy.client.project.listContributed(),
+      proxy.client.project.listTracked(),
+      proxy.client.project.requestsList(),
+    ]);
+    const urns = [...cloned, ...follows].map(p => p.urn);
+
+    const requests = allRequests.filter(
+      req =>
+        req.type !== project.RequestStatus.Cloned &&
+        req.type !== project.RequestStatus.Cancelled &&
+        req.type !== project.RequestStatus.TimedOut &&
+        !urns.includes(req.urn)
+    );
+
+    return { cloned, follows, requests };
   }
 
   const showNotificationsForFailedProjects = async (): Promise<void> => {
@@ -127,7 +133,7 @@
   }
 
   function onUnFollow(urn: string): void {
-    proxy.client.project.requestCancel(urn).then(fetchProfileProjects);
+    proxy.client.project.requestCancel(urn).then(loadProfileProjects);
   }
 
   function projectCountText(storeLength: number): string {

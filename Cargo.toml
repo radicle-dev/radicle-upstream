@@ -6,6 +6,18 @@ members = [
   "upstream-cli",
 ]
 
+[patch.crates-io.rad-common]
+git = "https://github.com/radicle-dev/radicle-cli.git"
+branch = "master"
+
+[patch.crates-io.lnk-clib]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2022-03-15"
+
+[patch.crates-io.lnk-profile]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2022-03-15"
+
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
 tag = "cycle/2022-03-15"

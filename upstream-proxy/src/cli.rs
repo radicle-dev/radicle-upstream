@@ -60,6 +60,15 @@ pub struct Args {
     /// Enables more verbose logging for development
     #[clap(long)]
     pub dev_log: bool,
+
+    /// URL of a seed to fetch identities via Git over HTTP. Can be specified multiple times.
+    #[clap(
+        long,
+        env = "RADICLE_PROXY_GIT_SEEDS",
+        long = "git-seed",
+        use_value_delimiter = true
+    )]
+    pub git_seeds: Option<Vec<rad_common::Url>>,
 }
 
 impl Args {

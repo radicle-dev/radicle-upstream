@@ -31,6 +31,7 @@ interface RadicleProxyParams {
   name: string;
   // Address of a seed node to connect to
   seed?: string;
+  gitSeeds?: string[];
   // If true, run the proxy in a network namespace. Defaults to `true`.
   networkNamespace?: boolean;
 }
@@ -48,17 +49,20 @@ export class RadicleProxy {
   #ipAddress: string;
   #seed: string | undefined;
   #networkNamespace: boolean;
+  #gitSeeds: string[] | undefined;
 
   public constructor({
     dataPath,
     ipAddress,
     name,
     seed,
+    gitSeeds,
     networkNamespace,
   }: RadicleProxyParams) {
     this.#ipAddress = ipAddress ?? "127.0.0.1";
     this.#seed = seed;
     this.#networkNamespace = networkNamespace ?? true;
+    this.#gitSeeds = gitSeeds;
     this.name = name;
     this.passphrase = name;
 
@@ -110,9 +114,14 @@ export class RadicleProxy {
       args.push("--seed", this.#seed);
     }
 
+    for (const gitSeed of this.#gitSeeds || []) {
+      args.push("--git-seed", gitSeed);
+    }
+
     const env = {
       LNK_HOME: this.lnkHome,
     };
+
     if (this.#networkNamespace) {
       this.#childProcess = Process.spawnInNamespace(this.name, [bin, ...args], {
         env,

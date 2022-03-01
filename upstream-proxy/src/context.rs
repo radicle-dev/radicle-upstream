@@ -109,6 +109,7 @@ impl From<Sealed> for Context {
 #[derive(Clone)]
 pub struct Unsealed {
     pub peer: crate::peer::Peer,
+    pub git_fetch: crate::git_fetch::Handle,
     pub rest: Sealed,
 }
 
@@ -179,9 +180,14 @@ impl Unsealed {
             drop(shutdown_tx);
         };
 
+        let (git_fetch, _) =
+            futures::executor::block_on(crate::git_fetch::create(peer.clone(), Vec::new()))
+                .unwrap();
+
         Ok((
             Self {
                 peer,
+                git_fetch,
                 rest: Sealed {
                     store,
                     test: false,

@@ -176,6 +176,11 @@ deny = [
     # Wrapper crates can optionally be specified to allow the crate when it
     # is a direct dependency of the otherwise banned crate
     #{ name = "ansi_term", version = "=0.11.0", wrappers = [] },
+
+    # We don’t want to dynamically link against openssl to prevent
+    # issues with code signing on macOS.
+    { name = "openssl-sys" },
+    { name = "openssl-probe" },
 ]
 # Certain crates/versions that will be skipped when doing duplicate detection.
 skip = [

@@ -216,6 +216,12 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
     proxyArgs = [
       "--default-seed",
       "hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@seed.upstream.radicle.xyz:8776",
+      "--git-seed",
+      "https://maple.radicle.garden",
+      "--git-seed",
+      "https://pine.radicle.garden",
+      "--git-seed",
+      "https://willow.radicle.garden",
     ];
   }
 

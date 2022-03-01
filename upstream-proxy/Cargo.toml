@@ -15,13 +15,17 @@ default-run = "upstream-proxy"
 anyhow = "1.0"
 async-broadcast = "0.3.4"
 async-stream = "0.3"
+blocking = "1.1"
 chrono = { version = "0.4.19", features = [ "serde" ] }
 clap = { version =  "3.0", features = ["derive", "env"] }
 data-encoding = "2.3"
+dashmap = "5"
 directories = "4.0"
 eip55 = "0.1.1"
 either = "1"
 futures = { version = "0.3", features = [ "compat" ] }
+futures-delay-queue = "0.5"
+futures-intrusive = "0.4"
 git2 = { version = ">= 0.13.23", default-features = false, features = [ "vendored-libgit2" ] }
 kv = { version = "0.22", features = [ "json-value" ] }
 lazy_static = "1.4"
@@ -54,6 +58,8 @@ lnk-exe = "0.1"
 radicle-data = "0.1"
 radicle-git-ext = "0.1"
 radicle-git-helpers = "0.1"
+
+rad-common = "0"
 
 [dev-dependencies]
 assert_matches = "1.3"

@@ -181,7 +181,13 @@ async fn run_session(
             listen: args.peer_listen,
         })?;
 
+        let (git_fetch, git_fetch_runner) =
+            crate::git_fetch::create(peer.clone(), args.git_seeds.unwrap_or_default()).await?;
+
         tokio::task::spawn(log_daemon_peer_events(peer.events()));
+
+        shutdown_runner
+            .add_with_shutdown(|shutdown| git_fetch_runner.run(shutdown).map(Ok).boxed());
 
         shutdown_runner.add_with_shutdown(|shutdown| {
             peer_runner
@@ -190,7 +196,11 @@ async fn run_session(
                 .boxed()
         });
 
-        context::Context::Unsealed(context::Unsealed { peer, rest: sealed })
+        context::Context::Unsealed(context::Unsealed {
+            peer,
+            rest: sealed,
+            git_fetch,
+        })
     } else {
         context::Context::Sealed(sealed)
     };
@@ -389,7 +399,7 @@ fn setup_logging(args: &Args) {
         ];
 
         if args.dev_log {
-            directives.extend(["api=debug", "crate::daemon=debug"])
+            directives.extend(["upstream_proxy=debug", "crate::daemon=debug"])
         }
 
         for directive in directives {

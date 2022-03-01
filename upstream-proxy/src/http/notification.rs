@@ -40,9 +40,18 @@ mod handler {
             new: current_status,
         }]);
 
-        let notifications = ctx
+        let peer_notifications = ctx
             .peer_events()
             .filter_map(|event| future::ready(crate::notification::from_peer_event(event)));
+
+        let git_fetch_notifications =
+            ctx.git_fetch
+                .updates()
+                .map(|id| Notification::ProjectUpdated {
+                    urn: link_identities::Urn::new(id),
+                });
+
+        let notifications = futures::stream::select(peer_notifications, git_fetch_notifications);
 
         Ok(sse::reply(
             sse::keep_alive().stream(

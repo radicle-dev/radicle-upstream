@@ -9,12 +9,18 @@ use futures::prelude::*;
 
 #[derive(Clone)]
 pub struct Peer {
+    paths: librad::paths::Paths,
     daemon_control: crate::daemon::PeerControl,
     librad_peer: librad::net::peer::Peer<link_crypto::BoxedSigner>,
     events: async_broadcast::InactiveReceiver<crate::daemon::PeerEvent>,
 }
 
 impl Peer {
+    /// Get a reference to the peer's paths.
+    pub fn paths(&self) -> &librad::paths::Paths {
+        &self.paths
+    }
+
     pub fn daemon_control(&mut self) -> &mut crate::daemon::PeerControl {
         &mut self.daemon_control
     }
@@ -66,7 +72,7 @@ impl Runner {
 
 pub fn create(config: Config) -> anyhow::Result<(Peer, Runner)> {
     let daemon_config =
-        crate::daemon::config::configure(config.paths, config.signer, config.listen);
+        crate::daemon::config::configure(config.paths.clone(), config.signer, config.listen);
     let daemon_peer = crate::daemon::Peer::new(
         daemon_config,
         config.discovery,
@@ -82,6 +88,7 @@ pub fn create(config: Config) -> anyhow::Result<(Peer, Runner)> {
     tokio::task::spawn(forward_broadcast(daemon_peer.subscribe(), peer_events_tx));
 
     let peer = Peer {
+        paths: config.paths,
         daemon_control,
         librad_peer,
         events: peer_events.deactivate(),
