@@ -9,6 +9,7 @@
 
 use std::{collections::HashSet, convert::TryFrom, ops::Deref};
 
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
 
 use link_identities::{git::Urn, Person, Project as LinkProject};
@@ -172,8 +173,18 @@ impl Projects {
             contributed: vec![],
             failures: vec![],
         };
+        let link_projects = peer
+            .librad_peer()
+            .using_read_only(|storage| {
+                rad_identities::project::list(storage).map(|projects| projects.collect::<Vec<_>>())
+            })
+            .await
+            .context("failed to open read-only storage")?
+            .context("failed to list project identities")?;
 
-        for link_project in radicle_daemon::state::list_projects(peer.librad_peer()).await? {
+        for link_project_result in link_projects {
+            let link_project = link_project_result.context("failed to load project")?;
+
             let urn = link_project.urn();
             let metadata = Metadata::try_from(link_project)?;
             let default_branch =

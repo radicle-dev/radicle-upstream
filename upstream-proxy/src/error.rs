@@ -55,4 +55,7 @@ pub enum Error {
 
     #[error("Failed to open readonly Git storage")]
     OpenReadOnlyGitStorage(#[from] librad::git::storage::read::error::Init),
+
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
 }

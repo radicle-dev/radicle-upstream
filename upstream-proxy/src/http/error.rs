@@ -284,6 +284,11 @@ impl From<&error::Error> for Response {
             | error::Error::Io(_)
             | error::Error::Store(_)
             | error::Error::WaitingRoom(_) => Self::internal_server_error(err),
+            error::Error::Other(err) => Self {
+                status_code: StatusCode::INTERNAL_SERVER_ERROR,
+                variant: "INTERNAL_SERVER_ERROR",
+                message: format!("{:?}", err),
+            },
         }
     }
 }
