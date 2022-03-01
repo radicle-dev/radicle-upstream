@@ -6,102 +6,33 @@
 
 import fetch from "node-fetch";
 import EventSource from "eventsource";
+import waitOn from "wait-on";
 import * as ProxyClient from "proxy-client";
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as stream from "stream";
 import execa from "execa";
-import chalk, { Color } from "chalk";
-import { StringDecoder } from "string_decoder";
-import onExit from "exit-hook";
 
 import { retryOnError } from "ui/src/retryOnError";
 
-const PADDING = 12;
+import * as Process from "./process";
 
-const colors: typeof Color[] = [
-  "blue",
-  "cyan",
-  "green",
-  "magenta",
-  "red",
-  "yellow",
-  "white",
-];
-const assignedColors: Record<string, typeof Color> = {};
+export { killAllProcesses } from "./process";
 
 const ROOT_PATH = path.join(__dirname, "..", "..");
 const P2P_TEST_PATH = path.join(ROOT_PATH, "p2p-tests");
-
-// Processes that should be SIGKILLed when the Node process shutsdown.
-// We add all proxy and seed instances that we spawn to this list.
-const processes: execa.ExecaChildProcess[] = [];
-
-onExit(() => {
-  for (const process of processes) {
-    process.kill("SIGKILL");
-  }
-});
-
-function binPath(): string {
-  if (process.env.CARGO_TARGET_DIR === undefined) {
-    return path.join(ROOT_PATH, "target", "debug");
-  } else {
-    return path.join(process.env.CARGO_TARGET_DIR, "debug");
-  }
-}
-
-function prefix(pfx: string): string {
-  if (assignedColors[pfx] === undefined) {
-    const color = colors.pop();
-    if (color) {
-      assignedColors[pfx] = color;
-    } else {
-      throw new Error("we're out of colors 🤷");
-    }
-  }
-
-  // We reset colors at the beginning of each line to avoid styles from previous
-  // lines messing up prefix colors. This is noticable in rust stack traces
-  // where the `in` and `with` keywords have a white background color.
-  return chalk.reset[assignedColors[pfx]](`${pfx.padEnd(PADDING)} | `);
-}
-
-// A transform that prefixes each line from the source with the given
-// string and pushes it to the sink.
-class LinePrefix extends stream.Transform {
-  private buffer: string = "";
-  private stringDecoder = new StringDecoder();
-
-  public constructor(private prefix: string) {
-    super();
-  }
-
-  public _transform(data: Buffer, _encoding: string, next: () => void): void {
-    const str = this.buffer + this.stringDecoder.write(data);
-    const lines = str.split(/\r?\n/);
-    this.buffer = lines.pop() || "";
-    lines.forEach(line => {
-      if (line === "") {
-        this.push("\n");
-      } else {
-        this.push(`${this.prefix}${line}\n`);
-      }
-    });
-    next();
-  }
-
-  public _flush(done: () => void): void {
-    this.push(`${this.prefix}${this.buffer}${this.stringDecoder.end()}\n`);
-    done();
-  }
-}
+const CARGO_TARGET_DIR =
+  process.env.CARGO_TARGET_DIR ?? path.join(ROOT_PATH, "target");
+const BIN_PATH = path.join(CARGO_TARGET_DIR, "debug");
 
 interface RadicleProxyParams {
   dataPath: string;
-  ipAddress: string;
+  // IP address to bind to. Defaults to 127.0.0.1
+  ipAddress?: string;
   name: string;
-  seed: string;
+  // Address of a seed node to connect to
+  seed?: string;
+  // If true, run the proxy in a network namespace. Defaults to `true`.
+  networkNamespace?: boolean;
 }
 
 export class RadicleProxy {
@@ -115,11 +46,19 @@ export class RadicleProxy {
 
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
   #ipAddress: string;
-  #seed: string;
+  #seed: string | undefined;
+  #networkNamespace: boolean;
 
-  public constructor({ dataPath, ipAddress, name, seed }: RadicleProxyParams) {
-    this.#ipAddress = ipAddress;
+  public constructor({
+    dataPath,
+    ipAddress,
+    name,
+    seed,
+    networkNamespace,
+  }: RadicleProxyParams) {
+    this.#ipAddress = ipAddress ?? "127.0.0.1";
     this.#seed = seed;
+    this.#networkNamespace = networkNamespace ?? true;
     this.name = name;
     this.passphrase = name;
 
@@ -129,7 +68,7 @@ export class RadicleProxy {
     fs.mkdirsSync(this.lnkHome);
 
     const initResult = JSON.parse(
-      execa.sync(path.join(binPath(), "upstream-proxy-dev"), [
+      execa.sync(path.join(BIN_PATH, "upstream-proxy-dev"), [
         "--lnk-home",
         this.lnkHome,
         "init",
@@ -149,32 +88,42 @@ export class RadicleProxy {
     );
   }
 
-  public start(): void {
+  public async start(): Promise<void> {
     if (this.#childProcess) {
       throw new Error("Tried to start a process that already was running.");
     }
 
-    this.#childProcess = spawnInNamespace(
-      this.name,
-      [
-        path.join(binPath(), "upstream-proxy"),
-        "--peer-listen",
-        `${this.#ipAddress}:8776`,
-        "--http-listen",
-        `${this.#ipAddress}:30000`,
-        "--key-passphrase",
-        this.passphrase,
-        "--unsafe-fast-keystore",
-        "--dev-log",
-        "--seed",
-        this.#seed,
-      ],
-      {
-        LNK_HOME: this.lnkHome,
-      }
-    );
+    const bin = path.join(BIN_PATH, "upstream-proxy");
+    const httpSocketAddr = `${this.#ipAddress}:30000`;
+    const args = [
+      "--peer-listen",
+      `${this.#ipAddress}:8776`,
+      "--http-listen",
+      httpSocketAddr,
+      "--key-passphrase",
+      this.passphrase,
+      "--unsafe-fast-keystore",
+      "--dev-log",
+    ];
 
-    processes.push(this.#childProcess);
+    if (this.#seed) {
+      args.push("--seed", this.#seed);
+    }
+
+    const env = {
+      LNK_HOME: this.lnkHome,
+    };
+    if (this.#networkNamespace) {
+      this.#childProcess = Process.spawnInNamespace(this.name, [bin, ...args], {
+        env,
+      });
+    } else {
+      this.#childProcess = Process.spawn(bin, args, { env });
+    }
+
+    Process.prefixOutput(this.#childProcess, this.name);
+
+    await waitOn({ resources: [`tcp:${httpSocketAddr}`], timeout: 7000 });
   }
 
   public async stop(): Promise<void> {
@@ -226,23 +175,19 @@ export class UpstreamSeed {
       throw new Error("Tried to start a process that already was running.");
     }
 
-    this.#childProcess = spawnInNamespace(
-      this.name,
-      [
-        path.join(binPath(), "upstream-seed"),
-        "--lnk-home",
-        this.lnkHome,
-        "--listen",
-        this.listen,
-        "--identity-key",
-        path.join(P2P_TEST_PATH, "keys", `seed-${this.peerId}.key`),
-        "--project",
-        this.#project,
-      ],
-      {}
-    );
+    this.#childProcess = Process.spawnInNamespace(this.name, [
+      path.join(BIN_PATH, "upstream-seed"),
+      "--lnk-home",
+      this.lnkHome,
+      "--listen",
+      this.listen,
+      "--identity-key",
+      path.join(P2P_TEST_PATH, "keys", `seed-${this.peerId}.key`),
+      "--project",
+      this.#project,
+    ]);
 
-    processes.push(this.#childProcess);
+    Process.prefixOutput(this.#childProcess, this.name);
   }
 
   public async stop(): Promise<void> {
@@ -254,32 +199,6 @@ export class UpstreamSeed {
     await this.#childProcess;
     this.#childProcess = undefined;
   }
-}
-
-function spawnInNamespace(
-  name: string,
-  args: string[],
-  env: NodeJS.ProcessEnv
-): execa.ExecaChildProcess {
-  const subprocess = execa(
-    "ip",
-    ["netns", "exec", `upstream-test-${name}`, ...args],
-    {
-      env,
-    }
-  );
-
-  const stdoutPrefix = new LinePrefix(prefix(name));
-  const stderrPrefix = new LinePrefix(prefix(name));
-
-  if (subprocess.stdout) {
-    subprocess.stdout.pipe(stdoutPrefix).pipe(process.stdout);
-  }
-  if (subprocess.stderr) {
-    subprocess.stderr.pipe(stderrPrefix).pipe(process.stderr);
-  }
-
-  return subprocess;
 }
 
 interface CommitParams {
@@ -324,7 +243,7 @@ export function pushRad({
       RADICLE_UNSAFE_FAST_KEYSTORE: "1",
       LNK_HOME: lnkHome,
       KEY_PASSPHRASE: keyPassphrase,
-      GIT_EXEC_PATH: binPath(),
+      GIT_EXEC_PATH: BIN_PATH,
     },
   });
 }
@@ -379,7 +298,7 @@ interface LnkCliParams {
 }
 
 export function lnkCli({ lnkHome, args }: LnkCliParams): unknown {
-  const radBinaryPath = path.join(binPath(), "lnk");
+  const radBinaryPath = path.join(BIN_PATH, "lnk");
   const result = execa.sync(radBinaryPath, args, {
     env: {
       LNK_HOME: lnkHome,
