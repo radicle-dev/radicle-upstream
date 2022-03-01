@@ -473,13 +473,18 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::Projects::list(&ctx.peer).await?;
-        let meta = projects.into_iter().next().unwrap();
-        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
+        let project = project::Projects::list(&ctx.peer)
+            .await
+            .unwrap()
+            .contributed
+            .into_iter()
+            .next()
+            .unwrap();
+        let maintainer = project.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "urn": meta.urn,
+            "urn": project.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -558,13 +563,18 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::Projects::list(&ctx.peer).await?;
-        let meta = projects.into_iter().next().unwrap();
-        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
+        let project = project::Projects::list(&ctx.peer)
+            .await
+            .unwrap()
+            .contributed
+            .into_iter()
+            .next()
+            .unwrap();
+        let maintainer = project.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "urn": meta.urn,
+            "urn": project.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",

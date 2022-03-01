@@ -280,63 +280,6 @@ impl Projects {
         Ok(projects)
     }
 }
-
-/// An iterator over [`Projects`] that first yields contributed projects and then tracked projects.
-#[must_use = "iterators are lazy and do nothing unless consumed"]
-pub struct Iter<'a> {
-    /// Iterator over contributed projects.
-    contributed: std::slice::Iter<'a, Full>,
-
-    /// Iterator over tracked projects.
-    tracked: std::slice::Iter<'a, Tracked>,
-}
-
-impl<'a> Iterator for Iter<'a> {
-    type Item = &'a Full;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.contributed
-            .next()
-            .or_else(|| self.tracked.next().map(|tracked| &tracked.0))
-    }
-}
-
-impl IntoIterator for Projects {
-    type Item = Full;
-    type IntoIter = IntoIter;
-
-    fn into_iter(self) -> Self::IntoIter {
-        IntoIter {
-            contributed: self.contributed.into_iter(),
-            tracked: self.tracked.into_iter(),
-        }
-    }
-}
-
-/// An iterator over [`Projects`] that moves the values into the iterator.
-/// It first yields contributed projects and then tracked projects.
-#[must_use = "iterators are lazy and do nothing unless consumed"]
-pub struct IntoIter {
-    /// Iterator over contributed projects.
-    contributed: std::vec::IntoIter<Full>,
-
-    /// Iterator over tracked projects.
-    tracked: std::vec::IntoIter<Tracked>,
-}
-
-impl Iterator for IntoIter {
-    type Item = Full;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.contributed
-            .next()
-            .or_else(|| match self.tracked.next() {
-                Some(tracked) => Some(tracked.0),
-                None => None,
-            })
-    }
-}
-
 /// Fetch the project with a given urn from a peer
 ///
 /// # Errors
