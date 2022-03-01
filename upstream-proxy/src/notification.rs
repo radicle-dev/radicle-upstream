@@ -123,10 +123,7 @@ impl From<HashMap<Oid, SomeRequest<SystemTime>>> for SerializableWaitingRoomStat
                     urn.to_string(),
                     SerializedRequestState {
                         state: RequestState::from(request).to_string(),
-                        peers: request
-                            .peers()
-                            .cloned()
-                            .unwrap_or_else(std::collections::HashMap::new),
+                        peers: request.peers().cloned().unwrap_or_default(),
                     },
                 )
             })
