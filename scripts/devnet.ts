@@ -125,6 +125,7 @@ const upstreamCommand: yargs.CommandModule<
         }
       );
     } else {
+      await exec("cargo", ["build", "--bin", "upstream-proxy"]);
       await exec("yarn", ["run", "electron", "./native/index.js"], {
         stdio: "inherit",
         env: {
