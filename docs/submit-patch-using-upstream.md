@@ -15,17 +15,6 @@ we need some help.
    "Go to profile". Setting up a wallet is not required for submitting
    patches.
 
-3. After onboarding, navigate to the "Network" screen by pressing
-   `⌘` + `b` (on macOS) or `ctrl` + `b` (on Linux).
-
-4. Add our seed node to the list of seeds:
-   ```
-   hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@seed.upstream.radicle.xyz:8776
-   ```
-   Once you do that, the network status indicator on the right-hand side should
-   switch from "You’re not connected to any peers" to "You’re connected to 1
-   peer".
-
 
 ## Get the Upstream project
 
