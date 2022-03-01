@@ -121,21 +121,6 @@ impl From<radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Sta
     }
 }
 
-/// A Radicle project that you're interested in but haven't contributed to.
-///
-/// See [`Projects`] for a detailed breakdown of both kinds of projects.
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Tracked(Project);
-
-impl Deref for Tracked {
-    type Target = Project;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
 /// Partial failures that occur when getting the list of projects.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
@@ -155,7 +140,7 @@ pub struct Projects {
     /// A project that is tracked is one that the user has replicated onto their device but has not
     /// made any changes to. A project is still considered tracked if they checked out a working
     /// copy but have not performed any commits to the references.
-    pub tracked: Vec<Tracked>,
+    pub tracked: Vec<Project>,
 
     /// A project that has been *contributed* to is one that the user has either:
     ///     a. Created themselves using the application.
@@ -234,10 +219,10 @@ impl Projects {
                 };
 
             match refs {
-                None => projects.tracked.push(Tracked(project)),
+                None => projects.tracked.push(project),
                 Some(refs) => {
                     if refs.heads().next().is_none() {
-                        projects.tracked.push(Tracked(project));
+                        projects.tracked.push(project);
                     } else {
                         projects.contributed.push(project);
                     }
@@ -248,6 +233,7 @@ impl Projects {
         Ok(projects)
     }
 }
+
 /// Fetch the project with a given urn from a peer
 ///
 /// # Errors
