@@ -47,9 +47,8 @@
     To create a patch in your working copy, check out the branch that contains
     the changes and run the following command:
     <Copyable name="command">
-      <pre class="typo-text-small-mono command-line">
-        {`upstream patch create`}
-      </pre>
+      <pre
+        class="typo-text-small-mono command-line">{`upstream patch create`}</pre>
     </Copyable>
   </div>
 

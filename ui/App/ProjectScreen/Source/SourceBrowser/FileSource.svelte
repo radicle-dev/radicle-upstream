@@ -104,20 +104,15 @@
         <Markdown content={blob.content} />
       </div>
     {:else}
-      <pre class="line-numbers typo-text-mono">
-        {@html blob.content
+      <pre class="line-numbers typo-text-mono">{@html blob.content
           .split("\n")
           .slice(0, -1)
           .map((_, index) => {
             return `${index + 1}`;
           })
-          .join("\n")}
-      </pre>
-      <pre class="code typo-text-mono no-scrollbar">
-        {#if blob.html}
-          {@html blob.content}
-        {:else}{blob.content}{/if}
-      </pre>
+          .join("\n")}</pre>
+      <pre
+        class="code typo-text-mono no-scrollbar">{#if blob.html}{@html blob.content}{:else}{blob.content}{/if}</pre>
     {/if}
   </div>
 </div>
