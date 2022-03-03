@@ -31,6 +31,11 @@
   };
 
   $: patchHandle = Patch.handle(patch);
+  $: instructions = [
+    `upstream patch fetch ${patchHandle}`,
+    `git merge ${Patch.TAG_PREFIX}${patchHandle}`,
+    `git push rad`,
+  ].join("\n");
 </script>
 
 <style>
@@ -48,10 +53,11 @@
     user-select: none;
   }
 
-  .command-line {
+  .instructions {
     color: var(--color-foreground-level-6);
     overflow-x: scroll;
     padding: 0.5rem 0.5rem 0.5rem 0.25rem;
+    white-space: pre;
   }
 </style>
 
@@ -61,11 +67,7 @@
       To merge this patch and publish the changes, run this in your terminal:
     </p>
     <Copyable name="command" bind:this={copyable}>
-      <div class="typo-text-small-mono command-line">
-        upstream patch fetch {patchHandle}<br />
-        git merge {Patch.TAG_PREFIX}{patchHandle}
-        git push rad
-      </div>
+      <p class="typo-text-small-mono instructions">{instructions}</p>
     </Copyable>
     <Button
       style="display: block; margin: 1rem auto 0; width: 100%;"
