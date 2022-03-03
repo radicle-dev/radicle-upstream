@@ -36,7 +36,7 @@ pub struct Args {
 
     /// URNs of projects to replicate. May be specified multiple times or as a comma separated
     /// list.
-    #[clap(long, use_delimiter = true)]
+    #[clap(long, use_value_delimiter = true)]
     pub project: Vec<link_identities::git::Urn>,
 
     /// Output logs as JSON.

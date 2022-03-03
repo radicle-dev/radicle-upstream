@@ -43,9 +43,9 @@ fn main() {
 #[clap(
     name = "upstream",
     version = VERSION,
-    global_setting = clap::AppSettings::InferSubcommands,
-    global_setting = clap::AppSettings::DisableHelpSubcommand,
-    global_setting = clap::AppSettings::PropagateVersion,
+    infer_subcommands = true,
+    disable_help_subcommand = true,
+    propagate_version = true,
     color = clap::ColorChoice::Never
 )]
 struct Program {
