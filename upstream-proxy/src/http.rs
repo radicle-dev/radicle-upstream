@@ -104,7 +104,7 @@ pub fn api(ctx: context::Context) -> impl Filter<Extract = impl Reply, Error = R
 /// Asserts presence of the owner and rejects the request early if missing. Otherwise unpacks and
 /// passes down.
 #[must_use]
-fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(radicle_daemon::LocalIdentity,)> {
+fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(crate::daemon::LocalIdentity,)> {
     warp::any()
         .and(with_context_unsealed(ctx))
         .and_then(|ctx: context::Unsealed| async move {

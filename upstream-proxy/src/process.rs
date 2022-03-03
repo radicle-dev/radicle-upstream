@@ -109,11 +109,11 @@ async fn run_session(
 
     let ctx = if let Some(key) = environment.key.clone() {
         let discovery = if let Some(ref seeds) = sealed.seeds {
-            let seeds = radicle_daemon::seed::resolve(seeds)
+            let seeds = crate::daemon::seed::resolve(seeds)
                 .await
                 .context("failed to parse and resolve seeds")?;
             let (_, seeds_receiver) = watch::channel(seeds);
-            radicle_daemon::config::StreamDiscovery::new(seeds_receiver)
+            crate::daemon::config::StreamDiscovery::new(seeds_receiver)
         } else {
             let (watch_seeds_run, disco) = watch_seeds_discovery(store.clone()).await;
             shutdown_runner.add_without_shutdown(watch_seeds_run.map(Ok).boxed());
@@ -162,11 +162,9 @@ async fn run_session(
 }
 
 /// Get and resolve seed settings from the session store.
-async fn session_seeds(
-    store: &kv::Store,
-) -> Result<Vec<radicle_daemon::seed::Seed>, anyhow::Error> {
+async fn session_seeds(store: &kv::Store) -> Result<Vec<crate::daemon::seed::Seed>, anyhow::Error> {
     let seeds = session::seeds(store)?.unwrap_or_default();
-    Ok(radicle_daemon::seed::resolve(&seeds)
+    Ok(crate::daemon::seed::resolve(&seeds)
         .await
         .unwrap_or_else(|err| {
             tracing::error!(?seeds, ?err, "Error parsing seed list");
@@ -174,7 +172,7 @@ async fn session_seeds(
         }))
 }
 
-/// Create a [`radicle_daemon::config::StreamDiscovery`] that emits new peer addresses whenever the
+/// Create a [`crate::daemon::config::StreamDiscovery`] that emits new peer addresses whenever the
 /// seed configuration changes in `store`.
 ///
 /// The returned task is the future that needs to be run to watch the seeds.
@@ -182,7 +180,7 @@ async fn watch_seeds_discovery(
     store: kv::Store,
 ) -> (
     impl Future<Output = ()> + Send + 'static,
-    radicle_daemon::config::StreamDiscovery,
+    crate::daemon::config::StreamDiscovery,
 ) {
     let mut last_seeds = session_seeds(&store)
         .await
@@ -213,7 +211,7 @@ async fn watch_seeds_discovery(
 
     (
         run,
-        radicle_daemon::config::StreamDiscovery::new(seeds_receiver),
+        crate::daemon::config::StreamDiscovery::new(seeds_receiver),
     )
 }
 
@@ -239,15 +237,15 @@ fn serve(
     }
 }
 
-async fn log_daemon_peer_events(events: impl Stream<Item = radicle_daemon::peer::Event>) {
+async fn log_daemon_peer_events(events: impl Stream<Item = crate::daemon::peer::Event>) {
     events
         .for_each(|event| {
             match event {
-                radicle_daemon::peer::Event::WaitingRoomTransition(ref transition) => {
+                crate::daemon::peer::Event::WaitingRoomTransition(ref transition) => {
                     tracing::debug!(event = ?transition.event, "waiting room transition")
                 },
 
-                radicle_daemon::peer::Event::GossipFetched {
+                crate::daemon::peer::Event::GossipFetched {
                     gossip,
                     result,
                     provider,
@@ -338,7 +336,7 @@ fn setup_logging(args: &Args) {
         ];
 
         if args.dev_log {
-            directives.extend(["api=debug", "radicle_daemon=debug"])
+            directives.extend(["api=debug", "crate::daemon=debug"])
         }
 
         for directive in directives {

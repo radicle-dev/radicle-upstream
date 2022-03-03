@@ -98,12 +98,12 @@ impl TryFrom<(LinkProject, Stats)> for Project {
 /// Codified relation in form of roles and availability of project views.
 #[derive(Debug, Clone, Serialize)]
 pub struct Peer(
-    radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Status<identity::Identity>>,
+    crate::daemon::project::peer::Peer<crate::daemon::project::peer::Status<identity::Identity>>,
 );
 
 impl Deref for Peer {
-    type Target = radicle_daemon::project::peer::Peer<
-        radicle_daemon::project::peer::Status<identity::Identity>,
+    type Target = crate::daemon::project::peer::Peer<
+        crate::daemon::project::peer::Status<identity::Identity>,
     >;
 
     fn deref(&self) -> &Self::Target {
@@ -111,11 +111,11 @@ impl Deref for Peer {
     }
 }
 
-impl From<radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Status<Person>>>
+impl From<crate::daemon::project::peer::Peer<crate::daemon::project::peer::Status<Person>>>
     for Peer
 {
     fn from(
-        peer: radicle_daemon::project::peer::Peer<radicle_daemon::project::peer::Status<Person>>,
+        peer: crate::daemon::project::peer::Peer<crate::daemon::project::peer::Status<Person>>,
     ) -> Self {
         let peer_id = peer.peer_id();
         Self(peer.map(|status| status.map(|user| (peer_id, user).into())))
@@ -188,7 +188,7 @@ impl Projects {
             let urn = link_project.urn();
             let metadata = Metadata::try_from(link_project)?;
             let default_branch =
-                match radicle_daemon::state::find_default_branch(peer.librad_peer(), urn.clone())
+                match crate::daemon::state::find_default_branch(peer.librad_peer(), urn.clone())
                     .await
                 {
                     Err(err) => {
@@ -217,17 +217,19 @@ impl Projects {
                 stats,
             };
 
-            let refs =
-                match radicle_daemon::state::load_refs(peer.librad_peer(), project.urn.clone())
-                    .await
-                {
-                    Err(err) => {
-                        tracing::warn!(project_urn = %project.urn, ?err, "cannot load refs");
-                        projects.failures.push(Failure::SignedRefs(project));
-                        continue;
-                    },
-                    Ok(refs) => refs,
-                };
+            let refs = match crate::daemon::state::load_refs(
+                peer.librad_peer(),
+                project.urn.clone(),
+            )
+            .await
+            {
+                Err(err) => {
+                    tracing::warn!(project_urn = %project.urn, ?err, "cannot load refs");
+                    projects.failures.push(Failure::SignedRefs(project));
+                    continue;
+                },
+                Ok(refs) => refs,
+            };
 
             match refs {
                 None => projects.tracked.push(project),
@@ -252,12 +254,12 @@ impl Projects {
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
 pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Project, error::Error> {
-    let project = radicle_daemon::state::get_project(peer.librad_peer(), project_urn.clone())
+    let project = crate::daemon::state::get_project(peer.librad_peer(), project_urn.clone())
         .await?
         .ok_or(crate::error::Error::ProjectNotFound)?;
 
     let branch =
-        radicle_daemon::state::find_default_branch(peer.librad_peer(), project_urn.clone()).await?;
+        crate::daemon::state::find_default_branch(peer.librad_peer(), project_urn.clone()).await?;
     let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
 
     Project::try_from((project, project_stats))
@@ -284,15 +286,15 @@ pub async fn list_for_user(
 ) -> Result<Vec<Project>, error::Error> {
     let mut projects = vec![];
 
-    for project in radicle_daemon::state::list_projects(peer.librad_peer()).await? {
-        let tracked = radicle_daemon::state::tracked(peer.librad_peer(), project.urn())
+    for project in crate::daemon::state::list_projects(peer.librad_peer()).await? {
+        let tracked = crate::daemon::state::tracked(peer.librad_peer(), project.urn())
             .await?
             .into_iter()
-            .filter_map(radicle_daemon::project::Peer::replicated_remote)
+            .filter_map(crate::daemon::project::Peer::replicated_remote)
             .find(|(_, project_user)| project_user.urn() == *user);
         if let Some((peer_id, _)) = tracked {
             let subject = project.subject();
-            let branch = radicle_daemon::state::get_branch(
+            let branch = crate::daemon::state::get_branch(
                 peer.librad_peer(),
                 project.urn(),
                 peer_id,

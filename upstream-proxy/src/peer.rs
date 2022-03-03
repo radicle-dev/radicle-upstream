@@ -9,13 +9,13 @@ use futures::prelude::*;
 
 #[derive(Clone)]
 pub struct Peer {
-    daemon_control: radicle_daemon::PeerControl,
+    daemon_control: crate::daemon::PeerControl,
     librad_peer: librad::net::peer::Peer<link_crypto::BoxedSigner>,
-    events: async_broadcast::InactiveReceiver<radicle_daemon::PeerEvent>,
+    events: async_broadcast::InactiveReceiver<crate::daemon::PeerEvent>,
 }
 
 impl Peer {
-    pub fn daemon_control(&mut self) -> &mut radicle_daemon::PeerControl {
+    pub fn daemon_control(&mut self) -> &mut crate::daemon::PeerControl {
         &mut self.daemon_control
     }
 
@@ -23,8 +23,8 @@ impl Peer {
         &self.librad_peer
     }
 
-    /// Stream that emits [`radicle_daemon::PeerEvent`] and stops when the peer is shutdown.
-    pub fn events(&self) -> async_broadcast::Receiver<radicle_daemon::PeerEvent> {
+    /// Stream that emits [`crate::daemon::PeerEvent`] and stops when the peer is shutdown.
+    pub fn events(&self) -> async_broadcast::Receiver<crate::daemon::PeerEvent> {
         self.events.activate_cloned()
     }
 }
@@ -33,13 +33,13 @@ pub struct Config {
     pub key: link_crypto::SecretKey,
     pub paths: librad::paths::Paths,
     pub listen: std::net::SocketAddr,
-    pub discovery: radicle_daemon::config::StreamDiscovery,
+    pub discovery: crate::daemon::config::StreamDiscovery,
     pub store: kv::Store,
 }
 
 pub struct Runner {
     daemon_peer:
-        radicle_daemon::Peer<link_crypto::BoxedSigner, radicle_daemon::config::StreamDiscovery>,
+        crate::daemon::Peer<link_crypto::BoxedSigner, crate::daemon::config::StreamDiscovery>,
 }
 
 impl Runner {
@@ -47,7 +47,7 @@ impl Runner {
     pub async fn run(
         self,
         shutdown_signal: future::BoxFuture<'static, ()>,
-    ) -> Result<(), radicle_daemon::peer::Error> {
+    ) -> Result<(), crate::daemon::peer::Error> {
         let (peer_shutdown, peer_run) = self.daemon_peer.start();
         let mut shutdown_signal = shutdown_signal.fuse();
         let peer_run = peer_run.fuse();
@@ -66,14 +66,14 @@ impl Runner {
 
 pub fn create(config: Config) -> anyhow::Result<(Peer, Runner)> {
     let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: config.key });
-    let daemon_config = radicle_daemon::config::configure(config.paths, signer, config.listen);
-    let daemon_peer = radicle_daemon::Peer::new(
+    let daemon_config = crate::daemon::config::configure(config.paths, signer, config.listen);
+    let daemon_peer = crate::daemon::Peer::new(
         daemon_config,
         config.discovery,
         config.store,
-        radicle_daemon::RunConfig::default(),
+        crate::daemon::RunConfig::default(),
     )
-    .context("failed to initialize radicle_daemon peer")?;
+    .context("failed to initialize crate::daemon peer")?;
 
     let daemon_control = daemon_peer.control();
     let librad_peer = daemon_peer.peer.clone();

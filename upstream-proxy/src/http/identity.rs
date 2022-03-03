@@ -144,7 +144,7 @@ mod test {
             .await;
 
         let peer_id = ctx.peer.librad_peer().peer_id();
-        let default_owner = radicle_daemon::state::default_owner(ctx.peer.librad_peer())
+        let default_owner = crate::daemon::state::default_owner(ctx.peer.librad_peer())
             .await
             .unwrap()
             .unwrap();
@@ -202,7 +202,7 @@ mod test {
             .reply(&api)
             .await;
 
-        let default_owner = radicle_daemon::state::default_owner(ctx.peer.librad_peer())
+        let default_owner = crate::daemon::state::default_owner(ctx.peer.librad_peer())
             .await
             .unwrap()
             .unwrap();
@@ -263,7 +263,7 @@ mod test {
             .await;
 
         let peer_id = ctx.peer.librad_peer().peer_id();
-        let default_owner = radicle_daemon::state::default_owner(ctx.peer.librad_peer())
+        let default_owner = crate::daemon::state::default_owner(ctx.peer.librad_peer())
             .await
             .unwrap()
             .unwrap();

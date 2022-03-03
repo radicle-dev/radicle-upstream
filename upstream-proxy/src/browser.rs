@@ -14,7 +14,7 @@ use crate::error::Error;
 /// Provide a repo [`git::Browser`] where the `Browser` is initialised with the provided
 /// `reference`.
 ///
-/// See [`radicle_daemon::state::find_default_branch`] and [`radicle_daemon::state::get_branch`] for
+/// See [`crate::daemon::state::find_default_branch`] and [`crate::daemon::state::get_branch`] for
 /// obtaining a [`Reference`].
 ///
 /// # Errors
@@ -33,7 +33,7 @@ where
     let namespace = git::namespace::Namespace::try_from(
         reference
             .namespace
-            .ok_or(radicle_daemon::state::Error::MissingNamespace)?
+            .ok_or(crate::daemon::state::Error::MissingNamespace)?
             .to_string()
             .as_str(),
     )
@@ -47,7 +47,7 @@ where
         ),
     };
 
-    let monorepo = radicle_daemon::state::monorepo(peer.librad_peer());
+    let monorepo = crate::daemon::state::monorepo(peer.librad_peer());
     let repo = git::Repository::new(monorepo).map_err(error::Error::from)?;
     let mut browser =
         git::Browser::new_with_namespace(&repo, &namespace, branch).map_err(error::Error::from)?;

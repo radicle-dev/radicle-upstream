@@ -17,15 +17,15 @@ pub enum Error {
     #[error(transparent)]
     Keystore(#[from] keystore::Error),
 
-    /// Error interacting with [`radicle_daemon::net::peer::Peer`].
+    /// Error interacting with [`crate::daemon::net::peer::Peer`].
     #[error(transparent)]
-    State(#[from] radicle_daemon::state::Error),
+    State(#[from] crate::daemon::state::Error),
 
     #[error(transparent)]
     Source(#[from] radicle_source::error::Error),
 
     #[error(transparent)]
-    Peer(#[from] radicle_daemon::peer::Error),
+    Peer(#[from] crate::daemon::peer::Error),
 
     /// An I/O error occurred.
     #[error(transparent)]
@@ -43,9 +43,9 @@ pub enum Error {
     #[error("invalid authentication token")]
     InvalidAuthCookie,
 
-    /// Errors stemming from [`radicle_daemon::request::waiting_room::WaitingRoom`] interactions.
+    /// Errors stemming from [`crate::daemon::request::waiting_room::WaitingRoom`] interactions.
     #[error(transparent)]
-    WaitingRoom(#[from] radicle_daemon::request::waiting_room::Error),
+    WaitingRoom(#[from] crate::daemon::request::waiting_room::Error),
 
     #[error("project not found")]
     ProjectNotFound,

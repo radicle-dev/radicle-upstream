@@ -12,7 +12,7 @@ use nonempty::NonEmpty;
 
 use radicle_source::surf::vcs::git::git2;
 
-use radicle_daemon::{
+use crate::daemon::{
     librad::{
         git::{
             identities::local::LocalIdentity,
@@ -180,7 +180,7 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
 
 #[cfg(test)]
 mod test {
-    use radicle_daemon::{
+    use crate::daemon::{
         librad::{
             git::identities::local::LocalIdentity, git_ext::OneLevel, identities::Project, reflike,
             PeerId,

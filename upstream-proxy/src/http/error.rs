@@ -123,125 +123,107 @@ impl From<&radicle_source::error::Error> for Response {
     }
 }
 
-impl From<&radicle_daemon::state::Error> for Response {
+impl From<&crate::daemon::state::Error> for Response {
     #[allow(clippy::too_many_lines)]
-    fn from(err: &radicle_daemon::state::Error) -> Self {
+    fn from(err: &crate::daemon::state::Error) -> Self {
         let (status_code, variant, message) = match err {
-            radicle_daemon::state::Error::Checkout(checkout_error) => match checkout_error {
-                radicle_daemon::project::checkout::Error::AlreadExists(_) => (
+            crate::daemon::state::Error::Checkout(checkout_error) => match checkout_error {
+                crate::daemon::project::checkout::Error::AlreadExists(_) => (
                     StatusCode::CONFLICT,
                     "PATH_EXISTS",
                     checkout_error.to_string(),
                 ),
-                radicle_daemon::project::checkout::Error::Git(git_error) => (
+                crate::daemon::project::checkout::Error::Git(git_error) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "GIT_ERROR",
                     git_error.message().to_string(),
                 ),
-                radicle_daemon::project::checkout::Error::Include(include_error) => (
+                crate::daemon::project::checkout::Error::Include(include_error) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "INTERNAL_ERROR",
                     include_error.to_string(),
                 ),
-                radicle_daemon::project::checkout::Error::Io(io) => (
+                crate::daemon::project::checkout::Error::Io(io) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "INTERNAL_ERROR",
                     io.to_string(),
                 ),
-                radicle_daemon::project::checkout::Error::Transport(err) => (
+                crate::daemon::project::checkout::Error::Transport(err) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "TRANSPORT_ERROR",
                     err.to_string(),
                 ),
-                radicle_daemon::project::checkout::Error::Prefix(err) => (
+                crate::daemon::project::checkout::Error::Prefix(err) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "PREFIX_ERROR",
                     err.to_string(),
                 ),
             },
-            radicle_daemon::state::Error::Create(
-                radicle_daemon::project::create::Error::Validation(err),
+            crate::daemon::state::Error::Create(
+                crate::daemon::project::create::Error::Validation(err),
             ) => match err {
-                radicle_daemon::project::create::validation::Error::AlreadExists(_) => {
+                crate::daemon::project::create::validation::Error::AlreadExists(_) => {
                     (StatusCode::CONFLICT, "PATH_EXISTS", err.to_string())
                 },
-                radicle_daemon::project::create::validation::Error::EmptyExistingPath(_) => {
+                crate::daemon::project::create::validation::Error::EmptyExistingPath(_) => {
                     (StatusCode::BAD_REQUEST, "EMPTY_PATH", err.to_string())
                 },
-                radicle_daemon::project::create::validation::Error::Git(_) => (
+                crate::daemon::project::create::validation::Error::Git(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "GIT_ERROR",
                     err.to_string(),
                 ),
-                radicle_daemon::project::create::validation::Error::MissingAuthorEmail => (
-                    StatusCode::BAD_REQUEST,
-                    "MISSING_AUTHOR_EMAIL",
-                    err.to_string(),
-                ),
-                radicle_daemon::project::create::validation::Error::MissingGitConfig => (
-                    StatusCode::BAD_REQUEST,
-                    "MISSING_GIT_CONFIG",
-                    err.to_string(),
-                ),
-                radicle_daemon::project::create::validation::Error::MissingAuthorName => (
-                    StatusCode::BAD_REQUEST,
-                    "MISSING_AUTHOR_NAME",
-                    err.to_string(),
-                ),
-                radicle_daemon::project::create::validation::Error::MissingDefaultBranch {
+                crate::daemon::project::create::validation::Error::MissingDefaultBranch {
                     ..
                 } => (
                     StatusCode::BAD_REQUEST,
                     "MISSING_DEFAULT_BRANCH",
                     err.to_string(),
                 ),
-                radicle_daemon::project::create::validation::Error::MissingUrl => {
-                    (StatusCode::BAD_REQUEST, "MISSING_URL", err.to_string())
-                },
-                radicle_daemon::project::create::validation::Error::PathDoesNotExist(_) => (
+                crate::daemon::project::create::validation::Error::PathDoesNotExist(_) => (
                     StatusCode::NOT_FOUND,
                     "PATH_DOES_NOT_EXIST",
                     err.to_string(),
                 ),
-                radicle_daemon::project::create::validation::Error::NotARepo(_) => {
+                crate::daemon::project::create::validation::Error::NotARepo(_) => {
                     (StatusCode::BAD_REQUEST, "NOT_A_REPO", err.to_string())
                 },
-                radicle_daemon::project::create::validation::Error::Io(err) => {
+                crate::daemon::project::create::validation::Error::Io(err) => {
                     (StatusCode::BAD_REQUEST, "IO_ERROR", err.to_string())
                 },
-                radicle_daemon::project::create::validation::Error::UrlMismatch { .. } => {
+                crate::daemon::project::create::validation::Error::UrlMismatch { .. } => {
                     (StatusCode::BAD_REQUEST, "URL_MISMATCH", err.to_string())
                 },
 
-                radicle_daemon::project::create::validation::Error::Transport(_) => (
+                crate::daemon::project::create::validation::Error::Transport(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "TRANSPORT_ERROR",
                     err.to_string(),
                 ),
-                radicle_daemon::project::create::validation::Error::Remote(_) => (
+                crate::daemon::project::create::validation::Error::Remote(_) => (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "MISSING_REMOTE",
                     err.to_string(),
                 ),
             },
-            radicle_daemon::state::Error::Git(git_error) => (
+            crate::daemon::state::Error::Git(git_error) => (
                 StatusCode::BAD_REQUEST,
                 "GIT_ERROR",
                 format!("Internal Git error: {:?}", git_error),
             ),
-            radicle_daemon::state::Error::MissingOwner => {
+            crate::daemon::state::Error::MissingOwner => {
                 (StatusCode::UNAUTHORIZED, "UNAUTHORIZED", err.to_string())
             },
-            radicle_daemon::state::Error::Storage(
-                radicle_daemon::state::error::storage::Error::Blob(
-                    radicle_daemon::state::error::blob::Error::NotFound(_),
+            crate::daemon::state::Error::Storage(
+                crate::daemon::state::error::storage::Error::Blob(
+                    crate::daemon::state::error::blob::Error::NotFound(_),
                 ),
             ) => (
                 StatusCode::NOT_FOUND,
                 "NOT_FOUND",
                 "entity not found".to_string(),
             ),
-            radicle_daemon::state::Error::IdentityExists(_) => {
+            crate::daemon::state::Error::IdentityExists(_) => {
                 (StatusCode::CONFLICT, "IDENTITY_EXISTS", err.to_string())
             },
             _ => (

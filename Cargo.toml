@@ -22,10 +22,6 @@ tag = "cycle/2022-03-01"
 git = "https://github.com/radicle-dev/radicle-link.git"
 tag = "cycle/2022-03-01"
 
-[patch.crates-io.radicle-daemon]
-git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
-
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
 tag = "cycle/2022-03-01"
@@ -46,7 +42,6 @@ tag = "cycle/2022-03-01"
 # librad = { path = "../radicle-link/librad" }
 # link-crypto = { path = "../radicle-link/link-crypto" }
 # link-identities = { path = "../radicle-link/link-identities" }
-# radicle-daemon = { path = "../radicle-link/daemon" }
 # lnk-exe = { path = "../radicle-link/lnk-exe" }
 # lnk-identities = { path = "../radicle-link/lnk-identities" }
 # radicle-git-ext = { path = "../radicle-link/git-ext" }
