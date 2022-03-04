@@ -146,8 +146,8 @@ async function shutdown() {
 }
 
 async function main(app: App, config: Config) {
-  if (config.radHome) {
-    const electronPath = path.resolve(config.radHome, "electron");
+  if (config.lnkHome) {
+    const electronPath = path.resolve(config.lnkHome, "electron");
     fs.mkdirSync(electronPath, { recursive: true });
     app.setPath("userData", electronPath);
     app.setPath("appData", electronPath);
@@ -224,7 +224,7 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
     proxyArgs,
     lineLimit: 500,
     env: {
-      RAD_HOME: config.radHome,
+      LNK_HOME: config.lnkHome,
     },
   };
 }

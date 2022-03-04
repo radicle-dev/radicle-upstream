@@ -176,7 +176,7 @@ impl Projects {
         let link_projects = peer
             .librad_peer()
             .using_read_only(|storage| {
-                rad_identities::project::list(storage).map(|projects| projects.collect::<Vec<_>>())
+                lnk_identities::project::list(storage).map(|projects| projects.collect::<Vec<_>>())
             })
             .await
             .context("failed to open read-only storage")?

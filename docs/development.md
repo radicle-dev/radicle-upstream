@@ -13,9 +13,9 @@
 
 To start Upstream run `yarn start`.
 
-Running Upstream with `yarn start` will use `<repo_root>/sandbox/rad_home` as
-the default `RAD_HOME` value to isolate your development state. To reset the
-application state close Upstream, remove `<repo_root>/sandbox/rad_home` and
+Running Upstream with `yarn start` will use `<repo_root>/sandbox/lnk_home` as
+the default `LNK_HOME` value to isolate your development state. To reset the
+application state close Upstream, remove `<repo_root>/sandbox/lnk_home` and
 start Upstream again.
 
 If you want to run Upstream against your real user data you need to build the
@@ -48,7 +48,7 @@ yarn run devnet upstream 1
 ```
 
 This command will start an Upstream instance. The instance will be fully
-initialized with user name `1`. The `RAD_HOME` for the instance is
+initialized with user name `1`. The `LNK_HOME` for the instance is
 `./sandbox/devnet/1`. The peer ID is derived from the instance ID. The default
 passphrase for all devnet Upstream instances is `asdf`.
 
@@ -167,9 +167,9 @@ sudo FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-test.ts
 ### Running on Windows (experimental)
 
 There might be [issues due to long file paths on windows][lf]. A workaround
-for this is to set `RAD_HOME` to a root folder, for example:
+for this is to set `LNK_HOME` to a root folder, for example:
 
-`$env:RAD_HOME="C:\rad"`.
+`$env:LNK_HOME="C:\lnk_home"`.
 
 To try out Upstream on Windows, you can use a [free VM][fv] provided by
 Microsoft.

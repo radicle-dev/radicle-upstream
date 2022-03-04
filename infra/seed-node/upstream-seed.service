@@ -4,7 +4,7 @@ Description=Upstream seed node
 [Service]
 ExecStart=/usr/local/bin/upstream-seed \
   --log-json \
-  --rad-home /var/local/upstream-seed \
+  --lnk-home /var/local/upstream-seed \
   --identity-key /var/local/upstream-seed/identity.key \
   --project ${PROJECTS}
 EnvironmentFile=/etc/upstream-seed.env

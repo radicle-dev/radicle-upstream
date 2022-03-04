@@ -34,7 +34,7 @@ pub struct Args {
     )]
     pub default_seeds: Vec<String>,
 
-    /// Path to the secret key for the identity. Uses `RAD_HOME` if not provided.
+    /// Path to the secret key for the identity. Uses `LNK_HOME` if not provided.
     #[clap(long)]
     pub identity_key: Option<std::path::PathBuf>,
 

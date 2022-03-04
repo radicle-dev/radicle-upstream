@@ -80,7 +80,7 @@ async fn run_session(
     } else {
         config::store_dir(
             environment.coco_profile.id(),
-            std::env::var_os("RAD_HOME")
+            std::env::var_os("LNK_HOME")
                 .as_ref()
                 .map(std::path::Path::new),
         )

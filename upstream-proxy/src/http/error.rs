@@ -293,8 +293,8 @@ impl From<&error::Error> for Response {
     }
 }
 
-impl From<rad_identities::person::Error> for Response {
-    fn from(err: rad_identities::person::Error) -> Self {
+impl From<lnk_identities::person::Error> for Response {
+    fn from(err: lnk_identities::person::Error) -> Self {
         Self::new(
             StatusCode::INTERNAL_SERVER_ERROR,
             "IDENTITIES_PERSON_ERROR",

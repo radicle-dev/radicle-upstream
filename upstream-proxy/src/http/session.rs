@@ -71,7 +71,7 @@ mod handler {
                 let person = ctx
                     .peer
                     .librad_peer()
-                    .using_storage(rad_identities::local::default)
+                    .using_storage(lnk_identities::local::default)
                     .await
                     .expect("failed to get storage")
                     .expect("failed to get local identity");

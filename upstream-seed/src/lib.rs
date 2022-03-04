@@ -50,7 +50,7 @@ pub async fn run(options: cli::Args) -> anyhow::Result<()> {
             .trim()
     );
 
-    let profile = Profile::from_root(&options.rad_home, None)
+    let profile = Profile::from_root(&options.lnk_home, None)
         .context("failed to initialize Radicle profile")?;
     let rad_paths = profile.paths().clone();
 

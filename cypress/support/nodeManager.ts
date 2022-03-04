@@ -80,8 +80,8 @@ export RADICLE_UNSAFE_FAST_KEYSTORE=1
 ${cmd}`,
     {
       env: {
-        HOME: session.radHome,
-        RAD_HOME: session.radHome,
+        HOME: session.lnkHome,
+        LNK_HOME: session.lnkHome,
       },
     }
   );

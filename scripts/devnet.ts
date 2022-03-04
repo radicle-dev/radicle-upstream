@@ -81,9 +81,9 @@ const upstreamCommand: yargs.CommandModule<
       }),
   handler: async opts => {
     const peerConfig = makePeerConfig(opts.PEER_NO);
-    const missing = await Fs.access(peerConfig.radHome).catch(() => true);
+    const missing = await Fs.access(peerConfig.lnkHome).catch(() => true);
     if (opts.reset && !missing) {
-      await Fs.rm(peerConfig.radHome, { recursive: true });
+      await Fs.rm(peerConfig.lnkHome, { recursive: true });
     }
     if (missing || opts.reset) {
       await execa(
@@ -92,7 +92,7 @@ const upstreamCommand: yargs.CommandModule<
         {
           stdio: "inherit",
           env: {
-            RAD_HOME: peerConfig.radHome,
+            LNK_HOME: peerConfig.lnkHome,
           },
         }
       );
@@ -156,7 +156,7 @@ const shellCommand: yargs.CommandModule<unknown, { PEER_NO: number }> = {
     }),
   handler: async opts => {
     const peerConfig = makePeerConfig(opts.PEER_NO);
-    console.log(`export RAD_HOME="${peerConfig.radHome}"`);
+    console.log(`export LNK_HOME="${peerConfig.lnkHome}"`);
 
     const devBinPath = Path.resolve(__dirname, "..", "target", "debug");
     console.log(`export PATH="${devBinPath}:$PATH"`);
@@ -186,12 +186,12 @@ const seedCommand: yargs.CommandModule<
   },
   handler: async opts => {
     const peerConfig = makePeerSeedConfig();
-    const missing = await Fs.access(peerConfig.radHome).catch(() => true);
+    const missing = await Fs.access(peerConfig.lnkHome).catch(() => true);
     if (opts.reset && !missing) {
-      await Fs.rm(peerConfig.radHome, { recursive: true });
+      await Fs.rm(peerConfig.lnkHome, { recursive: true });
     }
 
-    const keyPath = Path.join(peerConfig.radHome, "identity.key");
+    const keyPath = Path.join(peerConfig.lnkHome, "identity.key");
     if ((await Fs.access(keyPath).catch(() => false)) === false) {
       await Fs.mkdir(Path.dirname(keyPath), { recursive: true });
       const seedHash = Crypto.createHash("sha256");
@@ -209,8 +209,8 @@ const seedCommand: yargs.CommandModule<
         "--identity-key",
         keyPath,
         `--listen=127.0.0.1:${peerConfig.p2pPort}`,
-        "--rad-home",
-        peerConfig.radHome,
+        "--lnk-home",
+        peerConfig.lnkHome,
       ],
       {
         stdio: "inherit",
@@ -226,8 +226,8 @@ interface PeerConfig {
   peerId: string;
   httpPort: number;
   p2pPort: number;
-  // Absolute path to RAD_HOME
-  radHome: string;
+  // Absolute path to LNK_HOME
+  lnkHome: string;
 }
 
 // Get a peer ID from a private key seed.
@@ -246,7 +246,7 @@ function peerIdFromKeySeed(seed: string): string {
 
 function makePeerConfig(id: number): PeerConfig {
   assert(id > 0 && id < 100, `peer id ${id} is not in range`);
-  const radHome = Path.resolve(
+  const lnkHome = Path.resolve(
     __dirname,
     "..",
     "sandbox",
@@ -258,19 +258,19 @@ function makePeerConfig(id: number): PeerConfig {
     peerId: peerIdFromKeySeed(id.toString()),
     httpPort: 24500 + id,
     p2pPort: 24600 + id,
-    radHome,
+    lnkHome,
   };
 }
 
 function makePeerSeedConfig(): PeerConfig {
   const id = "seed";
-  const radHome = Path.resolve(__dirname, "..", "sandbox", "devnet", id);
+  const lnkHome = Path.resolve(__dirname, "..", "sandbox", "devnet", id);
   return {
     userHandle: id,
     peerId: peerIdFromKeySeed(id),
     httpPort: 24500,
     p2pPort: 24600,
-    radHome,
+    lnkHome,
   };
 }
 
@@ -284,7 +284,7 @@ function getProxyEnv(
 ): Record<string, string | undefined> {
   const seeds = seedAddresses.length > 0 ? seedAddresses.join(",") : undefined;
   return {
-    RAD_HOME: peerConfig.radHome,
+    LNK_HOME: peerConfig.lnkHome,
     RADICLE_PROXY_HTTP_LISTEN: `127.0.0.1:${peerConfig.httpPort}`,
     RADICLE_PROXY_PEER_LISTEN: `127.0.0.1:${peerConfig.p2pPort}`,
     RADICLE_PROXY_INSECURE_HTTP_API: "true",

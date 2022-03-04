@@ -412,7 +412,7 @@ mod test {
                     .to_string()
             })
             .collect::<Vec<_>>();
-        let remote = repo.find_remote(radicle_daemon::config::RAD_REMOTE)?;
+        let remote = repo.find_remote("rad")?;
         assert_eq!(
             remote.url(),
             Some(

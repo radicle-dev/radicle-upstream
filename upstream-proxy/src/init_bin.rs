@@ -14,7 +14,7 @@ struct Args {
 
     #[clap(long, env)]
     /// Location of profile.
-    rad_home: std::path::PathBuf,
+    lnk_home: std::path::PathBuf,
 
     #[clap(long, default_value = "asdf")]
     /// Passphrase to encrypt the key with
@@ -25,7 +25,7 @@ struct Args {
 pub async fn main() -> anyhow::Result<()> {
     let args = <Args as clap::Parser>::parse();
 
-    let profile = librad::profile::Profile::from_root(&args.rad_home, None)
+    let profile = librad::profile::Profile::from_root(&args.lnk_home, None)
         .context("failed to load profile")?;
     let key_path = profile.paths().keys_dir().join("librad.key");
 
@@ -39,7 +39,7 @@ pub async fn main() -> anyhow::Result<()> {
 
     let storage = librad::git::storage::Storage::open(profile.paths(), secret_key.clone())
         .context("failed to open librad storage")?;
-    let person = rad_identities::person::create::<()>(
+    let person = lnk_identities::person::create::<()>(
         &storage,
         profile.paths().clone(),
         secret_key.clone().into(),
@@ -48,18 +48,18 @@ pub async fn main() -> anyhow::Result<()> {
         },
         vec![],
         vec![],
-        rad_identities::person::Creation::New { path: None },
+        lnk_identities::person::Creation::New { path: None },
     )
     .context("failed to create identity")?;
 
-    let local_identity = rad_identities::local::get(&storage, person.urn())
+    let local_identity = lnk_identities::local::get(&storage, person.urn())
         .context("failed to get created person")?
         .ok_or_else(|| anyhow::anyhow!("person does not exist"))?;
-    rad_identities::local::set(&storage, local_identity).context("failed to set local identity")?;
+    lnk_identities::local::set(&storage, local_identity).context("failed to set local identity")?;
 
     let peer_id = librad::PeerId::from(secret_key);
 
-    let store_path = crate::config::store_dir(profile.id(), Some(args.rad_home.as_path()));
+    let store_path = crate::config::store_dir(profile.id(), Some(args.lnk_home.as_path()));
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
     crate::session::initialize(&store, &[]).context("failed to initialize session")?;

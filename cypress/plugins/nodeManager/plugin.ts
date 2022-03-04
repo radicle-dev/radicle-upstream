@@ -79,8 +79,8 @@ class NodeManager implements NodeManagerPlugin {
       indentationLevel: 2,
     });
 
-    const radHome = path.resolve(options.baseDataDir, `node-${id}`);
-    await fs.mkdirs(radHome);
+    const lnkHome = path.resolve(options.baseDataDir, `node-${id}`);
+    await fs.mkdirs(lnkHome);
 
     const process = execa(
       PROXY_BINARY_PATH,
@@ -95,7 +95,7 @@ class NodeManager implements NodeManagerPlugin {
       {
         buffer: false,
         env: {
-          RAD_HOME: radHome,
+          LNK_HOME: lnkHome,
           RUST_LOG: [
             "info",
             "api=debug",
@@ -117,7 +117,7 @@ class NodeManager implements NodeManagerPlugin {
       logger.log(`node terminated`);
     });
 
-    const stderrLogPath = path.join(radHome, "stderr.log");
+    const stderrLogPath = path.join(lnkHome, "stderr.log");
     logger.log(`writing output to "${stderrLogPath}"`);
     const stderrLog = fs.createWriteStream(stderrLogPath);
     // We know that `stderr` is set because of the `stdio` spawn options
@@ -133,7 +133,7 @@ class NodeManager implements NodeManagerPlugin {
 
     const gitConfigSet = (name: string, value: string) =>
       execa("git", ["config", "--global", name, value], {
-        env: { HOME: radHome },
+        env: { HOME: lnkHome },
       });
 
     await gitConfigSet(
@@ -161,7 +161,7 @@ class NodeManager implements NodeManagerPlugin {
     return {
       id,
       httpPort: id,
-      radHome: radHome,
+      lnkHome: lnkHome,
       peerId: identity.peerId,
     };
   }
