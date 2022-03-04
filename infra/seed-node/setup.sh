@@ -21,6 +21,10 @@ if [[ ! -f /etc/upstream-seed.env ]]; then
   cp "$(pwd)/infra/seed-node/upstream-seed.env" /etc
 fi
 
+if [[ ! -f /etc/radicle-http-api.env ]]; then
+  cp "$(pwd)/infra/seed-node/radicle-http-api.env" /etc
+fi
+
 ln -sf "$(pwd)/infra/seed-node/upstream-seed.service" /etc/systemd/system/
 ln -sf "$(pwd)/infra/seed-node/radicle-http-api.service" /etc/systemd/system/
 systemctl daemon-reload
