@@ -3,6 +3,7 @@ on:
   push:
     branches:
     - main
+    - "**"
     - release-candidate/**
 
 jobs:
@@ -21,9 +22,7 @@ jobs:
             ~/cache/yarn
             ~/cache/cypress
           # Reuses cache from `build` workflow
-          key: build-${{ runner.os }}-yarn-v4-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            build-${{ runner.os }}-yarn-v4-
+          key: build-${{ runner.os }}-yarn-v5-${{ hashFiles('yarn.lock') }}
       - name: Cache Rust
         uses: actions/cache@v2
         with:
@@ -34,7 +33,7 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: ${{ github.job }}-${{ runner.os }}-rust-v5-${{ hashFiles('Cargo.lock') }}
+          key: ${{ github.job }}-${{ runner.os }}-rust-v6-${{ hashFiles('Cargo.lock') }}
       - run: ci/dist.sh
       - name: publish artifacts by commit
         uses: google-github-actions/upload-cloud-storage@v0.4.0

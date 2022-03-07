@@ -13,9 +13,9 @@
 
 To start Upstream run `yarn start`.
 
-Running Upstream with `yarn start` will use `<repo_root>/sandbox/rad_home` as
-the default `RAD_HOME` value to isolate your development state. To reset the
-application state close Upstream, remove `<repo_root>/sandbox/rad_home` and
+Running Upstream with `yarn start` will use `<repo_root>/sandbox/lnk_home` as
+the default `LNK_HOME` value to isolate your development state. To reset the
+application state close Upstream, remove `<repo_root>/sandbox/lnk_home` and
 start Upstream again.
 
 If you want to run Upstream against your real user data you need to build the
@@ -48,17 +48,17 @@ yarn run devnet upstream 1
 ```
 
 This command will start an Upstream instance. The instance will be fully
-initialized with user name `1`. The `RAD_HOME` for the instance is
+initialized with user name `1`. The `LNK_HOME` for the instance is
 `./sandbox/devnet/1`. The peer ID is derived from the instance ID. The default
 passphrase for all devnet Upstream instances is `asdf`.
 
-To connect a second instance to the first one run
+To connect a second instance to the first one run:
 
 ```bash
 yarn run devnet upstream 2 --bootstrap 1
 ```
 
-Make sure you rebuild the project before running instances
+Make sure you rebuild the project before running instances:
 
 ```bash
 cargo build
@@ -167,9 +167,9 @@ sudo FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-test.ts
 ### Running on Windows (experimental)
 
 There might be [issues due to long file paths on windows][lf]. A workaround
-for this is to set `RAD_HOME` to a root folder, for example:
+for this is to set `LNK_HOME` to a root folder, for example:
 
-`$env:RAD_HOME="C:\rad"`.
+`$env:LNK_HOME="C:\lnk_home"`.
 
 To try out Upstream on Windows, you can use a [free VM][fv] provided by
 Microsoft.
@@ -302,7 +302,7 @@ Read more about the colors used in Upstream in the [Color System post][cg].
 ## Proxy
 
 All of Upstream's business logic tying together the Radicle code collaboration
-is provided to the UI via an HTTP API by a rust binary called `radicle-proxy`.
+is provided to the UI via an HTTP API by a rust binary called `upstream-proxy`.
 It uses [warp][wa] to serve a RESTish JSON API.
 
 For dependency management and execution of common tasks we use [Cargo][co]. To
@@ -383,9 +383,6 @@ On pushes of the master branch we also build and upload distribution artifacts.
      not the latest version. Choose the version from the “Range” column.
    * Don’t update `graphql` to v16. v15 is required as a peer dependency for
      `@apollo/client`.
-   * Don’t update `license-webpack-plugin` from v3. v4 has [a
-     bugs](https://github.com/xz64/license-webpack-plugin/issues/118) that
-     prevents it from working correctly.
 
 3. Update transitive dependencies: Remove `yarn.lock` and run `yarn install`.
 

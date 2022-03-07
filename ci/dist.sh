@@ -37,5 +37,5 @@ mkdir "artifacts/${target}"
 cp -a \
   target/release/upstream-seed \
   target/release/upstream \
-  target/release/rad \
+  target/release/lnk \
   "artifacts/${target}"

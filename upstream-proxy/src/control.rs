@@ -122,7 +122,7 @@ pub fn push_tags(
 fn platinum_directory() -> io::Result<path::PathBuf> {
     let cargo_manifest_dir = env!("CARGO_MANIFEST_DIR");
     path::Path::new(cargo_manifest_dir)
-        .join("../../fixtures/git-platinum")
+        .join("../fixtures/git-platinum")
         .canonicalize()
 }
 

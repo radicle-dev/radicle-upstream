@@ -15,17 +15,6 @@ we need some help.
    "Go to profile". Setting up a wallet is not required for submitting
    patches.
 
-3. After onboarding, navigate to the "Network" screen by pressing
-   `⌘` + `b` (on macOS) or `ctrl` + `b` (on Linux).
-
-4. Add our seed node to the list of seeds:
-   ```
-   hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@34.88.37.244:8776
-   ```
-   Once you do that, the network status indicator on the right-hand side should
-   switch from "You’re not connected to any peers" to "You’re connected to 1
-   peer".
-
 
 ## Get the Upstream project
 
@@ -97,7 +86,7 @@ we need some help.
 
 3. Make your changes to the code.
 
-4. Commit your changes following the ["Commit hygene" guidelines][co] and
+4. Commit your changes following the ["Commit hygiene" guidelines][co] and
    signing the [DCO][do] for each commit with:
    ```
    git commit -s
@@ -132,14 +121,16 @@ You have two options to announce your patch:
 - on the [#Upstream][dc] discord channel
 - on this [GitHub issue][gh]
 
-You should include your Device ID and Patch ID in the message, e.g.:
-```
-Patch: `hyy4aj3wiqq1o6m5un17sq4m74i4btx8w4ypryri91nrauz9odhfis/upstream-contrib-docs-names`,
-Device ID: `hydqsnkr181w1zfidtocgosxghdu8n8d1wsemzgtszhzjru55ggazk`
-```
+Please include the patch URL in your message.
 
-You can find your Device ID in the settings screen `⌘` + `,` (on macOS) or
-`ctrl` + `,` (on Linux) and the Patch ID in the "Patches" tab of the project.
+You can copy the patch URL by clicking the patch ID which is visible
+in both the patch list screen as well as the patch screen. The button looks
+something like this:
+`hyn5r6yejjco8r77yf7gu6gqsetgjsqt5oitpzu5eu791wej6p3xz6/no-session-error`
+and says "Copy shareable link to clipboard" when you hover it.
+
+A patch URL has the following format:
+radicle://upstream/v0/project/<PROJECT_ID>/patch/<PEER_ID>/<PATCH_ID>
 
 
 ## Address requested changes if needed

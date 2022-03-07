@@ -4,8 +4,12 @@ on:
     branches: ["**"]
   pull_request:
 jobs:
-  build-linux:
-    runs-on: ubuntu-18.04
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, macos-11]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@master
       - name: Cache Yarn
@@ -14,9 +18,7 @@ jobs:
           path: |
             ~/cache/yarn
             ~/cache/cypress
-          key: build-${{ runner.os }}-yarn-v4-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            build-${{ runner.os }}-yarn-v4-
+          key: build-${{ runner.os }}-yarn-v5-${{ hashFiles('yarn.lock') }}
       - name: Cache Rust
         uses: actions/cache@v2
         with:
@@ -29,43 +31,7 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v6-${{ hashFiles('Cargo.lock') }}
-      - run: ci/build.sh
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: test-logs-${{ runner.os }}
-          path: |
-            cypress/screenshots/**/*.png
-            cypress/workspace/test-tmp/*/node-*/*.log
-            cypress/workspace/test-tmp/*/combined-node.log
-  build-macos:
-    runs-on: macos-11
-    if: github.event.pull_request || github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@master
-      - name: Cache Yarn
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/cache/yarn
-            ~/cache/cypress
-          key: build-${{ runner.os }}-yarn-v4-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            build-${{ runner.os }}-yarn-v4-
-      - name: Cache Rust
-        uses: actions/cache@v2
-        with:
-          path: |
-            /usr/local/bin/cargo-deny
-            ~/.cargo/advisory-db/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git
-            ./target/*/deps
-            ./target/*/build
-            ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v5-${{ hashFiles('Cargo.lock') }}
+          key: build-${{ runner.os }}-rust-v7-${{ hashFiles('Cargo.lock') }}
       - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()

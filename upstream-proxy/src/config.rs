@@ -33,8 +33,8 @@ pub fn dirs() -> ProjectDirs {
 }
 
 /// Returns the directory for the application store
-pub fn store_dir(profile_id: &ProfileId, rad_home: Option<&path::Path>) -> path::PathBuf {
-    let store_root = match rad_home {
+pub fn store_dir(profile_id: &ProfileId, lnk_home: Option<&path::Path>) -> path::PathBuf {
+    let store_root = match lnk_home {
         None => {
             let dirs = dirs();
             dirs.data_dir().to_path_buf()

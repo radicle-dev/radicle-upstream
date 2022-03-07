@@ -14,7 +14,7 @@ export interface NodeSession {
   id: number;
   peerId: string;
   httpPort: number;
-  radHome: string;
+  lnkHome: string;
 }
 
 export interface StartNodeOptions {

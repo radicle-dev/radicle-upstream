@@ -53,11 +53,9 @@ fn seal_filter(
 
 /// Control handlers for conversion between core domain and http request fulfilment.
 mod handler {
-    use std::convert::TryFrom;
-
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{browser, context, error, project};
+    use crate::{context, error, project};
 
     /// Create a project from the fixture repo.
     #[allow(clippy::let_underscore_must_use)]
@@ -76,13 +74,9 @@ mod handler {
         .await
         .map_err(error::Error::from)?;
 
-        let branch =
-            radicle_daemon::state::get_branch(ctx.peer.librad_peer(), meta.urn(), None, None)
-                .await
-                .map_err(error::Error::from)?;
-        let stats = browser::using(&ctx.peer, branch, |browser| Ok(browser.get_stats()?))
+        let project = project::get(&ctx.peer, meta.urn())
+            .await
             .map_err(error::Error::from)?;
-        let project = project::Full::try_from((meta, stats))?;
 
         Ok(reply::with_status(
             reply::json(&project),

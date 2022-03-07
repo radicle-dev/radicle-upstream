@@ -21,7 +21,5 @@
 </style>
 
 {#await ipc.getProxyLogs() then result}
-  <pre>
-    {result}
-  </pre>
+  <pre>{result}</pre>
 {/await}

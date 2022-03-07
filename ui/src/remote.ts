@@ -45,7 +45,6 @@ export interface Store<T> extends svelteStore.Readable<Data<T>> {
   // Returns the data of type T if the store's data
   // is in `SuccessState`, undefined otherwise.
   unwrap: () => T | undefined;
-  start: (start: svelteStore.StartStopNotifier<Data<T>>) => void;
   reset: () => void;
 }
 
@@ -59,17 +58,8 @@ interface Update<T> {
 }
 
 export const createStore = <T>(): Store<T> => {
-  let starter: svelteStore.StartStopNotifier<Data<T>> | null;
   const initialState = { status: Status.NotAsked } as Data<T>;
-  const internalStore = svelteStore.writable(initialState, set => {
-    if (starter) {
-      return starter(set);
-    } else {
-      return () => {
-        set({ status: Status.NotAsked });
-      };
-    }
-  });
+  const internalStore = svelteStore.writable(initialState);
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { subscribe, update } = internalStore;
 
@@ -123,9 +113,6 @@ export const createStore = <T>(): Store<T> => {
     },
     readable: svelteStore.derived(internalStore, $store => $store),
     unwrap,
-    start: (start: svelteStore.StartStopNotifier<Data<T>>): void => {
-      starter = start;
-    },
     reset: resetInternalStore,
   };
 };

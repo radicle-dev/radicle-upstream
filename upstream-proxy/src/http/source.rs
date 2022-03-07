@@ -630,7 +630,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let mut path = env::current_dir()?;
-        path.push("../../fixtures/git-platinum");
+        path.push("../fixtures/git-platinum");
 
         let res = request()
             .method("GET")

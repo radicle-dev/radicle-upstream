@@ -22,9 +22,9 @@ pub struct Args {
 
     /// Path to store radicle profile data including the monorepo.
     #[clap(long)]
-    pub rad_home: std::path::PathBuf,
+    pub lnk_home: std::path::PathBuf,
 
-    /// Path to the secret key for the identity. Uses `--rad-home` if not provided. Creates an
+    /// Path to the secret key for the identity. Uses `--lnk-home` if not provided. Creates an
     /// identity if the file does not exist.
     #[clap(long)]
     pub identity_key: Option<std::path::PathBuf>,
@@ -36,7 +36,7 @@ pub struct Args {
 
     /// URNs of projects to replicate. May be specified multiple times or as a comma separated
     /// list.
-    #[clap(long, use_delimiter = true)]
+    #[clap(long, use_value_delimiter = true)]
     pub project: Vec<link_identities::git::Urn>,
 
     /// Output logs as JSON.

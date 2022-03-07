@@ -39,7 +39,7 @@ pub struct EnvironmentConfig {
     /// If `true`, then fast but unsafe encryption parameters are used for the keystore.
     pub unsafe_fast_keystore: bool,
 
-    /// Path to the secret key for the identity. Uses `RAD_HOME` if not provided.
+    /// Path to the secret key for the identity. Uses `LNK_HOME` if not provided.
     pub identity_key: Option<std::path::PathBuf>,
 }
 

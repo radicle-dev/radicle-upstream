@@ -98,7 +98,7 @@ mod handler {
     pub async fn get_remote(id: Urn, ctx: context::Context) -> Result<impl Reply, Rejection> {
         let storage = ctx.read_only_storage()?;
         let user =
-            rad_identities::person::get(&storage, &id).map_err(http::error::Response::from)?;
+            lnk_identities::person::get(&storage, &id).map_err(http::error::Response::from)?;
         match user {
             Some(user) => Ok(reply::json(&identity::Person::from(user))),
             None => Err(http::error::Response {

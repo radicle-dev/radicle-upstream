@@ -64,6 +64,12 @@ ignore = [
   # This is unlikely to be resolved since `rust-crypto` is
   # unmaintained.
   "RUSTSEC-2022-0004",
+
+  # Issue in unmaintained `rust-crypto`. It’s unclear what the impact
+  # is and whether we’re affected.
+  #
+  # See <https://rustsec.org/advisories/RUSTSEC-2022-0011>
+  "RUSTSEC-2022-0011"
 ]
 # Threshold for security vulnerabilities, any vulnerability with a CVSS score
 # lower than the range specified will be ignored. Note that ignored advisories

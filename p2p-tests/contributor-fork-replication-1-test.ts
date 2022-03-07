@@ -17,7 +17,7 @@ import {
   commit,
   getLatestCommitSha,
   pushRad,
-  radCli,
+  lnkCli,
   runTestcase,
   withRetry,
 } from "./lib/p2p";
@@ -71,8 +71,8 @@ async function testcase(dataPath: string) {
 
   // Assert that the seed received the project.
   await withRetry(async () => {
-    const result = radCli({
-      radHome: seed.radHome,
+    const result = lnkCli({
+      lnkHome: seed.lnkHome,
       args: ["identities", "project", "get", "--urn", project.urn],
     });
 
@@ -128,7 +128,7 @@ async function testcase(dataPath: string) {
     checkoutPath: contributorCheckoutPath,
   });
   pushRad({
-    radHome: contributor.radHome,
+    lnkHome: contributor.lnkHome,
     checkoutPath: contributorCheckoutPath,
     keyPassphrase: contributor.passphrase,
   });
@@ -143,8 +143,8 @@ async function testcase(dataPath: string) {
 
   // Assert that the seed received the contributor's fork and latest commit.
   await withRetry(async () => {
-    const result = radCli({
-      radHome: seed.radHome,
+    const result = lnkCli({
+      lnkHome: seed.lnkHome,
       args: ["identities", "project", "tracked", "--urn", project.urn],
     });
 

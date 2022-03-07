@@ -6,5 +6,5 @@
 
 #[tokio::main]
 pub async fn main() -> Result<(), anyhow::Error> {
-    api::run(api::Args::from_args()).await
+    upstream_proxy::run(upstream_proxy::Args::from_args()).await
 }

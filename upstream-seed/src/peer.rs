@@ -48,8 +48,12 @@ impl Peer {
             protocol: protocol::Config {
                 paths: config.rad_paths,
                 listen_addr: config.listen,
-                advertised_addrs: None, // TODO: Should we use this?
-                membership: Default::default(),
+                advertised_addrs: None,
+                membership: protocol::membership::Params {
+                    max_active: 30,
+                    max_passive: 60,
+                    ..Default::default()
+                },
                 network: Network::Main,
                 replication: librad::net::replication::Config::default(),
                 rate_limits: Default::default(),
@@ -246,7 +250,7 @@ impl Peer {
             .storage()
             .await
             .context("failed to access librad storage")?;
-        let projects = rad_identities::project::list(storage.as_ref())
+        let projects = lnk_identities::project::list(storage.as_ref())
             .context("failed to list projects")?
             .collect::<Vec<_>>();
         for project_result in projects {
@@ -259,7 +263,7 @@ impl Peer {
             };
             let urn = project.urn();
 
-            let tracked_peers = match rad_identities::project::tracked(storage.as_ref(), &urn) {
+            let tracked_peers = match lnk_identities::project::tracked(storage.as_ref(), &urn) {
                 Ok(tracked_peers) => tracked_peers,
                 Err(err) => {
                     tracing::error!(?err, %urn, "failed to get tracked peers");

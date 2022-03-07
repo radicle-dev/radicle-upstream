@@ -41,7 +41,7 @@ if (!globalThis.fetch) {
 
 const ROOT_PATH = path.join(__dirname, "../../../");
 
-const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/debug/radicle-proxy");
+const PROXY_BINARY_PATH = path.join(ROOT_PATH, "target/debug/upstream-proxy");
 
 // IP to which all started processes will bind to.
 const HOST = "127.0.0.1";
@@ -63,8 +63,8 @@ class Logger {
 
 class NodeManager implements NodeManagerPlugin {
   private logger: Logger;
-  // A radicle-proxy is running on port 30000 for any other Cypress tests
-  // that aren't managed by nodeManager.
+  // upstream-proxy is running on port 30000 for any other Cypress tests that
+  // aren't managed by nodeManager.
   private nextPort: number = 30001;
   #processes: execa.ExecaChildProcess[] = [];
 
@@ -79,8 +79,8 @@ class NodeManager implements NodeManagerPlugin {
       indentationLevel: 2,
     });
 
-    const radHome = path.resolve(options.baseDataDir, `node-${id}`);
-    await fs.mkdirs(radHome);
+    const lnkHome = path.resolve(options.baseDataDir, `node-${id}`);
+    await fs.mkdirs(lnkHome);
 
     const process = execa(
       PROXY_BINARY_PATH,
@@ -95,7 +95,7 @@ class NodeManager implements NodeManagerPlugin {
       {
         buffer: false,
         env: {
-          RAD_HOME: radHome,
+          LNK_HOME: lnkHome,
           RUST_LOG: [
             "info",
             "api=debug",
@@ -117,7 +117,7 @@ class NodeManager implements NodeManagerPlugin {
       logger.log(`node terminated`);
     });
 
-    const stderrLogPath = path.join(radHome, "stderr.log");
+    const stderrLogPath = path.join(lnkHome, "stderr.log");
     logger.log(`writing output to "${stderrLogPath}"`);
     const stderrLog = fs.createWriteStream(stderrLogPath);
     // We know that `stderr` is set because of the `stdio` spawn options
@@ -133,7 +133,7 @@ class NodeManager implements NodeManagerPlugin {
 
     const gitConfigSet = (name: string, value: string) =>
       execa("git", ["config", "--global", name, value], {
-        env: { HOME: radHome },
+        env: { HOME: lnkHome },
       });
 
     await gitConfigSet(
@@ -161,7 +161,7 @@ class NodeManager implements NodeManagerPlugin {
     return {
       id,
       httpPort: id,
-      radHome: radHome,
+      lnkHome: lnkHome,
       peerId: identity.peerId,
     };
   }
@@ -175,7 +175,7 @@ class NodeManager implements NodeManagerPlugin {
     }
     this.#processes = [];
 
-    // A radicle-proxy is running on port 30000 for any other Cypress tests
+    // upstream-proxy is running on port 30000 for any other Cypress tests
     // that aren't managed by nodeManager.
     this.nextPort = 30001;
 
@@ -196,7 +196,7 @@ function createNodeManagerPlugin(plugin: NodeManagerPlugin): NodeManagerPlugin {
 
 export const nodeManagerPlugin = createNodeManagerPlugin(nodeManager);
 
-// Clean up any lingering radicle-proxy processes when closing Cypress.
+// Clean up any lingering upstream-proxy processes when closing Cypress.
 exitHook(() => {
   nodeManager.stopAllNodes();
 });

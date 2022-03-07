@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.14](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.13...v0.2.14) (2022-02-22)
+
+
+### Features
+
+* add file diff collapse button ([76e1e1e](https://github.com/radicle-dev/radicle-upstream/commit/76e1e1e466d295f1be9f59171eee195468dbd374))
+* allow test/development/production envs to run side-by-side ([49afcb8](https://github.com/radicle-dev/radicle-upstream/commit/49afcb8b62d08ebdc246f51c6c58c52aa6de2257))
+* link to patch via custom protocol ([c67696d](https://github.com/radicle-dev/radicle-upstream/commit/c67696dfdd11b34509c4fad4ae898a4b62d0217e))
+* add upstream cli with patch support ([42337e9](https://github.com/radicle-dev/radicle-upstream/commit/42337e9963c0ec765d57f3e916e61b55ea1a99cd))
+
+
+### Bug Fixes
+
+* 404 broken link on wallet screen ([#2711](https://github.com/radicle-dev/radicle-upstream/issues/2711)) ([ba7f0c0](https://github.com/radicle-dev/radicle-upstream/commit/ba7f0c06882634934052bbb9f9031db829cac982))
+* announcements not reliable on seed ([1b3b8ba](https://github.com/radicle-dev/radicle-upstream/commit/1b3b8ba6b9f2d9485bf0684d583a15e3155eac06))
+* clear badge text on peer selector change ([69416ce](https://github.com/radicle-dev/radicle-upstream/commit/69416ce69a1ba311b0444f0fabcb8f319b0c4b43))
+* custom protocol not triggering action on cold start ([f2ebb90](https://github.com/radicle-dev/radicle-upstream/commit/f2ebb90860ad0b5de7a99305567e367b1ba83d84))
+* fix patch tests ([4cd9567](https://github.com/radicle-dev/radicle-upstream/commit/4cd95673e985247d3a44a5a61161c9feb8f4e542))
+* prevent commit teaser overflow in project source screen ([0c4ab3d](https://github.com/radicle-dev/radicle-upstream/commit/0c4ab3d996a9517bba24d7cb73d46f03f32e47d6))
+* fix typos on docs ([77ce3ea](https://github.com/radicle-dev/radicle-upstream/commit/77ce3eade2fc26c73e35e00fbe7edc2c747cb5e3))
+* update to the latest radicle-source/surf ([9378362](https://github.com/radicle-dev/radicle-upstream/commit/9378362cbdf5d9170fa71022bd8f712becc17c05))
+* properly open URLs in AppImage ([614a499](https://github.com/radicle-dev/radicle-upstream/commit/614a499472427d42e226e6129a08eb8bd8bc1a5e))
+* fix crash on second instance invocation ([169be50](https://github.com/radicle-dev/radicle-upstream/commit/169be500e7bbf3f1a100b874f22a7f69efc04786))
+* parse by consuming string instead of regex ([574c544](https://github.com/radicle-dev/radicle-upstream/commit/574c54496714a957797588d6a071a667d9c22eec))
+
 ### [0.2.13](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.12...v0.2.13) (2021-12-17)
 
 

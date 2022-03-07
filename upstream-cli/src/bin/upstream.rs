@@ -43,9 +43,9 @@ fn main() {
 #[clap(
     name = "upstream",
     version = VERSION,
-    global_setting = clap::AppSettings::InferSubcommands,
-    global_setting = clap::AppSettings::DisableHelpSubcommand,
-    global_setting = clap::AppSettings::PropagateVersion,
+    infer_subcommands = true,
+    disable_help_subcommand = true,
+    propagate_version = true,
     color = clap::ColorChoice::Never
 )]
 struct Program {
@@ -64,7 +64,7 @@ impl Program {
 #[derive(Debug, clap::Parser)]
 struct Options {
     #[clap(long, env, global = true)]
-    rad_home: Option<String>,
+    lnk_home: Option<String>,
 }
 
 #[derive(Debug, clap::Subcommand)]
@@ -165,7 +165,7 @@ fn update_patch(options: Options, message: Option<String>) -> anyhow::Result<()>
 }
 
 fn fetch_patch(options: Options, patch_handle: PatchHandle) -> anyhow::Result<()> {
-    let rad_home_env = options.rad_home.as_ref().map(|value| ("RAD_HOME", value));
+    let lnk_home_env = options.lnk_home.as_ref().map(|value| ("LNK_HOME", value));
 
     let remote_patch_ref = format!(
         "remotes/{}/tags/radicle-patch/{}",
@@ -176,7 +176,7 @@ fn fetch_patch(options: Options, patch_handle: PatchHandle) -> anyhow::Result<()
         patch_handle.peer_id, patch_handle.name
     );
     let exit_status = std::process::Command::new("git")
-        .envs(rad_home_env)
+        .envs(lnk_home_env)
         .arg("fetch")
         .arg("rad")
         .arg("--force")
@@ -198,7 +198,7 @@ fn create_or_update_patch(
 ) -> anyhow::Result<()> {
     let patch_tag_name = format!("radicle-patch/{}", patch_name);
 
-    let rad_home_env = options.rad_home.as_ref().map(|value| ("RAD_HOME", value));
+    let lnk_home_env = options.lnk_home.as_ref().map(|value| ("LNK_HOME", value));
     let force_opt = if force { Some("--force") } else { None };
     let message_opts = if let Some(message) = message {
         vec!["--message".to_string(), message]
@@ -219,7 +219,7 @@ fn create_or_update_patch(
     }
 
     let exit_status = std::process::Command::new("git")
-        .envs(rad_home_env)
+        .envs(lnk_home_env)
         .arg("push")
         .args(force_opt)
         .arg("rad")

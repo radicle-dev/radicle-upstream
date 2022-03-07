@@ -216,7 +216,7 @@ mod handler {
             browser.get_stats().map_err(radicle_source::Error::from)
         })
         .map_err(Error::from)?;
-        let project = project::Full::try_from((project, stats))?;
+        let project = project::Project::try_from((project, stats))?;
 
         Ok(reply::with_status(
             reply::json(&project),
@@ -412,7 +412,7 @@ mod test {
                     .to_string()
             })
             .collect::<Vec<_>>();
-        let remote = repo.find_remote(radicle_daemon::config::RAD_REMOTE)?;
+        let remote = repo.find_remote("rad")?;
         assert_eq!(
             remote.url(),
             Some(
@@ -473,13 +473,18 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::Projects::list(&ctx.peer).await?;
-        let meta = projects.into_iter().next().unwrap();
-        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
+        let project = project::Projects::list(&ctx.peer)
+            .await
+            .unwrap()
+            .contributed
+            .into_iter()
+            .next()
+            .unwrap();
+        let maintainer = project.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "urn": meta.urn,
+            "urn": project.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -558,13 +563,18 @@ mod test {
             .reply(&api)
             .await;
 
-        let projects = project::Projects::list(&ctx.peer).await?;
-        let meta = projects.into_iter().next().unwrap();
-        let maintainer = meta.metadata.maintainers.iter().next().unwrap();
+        let project = project::Projects::list(&ctx.peer)
+            .await
+            .unwrap()
+            .contributed
+            .into_iter()
+            .next()
+            .unwrap();
+        let maintainer = project.metadata.maintainers.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
-            "urn": meta.urn,
+            "urn": project.urn,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",

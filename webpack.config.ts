@@ -74,10 +74,10 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
     "default-src 'self'",
     "connect-src *",
     // Inline styles are used by svelte and user generated markdown
-    "style-src 'unsafe-inline'",
+    "style-src 'unsafe-inline' 'self'",
     // Show images from all sources for user avatars and markdown
     "media-src *",
-    "img-src *",
+    "img-src * data:",
   ];
 
   if (!isProduction) {

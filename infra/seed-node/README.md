@@ -3,7 +3,7 @@
 Provides a GCP instance `seed-node-2` running `upstream-seed` in the cloud. The
 Upstream team uses the seed to collaborate.
 
-The peer address is `hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@34.88.37.244:8776`.
+The peer address is `hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@seed.upstream.radicle.xyz:8776`.
 
 ## Configuration
 

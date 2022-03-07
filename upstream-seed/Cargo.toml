@@ -30,8 +30,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 # radicle-link dependencies. These are patched in the workspace.
 librad = { version = "0", features= [ "replication-v3" ] }
 link-identities = { version = "0" }
-rad-identities = { version = "0" }
-
+lnk-identities = { version = "0" }
 # Only required until signal handling woes in git-tempfile are resolved
 # https://github.com/Byron/gitoxide/issues/336
 git-tempfile = "1.0.6"

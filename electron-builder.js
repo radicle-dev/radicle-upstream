@@ -19,9 +19,9 @@ module.exports = {
     buildResources: "public",
   },
   extraResources: [
-    ...rustBinaryResources(["radicle-proxy", "git-remote-rad", "upstream"]),
+    ...rustBinaryResources(["upstream-proxy", "git-remote-rad", "upstream"]),
     {
-      from: "proxy/assets",
+      from: "upstream-proxy/assets",
       to: "assets",
     },
   ],

@@ -26,8 +26,8 @@ mod source;
 /// Helper to combine the multiple filters together with Filter::or, possibly boxing the types in
 /// the process.
 ///
-/// https://github.com/seanmonstar/warp/issues/507#issuecomment-615974062
-/// https://github.com/rs-ipfs/rust-ipfs/commit/ae3306686209afa5911b1ad02170c1ac3bacda7c
+/// <https://github.com/seanmonstar/warp/issues/507#issuecomment-615974062>
+/// <https://github.com/rs-ipfs/rust-ipfs/commit/ae3306686209afa5911b1ad02170c1ac3bacda7c>
 macro_rules! combine {
     ($x:expr, $($y:expr),+) => {
         {
@@ -111,7 +111,7 @@ fn with_owner_guard(ctx: context::Context) -> BoxedFilter<(radicle_daemon::Local
             let user = ctx
                 .peer
                 .librad_peer()
-                .using_storage(rad_identities::local::default)
+                .using_storage(lnk_identities::local::default)
                 .await
                 .expect("failed to get storage")
                 .expect("failed to get local identity");
@@ -170,8 +170,7 @@ fn with_context_unsealed(ctx: context::Context) -> BoxedFilter<(context::Unseale
 ///
 /// # Errors
 ///
-/// If the query string cannot be parsed into `T` the filter rejects with
-/// [`error::Routing::InvalidQuery`].
+/// If the query string cannot be parsed into `T` the filter rejects.
 #[must_use]
 pub fn with_qs_opt<T>() -> BoxedFilter<(Option<T>,)>
 where
@@ -191,12 +190,11 @@ where
                 let query = percent_encoding::percent_decode_str(&raw).decode_utf8_lossy();
                 match serde_qs::from_str(&query) {
                     Ok(value) => Ok(Some(value)),
-                    Err(error) => Err(warp::reject::Rejection::from(
-                        error::Routing::InvalidQuery {
-                            query: query.into_owned(),
-                            error: error.to_string(),
-                        },
-                    )),
+                    Err(error) => Err(warp::reject::Rejection::from(error::Response::new(
+                        warp::http::StatusCode::BAD_REQUEST,
+                        "INVALID_QUERY",
+                        &error,
+                    ))),
                 }
             })
         })
@@ -206,7 +204,7 @@ where
 /// Parses the query string with [`serde_qs`] and returns the result.
 ///
 /// Similar to [`with_qs_opt`] but requires a query string to be present.
-/// Otherwise the filter is rejected with [`error::Routing::QueryMissing`].
+/// Otherwise the filter is rejected and returns a 400 response.
 #[must_use]
 pub fn with_qs<T>() -> BoxedFilter<(T,)>
 where
@@ -214,7 +212,13 @@ where
 {
     with_qs_opt()
         .and_then(|opt_query: Option<T>| async move {
-            opt_query.ok_or_else(|| warp::reject::Rejection::from(error::Routing::QueryMissing))
+            opt_query.ok_or_else(|| {
+                warp::reject::Rejection::from(error::Response {
+                    status_code: warp::http::StatusCode::BAD_REQUEST,
+                    variant: "QUERY_MISSING",
+                    message: "required query string is missing".to_string(),
+                })
+            })
         })
         .boxed()
 }
@@ -312,7 +316,7 @@ mod test {
             assert_eq!(
                 have,
                 serde_json::json!({
-                    "message": "invalid query string \"value=not_a_number\": failed with reason: invalid digit found in string",
+                    "message": "failed with reason: invalid digit found in string",
                     "variant": "INVALID_QUERY"
                 })
             );

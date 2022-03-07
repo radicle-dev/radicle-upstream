@@ -5,5 +5,5 @@
 // LICENSE file.
 
 fn main() -> anyhow::Result<()> {
-    rad_exe::cli::main()
+    lnk_exe::cli::main()
 }

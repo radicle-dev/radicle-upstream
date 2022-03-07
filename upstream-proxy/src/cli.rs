@@ -6,7 +6,7 @@
 
 #[derive(Debug, Clone, clap::Parser)]
 #[allow(clippy::struct_excessive_bools)]
-#[clap(setting(clap::AppSettings::DisableVersionFlag))]
+#[clap(disable_version_flag = true)]
 pub struct Args {
     /// Put proxy in test mode to use certain fixtures
     #[clap(long)]
@@ -30,17 +30,22 @@ pub struct Args {
         long,
         env = "RADICLE_PROXY_DEFAULT_SEEDS",
         long = "default-seed",
-        use_delimiter = true
+        use_value_delimiter = true
     )]
     pub default_seeds: Vec<String>,
 
-    /// Path to the secret key for the identity. Uses `RAD_HOME` if not provided.
+    /// Path to the secret key for the identity. Uses `LNK_HOME` if not provided.
     #[clap(long)]
     pub identity_key: Option<std::path::PathBuf>,
 
     /// Connect to the given seeds and not to those previously set and stored through the API. Does
     /// not override the stored seeds.
-    #[clap(long, env = "RADICLE_PROXY_SEEDS", long = "seed", use_delimiter = true)]
+    #[clap(
+        long,
+        env = "RADICLE_PROXY_SEEDS",
+        long = "seed",
+        use_value_delimiter = true
+    )]
     pub seeds: Option<Vec<String>>,
 
     /// Passphrase to unlock the keystore. If not provided the keystore must be unlocked via the

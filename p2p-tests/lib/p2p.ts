@@ -127,7 +127,7 @@ export class RadicleProxy {
   public passphrase: string;
   public peerId: string;
   public proxyClient: ProxyClient.ProxyClient;
-  public radHome: string;
+  public lnkHome: string;
 
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
   #ipAddress: string;
@@ -140,17 +140,17 @@ export class RadicleProxy {
     this.passphrase = name;
 
     this.checkoutPath = path.join(dataPath, `${name}-checkouts`);
-    this.radHome = path.join(dataPath, `${name}-rad-home`);
+    this.lnkHome = path.join(dataPath, `${name}-lnk-home`);
 
-    fs.mkdirsSync(this.radHome);
+    fs.mkdirsSync(this.lnkHome);
 
     const initResult = JSON.parse(
-      execa.sync(path.join(binPath(), "radicle-proxy-init"), [
+      execa.sync(path.join(binPath(), "upstream-proxy-init"), [
         this.name,
         "--key-passphrase",
         this.passphrase,
-        "--rad-home",
-        this.radHome,
+        "--lnk-home",
+        this.lnkHome,
       ]).stdout
     );
 
@@ -170,7 +170,7 @@ export class RadicleProxy {
     this.#childProcess = spawnInNamespace(
       this.name,
       [
-        path.join(binPath(), "radicle-proxy"),
+        path.join(binPath(), "upstream-proxy"),
         "--peer-listen",
         `${this.#ipAddress}:8776`,
         "--http-listen",
@@ -184,7 +184,7 @@ export class RadicleProxy {
         this.#seed,
       ],
       {
-        RAD_HOME: this.radHome,
+        LNK_HOME: this.lnkHome,
       }
     );
 
@@ -213,7 +213,7 @@ export class UpstreamSeed {
   public listen: string;
   public name: string;
   public peerId: string;
-  public radHome: string;
+  public lnkHome: string;
   public seedAddress: string;
 
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
@@ -229,10 +229,10 @@ export class UpstreamSeed {
     this.listen = `${ipAddress}:8776`;
     this.name = name;
     this.peerId = "hybfoqx9wrdjhnr9jyb74zpduph57z99f67bjgfnsf83p1rk7z1diy";
-    this.radHome = path.join(dataPath, `${name}-rad-home`);
+    this.lnkHome = path.join(dataPath, `${name}-lnk-home`);
     this.seedAddress = `${this.peerId}@${this.listen}`;
 
-    fs.mkdirsSync(this.radHome);
+    fs.mkdirsSync(this.lnkHome);
   }
 
   public start(): void {
@@ -244,8 +244,8 @@ export class UpstreamSeed {
       this.name,
       [
         path.join(binPath(), "upstream-seed"),
-        "--rad-home",
-        this.radHome,
+        "--lnk-home",
+        this.lnkHome,
         "--listen",
         this.listen,
         "--identity-key",
@@ -322,13 +322,13 @@ export function getLatestCommitSha(checkoutPath: string): string {
 }
 
 interface PushRadParams {
-  radHome: string;
+  lnkHome: string;
   checkoutPath: string;
   keyPassphrase: string;
 }
 
 export function pushRad({
-  radHome,
+  lnkHome,
   checkoutPath,
   keyPassphrase,
 }: PushRadParams): void {
@@ -336,7 +336,7 @@ export function pushRad({
     cwd: checkoutPath,
     env: {
       RADICLE_UNSAFE_FAST_KEYSTORE: "1",
-      RAD_HOME: radHome,
+      LNK_HOME: lnkHome,
       KEY_PASSPHRASE: keyPassphrase,
       GIT_EXEC_PATH: binPath(),
     },
@@ -387,16 +387,16 @@ export async function runTestcase({
   process.exit(0);
 }
 
-interface RadCliParams {
-  radHome: string;
+interface LnkCliParams {
+  lnkHome: string;
   args: string[];
 }
 
-export function radCli({ radHome, args }: RadCliParams): unknown {
-  const radBinaryPath = path.join(binPath(), "rad");
+export function lnkCli({ lnkHome, args }: LnkCliParams): unknown {
+  const radBinaryPath = path.join(binPath(), "lnk");
   const result = execa.sync(radBinaryPath, args, {
     env: {
-      RAD_HOME: radHome,
+      LNK_HOME: lnkHome,
     },
   });
 

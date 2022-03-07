@@ -11,7 +11,7 @@ type Environment = "development" | "production";
 export interface Config {
   environment: Environment;
   httpAddr: string;
-  radHome?: string;
+  lnkHome?: string;
   testWalletMnemonic?: string;
 }
 
@@ -20,7 +20,7 @@ interface ProcessEnv {
   // Environment that Upstream runs in. Used to determine configuration
   // default values.
   NODE_ENV?: string;
-  RAD_HOME?: string;
+  LNK_HOME?: string;
   // Enables test wallet for ethereum and uses the mnemonic to create
   // the private key.
   RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC?: string;
@@ -38,11 +38,11 @@ function buildConfig(processEnv: ProcessEnv): Config {
     environment = "production";
   }
 
-  let radHome: string | undefined;
-  if (processEnv.RAD_HOME) {
-    radHome = processEnv.RAD_HOME;
+  let lnkHome: string | undefined;
+  if (processEnv.LNK_HOME) {
+    lnkHome = processEnv.LNK_HOME;
   } else if (environment === "development") {
-    radHome = path.resolve(__dirname, "..", "sandbox", "rad_home");
+    lnkHome = path.resolve(__dirname, "..", "sandbox", "lnk_home");
   }
 
   let httpPort: number;
@@ -56,7 +56,7 @@ function buildConfig(processEnv: ProcessEnv): Config {
 
   return {
     environment,
-    radHome,
+    lnkHome,
     httpAddr: `127.0.0.1:${httpPort.toString()}`,
     testWalletMnemonic: processEnv.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC,
   };

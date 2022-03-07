@@ -1,42 +1,43 @@
 [workspace]
 resolver = "2"
 members = [
-  "proxy/api",
+  "upstream-proxy",
   "upstream-seed",
   "upstream-cli",
 ]
 
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
 
 [patch.crates-io.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
 
 [patch.crates-io.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
 
-[patch.crates-io.rad-identities]
+[patch.crates-io.lnk-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
 
 [patch.crates-io.radicle-daemon]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
 
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
 
 [patch.crates-io.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
 
-[patch.crates-io.rad-exe]
+[patch.crates-io.lnk-exe]
 git = "https://github.com/radicle-dev/radicle-link.git"
-rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
+tag = "cycle/2022-03-01"
+
 
 # Uncomment the following lines and comment out the radicle-link patches above
 # to develop against a local copy of `radicle-link`.
@@ -46,19 +47,19 @@ rev = "ca4f1856b29fa5d2b469c4f7db33ac81fdec2458"
 # link-crypto = { path = "../radicle-link/link-crypto" }
 # link-identities = { path = "../radicle-link/link-identities" }
 # radicle-daemon = { path = "../radicle-link/daemon" }
-# rad-exe = { path = "../radicle-link/rad-exe" }
-# rad-identities = { path = "../radicle-link/rad-identities" }
+# lnk-exe = { path = "../radicle-link/lnk-exe" }
+# lnk-identities = { path = "../radicle-link/lnk-identities" }
 # radicle-git-ext = { path = "../radicle-link/git-ext" }
 # radicle-git-helpers = { path = "../radicle-link/git-helpers" }
 
 # These patches are the same as those listed in
-# https://github.com/radicle-dev/radicle-link/blob/cycle/2022-02-15/Cargo.toml
+# https://github.com/radicle-dev/radicle-link/blob/cycle/2022-03-01/Cargo.toml
 
 [patch.crates-io.thrussh-encoding]
 git = "https://github.com/FintanH/thrussh.git"
 branch = "generic-agent"
 
-# See https://github.com/radicle-dev/radicle-link/blob/cycle/2022-02-15/link-crypto/Cargo.toml#L34
+# See https://github.com/radicle-dev/radicle-link/blob/cycle/2022-03-01/link-crypto/Cargo.toml#L36
 [patch.crates-io.radicle-keystore]
 git = "https://github.com/radicle-dev/radicle-keystore"
 rev = "b8a07286bad43a3d4b5f9136b7ef592dfa0fc4ad"

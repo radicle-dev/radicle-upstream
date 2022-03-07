@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import lodash from "lodash";
+import * as zod from "zod";
 
 export const throttled: (callback: () => void) => void = lodash.throttle(
   callback => {
@@ -14,15 +15,19 @@ export const throttled: (callback: () => void) => void = lodash.throttle(
   { trailing: false }
 );
 
-export const parseRadicleUrl = (url: string): undefined | string => {
-  if (
-    typeof url !== "string" ||
-    url.length === 0 ||
-    Buffer.byteLength(url, "utf8") > 1024 ||
-    !url.toLowerCase().match(/^radicle:\/\//)
-  ) {
-    return;
-  }
-
-  return url;
-};
+export const radicleUrlSchema = zod
+  .string()
+  .min(1)
+  .max(1024)
+  .refine(
+    value => {
+      let url;
+      try {
+        url = new URL(value);
+      } catch {
+        return false;
+      }
+      return url.protocol === "radicle:";
+    },
+    { message: "Invalid URL or protocol" }
+  );

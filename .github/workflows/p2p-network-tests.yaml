@@ -13,9 +13,8 @@ jobs:
           path: |
             ~/cache/yarn
             ~/cache/cypress
-          key: build-${{ runner.os }}-yarn-v4-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            build-${{ runner.os }}-yarn-v4-
+          # Reuses cache from `build` workflow
+          key: build-${{ runner.os }}-yarn-v5-${{ hashFiles('yarn.lock') }}
       - name: Cache Rust
         uses: actions/cache@v2
         with:
@@ -26,5 +25,5 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v6-${{ hashFiles('Cargo.lock') }}
+          key: build-${{ runner.os }}-rust-v7-${{ hashFiles('Cargo.lock') }}
       - run: ci/p2p-network-tests.sh
