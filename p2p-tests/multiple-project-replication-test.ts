@@ -82,7 +82,7 @@ async function testcase(dataPath: string) {
   // Assert that the seed received the first project.
   await withRetry(async () => {
     const result = lnkCli({
-      radHome: seed.radHome,
+      lnkHome: seed.lnkHome,
       args: ["identities", "project", "get", "--urn", project1.urn],
     });
 
@@ -101,7 +101,7 @@ async function testcase(dataPath: string) {
   // Assert that the seed received the second project.
   await withRetry(async () => {
     const result = lnkCli({
-      radHome: seed.radHome,
+      lnkHome: seed.lnkHome,
       args: ["identities", "project", "get", "--urn", project2.urn],
     });
 
