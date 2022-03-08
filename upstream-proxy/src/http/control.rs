@@ -61,7 +61,7 @@ mod handler {
     #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Unsealed,
-        owner: radicle_daemon::LocalIdentity,
+        owner: crate::daemon::LocalIdentity,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
         let meta = crate::control::replicate_platinum(

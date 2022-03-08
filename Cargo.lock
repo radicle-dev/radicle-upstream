@@ -84,6 +84,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
+name = "assert_matches"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
+
+[[package]]
 name = "async-broadcast"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3380,29 +3386,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "radicle-daemon"
-version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-03-01#a5181d98b12cf5f90362a761cc0c6a7a98712fc3"
-dependencies = [
- "anyhow",
- "async-stream",
- "either",
- "futures 0.3.21",
- "git2",
- "kv",
- "lazy_static",
- "librad",
- "nonempty 0.6.0",
- "radicle-git-ext",
- "radicle-git-helpers",
- "serde",
- "serde_millis",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "radicle-data"
 version = "0.1.0"
 source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-03-01#a5181d98b12cf5f90362a761cc0c6a7a98712fc3"
@@ -4669,7 +4652,9 @@ name = "upstream-proxy"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "assert_matches",
  "async-broadcast",
+ "async-stream",
  "bytes 1.1.0",
  "chrono",
  "clap 3.1.5",
@@ -4679,6 +4664,7 @@ dependencies = [
  "either",
  "futures 0.3.21",
  "git-tempfile",
+ "git2",
  "http",
  "kv",
  "lazy_static",
@@ -4690,7 +4676,6 @@ dependencies = [
  "nonempty 0.6.0",
  "percent-encoding",
  "pretty_assertions",
- "radicle-daemon",
  "radicle-git-ext",
  "radicle-git-helpers",
  "radicle-keystore",
@@ -4699,6 +4684,7 @@ dependencies = [
  "secstr",
  "serde",
  "serde_json",
+ "serde_millis",
  "serde_qs",
  "sha2",
  "tempfile",

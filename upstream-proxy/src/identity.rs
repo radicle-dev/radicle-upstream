@@ -154,10 +154,10 @@ impl From<Ethereum> for EthereumClaimExtV1 {
 ///
 /// # Errors
 pub async fn create(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
+    peer: &crate::daemon::net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let user = radicle_daemon::state::init_owner(peer, metadata).await?;
+    let user = crate::daemon::state::init_owner(peer, metadata).await?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }
 
@@ -165,19 +165,19 @@ pub async fn create(
 ///
 /// # Errors
 pub async fn update(
-    peer: &radicle_daemon::net::peer::Peer<BoxedSigner>,
+    peer: &crate::daemon::net::peer::Peer<BoxedSigner>,
     metadata: Metadata,
 ) -> Result<Identity, error::Error> {
-    let current_payload = radicle_daemon::state::default_owner(peer)
+    let current_payload = crate::daemon::state::default_owner(peer)
         .await?
-        .ok_or(radicle_daemon::state::Error::MissingOwner)?
+        .ok_or(crate::daemon::state::Error::MissingOwner)?
         .payload()
         .clone();
     let new_payload =
-        update_payload(current_payload, metadata).map_err(radicle_daemon::state::Error::from)?;
-    radicle_daemon::state::update_owner_payload(peer, new_payload).await?;
-    let user = radicle_daemon::state::default_owner(peer)
+        update_payload(current_payload, metadata).map_err(crate::daemon::state::Error::from)?;
+    crate::daemon::state::update_owner_payload(peer, new_payload).await?;
+    let user = crate::daemon::state::default_owner(peer)
         .await?
-        .ok_or(radicle_daemon::state::Error::MissingOwner)?;
+        .ok_or(crate::daemon::state::Error::MissingOwner)?;
     Ok((peer.peer_id(), user.into_inner().into_inner()).into())
 }

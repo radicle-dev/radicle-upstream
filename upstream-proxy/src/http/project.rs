@@ -187,7 +187,7 @@ mod handler {
         super::CheckoutInput { path, peer_id }: super::CheckoutInput,
     ) -> Result<impl Reply, Rejection> {
         let peer_id = http::guard_self_peer_id(&ctx.peer, peer_id);
-        let path = radicle_daemon::state::checkout(ctx.peer.librad_peer(), urn, peer_id, path)
+        let path = crate::daemon::state::checkout(ctx.peer.librad_peer(), urn, peer_id, path)
             .await
             .map_err(Error::from)?;
         Ok(reply::with_status(reply::json(&path), StatusCode::CREATED))
@@ -196,15 +196,15 @@ mod handler {
     /// Create a new [`project::Project`].
     pub async fn create(
         ctx: context::Unsealed,
-        owner: radicle_daemon::LocalIdentity,
-        input: radicle_daemon::project::Create,
+        owner: crate::daemon::LocalIdentity,
+        input: crate::daemon::project::Create,
     ) -> Result<impl Reply, Rejection> {
-        let project = radicle_daemon::state::init_project(ctx.peer.librad_peer(), &owner, input)
+        let project = crate::daemon::state::init_project(ctx.peer.librad_peer(), &owner, input)
             .await
             .map_err(Error::from)?;
         let urn = project.urn();
 
-        let branch = radicle_daemon::state::get_branch(
+        let branch = crate::daemon::state::get_branch(
             ctx.peer.librad_peer(),
             urn,
             None,
@@ -263,7 +263,7 @@ mod handler {
     /// List the remote peers for a project.
     pub async fn peers(ctx: context::Unsealed, urn: Urn) -> Result<impl Reply, Rejection> {
         let peers: Vec<project::Peer> =
-            radicle_daemon::state::list_project_peers(ctx.peer.librad_peer(), urn)
+            crate::daemon::state::list_project_peers(ctx.peer.librad_peer(), urn)
                 .await
                 .map_err(Error::from)?
                 .into_iter()
@@ -279,7 +279,7 @@ mod handler {
         peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        radicle_daemon::state::track(ctx.peer.librad_peer(), urn, peer_id)
+        crate::daemon::state::track(ctx.peer.librad_peer(), urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -291,7 +291,7 @@ mod handler {
         peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        radicle_daemon::state::untrack(ctx.peer.librad_peer(), urn, peer_id)
+        crate::daemon::state::untrack(ctx.peer.librad_peer(), urn, peer_id)
             .await
             .map_err(Error::from)?;
         Ok(reply::json(&true))
@@ -365,7 +365,7 @@ mod test {
 
         let urn = {
             let handle = "cloudhead";
-            let owner = radicle_daemon::state::init_owner(
+            let owner = crate::daemon::state::init_owner(
                 ctx.peer.librad_peer(),
                 Person {
                     name: handle.into(),
@@ -416,7 +416,7 @@ mod test {
         assert_eq!(
             remote.url(),
             Some(
-                radicle_daemon::LocalUrl::from(urn.clone())
+                crate::daemon::LocalUrl::from(urn.clone())
                     .to_string()
                     .as_str()
             )
@@ -426,7 +426,7 @@ mod test {
         // Verify presence of include file.
         let config = repo.config()?;
         let include_path = config
-            .get_entry(radicle_daemon::include::GIT_CONFIG_PATH_KEY)?
+            .get_entry(crate::daemon::include::GIT_CONFIG_PATH_KEY)?
             .value()
             .unwrap()
             .to_string();
@@ -457,8 +457,8 @@ mod test {
         };
         identity::create(ctx.peer.librad_peer(), metadata).await?;
 
-        let project = radicle_daemon::project::Create {
-            repo: radicle_daemon::project::Repo::New {
+        let project = crate::daemon::project::Create {
+            repo: crate::daemon::project::Repo::New {
                 path: dir.path().to_path_buf(),
                 name: "Upstream".to_string(),
             },
@@ -521,8 +521,8 @@ mod test {
         };
         identity::create(ctx.peer.librad_peer(), metadata).await?;
 
-        let project = radicle_daemon::project::Create {
-            repo: radicle_daemon::project::Repo::Existing {
+        let project = crate::daemon::project::Create {
+            repo: crate::daemon::project::Repo::Existing {
                 path: repo_path.clone(),
             },
             description: "Desktop client for radicle.".into(),
@@ -603,7 +603,7 @@ mod test {
         let api = super::filters(ctx.clone().into());
 
         let urn = {
-            let owner = radicle_daemon::state::init_owner(
+            let owner = crate::daemon::state::init_owner(
                 ctx.peer.librad_peer(),
                 Person {
                     name: "cloudhead".into(),
@@ -642,7 +642,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = radicle_daemon::state::init_owner(
+        let owner = crate::daemon::state::init_owner(
             ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),
@@ -673,7 +673,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = radicle_daemon::state::init_owner(
+        let owner = crate::daemon::state::init_owner(
             ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),
@@ -707,7 +707,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = radicle_daemon::state::init_owner(
+        let owner = crate::daemon::state::init_owner(
             ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),
@@ -741,7 +741,7 @@ mod test {
         let (ctx, _) = context::Unsealed::tmp(&tmp_dir)?;
         let api = super::filters(ctx.clone().into());
 
-        let owner = radicle_daemon::state::init_owner(
+        let owner = crate::daemon::state::init_owner(
             ctx.peer.librad_peer(),
             Person {
                 name: "cloudhead".into(),

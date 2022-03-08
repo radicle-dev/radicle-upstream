@@ -20,6 +20,7 @@ mod cli;
 mod config;
 mod context;
 mod control;
+mod daemon;
 pub mod env;
 mod error;
 mod peer;

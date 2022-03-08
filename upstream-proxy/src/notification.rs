@@ -9,9 +9,9 @@
 use serde::Serialize;
 use std::{collections::HashMap, time::SystemTime};
 
+use crate::daemon::request::{RequestState, SomeRequest, Status as PeerRequestStatus};
 use link_crypto::PeerId;
 use link_identities::git::Urn;
-use radicle_daemon::request::{RequestState, SomeRequest, Status as PeerRequestStatus};
 use radicle_git_ext::Oid;
 
 /// Event observed about the local peer.
@@ -52,13 +52,13 @@ pub enum Notification {
     /// Transition between two statuses occurred.
     #[serde(rename_all = "camelCase")]
     StatusChanged {
-        /// The [`radicle_daemon::PeerStatus`] before.
-        old: radicle_daemon::PeerStatus,
-        /// The new [`radicle_daemon::PeerStatus`].
-        new: radicle_daemon::PeerStatus,
+        /// The [`crate::daemon::PeerStatus`] before.
+        old: crate::daemon::PeerStatus,
+        /// The new [`crate::daemon::PeerStatus`].
+        new: crate::daemon::PeerStatus,
     },
     WaitingRoomTransition {
-        event: radicle_daemon::peer::WaitingRoomEvent,
+        event: crate::daemon::peer::WaitingRoomEvent,
         state_before: SerializableWaitingRoomState,
         state_after: SerializableWaitingRoomState,
         timestamp: u128,
@@ -66,30 +66,26 @@ pub enum Notification {
 }
 
 #[allow(clippy::wildcard_enum_match_arm)]
-pub fn from_peer_event(event: radicle_daemon::PeerEvent) -> Option<Notification> {
+pub fn from_peer_event(event: crate::daemon::PeerEvent) -> Option<Notification> {
     match event {
-        radicle_daemon::PeerEvent::GossipFetched {
+        crate::daemon::PeerEvent::GossipFetched {
             provider, gossip, ..
         } => Some(Notification::ProjectUpdated {
             provider: provider.peer_id,
             urn: gossip.urn,
         }),
-        radicle_daemon::PeerEvent::RequestCloned(urn, peer) => {
+        crate::daemon::PeerEvent::RequestCloned(urn, peer) => {
             Some(Notification::RequestCloned { peer, urn })
         },
-        radicle_daemon::PeerEvent::RequestCreated(urn) => {
-            Some(Notification::RequestCreated { urn })
-        },
-        radicle_daemon::PeerEvent::RequestQueried(urn) => {
-            Some(Notification::RequestQueried { urn })
-        },
-        radicle_daemon::PeerEvent::RequestTimedOut(urn) => {
+        crate::daemon::PeerEvent::RequestCreated(urn) => Some(Notification::RequestCreated { urn }),
+        crate::daemon::PeerEvent::RequestQueried(urn) => Some(Notification::RequestQueried { urn }),
+        crate::daemon::PeerEvent::RequestTimedOut(urn) => {
             Some(Notification::RequestTimedOut { urn })
         },
-        radicle_daemon::PeerEvent::StatusChanged { old, new } => {
+        crate::daemon::PeerEvent::StatusChanged { old, new } => {
             Some(Notification::StatusChanged { old, new })
         },
-        radicle_daemon::PeerEvent::WaitingRoomTransition(t) => {
+        crate::daemon::PeerEvent::WaitingRoomTransition(t) => {
             let since_the_epoch = t
                 .timestamp
                 .duration_since(std::time::UNIX_EPOCH)

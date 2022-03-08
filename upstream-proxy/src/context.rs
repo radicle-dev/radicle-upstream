@@ -176,7 +176,7 @@ impl Unsealed {
     /// Return a stream that emits peer events.
     ///
     /// The stream ends when API server is shut down.
-    pub fn peer_events(&self) -> impl Stream<Item = radicle_daemon::PeerEvent> + Send + 'static {
+    pub fn peer_events(&self) -> impl Stream<Item = crate::daemon::PeerEvent> + Send + 'static {
         let shutdown = self.rest.shutdown.clone();
         self.peer
             .events()
@@ -205,7 +205,7 @@ impl Unsealed {
             paths: paths.clone(),
             key,
             store: store.clone(),
-            discovery: radicle_daemon::config::StreamDiscovery::new(seeds_watch),
+            discovery: crate::daemon::config::StreamDiscovery::new(seeds_watch),
             listen: "127.0.0.1:0".parse().expect("invalid IP address"),
         })
         .unwrap();

@@ -50,9 +50,9 @@ pub async fn list(
     let mut patches = Vec::new();
 
     let default_branch_head_commit_id = {
-        let project = radicle_daemon::state::get_project(peer.librad_peer(), project_urn.clone())
+        let project = crate::daemon::state::get_project(peer.librad_peer(), project_urn.clone())
             .await?
-            .ok_or_else(|| radicle_daemon::state::Error::ProjectNotFound(project_urn.clone()))?;
+            .ok_or_else(|| crate::daemon::state::Error::ProjectNotFound(project_urn.clone()))?;
         let maintainer = project
             .delegations()
             .iter()
@@ -62,7 +62,7 @@ pub async fn list(
             })
             .next()
             .expect("missing delegation");
-        let default_branch = radicle_daemon::state::get_branch(
+        let default_branch = crate::daemon::state::get_branch(
             peer.librad_peer(),
             project_urn.clone(),
             Some(PeerId::from(*maintainer)),
@@ -76,11 +76,11 @@ pub async fn list(
     };
 
     for project_peer in
-        radicle_daemon::state::list_project_peers(peer.librad_peer(), project_urn.clone()).await?
+        crate::daemon::state::list_project_peers(peer.librad_peer(), project_urn.clone()).await?
     {
         let remote = match &project_peer {
-            radicle_daemon::project::Peer::Local { .. } => None,
-            radicle_daemon::project::Peer::Remote { peer_id, .. } => Some(*peer_id),
+            crate::daemon::project::Peer::Local { .. } => None,
+            crate::daemon::project::Peer::Remote { peer_id, .. } => Some(*peer_id),
         };
 
         let ref_scope = match remote {
@@ -90,7 +90,7 @@ pub async fn list(
             None => RefScope::Local,
         };
 
-        let branch = match radicle_daemon::state::get_branch(
+        let branch = match crate::daemon::state::get_branch(
             peer.librad_peer(),
             project_urn.clone(),
             remote,
@@ -99,7 +99,7 @@ pub async fn list(
         .await
         {
             Ok(branch) => branch,
-            Err(radicle_daemon::state::Error::MissingRef { .. }) => {
+            Err(crate::daemon::state::Error::MissingRef { .. }) => {
                 // The peer hasn’t published any branches yet.
                 continue;
             },
