@@ -10,7 +10,7 @@ import * as identity from "./identity";
 import * as control from "./control";
 import * as project from "./project";
 import * as source from "./source";
-import { Fetcher, ResponseError, RequestOptions } from "./fetcher";
+import { Fetcher, BaseFetch, ResponseError, RequestOptions } from "./fetcher";
 
 export { ResponseError };
 
@@ -54,8 +54,8 @@ export class ProxyClient {
   public source: source.Client;
   public identity: identity.Client;
 
-  public constructor(baseUrl: string) {
-    this.fetcher = new Fetcher(baseUrl);
+  public constructor(baseUrl: string, fetch?: BaseFetch) {
+    this.fetcher = new Fetcher(baseUrl, fetch);
     this.control = new control.Control(this.fetcher);
     this.project = new project.Client(this.fetcher);
     this.source = new source.Client(this.fetcher);

@@ -4,23 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import fetch, { Headers, Request, Response } from "node-fetch";
-
-if (!globalThis.fetch) {
-  // This might be due to https://github.com/microsoft/TypeScript/issues/43990.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.fetch = fetch;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.Headers = Headers;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.Request = Request;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.Response = Response;
-}
+import fetch from "node-fetch";
 
 import * as ProxyClient from "proxy-client";
 import * as fs from "fs-extra";
@@ -158,7 +142,8 @@ export class RadicleProxy {
     this.peerId = initResult.peerId;
 
     this.proxyClient = new ProxyClient.ProxyClient(
-      `http://${this.#ipAddress}:30000`
+      `http://${this.#ipAddress}:30000`,
+      fetch
     );
   }
 
