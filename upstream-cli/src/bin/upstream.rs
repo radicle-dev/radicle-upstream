@@ -249,7 +249,7 @@ fn get_current_branch_name() -> anyhow::Result<String> {
         .context("invalid UTF-8 output from command")?
         .lines()
         .next()
-        .ok_or(anyhow::anyhow!("empty command output"))?;
+        .ok_or_else(|| anyhow::anyhow!("empty command output"))?;
     Ok(branch_name.to_string())
 }
 
