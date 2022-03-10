@@ -156,13 +156,14 @@ impl Unsealed {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let key = link_crypto::SecretKey::new();
+        let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let seeds_watch = tokio::sync::watch::channel(vec![]).1;
 
         let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
             paths: paths.clone(),
-            key,
+            signer,
             store: store.clone(),
             discovery: crate::daemon::config::StreamDiscovery::new(seeds_watch),
             listen: "127.0.0.1:0".parse().expect("invalid IP address"),

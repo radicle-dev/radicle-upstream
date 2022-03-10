@@ -30,7 +30,7 @@ impl Peer {
 }
 
 pub struct Config {
-    pub key: link_crypto::SecretKey,
+    pub signer: link_crypto::BoxedSigner,
     pub paths: librad::paths::Paths,
     pub listen: std::net::SocketAddr,
     pub discovery: crate::daemon::config::StreamDiscovery,
@@ -65,8 +65,8 @@ impl Runner {
 }
 
 pub fn create(config: Config) -> anyhow::Result<(Peer, Runner)> {
-    let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: config.key });
-    let daemon_config = crate::daemon::config::configure(config.paths, signer, config.listen);
+    let daemon_config =
+        crate::daemon::config::configure(config.paths, config.signer, config.listen);
     let daemon_peer = crate::daemon::Peer::new(
         daemon_config,
         config.discovery,

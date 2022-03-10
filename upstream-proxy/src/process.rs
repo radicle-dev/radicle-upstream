@@ -57,6 +57,32 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+async fn ssh_agent_signer(
+    paths: &librad::paths::Paths,
+) -> Result<Option<link_crypto::BoxedSigner>, anyhow::Error> {
+    let storage = match librad::git::storage::ReadOnly::open(paths) {
+        Ok(storage) => storage,
+        // Don't throw if the monorepo hasn't been initialised yet, like it is the case before the
+        // user has onboarded.
+        Err(_) => return Ok(None),
+    };
+    let peer_id = storage.peer_id();
+    let pk = (*peer_id.as_public_key()).into();
+    let agent = radicle_keystore::sign::SshAgent::new(pk);
+    let keys = radicle_keystore::sign::ssh::list_keys::<tokio::net::UnixStream>(&agent).await?;
+    if keys.contains(&pk) {
+        let signer = agent.connect::<tokio::net::UnixStream>().await?;
+        Ok(Some(
+            link_crypto::SomeSigner {
+                signer: Arc::new(signer),
+            }
+            .into(),
+        ))
+    } else {
+        Ok(None)
+    }
+}
+
 async fn run_session(
     service_handle: service::Handle,
     environment: &service::Environment,
@@ -96,7 +122,18 @@ async fn run_session(
     // Trigger a shutdown when the restart signal resolves
     shutdown_runner.add_without_shutdown(restart_signal.map(Ok));
 
-    let ctx = if let Some(key) = environment.key.clone() {
+    let maybe_signer = if let Some(key) = environment.key.clone() {
+        Some(link_crypto::BoxedSigner::new(link_crypto::SomeSigner {
+            signer: key,
+        }))
+    } else {
+        ssh_agent_signer(paths).await.unwrap_or_else(|err| {
+            tracing::warn!(?err, "Can't get the ssh-agent signer");
+            None
+        })
+    };
+
+    let ctx = if let Some(signer) = maybe_signer {
         let discovery = if let Some(ref seeds) = sealed.seeds {
             let seeds = crate::daemon::seed::resolve(seeds)
                 .await
@@ -111,7 +148,7 @@ async fn run_session(
 
         let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
             paths: paths.clone(),
-            key,
+            signer,
             store,
             discovery,
             listen: args.peer_listen,
