@@ -129,12 +129,13 @@ export class RadicleProxy {
     fs.mkdirsSync(this.lnkHome);
 
     const initResult = JSON.parse(
-      execa.sync(path.join(binPath(), "upstream-proxy-init"), [
+      execa.sync(path.join(binPath(), "upstream-proxy-dev"), [
+        "--lnk-home",
+        this.lnkHome,
+        "init",
         this.name,
         "--key-passphrase",
         this.passphrase,
-        "--lnk-home",
-        this.lnkHome,
       ]).stdout
     );
 

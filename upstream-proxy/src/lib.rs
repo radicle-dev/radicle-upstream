@@ -29,10 +29,10 @@ mod ethereum {
     pub mod address;
     pub mod claim_ext;
 }
+pub mod dev_cli;
 mod http;
 mod identifier;
 mod identity;
-pub mod init_bin;
 mod keystore;
 mod notification;
 mod patch;

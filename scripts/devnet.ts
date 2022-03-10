@@ -88,7 +88,14 @@ const upstreamCommand: yargs.CommandModule<
     if (missing || opts.reset) {
       await execa(
         "cargo",
-        ["run", "--bin", "upstream-proxy-init", "--", peerConfig.userHandle],
+        [
+          "run",
+          "--bin",
+          "upstream-proxy-dev",
+          "--",
+          "init",
+          peerConfig.userHandle,
+        ],
         {
           stdio: "inherit",
           env: {
@@ -231,7 +238,7 @@ interface PeerConfig {
 
 // Get a peer ID from a private key seed.
 //
-// Uses the same algorithm as `upstream-proxy-init`.
+// Uses the same algorithm as `upstream-proxy-dev init`.
 function peerIdFromKeySeed(seed: string): string {
   const seedHash = Crypto.createHash("sha256");
   seedHash.update(seed);
