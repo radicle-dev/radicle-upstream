@@ -20,7 +20,7 @@ use radicle_git_ext::Oid;
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Notification {
     ProjectUpdated {
-        provider: PeerId,
+        /// URN of the project that was updated
         urn: Urn,
     },
     /// A request for a project was created and is pending submission to the network
@@ -68,12 +68,9 @@ pub enum Notification {
 #[allow(clippy::wildcard_enum_match_arm)]
 pub fn from_peer_event(event: crate::daemon::PeerEvent) -> Option<Notification> {
     match event {
-        crate::daemon::PeerEvent::GossipFetched {
-            provider, gossip, ..
-        } => Some(Notification::ProjectUpdated {
-            provider: provider.peer_id,
-            urn: gossip.urn,
-        }),
+        crate::daemon::PeerEvent::GossipFetched { gossip, .. } => {
+            Some(Notification::ProjectUpdated { urn: gossip.urn })
+        },
         crate::daemon::PeerEvent::RequestCloned(urn, peer) => {
             Some(Notification::RequestCloned { peer, urn })
         },

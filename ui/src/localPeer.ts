@@ -85,7 +85,6 @@ enum EventType {
 
 interface ProjectUpdated {
   type: EventType.ProjectUpdated;
-  provider: identity.PeerId;
   urn: string;
 }
 
@@ -133,7 +132,6 @@ export type Event =
 const eventSchema: zod.Schema<Event> = zod.union([
   zod.object({
     type: zod.literal(EventType.ProjectUpdated),
-    provider: zod.string(),
     urn: zod.string(),
   }),
   zod.object({
