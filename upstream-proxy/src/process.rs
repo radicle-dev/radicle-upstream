@@ -83,6 +83,28 @@ async fn ssh_agent_signer(
     }
 }
 
+async fn add_key_to_ssh_agent(paths: &librad::paths::Paths, key: link_crypto::SecretKey) {
+    let storage = match librad::git::storage::ReadOnly::open(paths) {
+        Ok(storage) => storage,
+        // Don't throw if the monorepo hasn't been initialised yet, like it is the case before the
+        // user has onboarded.
+        Err(_) => return,
+    };
+    let peer_id = storage.peer_id();
+    let pk = (*peer_id.as_public_key()).into();
+    let agent = radicle_keystore::sign::SshAgent::new(pk);
+
+    if let Err(err) = radicle_keystore::sign::ssh::add_key::<tokio::net::UnixStream>(
+        &agent,
+        key.into(),
+        &Vec::new(),
+    )
+    .await
+    {
+        tracing::warn!(?err, "Couldn't add your key to the ssh-agent");
+    }
+}
+
 async fn run_session(
     service_handle: service::Handle,
     environment: &service::Environment,
@@ -123,9 +145,13 @@ async fn run_session(
     shutdown_runner.add_without_shutdown(restart_signal.map(Ok));
 
     let maybe_signer = if let Some(key) = environment.key.clone() {
-        Some(link_crypto::BoxedSigner::new(link_crypto::SomeSigner {
-            signer: key,
-        }))
+        let signer = Some(link_crypto::BoxedSigner::new(link_crypto::SomeSigner {
+            signer: key.clone(),
+        }));
+
+        add_key_to_ssh_agent(paths, key).await;
+
+        signer
     } else {
         ssh_agent_signer(paths).await.unwrap_or_else(|err| {
             tracing::warn!(?err, "Can't get the ssh-agent signer");
