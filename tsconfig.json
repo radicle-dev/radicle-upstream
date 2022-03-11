@@ -5,7 +5,7 @@
     "native/**/*",
     "scripts/**/*.ts",
     "webpack.config.ts",
-    "proxy-client/*.ts",
+    "proxy-client/**/*.ts",
     "design-system/*.ts",
     "p2p-tests/**/*.ts"
   ],

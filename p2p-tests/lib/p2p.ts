@@ -5,7 +5,7 @@
 // LICENSE file.
 
 import fetch from "node-fetch";
-
+import EventSource from "eventsource";
 import * as ProxyClient from "proxy-client";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -144,7 +144,8 @@ export class RadicleProxy {
 
     this.proxyClient = new ProxyClient.ProxyClient(
       `http://${this.#ipAddress}:30000`,
-      fetch
+      fetch,
+      EventSource
     );
   }
 
