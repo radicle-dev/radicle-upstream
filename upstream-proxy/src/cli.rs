@@ -57,10 +57,6 @@ pub struct Args {
     #[clap(long)]
     pub unsafe_fast_keystore: bool,
 
-    /// If `true`, the HTTP api will accept any request without checking the auth token.
-    #[clap(long, env = "RADICLE_PROXY_INSECURE_HTTP_API")]
-    pub insecure_http_api: bool,
-
     /// Enables more verbose logging for development
     #[clap(long)]
     pub dev_log: bool,

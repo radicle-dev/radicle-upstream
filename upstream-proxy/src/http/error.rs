@@ -246,7 +246,7 @@ impl From<&error::Error> for Response {
             error::Error::State(err) => Self::from(err),
             error::Error::Source(err) => Self::from(err),
             error::Error::Keystore(keystore_err) => Self::from(keystore_err),
-            error::Error::KeystoreSealed | error::Error::InvalidAuthCookie => Self {
+            error::Error::KeystoreSealed => Self {
                 status_code: StatusCode::FORBIDDEN,
                 variant: "FORBIDDEN",
                 message: err.to_string(),

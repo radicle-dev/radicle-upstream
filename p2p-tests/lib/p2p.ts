@@ -163,7 +163,6 @@ export class RadicleProxy {
         "--key-passphrase",
         this.passphrase,
         "--unsafe-fast-keystore",
-        "--insecure-http-api",
         "--dev-log",
         "--seed",
         this.#seed,

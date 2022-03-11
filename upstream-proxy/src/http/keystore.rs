@@ -41,7 +41,7 @@ fn create_filter(
 
 /// Keystore handlers for conversion between core domain and HTTP request fulfilment.
 mod handler {
-    use warp::{http::StatusCode, reply, Rejection, Reply};
+    use warp::{http::StatusCode, Rejection, Reply};
 
     use crate::context;
 
@@ -50,13 +50,11 @@ mod handler {
         mut ctx: context::Context,
         input: super::UnsealInput,
     ) -> Result<impl Reply, Rejection> {
-        let token = ctx.unseal_keystore(input.passphrase).await?;
-        Ok(warp::reply::with_header(
-            reply::with_status(reply(), StatusCode::NO_CONTENT),
-            "Set-Cookie",
-            super::format_cookie_header(&token),
-        )
-        .into_response())
+        ctx.unseal_keystore(input.passphrase).await?;
+        Ok(warp::reply::with_status(
+            "Keystore unsealed",
+            StatusCode::OK,
+        ))
     }
 
     /// Initialize the keystore with a new key.
@@ -64,13 +62,8 @@ mod handler {
         mut ctx: context::Context,
         input: super::CreateInput,
     ) -> Result<impl Reply, Rejection> {
-        let token = ctx.create_key(input.passphrase).await?;
-        Ok(warp::reply::with_header(
-            reply::with_status(reply(), StatusCode::NO_CONTENT),
-            "Set-Cookie",
-            super::format_cookie_header(&token),
-        )
-        .into_response())
+        ctx.create_key(input.passphrase).await?;
+        Ok(warp::reply::with_status("New key created", StatusCode::OK))
     }
 }
 
@@ -88,9 +81,4 @@ pub struct UnsealInput {
 pub struct CreateInput {
     /// Passphrase to encrypt the keystore with.
     passphrase: keystore::SecUtf8,
-}
-
-/// Format the cookie header attributes.
-fn format_cookie_header(token: &str) -> String {
-    format!("auth-token={}; Path=/; SameSite=None; Secure", token)
 }

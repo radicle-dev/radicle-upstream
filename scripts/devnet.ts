@@ -115,7 +115,6 @@ const upstreamCommand: yargs.CommandModule<
           "run",
           "--bin=upstream-proxy",
           "--",
-          "--insecure-http-api",
           "--unsafe-fast-keystore",
           "--dev-log",
         ],
@@ -287,7 +286,6 @@ function getProxyEnv(
     LNK_HOME: peerConfig.lnkHome,
     RADICLE_PROXY_HTTP_LISTEN: `127.0.0.1:${peerConfig.httpPort}`,
     RADICLE_PROXY_PEER_LISTEN: `127.0.0.1:${peerConfig.p2pPort}`,
-    RADICLE_PROXY_INSECURE_HTTP_API: "true",
     RADICLE_PROXY_SEEDS: seeds,
     RADICLE_PROXY_KEY_PASSPHRASE: "asdf",
   };
