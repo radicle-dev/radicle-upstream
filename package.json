@@ -17,8 +17,8 @@
   "scripts": {
     "start": "cargo build --all-features --all-targets && yarn run-p --race _private:webpack:ui:watch _private:electron:start",
     "test": "cross-env TZ='UTC' yarn test:unit && cross-env TZ='UTC' yarn test:integration",
-    "test:integration": "cross-env TZ='UTC' run-p --race _private:proxy:start:test _private:test:integration",
-    "test:integration:debug": "cross-env TZ='UTC' run-p --race _private:webpack:ui:watch _private:proxy:start:test:watch _private:test:integration:debug",
+    "test:integration": "cross-env TZ='UTC' SSH_AUTH_SOCK='' run-p --race _private:proxy:start:test _private:test:integration",
+    "test:integration:debug": "cross-env TZ='UTC' SSH_AUTH_SOCK='' run-p --race _private:webpack:ui:watch _private:proxy:start:test:watch _private:test:integration:debug",
     "test:unit": "jest",
     "test:unit:watch": "jest --watchAll",
     "dist": "./scripts/dist.sh",
