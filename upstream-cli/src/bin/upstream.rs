@@ -110,24 +110,14 @@ impl std::str::FromStr for PatchHandle {
 enum PatchCommand {
     /// Creates a patch from your current branch and publishes it to the Radicle network.
     ///
-    /// Unless --message is given, opens an editor that allows you to edit the
-    /// patch message.
-    Create {
-        /// Use the given message as the patch message.
-        #[clap(short, long)]
-        message: Option<String>,
-    },
+    /// Opens an editor that allows you to edit the patch message.
+    Create {},
 
     /// Updates a patch to the current branch and publishes it to the Radicle network.
     ///
     /// Updates the patch with the same name as the current branch. Sets the patch head to the
-    /// current branch head. Unless --message is given, opens an editor that allows you to edit the
-    /// patch message.
-    Update {
-        /// Use the given message as the patch message.
-        #[clap(short, long)]
-        message: Option<String>,
-    },
+    /// current branch head. Opens an editor that allows you to edit the patch message.
+    Update {},
 
     /// Fetch a patch from a peer and create a tag for the patch in the local repository.
     ///
@@ -141,24 +131,104 @@ enum PatchCommand {
 impl PatchCommand {
     fn run(self, options: Options) -> anyhow::Result<()> {
         match self {
-            PatchCommand::Create { message } => create_patch(options, message),
-            PatchCommand::Update { message } => update_patch(options, message),
+            PatchCommand::Create {} => create_patch(options),
+            PatchCommand::Update {} => update_patch(options),
             PatchCommand::Fetch { patch_handle } => fetch_patch(options, patch_handle),
         }
     }
 }
 
-fn create_patch(options: Options, message: Option<String>) -> anyhow::Result<()> {
+fn create_patch(options: Options) -> anyhow::Result<()> {
     let patch_name = get_current_branch_name().context("failed to get current branch name")?;
-    create_or_update_patch(&options, &patch_name, message, true)?;
+    let patch_tag_name = format!("radicle-patch/{}", patch_name);
+
+    let lnk_home_env = options.lnk_home.as_ref().map(|value| ("LNK_HOME", value));
+
+    let git_show = std::process::Command::new("git")
+        .arg("show")
+        .arg("--quiet")
+        .arg("HEAD")
+        .arg("--pretty=%s%n%n%b")
+        .output()
+        .context("Could not get latest commit message")?;
+
+    if !git_show.status.success() {
+        anyhow::bail!(ProgramError::new("Failed to get latest commit"));
+    }
+
+    let last_commit_message =
+        String::from_utf8(git_show.stdout).expect("Could not convert `git show` stdout to string");
+
+    let patch_help_message = "# Please describe your patch.
+#
+# We have pre-filled the patch title and description with information from the
+# latest commit on this branch. You can edit it to your liking. The first line
+# is the patch title, followed by an empty newline and an optional patch
+# description. The patch description supports markdown.
+#
+# Any lines starting with '#' will be ignored.";
+
+    let exit_status = std::process::Command::new("git")
+        .arg("tag")
+        .arg("--annotate")
+        .arg("--message")
+        .arg(format!("{}{}", last_commit_message, patch_help_message))
+        .arg("--edit")
+        .arg("--force")
+        .arg(&patch_tag_name)
+        .status()
+        .context("Could not create git tag")?;
+    if !exit_status.success() {
+        anyhow::bail!(ProgramError::new("Failed to create git tag"));
+    }
+
+    let exit_status = std::process::Command::new("git")
+        .envs(lnk_home_env)
+        .arg("push")
+        .arg("--force")
+        .arg("rad")
+        .arg("tag")
+        .arg(patch_tag_name)
+        .status()
+        .context("failed to spawn command")?;
+    if !exit_status.success() {
+        anyhow::bail!(ProgramError::new("Failed to push git tag"));
+    }
     println!("Created patch {}", patch_name);
 
     Ok(())
 }
 
-fn update_patch(options: Options, message: Option<String>) -> anyhow::Result<()> {
+fn update_patch(options: Options) -> anyhow::Result<()> {
     let patch_name = get_current_branch_name().context("failed to get current branch name")?;
-    create_or_update_patch(&options, &patch_name, message, true)?;
+    let patch_tag_name = format!("radicle-patch/{}", patch_name);
+
+    let lnk_home_env = options.lnk_home.as_ref().map(|value| ("LNK_HOME", value));
+
+    let exit_status = std::process::Command::new("git")
+        .arg("tag")
+        .arg("--annotate")
+        .arg("--force")
+        .arg(&patch_tag_name)
+        .status()
+        .context("failed to spawn command")?;
+    if !exit_status.success() {
+        anyhow::bail!(ProgramError::new("Failed to create git tag"));
+    }
+
+    let exit_status = std::process::Command::new("git")
+        .envs(lnk_home_env)
+        .arg("push")
+        .arg("--force")
+        .arg("rad")
+        .arg("tag")
+        .arg(patch_tag_name)
+        .status()
+        .context("failed to spawn command")?;
+    if !exit_status.success() {
+        anyhow::bail!(ProgramError::new("Failed to push git tag"));
+    }
+
     println!("Updated patch {}", patch_name);
 
     Ok(())
@@ -181,50 +251,6 @@ fn fetch_patch(options: Options, patch_handle: PatchHandle) -> anyhow::Result<()
         .arg("rad")
         .arg("--force")
         .arg(format!("{}:{}", remote_patch_ref, local_patch_ref))
-        .status()
-        .context("failed to spawn command")?;
-    if !exit_status.success() {
-        anyhow::bail!(ProgramError::new("Failed to push git tag"));
-    }
-
-    Ok(())
-}
-
-fn create_or_update_patch(
-    options: &Options,
-    patch_name: &str,
-    message: Option<String>,
-    force: bool,
-) -> anyhow::Result<()> {
-    let patch_tag_name = format!("radicle-patch/{}", patch_name);
-
-    let lnk_home_env = options.lnk_home.as_ref().map(|value| ("LNK_HOME", value));
-    let force_opt = if force { Some("--force") } else { None };
-    let message_opts = if let Some(message) = message {
-        vec!["--message".to_string(), message]
-    } else {
-        vec![]
-    };
-
-    let exit_status = std::process::Command::new("git")
-        .arg("tag")
-        .arg("--annotate")
-        .args(force_opt)
-        .args(message_opts)
-        .arg(&patch_tag_name)
-        .status()
-        .context("failed to spawn command")?;
-    if !exit_status.success() {
-        anyhow::bail!(ProgramError::new("Failed to create git tag"));
-    }
-
-    let exit_status = std::process::Command::new("git")
-        .envs(lnk_home_env)
-        .arg("push")
-        .args(force_opt)
-        .arg("rad")
-        .arg("tag")
-        .arg(patch_tag_name)
         .status()
         .context("failed to spawn command")?;
     if !exit_status.success() {
