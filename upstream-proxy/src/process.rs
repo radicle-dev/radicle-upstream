@@ -94,14 +94,15 @@ async fn add_key_to_ssh_agent(paths: &librad::paths::Paths, key: link_crypto::Se
     let pk = (*peer_id.as_public_key()).into();
     let agent = radicle_keystore::sign::SshAgent::new(pk);
 
-    if let Err(err) = radicle_keystore::sign::ssh::add_key::<tokio::net::UnixStream>(
+    if (radicle_keystore::sign::ssh::add_key::<tokio::net::UnixStream>(
         &agent,
         key.into(),
         &Vec::new(),
     )
-    .await
+    .await)
+        .is_err()
     {
-        tracing::warn!(?err, "Couldn't add your key to the ssh-agent");
+        tracing::warn!("could not add ssh key, is ssh-agent running?");
     }
 }
 
@@ -153,8 +154,8 @@ async fn run_session(
 
         signer
     } else {
-        ssh_agent_signer(paths).await.unwrap_or_else(|err| {
-            tracing::warn!(?err, "Can't get the ssh-agent signer");
+        ssh_agent_signer(paths).await.unwrap_or_else(|_| {
+            tracing::warn!("could not lookup ssh key, is ssh-agent running?");
             None
         })
     };
