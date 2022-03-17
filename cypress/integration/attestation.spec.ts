@@ -7,7 +7,7 @@
 import * as commands from "cypress/support/commands";
 
 describe("attestation", () => {
-  it("links radicle identity with ethereum account", () => {
+  it.skip("links radicle identity with ethereum account", () => {
     commands.ethereumDevNode.start();
 
     commands.resetProxyState();

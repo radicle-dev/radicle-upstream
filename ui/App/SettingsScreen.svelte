@@ -8,9 +8,7 @@
 <script lang="ts">
   import * as svelteStore from "svelte/store";
 
-  import { selectedEnvironment as ethereumEnvironment } from "ui/src/ethereum";
   import { updateChecker } from "ui/src/updateChecker";
-  import * as ethereum from "ui/src/ethereum";
   import * as ipc from "ui/src/ipc";
   import * as modal from "ui/src/modal";
   import * as Session from "ui/src/session";
@@ -25,11 +23,6 @@
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
   import ThemeSetting from "ui/App/SharedComponents/ThemeSetting.svelte";
   import UiFontSetting from "ui/App/SharedComponents/UiFontSetting.svelte";
-
-  function updateEthereumEnvironment(event: CustomEvent): void {
-    const environment = event.detail as ethereum.Environment;
-    ethereum.selectedEnvironment.set(environment);
-  }
 
   let version = "";
   (async () => {
@@ -62,17 +55,6 @@
   const appUpdateNotificationEnabledOptions = [
     { value: "on", title: "Notify Me" },
     { value: "off", title: "Turn off" },
-  ];
-
-  const ethereumNetworkOptions = [
-    {
-      title: ethereum.Environment.Rinkeby.toString(),
-      value: ethereum.Environment.Rinkeby,
-    },
-    {
-      title: ethereum.Environment.Mainnet.toString(),
-      value: ethereum.Environment.Mainnet,
-    },
   ];
 
   const session = Session.unsealed();
@@ -197,21 +179,6 @@
         </div>
         <div class="action">
           <PrimaryColorSetting />
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <header>
-        <h3>Ethereum</h3>
-      </header>
-      <div class="section-item">
-        <p class="typo-text-bold">Ethereum network</p>
-        <div class="action">
-          <SegmentedControl
-            active={$ethereumEnvironment}
-            options={ethereumNetworkOptions}
-            on:select={updateEthereumEnvironment} />
         </div>
       </div>
     </section>
