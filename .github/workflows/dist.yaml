@@ -33,7 +33,7 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: ${{ github.job }}-${{ runner.os }}-rust-v6-${{ hashFiles('Cargo.lock') }}
+          key: ${{ github.job }}-${{ runner.os }}-rust-v9-${{ hashFiles('Cargo.lock', 'rust-toolchain') }}
       - run: ci/dist.sh
       - name: publish artifacts by commit
         uses: google-github-actions/upload-cloud-storage@v0.4.0

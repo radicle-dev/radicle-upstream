@@ -25,5 +25,5 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v7-${{ hashFiles('Cargo.lock') }}
+          key: build-${{ runner.os }}-rust-v9-${{ hashFiles('Cargo.lock', 'rust-toolchain') }}
       - run: ci/p2p-network-tests.sh
