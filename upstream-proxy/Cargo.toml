@@ -25,10 +25,9 @@ futures = { version = "0.3", features = [ "compat" ] }
 git2 = { version = ">= 0.13.23", default-features = false, features = [ "vendored-libgit2" ] }
 kv = { version = "0.22", features = [ "json-value" ] }
 lazy_static = "1.4"
-nonempty = { version = "0.6", features = [ "serialize" ] }
 percent-encoding = "2.1"
 rand = "0.8"
-radicle-keystore = "0.1"
+radicle-keystore = "0.2"
 radicle-source = { version = "^0.2.0", features = ["syntax"] }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
@@ -52,6 +51,7 @@ link-crypto = "0.1"
 link-identities = "0.1"
 lnk-identities = "0.1"
 lnk-exe = "0.1"
+radicle-data = "0.1"
 radicle-git-ext = "0.1"
 radicle-git-helpers = "0.1"
 

@@ -50,13 +50,6 @@ ignore = [
   "RUSTSEC-2020-0071",
   "RUSTSEC-2020-0159",
 
-  # Vulnerability in `dashmap` that may cause segfault.
-  #
-  # No fix yet available.
-  #
-  # See https://github.com/xacrimon/dashmap/issues/167
-  "RUSTSEC-2022-0002",
-
   # Vulnerability in `rustc-serialize` that causes stack overflow. We
   # only use this crate when validating an Ethereum address with
   # `eip55`. It should be impossible to trigger the vulnerability.

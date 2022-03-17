@@ -8,31 +8,35 @@ members = [
 
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
+tag = "cycle/2022-03-15"
 
 [patch.crates-io.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
+tag = "cycle/2022-03-15"
 
 [patch.crates-io.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
+tag = "cycle/2022-03-15"
 
 [patch.crates-io.lnk-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
+tag = "cycle/2022-03-15"
 
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
+tag = "cycle/2022-03-15"
 
 [patch.crates-io.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
+tag = "cycle/2022-03-15"
 
 [patch.crates-io.lnk-exe]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-01"
+tag = "cycle/2022-03-15"
+
+[patch.crates-io.radicle-data]
+git = "https://github.com/radicle-dev/radicle-link.git"
+tag = "cycle/2022-03-15"
 
 
 # Uncomment the following lines and comment out the radicle-link patches above
@@ -48,13 +52,4 @@ tag = "cycle/2022-03-01"
 # radicle-git-helpers = { path = "../radicle-link/git-helpers" }
 
 # These patches are the same as those listed in
-# https://github.com/radicle-dev/radicle-link/blob/cycle/2022-03-01/Cargo.toml
-
-[patch.crates-io.thrussh-encoding]
-git = "https://github.com/FintanH/thrussh.git"
-branch = "generic-agent"
-
-# See https://github.com/radicle-dev/radicle-link/blob/cycle/2022-03-01/link-crypto/Cargo.toml#L34
-[patch.crates-io.radicle-keystore]
-git = "https://github.com/radicle-dev/radicle-keystore"
-rev = "b8a07286bad43a3d4b5f9136b7ef592dfa0fc4ad"
+# https://github.com/radicle-dev/radicle-link/blob/cycle/2022-03-15/Cargo.toml

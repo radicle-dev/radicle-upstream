@@ -20,7 +20,7 @@ use librad::{
     reflike, refspec_pattern,
     std_ext::result::ResultExt as _,
 };
-use nonempty::NonEmpty;
+use radicle_data::NonEmptyVec;
 
 use super::Signature;
 
@@ -233,7 +233,7 @@ impl Repository {
                     .fetch(
                         open_storage,
                         &repo,
-                        remote::LocalFetchspec::Specs(NonEmpty::new(Fetchspec::from(Refspec {
+                        remote::LocalFetchspec::Specs(NonEmptyVec::new(Fetchspec::from(Refspec {
                             src: reflike!("refs/heads").join(default_branch.clone()),
                             dst: reflike!("refs/remotes")
                                 .join(remote.name.clone())

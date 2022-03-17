@@ -8,7 +8,7 @@
 
 use std::{env, io, path, str::FromStr};
 
-use nonempty::NonEmpty;
+use radicle_data::NonEmptyVec;
 
 use radicle_source::surf::vcs::git::git2;
 
@@ -100,7 +100,7 @@ pub fn push_tags(
         .flatten()
         .filter_map(|tag| Pushspec::from_str(&format!("+refs/tags/{}:refs/tags/{}", tag, tag)).ok())
         .collect::<Vec<_>>();
-    let tags = NonEmpty::from_vec(tags);
+    let tags = NonEmptyVec::from_vec(tags);
 
     match tags {
         None => {
