@@ -420,10 +420,6 @@ context("patches", () => {
             contributorNode
           );
 
-          // Patch view is not automatically updated when new data
-          // arrives. We reload explicitly
-          cy.wait(1000);
-          cy.reload();
           commands.pick("patches-tab", "counter").should("contain", "1");
           commands.pickWithContent(["patch-list"], patchName).should("exist");
 
@@ -441,10 +437,6 @@ context("patches", () => {
             maintainerNode
           );
 
-          // Patch view is not automatically updated when new data
-          // arrives. We reload explicitly
-          cy.wait(1000);
-          cy.reload();
           commands
             .pickWithContent(
               ["patch-filter-tabs", "segmented-control-option"],

@@ -12,6 +12,7 @@ import { derived, get, writable } from "svelte/store";
 import * as appearance from "ui/src/appearance";
 import * as error from "ui/src/error";
 import * as localPeer from "ui/src/localPeer";
+import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as patch from "ui/src/project/patch";
 import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
@@ -127,55 +128,38 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
   }
 };
 
-export const watchPatchUpdates = (): (() => void) => {
+export function watchPatchListUpdates(): () => void {
   return localPeer.projectEvents.onValue(event => {
     const screen = get(screenStore);
-    if (screen.status === remote.Status.Success) {
-      const patchUrnPrefix = `${screen.data.project.urn}/tags/${patch.TAG_PREFIX}`;
-      const defaultBranchUrnRe = RegExp(
-        `${screen.data.project.urn}/heads/${screen.data.project.metadata.defaultBranch}`
-      );
-      if (
-        event.urn.startsWith(patchUrnPrefix) ||
-        event.urn.match(defaultBranchUrnRe)
-      ) {
-        refreshPatches();
-      }
+    if (
+      screen.status === remote.Status.Success &&
+      event.urn.startsWith(screen.data.project.urn)
+    ) {
+      refreshPatches(screen.data.project.urn);
     }
   });
-};
+}
 
-const refreshPatches = (): void => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const { data: current } = screen;
-    const {
-      project: { urn },
-      requestInProgress,
-    } = current;
-
-    if (requestInProgress) {
-      requestInProgress.abort();
-    }
-
-    const request = new AbortController();
-    screenStore.success({
-      ...current,
-      requestInProgress: request,
+const refreshPatchesExecutor = mutexExecutor.create();
+async function refreshPatches(urn: string): Promise<void> {
+  try {
+    const patches = await refreshPatchesExecutor.run(async () => {
+      return await patch.getAll(urn);
     });
-    patch
-      .getAll(urn)
-      .then(patches => {
+
+    if (patches) {
+      const screen = get(screenStore);
+      if (screen.status === remote.Status.Success) {
         screenStore.success({
-          ...current,
+          ...screen.data,
           patches,
-          requestInProgress: null,
         });
-      })
-      .catch(err => screenStore.error(error.fromUnknown(err)));
+      }
+    }
+  } catch (err: unknown) {
+    screenStore.error(error.fromUnknown(err));
   }
-};
+}
 
 export const selectPath = async (path: string): Promise<void> => {
   const screen = get(screenStore);

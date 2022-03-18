@@ -17,7 +17,7 @@
   import { unreachable } from "ui/src/unreachable";
   import {
     fetch,
-    watchPatchUpdates,
+    watchPatchListUpdates,
     selectPath,
     selectRevision,
     store,
@@ -186,8 +186,8 @@
     selectRevision(revision);
   };
 
-  const unwatchPatchUpdates = watchPatchUpdates();
-  onDestroy(unwatchPatchUpdates);
+  const unwatchPatchListUpdates = watchPatchListUpdates();
+  onDestroy(unwatchPatchListUpdates);
   $: fetch(project, selectedPeer);
 
   $: if ($store.status === remote.Status.Error) {
