@@ -187,6 +187,7 @@ async fn fetch_project_from_seed(
     project_id: Revision,
     seed_url: &rad_common::Url,
 ) -> anyhow::Result<FetchResult> {
+    let this_peer_id = peer.librad_peer().peer_id();
     let monorepo_path = peer.paths().git_dir().to_owned();
     let urn = link_identities::Urn::new(project_id);
     let id = urn.encode_id();
@@ -216,20 +217,38 @@ async fn fetch_project_from_seed(
                     ))?;
             }
 
-            for remote in &proj.remotes {
-                librad::git::tracking::track(
-                    storage,
-                    &urn,
-                    Some(*remote),
-                    Default::default(),
-                    librad::git::tracking::policy::Track::Any,
-                )
-                .context(format!("failed to track remote {}", remote))?
-                .context(format!("failed to track remote {}", remote))?;
-            }
-            let output =
-                rad_common::seed::fetch_remotes(&monorepo_path, &proj_seed_url, &urn, proj.remotes)
-                    .context("failed to fetch remotes")?;
+            let tracking_config = Default::default();
+            let tracking_actions = proj
+                .remotes
+                .iter()
+                .filter(|remote_peer_id| **remote_peer_id != this_peer_id)
+                .map({
+                    |remote_peer_id| librad::git::tracking::Action::Track {
+                        urn: (&urn).into(),
+                        peer: Some(*remote_peer_id),
+                        config: &tracking_config,
+                        policy: librad::git::tracking::policy::Track::Any,
+                    }
+                });
+            librad::git::tracking::batch(storage, tracking_actions)
+                .context("failed to track remotes")?;
+
+            let tracked_remotes = librad::git::tracking::tracked_peers(storage, Some(&urn))
+                .context("failed to get tracked peers")?
+                .filter(|re| match re {
+                    Ok(id) => *id != this_peer_id,
+                    Err(_) => true,
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .context("failed to get tracked peer")?;
+
+            let output = rad_common::seed::fetch_remotes(
+                &monorepo_path,
+                &proj_seed_url,
+                &urn,
+                tracked_remotes,
+            )
+            .context("failed to fetch remotes")?;
 
             if output.contains("POST git-upload-pack") {
                 Ok(FetchResult::Updated)
