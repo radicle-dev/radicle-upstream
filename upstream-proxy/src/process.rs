@@ -184,10 +184,14 @@ async fn run_session(
         let (git_fetch, git_fetch_runner) =
             crate::git_fetch::create(peer.clone(), args.git_seeds.unwrap_or_default()).await?;
 
+        let (watch_monorepo, watch_monorepo_runner) = crate::watch_monorepo::create(peer.clone());
+
         tokio::task::spawn(log_daemon_peer_events(peer.events()));
 
         shutdown_runner
             .add_with_shutdown(|shutdown| git_fetch_runner.run(shutdown).map(Ok).boxed());
+
+        shutdown_runner.add_without_shutdown(watch_monorepo_runner.run().map(Ok).boxed());
 
         shutdown_runner.add_with_shutdown(|shutdown| {
             peer_runner
@@ -200,6 +204,7 @@ async fn run_session(
             peer,
             rest: sealed,
             git_fetch,
+            watch_monorepo,
         })
     } else {
         context::Context::Sealed(sealed)

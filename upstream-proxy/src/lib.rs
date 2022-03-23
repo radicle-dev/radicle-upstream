@@ -41,6 +41,7 @@ mod process;
 mod project;
 mod service;
 mod session;
+mod watch_monorepo;
 
 pub use cli::Args;
 pub use process::run;

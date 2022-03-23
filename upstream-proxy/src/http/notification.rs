@@ -51,7 +51,16 @@ mod handler {
                     urn: link_identities::Urn::new(id),
                 });
 
-        let notifications = futures::stream::select(peer_notifications, git_fetch_notifications);
+        let monorepo_local_update_notifications = ctx
+            .watch_monorepo
+            .updates()
+            .map(|id| Notification::ProjectUpdated { urn: id });
+
+        let notifications = futures::stream::select_all(vec![
+            peer_notifications.boxed(),
+            git_fetch_notifications.boxed(),
+            monorepo_local_update_notifications.boxed(),
+        ]);
 
         Ok(sse::reply(
             sse::keep_alive().stream(

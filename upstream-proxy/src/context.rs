@@ -111,6 +111,7 @@ pub struct Unsealed {
     pub peer: crate::peer::Peer,
     pub git_fetch: crate::git_fetch::Handle,
     pub rest: Sealed,
+    pub watch_monorepo: crate::watch_monorepo::Handle,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -184,10 +185,13 @@ impl Unsealed {
             futures::executor::block_on(crate::git_fetch::create(peer.clone(), Vec::new()))
                 .unwrap();
 
+        let (watch_monorepo, _) = crate::watch_monorepo::create(peer.clone());
+
         Ok((
             Self {
                 peer,
                 git_fetch,
+                watch_monorepo,
                 rest: Sealed {
                     store,
                     test: false,
