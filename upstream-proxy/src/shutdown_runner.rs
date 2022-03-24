@@ -75,7 +75,7 @@ impl<Error: Send + 'static> ShutdownRunner<Error> {
             let fut = f(shutdown_signal);
             async move {
                 let result = fut.await;
-                semaphore.add_permits(100);
+                semaphore.add_permits(10_000);
                 result
             }
             .boxed()
