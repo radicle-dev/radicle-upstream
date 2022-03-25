@@ -257,7 +257,8 @@ function makePeerConfig(id: number): PeerConfig {
     "..",
     "sandbox",
     "devnet",
-    id.toString()
+    id.toString(),
+    "lnk_home"
   );
   return {
     userHandle: id.toString(),
