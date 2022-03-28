@@ -61,10 +61,21 @@
   const loadProfileProjectsExecutor = mutexExecutor.create();
 
   loadProfileProjects();
-  const unsubPeerEvents = localPeer.requestEvents.subscribe(() => {
+
+  const unsubscribePeerEvents = localPeer.requestEvents.subscribe(() => {
     loadProfileProjects();
   });
-  onDestroy(unsubPeerEvents);
+
+  const unsubscribeLocalEvents = localPeer.projectEvents.onValue(value => {
+    if (value.urn.endsWith("refs/rad/id")) {
+      loadProfileProjects();
+    }
+  });
+
+  onDestroy(() => {
+    unsubscribePeerEvents();
+    unsubscribeLocalEvents();
+  });
 
   async function loadProfileProjects(): Promise<void> {
     try {
