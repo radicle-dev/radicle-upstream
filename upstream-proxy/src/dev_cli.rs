@@ -63,7 +63,7 @@ async fn init(opts: Opts, args: InitArgs) -> anyhow::Result<()> {
     let keystore = crate::keystore::unsafe_fast_file(key_path);
     let secret_key = keystore
         .create_key_with_seed(
-            secstr::SecUtf8::from(Vec::from(args.key_passphrase)),
+            secstr::SecUtf8::from(Vec::from(args.key_passphrase.clone())),
             Some(args.handle.as_ref()),
         )
         .context("failed to create key")?;
@@ -94,6 +94,21 @@ async fn init(opts: Opts, args: InitArgs) -> anyhow::Result<()> {
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
     crate::session::initialize(&store, &[]).context("failed to initialize session")?;
+
+    rad_common::git::configure_signing(profile.paths().git_dir(), &peer_id)
+        .context("failed to configure monorepo for rad CLI")?;
+
+    match add_key(
+        opts,
+        AddSshKeyArgs {
+            key_passphrase: args.key_passphrase,
+        },
+    )
+    .await
+    {
+        Ok(_) => {},
+        Err(err) => eprintln!("{:?}", err.context("failed to add SSH key for identity")),
+    };
 
     let output = serde_json::json!({
         "peerId": peer_id,
