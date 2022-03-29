@@ -177,7 +177,7 @@ interface RegistrationCacheEntry {
 
 const registrationCache = new LruCache<string, RegistrationCacheEntry>({
   max: 1000,
-  maxAge: 10 * 60 * 1000, // TTL 10 minutes
+  ttl: 10 * 60 * 1000, // 10 minutes
 });
 
 export async function getCachedRegistrationByAddress(

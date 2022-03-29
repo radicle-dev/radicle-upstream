@@ -46,7 +46,7 @@ interface ClaimsContractCacheEntry {
 
 const claimsContractCache = new LruCache<string, ClaimsContractCacheEntry>({
   max: 1000,
-  maxAge: 60 * 1000, // TTL 1 minute
+  ttl: 60 * 1000, // 1 minute
 });
 
 export class ClaimsContract {

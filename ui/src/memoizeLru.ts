@@ -15,7 +15,7 @@ export function memoizeLru<Args extends unknown[], V>(
   makeKey: (...args: Args) => string,
   options?: LruCache.Options<string, { value: V }>
 ): (...args: Args) => Promise<V> {
-  const cache = new LruCache(options);
+  const cache = new LruCache(options || { max: 500 });
   return async function (...args: Args): Promise<V> {
     const key = makeKey(...args);
     const cached = cache.get(key);

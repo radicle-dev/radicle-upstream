@@ -128,7 +128,7 @@ export const getSafeMetadata = memoizeLru(
     };
   },
   safeAddress => safeAddress,
-  { max: 1000, maxAge: 15 * 60 * 1000 } // TTL 15 minutes
+  { max: 1000, ttl: 15 * 60 * 1000 } // 15 minutes
 );
 
 export async function getOwnedOrgs(owners: string[]): Promise<Org[]> {
