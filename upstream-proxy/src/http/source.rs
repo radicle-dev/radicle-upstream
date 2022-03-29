@@ -337,7 +337,7 @@ mod test {
     use std::{convert::TryFrom as _, env};
 
     use pretty_assertions::assert_eq;
-    use serde_json::{json, Value};
+    use serde_json::json;
     use warp::{http::StatusCode, test::request};
 
     use link_identities::git::Urn;
@@ -440,7 +440,7 @@ mod test {
                 json!({
                     "binary": true,
                     "html": false,
-                    "content": Value::Null,
+                    "content": want.content,
                     "info": {
                         "name": "ls",
                         "objectType": "BLOB",
