@@ -88,7 +88,7 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
         if (
           waitUnsealed &&
           err instanceof proxy.ResponseError &&
-          err.response.status === 403
+          err.status === 403
         ) {
           // Session is still sealed but we’re waiting for it to become
           // unsealed.
@@ -106,10 +106,10 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
   } catch (err: unknown) {
     if (err instanceof proxy.ResponseError) {
-      if (err.response.status === 404) {
+      if (err.status === 404) {
         sessionStore.success({ status: Status.NoSession });
         return;
-      } else if (err.response.status === 403) {
+      } else if (err.status === 403) {
         sessionStore.success({ status: Status.SealedSession });
         return;
       }

@@ -12,14 +12,16 @@ import qs from "qs";
 
 // Error that is thrown by `Fetcher` methods.
 export class ResponseError extends Error {
-  public response: RawResponse;
+  public method: string;
+  public url: string;
+  public status: number;
   public body: unknown;
 
   // The "variant" field of the response body, if present. This field
   // is present in all proxy API errors.
   public variant: string | undefined;
 
-  public constructor(response: RawResponse, body_: unknown) {
+  public constructor(method: string, response: RawResponse, body_: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body: any = body_;
     if (
@@ -40,8 +42,10 @@ export class ResponseError extends Error {
       this.variant = body.variant;
     }
 
+    this.method = method;
     this.body = body_;
-    this.response = response;
+    this.status = response.status;
+    this.url = response.url;
   }
 }
 
@@ -87,6 +91,7 @@ type Method = "GET" | "POST" | "PUT" | "DELETE";
 interface RawResponse {
   readonly ok: boolean;
   readonly status: number;
+  readonly url: string;
   text(): Promise<string>;
   json(): Promise<unknown>;
 }
@@ -127,7 +132,7 @@ export class Fetcher {
     const responseBody = await response.json();
 
     if (!response.ok) {
-      throw new ResponseError(response, responseBody);
+      throw new ResponseError(params.method, response, responseBody);
     }
 
     const result = schema.safeParse(responseBody);
@@ -156,7 +161,7 @@ export class Fetcher {
       } catch (_e: unknown) {
         // We keep the original text response body
       }
-      throw new ResponseError(response, responseBody);
+      throw new ResponseError(params.method, response, responseBody);
     }
   }
 

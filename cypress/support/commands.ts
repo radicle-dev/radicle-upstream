@@ -165,7 +165,7 @@ async function waitSealed() {
     } catch (err: unknown) {
       if (
         err instanceof ProxyClient.ResponseError &&
-        [404, 403].includes(err.response.status)
+        [404, 403].includes(err.status)
       ) {
         return;
       }

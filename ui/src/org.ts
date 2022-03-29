@@ -616,7 +616,7 @@ async function getClaimedIdentity(
   try {
     identity = await proxy.client.personGet(urn);
   } catch (error: unknown) {
-    if (error instanceof proxy.ResponseError && error.response.status === 404) {
+    if (error instanceof proxy.ResponseError && error.status === 404) {
       return undefined;
     }
     throw error;
