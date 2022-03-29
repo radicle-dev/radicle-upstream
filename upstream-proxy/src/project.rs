@@ -156,6 +156,18 @@ pub struct Projects {
     pub failures: Vec<Failure>,
 }
 
+pub async fn list_link(
+    peer: &crate::peer::Peer,
+) -> anyhow::Result<Vec<Result<LinkProject, librad::git::identities::Error>>> {
+    peer.librad_peer()
+        .using_read_only(|storage| {
+            lnk_identities::project::list(storage).map(|projects| projects.collect::<Vec<_>>())
+        })
+        .await
+        .context("failed to open read-only storage")?
+        .context("failed to list project identities")
+}
+
 impl Projects {
     /// List all the projects that are located on your device. These projects could either be
     /// "tracked" or "contributed".
@@ -173,15 +185,7 @@ impl Projects {
             contributed: vec![],
             failures: vec![],
         };
-        let link_projects = peer
-            .librad_peer()
-            .using_read_only(|storage| {
-                lnk_identities::project::list(storage).map(|projects| projects.collect::<Vec<_>>())
-            })
-            .await
-            .context("failed to open read-only storage")?
-            .context("failed to list project identities")?;
-
+        let link_projects = list_link(peer).await?;
         for link_project_result in link_projects {
             let link_project = link_project_result.context("failed to load project")?;
 

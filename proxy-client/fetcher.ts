@@ -12,14 +12,14 @@ import qs from "qs";
 
 // Error that is thrown by `Fetcher` methods.
 export class ResponseError extends Error {
-  public response: Response;
+  public response: RawResponse;
   public body: unknown;
 
   // The "variant" field of the response body, if present. This field
   // is present in all proxy API errors.
   public variant: string | undefined;
 
-  public constructor(response: Response, body_: unknown) {
+  public constructor(response: RawResponse, body_: unknown) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const body: any = body_;
     if (
@@ -84,10 +84,32 @@ export interface FetchParams {
 
 type Method = "GET" | "POST" | "PUT" | "DELETE";
 
+interface RawResponse {
+  readonly ok: boolean;
+  readonly status: number;
+  text(): Promise<string>;
+  json(): Promise<unknown>;
+}
+
+// Signature of a `fetch` function that is shared by the WhatWG
+// implemention and the `node-fetch` package implemention.
+export type BaseFetch = (
+  url: string,
+  opts?: {
+    method?: string;
+    headers: Record<string, string>;
+    body?: string;
+    credentials?: "include";
+    signal?: AbortSignal;
+  }
+) => Promise<RawResponse>;
+
 export class Fetcher {
   private baseUrl: string;
+  #fetch: BaseFetch;
 
-  public constructor(baseUrl: string) {
+  public constructor(baseUrl: string, fetch?: BaseFetch) {
+    this.#fetch = fetch || globalThis.fetch;
     this.baseUrl = baseUrl;
   }
 
@@ -144,7 +166,7 @@ export class Fetcher {
     body,
     options = {},
     query,
-  }: FetchParams): Promise<Response> {
+  }: FetchParams): Promise<RawResponse> {
     const headers: Record<string, string> = {};
     if (body !== undefined) {
       headers["content-type"] = "application/json";
@@ -154,10 +176,10 @@ export class Fetcher {
     if (query) {
       url = `${url}?${qs.stringify(query)}`;
     }
-    return fetch(url, {
+    return this.#fetch.call(undefined, url, {
       method,
       headers,
-      body: body === undefined ? null : JSON.stringify(body),
+      body: body === undefined ? undefined : JSON.stringify(body),
       credentials: "include",
       signal: options.abort,
     });

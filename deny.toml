@@ -50,13 +50,6 @@ ignore = [
   "RUSTSEC-2020-0071",
   "RUSTSEC-2020-0159",
 
-  # Vulnerability in `dashmap` that may cause segfault.
-  #
-  # No fix yet available.
-  #
-  # See https://github.com/xacrimon/dashmap/issues/167
-  "RUSTSEC-2022-0002",
-
   # Vulnerability in `rustc-serialize` that causes stack overflow. We
   # only use this crate when validating an Ethereum address with
   # `eip55`. It should be impossible to trigger the vulnerability.
@@ -183,6 +176,11 @@ deny = [
     # Wrapper crates can optionally be specified to allow the crate when it
     # is a direct dependency of the otherwise banned crate
     #{ name = "ansi_term", version = "=0.11.0", wrappers = [] },
+
+    # We don’t want to dynamically link against openssl to prevent
+    # issues with code signing on macOS.
+    { name = "openssl-sys" },
+    { name = "openssl-probe" },
 ]
 # Certain crates/versions that will be skipped when doing duplicate detection.
 skip = [

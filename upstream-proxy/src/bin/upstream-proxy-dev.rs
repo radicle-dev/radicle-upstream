@@ -5,5 +5,5 @@
 // LICENSE file.
 
 pub fn main() -> anyhow::Result<()> {
-    upstream_proxy::init_bin::main()
+    upstream_proxy::dev_cli::main()
 }

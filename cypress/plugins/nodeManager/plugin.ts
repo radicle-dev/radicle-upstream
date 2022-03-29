@@ -11,7 +11,7 @@ import exitHook from "exit-hook";
 import waitOn from "wait-on";
 import * as fs from "fs-extra";
 import execa from "execa";
-import fetch, { Headers, Request, Response, FetchError } from "node-fetch";
+import fetch, { FetchError } from "node-fetch";
 
 import { ProxyClient } from "proxy-client";
 import { retryOnError } from "ui/src/retryOnError";
@@ -22,22 +22,6 @@ import {
   type NodeSession,
   type StartNodeOptions,
 } from "./shared";
-
-if (!globalThis.fetch) {
-  // This might be due to https://github.com/microsoft/TypeScript/issues/43990.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.fetch = fetch;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.Headers = Headers;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.Request = Request;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  globalThis.Response = Response;
-}
 
 const ROOT_PATH = path.join(__dirname, "../../../");
 
@@ -90,7 +74,6 @@ class NodeManager implements NodeManagerPlugin {
         "--peer-listen",
         `${HOST}:${id}`,
         "--unsafe-fast-keystore",
-        "--insecure-http-api",
       ],
       {
         buffer: false,
@@ -146,7 +129,7 @@ class NodeManager implements NodeManagerPlugin {
     await waitOn({ resources: [`tcp:${HOST}:${id}`] });
     logger.log("node started successfully");
 
-    const proxyClient = new ProxyClient(`http://${HOST}:${id}`);
+    const proxyClient = new ProxyClient(`http://${HOST}:${id}`, fetch);
     await proxyClient.keyStoreCreate({ passphrase: options.passphrase });
 
     const identity = await retryOnError(

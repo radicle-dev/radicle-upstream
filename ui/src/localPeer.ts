@@ -7,192 +7,46 @@
 import * as router from "ui/src/router";
 import type { Readable, Writable } from "svelte/store";
 import { writable } from "svelte/store";
-import * as zod from "zod";
 import * as svelteStore from "svelte/store";
 
-import type * as identity from "./identity";
-import { config } from "./config";
+import {
+  EventType,
+  Event,
+  ProjectUpdated,
+  RequestEvent,
+  Status,
+  StatusType,
+  WaitingRoomTransition,
+} from "proxy-client/events";
+import type { RoomState } from "proxy-client/events/waitingRoom";
+
 import * as notification from "./notification";
 import * as remote from "./remote";
 import * as session from "./session";
 import * as error from "./error";
 import * as bacon from "./bacon";
-import type { Event as RoomEvent, RoomState } from "./waitingRoom";
-import { eventSchema as roomEventSchema, roomStateSchema } from "./waitingRoom";
+import * as Proxy from "./proxy";
 
-// TYPES
-export enum StatusType {
-  Stopped = "stopped",
-  Offline = "offline",
-  Started = "started",
-  Syncing = "syncing",
-  Online = "online",
-}
+export { Status, StatusType };
 
-interface Stopped {
-  type: StatusType.Stopped;
-}
-
-interface Offline {
-  type: StatusType.Offline;
-}
-
-interface Started {
-  type: StatusType.Started;
-}
-
-interface Syncing {
-  type: StatusType.Syncing;
-  syncs: number;
-}
-
-interface Online {
-  type: StatusType.Online;
-  connectedPeers: { [peerId: string]: string[] };
-}
-
-export type Status = Stopped | Offline | Started | Syncing | Online;
-
-const statusSchema = zod.union([
-  zod.object({
-    type: zod.literal(StatusType.Stopped),
-  }),
-  zod.object({
-    type: zod.literal(StatusType.Offline),
-  }),
-  zod.object({
-    type: zod.literal(StatusType.Started),
-  }),
-  zod.object({
-    type: zod.literal(StatusType.Syncing),
-    syncs: zod.number(),
-  }),
-  zod.object({
-    type: zod.literal(StatusType.Online),
-    connectedPeers: zod.record(zod.array(zod.string())),
-  }),
-]);
-
-enum EventType {
-  ProjectUpdated = "projectUpdated",
-  RequestCreated = "requestCreated",
-  RequestQueried = "requestQueried",
-  RequestCloned = "requestCloned",
-  RequestTimedOut = "requestTimedOut",
-  StatusChanged = "statusChanged",
-  WaitingRoomTransition = "waitingRoomTransition",
-}
-
-interface ProjectUpdated {
-  type: EventType.ProjectUpdated;
-  provider: identity.PeerId;
-  urn: string;
-}
-
-interface RequestCreated {
-  type: EventType.RequestCreated;
-  urn: string;
-}
-
-interface RequestCloned {
-  type: EventType.RequestCloned;
-  peer: identity.PeerId;
-  urn: string;
-}
-
-interface RequestQueried {
-  type: EventType.RequestQueried;
-  urn: string;
-}
-
-interface RequestTimedOut {
-  type: EventType.RequestTimedOut;
-  urn: string;
-}
-
-export interface WaitingRoomTransition {
-  type: EventType.WaitingRoomTransition;
-  event: RoomEvent;
-  timestamp: number;
-  state_before: RoomState;
-  state_after: RoomState;
-}
-
-type RequestEvent =
-  | RequestCreated
-  | RequestCloned
-  | RequestQueried
-  | RequestTimedOut;
-
-export type Event =
-  | ProjectUpdated
-  | RequestEvent
-  | WaitingRoomTransition
-  | { type: EventType.StatusChanged; old: Status; new: Status };
-
-const eventSchema: zod.Schema<Event> = zod.union([
-  zod.object({
-    type: zod.literal(EventType.ProjectUpdated),
-    provider: zod.string(),
-    urn: zod.string(),
-  }),
-  zod.object({
-    type: zod.literal(EventType.RequestCreated),
-    urn: zod.string(),
-  }),
-  zod.object({
-    type: zod.literal(EventType.RequestCloned),
-    peer: zod.string(),
-    urn: zod.string(),
-  }),
-  zod.object({
-    type: zod.literal(EventType.RequestQueried),
-    urn: zod.string(),
-  }),
-  zod.object({
-    type: zod.literal(EventType.RequestTimedOut),
-    urn: zod.string(),
-  }),
-  zod.object({
-    type: zod.literal(EventType.WaitingRoomTransition),
-    timestamp: zod.number(),
-    state_before: roomStateSchema,
-    state_after: roomStateSchema,
-    event: roomEventSchema,
-  }),
-  zod.object({
-    type: zod.literal(EventType.StatusChanged),
-    old: statusSchema,
-    new: statusSchema,
-  }),
-]);
-
-let eventSource: EventSource | null = null;
+let events: bacon.EventStream<Event> | null = null;
 
 session.session.subscribe(sess => {
   if (
     sess.status === remote.Status.Success &&
     sess.data.status === session.Status.UnsealedSession
   ) {
-    if (eventSource === null || eventSource.readyState === EventSource.CLOSED) {
-      eventSource = new EventSource(
-        `http://${config.proxyAddress}/v1/notifications/local_peer_events`,
-        { withCredentials: true }
-      );
-      eventSource.addEventListener("message", msg => {
-        const data = JSON.parse(msg.data);
-        const result = eventSchema.safeParse(data);
-        if (result.success) {
-          eventBus.push(result.data);
-        } else {
+    if (events === null) {
+      events = Proxy.client.events();
+      events.subscribe(event => {
+        if (event instanceof bacon.End) {
+          events = null;
+        } else if (event instanceof bacon.Next) {
+          eventBus.push(event.value);
+        } else if (event instanceof bacon.Error) {
           notification.showException(
             new error.Error({
-              code: error.Code.ProxyEventParseFailure,
-              message: "Failed to parse proxy event",
-              details: {
-                event: data,
-                errors: result.error.errors,
-              },
+              message: "Received proxy peer event",
             })
           );
         }

@@ -11,7 +11,6 @@
   import * as Session from "ui/src/session";
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
-  import OrgsIcon from "design-system/icons/Orgs.svelte";
   import SettingsIcon from "design-system/icons/Settings.svelte";
 
   import Avatar from "design-system/Avatar.svelte";
@@ -20,9 +19,7 @@
   import SearchModal from "ui/App/SearchModal.svelte";
 
   import ConnectionStatusIndicator from "./Sidebar/ConnectionStatusIndicator.svelte";
-  import OrgList from "./Sidebar/OrgList.svelte";
   import SidebarItem from "./Sidebar/SidebarItem.svelte";
-  import WalletStatusIndicator from "./Sidebar/WalletStatusIndicator.svelte";
 
   const session = Session.unsealed();
 </script>
@@ -86,7 +83,6 @@
           }} />
       </SidebarItem>
     </Tooltip>
-    <OrgList identity={session.identity} />
   </div>
   <div class="bottom">
     <Tooltip value="Navigate to a project">
@@ -97,17 +93,6 @@
         <MagnifyingGlassIcon />
       </SidebarItem>
     </Tooltip>
-    <Tooltip value="Orgs">
-      <SidebarItem
-        indicator
-        active={$activeRouteStore.type === "orgs"}
-        onClick={() => push({ type: "orgs" })}>
-        <OrgsIcon />
-      </SidebarItem>
-    </Tooltip>
-    <WalletStatusIndicator
-      active={$activeRouteStore.type === "wallet"}
-      onClick={() => push({ type: "wallet", activeTab: "transactions" })} />
     <ConnectionStatusIndicator />
     <Tooltip value="Settings">
       <SidebarItem

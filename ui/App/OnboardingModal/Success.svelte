@@ -17,16 +17,12 @@
 
   const onKeydown = (event: KeyboardEvent) => {
     if (event.key === "Enter") {
-      wallet();
+      profile();
     }
   };
 
   const profile = () => {
     dispatch("profile");
-  };
-
-  const wallet = () => {
-    dispatch("wallet");
   };
 </script>
 
@@ -69,14 +65,8 @@
       to share it with others to collaborate.
     </p>
     <div class="buttons">
-      <Button
-        variant="transparent"
-        dataCy="go-to-profile-button"
-        on:click={profile}>
+      <Button dataCy="go-to-profile-button" on:click={profile}>
         Go to profile
-      </Button>
-      <Button dataCy="go-to-wallet-button" on:click={wallet}>
-        Set up your wallet
       </Button>
     </div>
   </div>

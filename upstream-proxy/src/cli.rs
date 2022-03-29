@@ -57,13 +57,18 @@ pub struct Args {
     #[clap(long)]
     pub unsafe_fast_keystore: bool,
 
-    /// If `true`, the HTTP api will accept any request without checking the auth token.
-    #[clap(long, env = "RADICLE_PROXY_INSECURE_HTTP_API")]
-    pub insecure_http_api: bool,
-
     /// Enables more verbose logging for development
     #[clap(long)]
     pub dev_log: bool,
+
+    /// URL of a seed to fetch identities via Git over HTTP. Can be specified multiple times.
+    #[clap(
+        long,
+        env = "RADICLE_PROXY_GIT_SEEDS",
+        long = "git-seed",
+        use_value_delimiter = true
+    )]
+    pub git_seeds: Option<Vec<rad_common::Url>>,
 }
 
 impl Args {

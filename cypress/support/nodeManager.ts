@@ -120,10 +120,7 @@ export const asNode = (node: NodeSession): void => {
   cy.log(`switching UI to node ${node.id}`);
 
   const config: Partial<Config> = {
-    // NB: it is important that we pass `localhost` instead of `127.0.0.1` here.
-    // I haven't figured out why, but when we use `127.0.0.1` instead of
-    // `localhost`, the app loads with a auth-cookie mismatch error.
-    proxyAddress: `localhost:${node.httpPort}`,
+    proxyAddress: `127.0.0.1:${node.httpPort}`,
   };
 
   const query = qs.stringify({

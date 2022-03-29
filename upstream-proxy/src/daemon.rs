@@ -9,7 +9,6 @@
 #![warn(
     clippy::all,
     clippy::cargo,
-    clippy::nursery,
     clippy::pedantic,
     clippy::unwrap_used,
     missing_docs,
@@ -48,9 +47,8 @@ pub use radicle_git_helpers::remote_helper;
 pub mod config;
 pub mod convert;
 pub mod peer;
-pub use peer::{Control as PeerControl, Event as PeerEvent, Peer, RunConfig, Status as PeerStatus};
 pub mod project;
 pub mod request;
-pub mod state;
-
 pub mod seed;
+pub mod state;
+pub use peer::{Control as PeerControl, Event as PeerEvent, Peer, RunConfig, Status as PeerStatus};

@@ -7,11 +7,11 @@
 -->
 <script lang="ts">
   import type { Project } from "ui/src/project";
-  import type { UnsealedSession } from "ui/src/session";
   import type { GroupedCommitsHistory } from "ui/src/source";
 
   import { isMaintainer } from "ui/src/project";
   import * as Patch from "ui/src/project/patch";
+  import * as Session from "ui/src/session";
   import * as router from "ui/src/router";
 
   import RevisionIcon from "design-system/icons/Revision.svelte";
@@ -27,7 +27,8 @@
   export let project: Project;
   export let patch: Patch.Patch;
   export let commits: GroupedCommitsHistory;
-  export let session: UnsealedSession;
+
+  const session = Session.unsealed();
 
   $: iconColor = patch.merged
     ? "var(--color-negative);"
@@ -122,7 +123,7 @@
           },
         },
       })}
-      compareBranch={Patch.handle(patch)} />
+      compareBranch={{ id: patch.id, peerId: patch.peerId }} />
     <div class="buttons">
       <CheckoutPatchButton {patch} />
       {#if isMaintainer(session.identity.urn, project) && !patch.merged}

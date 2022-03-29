@@ -84,6 +84,8 @@ mod handler {
             .request_project(&urn, SystemTime::now())
             .await;
 
+        ctx.git_fetch.add(urn.id);
+
         Ok(reply::json(&request))
     }
 

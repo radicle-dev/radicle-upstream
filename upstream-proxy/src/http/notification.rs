@@ -40,9 +40,27 @@ mod handler {
             new: current_status,
         }]);
 
-        let notifications = ctx
+        let peer_notifications = ctx
             .peer_events()
             .filter_map(|event| future::ready(crate::notification::from_peer_event(event)));
+
+        let git_fetch_notifications =
+            ctx.git_fetch
+                .updates()
+                .map(|id| Notification::ProjectUpdated {
+                    urn: link_identities::Urn::new(id),
+                });
+
+        let monorepo_local_update_notifications = ctx
+            .watch_monorepo
+            .updates()
+            .map(|id| Notification::ProjectUpdated { urn: id });
+
+        let notifications = futures::stream::select_all(vec![
+            peer_notifications.boxed(),
+            git_fetch_notifications.boxed(),
+            monorepo_local_update_notifications.boxed(),
+        ]);
 
         Ok(sse::reply(
             sse::keep_alive().stream(

@@ -6,28 +6,65 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import * as remote from "ui/src/remote";
   import type { Project } from "ui/src/project";
-  import * as Session from "ui/src/session";
-  import type { PatchDetails } from "ui/src/project/patch";
-  import * as patch from "ui/src/project/patch";
 
-  import Remote from "ui/App/SharedComponents/Remote.svelte";
+  import { onDestroy } from "svelte";
+
+  import * as error from "ui/src/error";
+  import * as localPeer from "ui/src/localPeer";
+  import * as mutexExecutor from "ui/src/mutexExecutor";
+  import * as notification from "ui/src/notification";
+  import * as patch from "ui/src/project/patch";
 
   import PatchLoaded from "./PatchLoaded.svelte";
 
-  export let project: Project;
   export let id: string;
   export let peerId: string;
+  export let project: Project;
 
-  const session = Session.unsealed();
+  let patchDetails: patch.PatchDetails | undefined = undefined;
 
-  const patchRemote = remote.createStore<PatchDetails>();
-  $: {
-    remote.fetch(patchRemote, patch.getDetails(project, peerId, id));
+  const fetchExecutor = mutexExecutor.create();
+  async function fetch(
+    project: Project,
+    peerId: string,
+    id: string
+  ): Promise<void> {
+    try {
+      const result = await fetchExecutor.run(async () => {
+        return await patch.getDetails(project, peerId, id);
+      });
+
+      if (result) {
+        patchDetails = result;
+      }
+    } catch (err: unknown) {
+      notification.showException(
+        new error.Error({
+          message: "Failed to fetch patch",
+          source: err,
+        })
+      );
+    }
   }
+
+  function watchPatchUpdates(): () => void {
+    return localPeer.projectEvents.onValue(event => {
+      if (event.urn.startsWith(project.urn)) {
+        fetch(project, peerId, id);
+      }
+    });
+  }
+
+  const unwatchPatchUpdates = watchPatchUpdates();
+  onDestroy(unwatchPatchUpdates);
+
+  $: fetch(project, peerId, id);
 </script>
 
-<Remote store={patchRemote} let:data={{ patch, commits }}>
-  <PatchLoaded {session} {project} {patch} {commits} />
-</Remote>
+{#if patchDetails !== undefined}
+  <PatchLoaded
+    {project}
+    patch={patchDetails.patch}
+    commits={patchDetails.commits} />
+{/if}

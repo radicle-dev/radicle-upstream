@@ -2,6 +2,7 @@
 
 [![Is the "build" Action succeeding?][bb]][bu]
 [![Is the "dist" Action succeeding?][db]][dd]
+[![Is the "p2p-network-tests" Action succeeding?][pa]][pb]
 
 Upstream is a cross-platform desktop client for the Radicle code collaboration
 protocol.
@@ -61,12 +62,14 @@ Upstream uses:
   - [Source Code Pro font family by Adobe][so]
 
 
-[bb]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/build.yaml/badge.svg
+[bb]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/build.yaml/badge.svg?branch=main
 [bu]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/build.yaml
 [co]: docs/contributing.md
-[db]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/dist.yaml/badge.svg
+[db]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/dist.yaml/badge.svg?branch=main
 [dd]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/dist.yaml
 [de]: docs/development.md
+[pa]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/p2p-network-tests.yaml/badge.svg?branch=main
+[pb]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/p2p-network-tests.yaml
 [pr]: proxy
 [ra]: https://rsms.me/inter
 [rc]: https://radicle.community

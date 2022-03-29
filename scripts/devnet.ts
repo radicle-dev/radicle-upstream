@@ -88,7 +88,14 @@ const upstreamCommand: yargs.CommandModule<
     if (missing || opts.reset) {
       await execa(
         "cargo",
-        ["run", "--bin", "upstream-proxy-init", "--", peerConfig.userHandle],
+        [
+          "run",
+          "--bin",
+          "upstream-proxy-dev",
+          "--",
+          "init",
+          peerConfig.userHandle,
+        ],
         {
           stdio: "inherit",
           env: {
@@ -115,7 +122,6 @@ const upstreamCommand: yargs.CommandModule<
           "run",
           "--bin=upstream-proxy",
           "--",
-          "--insecure-http-api",
           "--unsafe-fast-keystore",
           "--dev-log",
         ],
@@ -232,7 +238,7 @@ interface PeerConfig {
 
 // Get a peer ID from a private key seed.
 //
-// Uses the same algorithm as `upstream-proxy-init`.
+// Uses the same algorithm as `upstream-proxy-dev init`.
 function peerIdFromKeySeed(seed: string): string {
   const seedHash = Crypto.createHash("sha256");
   seedHash.update(seed);
@@ -251,7 +257,8 @@ function makePeerConfig(id: number): PeerConfig {
     "..",
     "sandbox",
     "devnet",
-    id.toString()
+    id.toString(),
+    "lnk_home"
   );
   return {
     userHandle: id.toString(),
@@ -287,7 +294,6 @@ function getProxyEnv(
     LNK_HOME: peerConfig.lnkHome,
     RADICLE_PROXY_HTTP_LISTEN: `127.0.0.1:${peerConfig.httpPort}`,
     RADICLE_PROXY_PEER_LISTEN: `127.0.0.1:${peerConfig.p2pPort}`,
-    RADICLE_PROXY_INSECURE_HTTP_API: "true",
     RADICLE_PROXY_SEEDS: seeds,
     RADICLE_PROXY_KEY_PASSPHRASE: "asdf",
   };

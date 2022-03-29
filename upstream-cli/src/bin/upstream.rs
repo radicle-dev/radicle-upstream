@@ -150,7 +150,36 @@ impl PatchCommand {
 
 fn create_patch(options: Options, message: Option<String>) -> anyhow::Result<()> {
     let patch_name = get_current_branch_name().context("failed to get current branch name")?;
-    create_or_update_patch(&options, &patch_name, message, true)?;
+    if let Some(message) = message {
+        create_or_update_patch(&options, &patch_name, Some(message), true, false)?;
+    } else {
+        let git_show = std::process::Command::new("git")
+            .arg("show")
+            .arg("--quiet")
+            .arg("HEAD")
+            .arg("--pretty=%s%n%n%b")
+            .output()
+            .context("Could not get latest commit message")?;
+
+        if !git_show.status.success() {
+            anyhow::bail!(ProgramError::new("Failed to get latest commit"));
+        }
+
+        let last_commit_message = String::from_utf8(git_show.stdout)
+            .expect("Could not convert `git show` stdout to string");
+
+        let patch_help_message = "# Please describe your patch.
+#
+# We have pre-filled the patch title and description with information from the
+# latest commit on this branch. You can edit it to your liking. The first line
+# is the patch title, followed by an empty newline and an optional patch
+# description. The patch description supports markdown.
+#
+# Any lines starting with '#' will be ignored.";
+
+        let message = format!("{}{}", last_commit_message, patch_help_message);
+        create_or_update_patch(&options, &patch_name, Some(message), true, true)?;
+    };
     println!("Created patch {}", patch_name);
 
     Ok(())
@@ -158,7 +187,7 @@ fn create_patch(options: Options, message: Option<String>) -> anyhow::Result<()>
 
 fn update_patch(options: Options, message: Option<String>) -> anyhow::Result<()> {
     let patch_name = get_current_branch_name().context("failed to get current branch name")?;
-    create_or_update_patch(&options, &patch_name, message, true)?;
+    create_or_update_patch(&options, &patch_name, message, true, false)?;
     println!("Updated patch {}", patch_name);
 
     Ok(())
@@ -195,11 +224,13 @@ fn create_or_update_patch(
     patch_name: &str,
     message: Option<String>,
     force: bool,
+    edit: bool,
 ) -> anyhow::Result<()> {
     let patch_tag_name = format!("radicle-patch/{}", patch_name);
 
     let lnk_home_env = options.lnk_home.as_ref().map(|value| ("LNK_HOME", value));
     let force_opt = if force { Some("--force") } else { None };
+    let edit_opt = if edit { Some("--edit") } else { None };
     let message_opts = if let Some(message) = message {
         vec!["--message".to_string(), message]
     } else {
@@ -210,6 +241,7 @@ fn create_or_update_patch(
         .arg("tag")
         .arg("--annotate")
         .args(force_opt)
+        .args(edit_opt)
         .args(message_opts)
         .arg(&patch_tag_name)
         .status()
@@ -249,7 +281,7 @@ fn get_current_branch_name() -> anyhow::Result<String> {
         .context("invalid UTF-8 output from command")?
         .lines()
         .next()
-        .ok_or(anyhow::anyhow!("empty command output"))?;
+        .ok_or_else(|| anyhow::anyhow!("empty command output"))?;
     Ok(branch_name.to_string())
 }
 

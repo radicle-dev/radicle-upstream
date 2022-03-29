@@ -49,9 +49,11 @@ context("onboarding", () => {
       // Success screen.
       commands.pick("deviceId").should("exist");
 
-      // Land on wallet screen.
+      // Land on profile screen.
       cy.get("body").type("{enter}");
-      commands.pick("wallet").should("exist");
+      commands
+        .pickWithContent(["primary-action"], "Start your first project")
+        .should("exist");
     });
 
     it("is possible to step through the identity creation flow", () => {

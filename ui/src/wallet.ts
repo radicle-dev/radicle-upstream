@@ -62,6 +62,7 @@ export const accountBalancesStore = svelteStore.writable<{
 
 const accountBalanceFetch = mutexExecutor.create();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function updateAccountBalances(
   environment: Environment,
   address: string,
@@ -110,6 +111,7 @@ function getProvider(environment: Environment): Provider {
 
 const walletConnect = createWalletConnect();
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function build(environment: Environment, provider: Provider): Wallet {
   const stateStore = svelteStore.writable<State>({
     status: Status.NotConnected,
@@ -201,13 +203,37 @@ function build(environment: Environment, provider: Provider): Wallet {
   };
 }
 
+function build_disabled_wallet(
+  environment: Environment,
+  provider: Provider
+): Wallet {
+  const stateStore = svelteStore.writable<State>({
+    status: Status.NotConnected,
+  });
+
+  return {
+    environment,
+    subscribe: stateStore.subscribe,
+    connect() {
+      return Promise.resolve();
+    },
+    disconnect() {
+      return Promise.resolve();
+    },
+    provider,
+    signer: new WalletConnectSigner(walletConnect, provider),
+    getAddress: () => undefined,
+    destroy() {},
+  };
+}
+
 export const store: svelteStore.Readable<Wallet> = svelteStore.derived(
   ethereum.selectedEnvironment,
   (environment, set) => {
     const provider = getProvider(environment);
     ethereumDebug.install(provider);
 
-    const wallet = build(environment, provider);
+    const wallet = build_disabled_wallet(environment, provider);
     set(wallet);
     return () => wallet.destroy();
   }

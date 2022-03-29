@@ -12,7 +12,7 @@ use std::{sync::Arc, time::Duration};
 
 use anyhow::Context;
 use futures::prelude::*;
-use tokio::sync::{watch, RwLock};
+use tokio::sync::watch;
 
 use crate::{cli::Args, config, context, http, service, session};
 
@@ -42,7 +42,6 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     #[cfg(unix)]
     install_signal_handlers(&service_manager)?;
 
-    let auth_token = Arc::new(RwLock::new(None));
     loop {
         let notified_restart = service_manager.notified_restart();
         let service_handle = service_manager.handle();
@@ -54,24 +53,65 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
             break;
         };
 
-        run_session(
-            service_handle,
-            environment,
-            auth_token.clone(),
-            notified_restart,
-            args.clone(),
-        )
-        .await?;
+        run_session(service_handle, environment, notified_restart, args.clone()).await?;
         tracing::info!("reloading");
     }
 
     Ok(())
 }
 
+async fn ssh_agent_signer(
+    paths: &librad::paths::Paths,
+) -> Result<Option<link_crypto::BoxedSigner>, anyhow::Error> {
+    let storage = match librad::git::storage::ReadOnly::open(paths) {
+        Ok(storage) => storage,
+        // Don't throw if the monorepo hasn't been initialised yet, like it is the case before the
+        // user has onboarded.
+        Err(_) => return Ok(None),
+    };
+    let peer_id = storage.peer_id();
+    let pk = (*peer_id.as_public_key()).into();
+    let agent = radicle_keystore::sign::SshAgent::new(pk);
+    let keys = radicle_keystore::sign::ssh::list_keys::<tokio::net::UnixStream>(&agent).await?;
+    if keys.contains(&pk) {
+        let signer = agent.connect::<tokio::net::UnixStream>().await?;
+        Ok(Some(
+            link_crypto::SomeSigner {
+                signer: Arc::new(signer),
+            }
+            .into(),
+        ))
+    } else {
+        Ok(None)
+    }
+}
+
+async fn add_key_to_ssh_agent(paths: &librad::paths::Paths, key: link_crypto::SecretKey) {
+    let storage = match librad::git::storage::ReadOnly::open(paths) {
+        Ok(storage) => storage,
+        // Don't throw if the monorepo hasn't been initialised yet, like it is the case before the
+        // user has onboarded.
+        Err(_) => return,
+    };
+    let peer_id = storage.peer_id();
+    let pk = (*peer_id.as_public_key()).into();
+    let agent = radicle_keystore::sign::SshAgent::new(pk);
+
+    if (radicle_keystore::sign::ssh::add_key::<tokio::net::UnixStream>(
+        &agent,
+        key.into(),
+        &Vec::new(),
+    )
+    .await)
+        .is_err()
+    {
+        tracing::warn!("could not add ssh key, is ssh-agent running?");
+    }
+}
+
 async fn run_session(
     service_handle: service::Handle,
     environment: &service::Environment,
-    auth_token: Arc<RwLock<Option<String>>>,
     restart_signal: impl Future<Output = ()> + Send + Sync + 'static,
     args: Args,
 ) -> Result<(), anyhow::Error> {
@@ -94,12 +134,10 @@ async fn run_session(
 
     let sealed = context::Sealed {
         store: store.clone(),
-        insecure_http_api: args.insecure_http_api,
         test: environment.test_mode,
         default_seeds: args.default_seeds,
         seeds: args.seeds,
         service_handle,
-        auth_token,
         keystore: environment.keystore.clone(),
         paths: paths.clone(),
         shutdown: Arc::new(tokio::sync::Notify::new()),
@@ -110,7 +148,22 @@ async fn run_session(
     // Trigger a shutdown when the restart signal resolves
     shutdown_runner.add_without_shutdown(restart_signal.map(Ok));
 
-    let ctx = if let Some(key) = environment.key.clone() {
+    let maybe_signer = if let Some(key) = environment.key.clone() {
+        let signer = Some(link_crypto::BoxedSigner::new(link_crypto::SomeSigner {
+            signer: key.clone(),
+        }));
+
+        add_key_to_ssh_agent(paths, key).await;
+
+        signer
+    } else {
+        ssh_agent_signer(paths).await.unwrap_or_else(|_| {
+            tracing::warn!("could not lookup ssh key, is ssh-agent running?");
+            None
+        })
+    };
+
+    let ctx = if let Some(signer) = maybe_signer {
         let discovery = if let Some(ref seeds) = sealed.seeds {
             let seeds = crate::daemon::seed::resolve(seeds)
                 .await
@@ -125,13 +178,23 @@ async fn run_session(
 
         let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
             paths: paths.clone(),
-            key,
+            signer,
             store,
             discovery,
             listen: args.peer_listen,
         })?;
 
+        let (git_fetch, git_fetch_runner) =
+            crate::git_fetch::create(peer.clone(), args.git_seeds.unwrap_or_default()).await?;
+
+        let (watch_monorepo, watch_monorepo_runner) = crate::watch_monorepo::create(peer.clone());
+
         tokio::task::spawn(log_daemon_peer_events(peer.events()));
+
+        shutdown_runner
+            .add_with_shutdown(|shutdown| git_fetch_runner.run(shutdown).map(Ok).boxed());
+
+        shutdown_runner.add_without_shutdown(watch_monorepo_runner.run().map(Ok).boxed());
 
         shutdown_runner.add_with_shutdown(|shutdown| {
             peer_runner
@@ -140,7 +203,12 @@ async fn run_session(
                 .boxed()
         });
 
-        context::Context::Unsealed(context::Unsealed { peer, rest: sealed })
+        context::Context::Unsealed(context::Unsealed {
+            peer,
+            rest: sealed,
+            git_fetch,
+            watch_monorepo,
+        })
     } else {
         context::Context::Sealed(sealed)
     };
@@ -339,7 +407,7 @@ fn setup_logging(args: &Args) {
         ];
 
         if args.dev_log {
-            directives.extend(["api=debug", "crate::daemon=debug"])
+            directives.extend(["upstream_proxy=debug", "crate::daemon=debug"])
         }
 
         for directive in directives {

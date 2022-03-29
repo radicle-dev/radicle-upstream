@@ -23,16 +23,17 @@ mod control;
 mod daemon;
 pub mod env;
 mod error;
+mod git_fetch;
 mod peer;
 mod shutdown_runner;
 mod ethereum {
     pub mod address;
     pub mod claim_ext;
 }
+pub mod dev_cli;
 mod http;
 mod identifier;
 mod identity;
-pub mod init_bin;
 mod keystore;
 mod notification;
 mod patch;
@@ -40,6 +41,7 @@ mod process;
 mod project;
 mod service;
 mod session;
+mod watch_monorepo;
 
 pub use cli::Args;
 pub use process::run;

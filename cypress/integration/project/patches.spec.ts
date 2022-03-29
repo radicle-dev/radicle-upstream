@@ -248,9 +248,8 @@ context("patches", () => {
 
           cy.log("the project is now under the project tab");
           commands.pick("sidebar", "profile").click();
-          commands
-            .pick("project-list-entry-new-fancy-project.xyz")
-            .should("exist");
+          commands.pick("project-list-entry-new-fancy-project.xyz").click();
+          commands.pick("patches-tab").click();
 
           cy.log("test patch replication from contributor to maintainer");
           cy.log("add a patch to the project from contributor's node");
@@ -270,12 +269,7 @@ context("patches", () => {
             contributorNode
           );
 
-          cy.log("refresh the UI for the patch to show up");
-          commands.pick("sidebar", "profile").click();
-          commands.pick("project-list-entry-new-fancy-project.xyz").click();
-
           cy.log("contributor sees the patch");
-          commands.pick("patches-tab").click();
           commands
             .pickWithContent(["patch-list"], patchMessage)
             .should("exist");
@@ -306,12 +300,24 @@ context("patches", () => {
           commands.pick("patches-tab").click();
           commands.pick(`patch-card-title-${patchName}`).click();
 
-          cy.log(
-            "maintainer can see the patch details & navigate to the commit"
-          );
+          cy.log("maintainer can see the patch details");
           commands
             .pickWithContent(["patch-page"], patchMessage)
             .should("exist");
+
+          cy.log("maintainer receives patch updates and shows them in the UI");
+
+          nodeManager.exec(
+            `cd "${forkedProjectPath}"
+            upstream patch update --message "updated patch message"`,
+            contributorNode
+          );
+
+          commands
+            .pickWithContent(["patch-page"], "updated patch message")
+            .should("exist");
+
+          cy.log("maintainer can navigate to the commit");
           commands
             .pickWithContent(
               ["patch-page", "history", "commit-group", "commit"],
@@ -326,7 +332,7 @@ context("patches", () => {
     });
   });
 
-  it("merge patch", () => {
+  it("is possible to merge a patch", () => {
     const maintainer = {
       handle: "maintainer",
       passphrase: "1111",
@@ -420,10 +426,6 @@ context("patches", () => {
             contributorNode
           );
 
-          // Patch view is not automatically updated when new data
-          // arrives. We reload explicitly
-          cy.wait(1000);
-          cy.reload();
           commands.pick("patches-tab", "counter").should("contain", "1");
           commands.pickWithContent(["patch-list"], patchName).should("exist");
 
@@ -441,10 +443,6 @@ context("patches", () => {
             maintainerNode
           );
 
-          // Patch view is not automatically updated when new data
-          // arrives. We reload explicitly
-          cy.wait(1000);
-          cy.reload();
           commands
             .pickWithContent(
               ["patch-filter-tabs", "segmented-control-option"],
@@ -452,6 +450,76 @@ context("patches", () => {
             )
             .click();
           commands.pick(`patch-card-${patchName}`).should("exist");
+        }
+      );
+    });
+  });
+
+  it("refreshes the UI on local project update events", () => {
+    commands.withTempDir(tempDirPath => {
+      nodeManager.withOneOnboardedNode(
+        {
+          dataDir: tempDirPath,
+          handle: "maintainer",
+        },
+        node => {
+          nodeManager.asNode(node);
+
+          const projectsDir = path.join(tempDirPath, "maintainer-projects");
+          cy.exec(`mkdir -p "${projectsDir}"`);
+
+          const projectName = "test-project";
+          cy.log("Create a project via API");
+          commands
+            .createEmptyProject(node.client, projectName, projectsDir)
+            .as("projectUrn");
+
+          cy.log("refresh the UI for the project to show up");
+          commands.pick("sidebar", "settings").click();
+          commands.pick("sidebar", "profile").click();
+          commands.pick("project-list-entry-test-project").click();
+
+          cy.log("the patches tab counter updates when a patch is created");
+          commands.pick("patches-tab", "counter").should("not.exist");
+
+          const projectPath = path.join(projectsDir, projectName);
+
+          nodeManager.exec(
+            `cd "${projectPath}"
+            git checkout -b "${patchName}"
+            git commit --allow-empty -m "commit message"
+            upstream patch create --message "patch message"`,
+            node
+          );
+          commands.pick("patches-tab", "counter").should("contain", "1");
+
+          commands.pick("patches-tab").click();
+          commands
+            .pick(`patch-card-title-${patchName}`)
+            .should("contain", "patch message");
+
+          cy.log(
+            "updating a patch reloads the UI and shows the updated message"
+          );
+          nodeManager.exec(
+            `cd "${projectPath}"
+            upstream patch update --message "updated patch message"`,
+            node
+          );
+
+          commands
+            .pick(`patch-card-title-${patchName}`)
+            .should("contain", "updated patch message");
+
+          cy.log("the patches tab counter updates when a patch is merged");
+          nodeManager.exec(
+            `cd "${projectPath}"
+              git checkout main
+              git merge --ff-only "${patchName}"
+              git push rad`,
+            node
+          );
+          commands.pick("patches-tab", "counter").should("not.exist");
         }
       );
     });

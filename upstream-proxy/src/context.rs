@@ -8,10 +8,7 @@
 
 use std::sync::Arc;
 
-use data_encoding::HEXLOWER;
 use futures::prelude::*;
-use rand::Rng as _;
-use tokio::sync::RwLock;
 
 use crate::{keystore, service};
 
@@ -34,22 +31,6 @@ impl Context {
         }
     }
 
-    /// Returns `true` if the HTTP api will accept any request without checking the auth token.
-    pub const fn insecure_http_api(&self) -> bool {
-        match self {
-            Self::Sealed(sealed) => sealed.insecure_http_api,
-            Self::Unsealed(unsealed) => unsealed.rest.insecure_http_api,
-        }
-    }
-
-    /// Returns a mutable reference to the authentication cookie value.
-    pub fn auth_token(&self) -> Arc<RwLock<Option<String>>> {
-        match self {
-            Self::Sealed(sealed) => sealed.auth_token.clone(),
-            Self::Unsealed(unsealed) => unsealed.rest.auth_token.clone(),
-        }
-    }
-
     /// Returns a handle to control the service configuration
     pub fn service_handle(&mut self) -> &mut service::Handle {
         match self {
@@ -67,8 +48,7 @@ impl Context {
         Ok(storage)
     }
 
-    /// Unseal the key store and restart the coco service with the obtained key. Returns the auth
-    /// token required to access the keystore.
+    /// Unseal the key store and restart the coco service with the obtained key.
     ///
     /// # Errors
     ///
@@ -78,18 +58,17 @@ impl Context {
     pub async fn unseal_keystore(
         &mut self,
         passphrase: keystore::SecUtf8,
-    ) -> Result<String, crate::error::Error> {
+    ) -> Result<(), crate::error::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.get(passphrase))
             .await
             .expect("Task to unseal key was aborted")?;
         self.service_handle().set_secret_key(key);
-        let auth_token = self.reset_auth_token().await;
-        Ok(auth_token)
+        Ok(())
     }
 
     /// Create a key and store it encrypted with the given passphrase. Then restart the coco
-    /// service to use the new key. Returns the auth token required to access the keystore.
+    /// service to use the new key.
     ///
     /// # Errors
     ///
@@ -97,14 +76,13 @@ impl Context {
     pub async fn create_key(
         &mut self,
         passphrase: keystore::SecUtf8,
-    ) -> Result<String, crate::error::Error> {
+    ) -> Result<(), crate::error::Error> {
         let keystore = self.keystore();
         let key = tokio::task::spawn_blocking(move || keystore.create_key(passphrase))
             .await
             .expect("Task to create key was aborted")?;
         self.service_handle().set_secret_key(key);
-        let auth_token = self.reset_auth_token().await;
-        Ok(auth_token)
+        Ok(())
     }
 
     fn keystore(&self) -> Arc<dyn keystore::Keystore + Sync + Send> {
@@ -112,21 +90,6 @@ impl Context {
             Self::Sealed(sealed) => sealed.keystore.clone(),
             Self::Unsealed(unsealed) => unsealed.rest.keystore.clone(),
         }
-    }
-
-    /// Generate a new authentication token and store it.
-    async fn reset_auth_token(&self) -> String {
-        let new_token_data = rand::thread_rng().gen::<[u8; 32]>();
-        let new_token = HEXLOWER.encode(&new_token_data);
-        let auth_token_lock = self.auth_token();
-        let mut auth_token = auth_token_lock.write().await;
-        *auth_token = Some(new_token.clone());
-        new_token
-    }
-
-    /// Returns `true` if `token` matches the stored authentication token.
-    pub async fn check_auth_token(&self, token: String) -> bool {
-        Some(token) == *self.auth_token().read().await
     }
 }
 
@@ -146,7 +109,9 @@ impl From<Sealed> for Context {
 #[derive(Clone)]
 pub struct Unsealed {
     pub peer: crate::peer::Peer,
+    pub git_fetch: crate::git_fetch::Handle,
     pub rest: Sealed,
+    pub watch_monorepo: crate::watch_monorepo::Handle,
 }
 
 /// Context for HTTP request if the coco peer APIs have not been initialized yet.
@@ -156,15 +121,11 @@ pub struct Sealed {
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
-    /// If `true`, the HTTP api will accept any request without checking the auth token.
-    pub insecure_http_api: bool,
     /// Default seeds that will be written to the settings kv store.
     pub default_seeds: Vec<String>,
     pub seeds: Option<Vec<String>>,
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
-    /// Cookie set on unsealing the key store.
-    pub auth_token: Arc<RwLock<Option<String>>>,
     /// Reference to the key store.
     pub keystore: Arc<dyn keystore::Keystore + Send + Sync>,
     pub paths: librad::paths::Paths,
@@ -197,13 +158,14 @@ impl Unsealed {
         let store = kv::Store::new(kv::Config::new(tmp_dir.path().join("store")))?;
 
         let key = link_crypto::SecretKey::new();
+        let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
         let seeds_watch = tokio::sync::watch::channel(vec![]).1;
 
         let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
             paths: paths.clone(),
-            key,
+            signer,
             store: store.clone(),
             discovery: crate::daemon::config::StreamDiscovery::new(seeds_watch),
             listen: "127.0.0.1:0".parse().expect("invalid IP address"),
@@ -219,17 +181,23 @@ impl Unsealed {
             drop(shutdown_tx);
         };
 
+        let (git_fetch, _) =
+            futures::executor::block_on(crate::git_fetch::create(peer.clone(), Vec::new()))
+                .unwrap();
+
+        let (watch_monorepo, _) = crate::watch_monorepo::create(peer.clone());
+
         Ok((
             Self {
                 peer,
+                git_fetch,
+                watch_monorepo,
                 rest: Sealed {
                     store,
                     test: false,
-                    insecure_http_api: true,
                     default_seeds: vec![],
                     seeds: None,
                     service_handle: service::Handle::dummy(),
-                    auth_token: Arc::new(RwLock::new(None)),
                     keystore: Arc::new(keystore::memory()),
                     paths,
                     shutdown: Arc::new(tokio::sync::Notify::new()),

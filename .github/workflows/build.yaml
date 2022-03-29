@@ -31,7 +31,7 @@ jobs:
             ./target/*/deps
             ./target/*/build
             ./target/*/.fingerprint
-          key: build-${{ runner.os }}-rust-v7-${{ hashFiles('Cargo.lock') }}
+          key: build-${{ runner.os }}-rust-v9-${{ hashFiles('Cargo.lock', 'rust-toolcahin') }}
       - run: ci/build.sh
       - uses: actions/upload-artifact@v2
         if: always()

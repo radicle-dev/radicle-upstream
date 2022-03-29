@@ -39,10 +39,6 @@ pub enum Error {
     #[error("keystore is sealed")]
     KeystoreSealed,
 
-    /// The request auth token differs from the one in context
-    #[error("invalid authentication token")]
-    InvalidAuthCookie,
-
     /// Errors stemming from [`crate::daemon::request::waiting_room::WaitingRoom`] interactions.
     #[error(transparent)]
     WaitingRoom(#[from] crate::daemon::request::waiting_room::Error),
