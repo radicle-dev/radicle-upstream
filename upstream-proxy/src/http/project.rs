@@ -279,9 +279,10 @@ mod handler {
         peer_id: PeerId,
         ctx: context::Unsealed,
     ) -> Result<impl Reply, Rejection> {
-        crate::daemon::state::track(ctx.peer.librad_peer(), urn, peer_id)
+        crate::daemon::state::track(ctx.peer.librad_peer(), urn.clone(), peer_id)
             .await
             .map_err(Error::from)?;
+        ctx.git_fetch.add(urn.id).await;
         Ok(reply::json(&true))
     }
 

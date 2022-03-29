@@ -16,12 +16,9 @@ pub async fn create(
     seeds: Vec<rad_common::Url>,
 ) -> anyhow::Result<(Handle, Runner)> {
     let (update_tx, update_rx) = async_broadcast::broadcast(32);
-    let (identity_queue, identity_rx) = futures_delay_queue::delay_queue::<Revision>();
-    let identities = Arc::new(dashmap::DashSet::new());
-    let identity_queue = Arc::new(identity_queue);
+    let (identity_queue, identity_rx) = UniqueDelayQueue::new();
     let handle = Handle {
         update_rx: update_rx.deactivate(),
-        identities,
         identity_queue: identity_queue.clone(),
     };
 
@@ -31,7 +28,7 @@ pub async fn create(
 
     for project_result in projects {
         let project = project_result.context("failed to get project")?;
-        handle.add(project.urn().id);
+        handle.add(project.urn().id).await;
     }
 
     let runner = Runner {
@@ -47,23 +44,16 @@ pub async fn create(
 #[derive(Debug, Clone)]
 pub struct Handle {
     update_rx: async_broadcast::InactiveReceiver<Revision>,
-    /// Set of identities we are fetching updates for.
-    identities: Arc<dashmap::DashSet<Revision>>,
-    identity_queue: Arc<
-        futures_delay_queue::DelayQueue<
-            Revision,
-            futures_intrusive::buffer::GrowingHeapBuf<Revision>,
-        >,
-    >,
+    identity_queue: UniqueDelayQueue,
 }
 
 impl Handle {
-    /// Add an identity to continously fetch from the configured seeds.
-    pub fn add(&self, identity: Revision) {
-        if self.identities.insert(identity) {
-            self.identity_queue
-                .insert(identity, std::time::Duration::new(0, 0));
-        }
+    /// Add an identity to continuously fetch from the configured seeds. The identity will be
+    /// fetched immediately after calling this function, even if it has been added before.
+    pub async fn add(&self, identity: Revision) {
+        self.identity_queue
+            .add(identity, std::time::Duration::new(0, 0))
+            .await
     }
 
     /// Stream that emits the identifier of an identity whenever we’ve fetched new updates for the
@@ -82,12 +72,7 @@ pub struct Runner {
     /// Stream of queued identities to fetch updates for
     identity_rx: futures_delay_queue::Receiver<Revision>,
     /// Queue of identities to fetch updates for
-    identity_queue: Arc<
-        futures_delay_queue::DelayQueue<
-            Revision,
-            futures_intrusive::buffer::GrowingHeapBuf<Revision>,
-        >,
-    >,
+    identity_queue: UniqueDelayQueue,
 }
 
 impl Runner {
@@ -118,7 +103,59 @@ impl Runner {
                     tracing::warn!(?errs, ?identity, "failed to fetch project with git");
                 },
             };
-            identity_queue.insert(identity, std::time::Duration::from_secs(10));
+            identity_queue
+                .add(identity, std::time::Duration::from_secs(10))
+                .await;
+        }
+    }
+}
+
+/// Queue for [`Revision`]s that will be emitted by a receiver after a delay.
+///
+/// This is a wrapper around [`futures_delay_queue::DelayQueue`] that guarantees that each
+/// [`Revision`] is only queued once.
+#[derive(Debug, Clone)]
+struct UniqueDelayQueue {
+    handles: Arc<dashmap::DashMap<Revision, Option<futures_delay_queue::DelayHandle>>>,
+    queue: Arc<
+        futures_delay_queue::DelayQueue<
+            Revision,
+            futures_intrusive::buffer::GrowingHeapBuf<Revision>,
+        >,
+    >,
+}
+
+impl UniqueDelayQueue {
+    fn new() -> (Self, futures_delay_queue::Receiver<Revision>) {
+        let (queue, receiver) = futures_delay_queue::delay_queue();
+        (
+            Self {
+                handles: Arc::new(dashmap::DashMap::new()),
+                queue: Arc::new(queue),
+            },
+            receiver,
+        )
+    }
+
+    /// Add a new [`Revision`] to the queue to be emitted after `delay`.
+    ///
+    /// If `revision` is already queued we update its entry so that it’s queued after `delay`.
+    async fn add(&self, revision: Revision, delay: std::time::Duration) {
+        match self.handles.entry(revision) {
+            dashmap::mapref::entry::Entry::Occupied(mut occupied) => {
+                let handle = occupied
+                    .insert(None)
+                    .expect("handle is None only when entry is locked");
+                let handle = match handle.reset(delay).await {
+                    Ok(handle) => handle,
+                    Err(_expired) => self.queue.insert(revision, delay),
+                };
+                occupied.insert(Some(handle));
+            },
+            dashmap::mapref::entry::Entry::Vacant(vacant) => {
+                let handle = self.queue.insert(revision, delay);
+                vacant.insert(Some(handle));
+            },
         }
     }
 }
