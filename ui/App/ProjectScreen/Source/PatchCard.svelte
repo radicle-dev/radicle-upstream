@@ -87,5 +87,5 @@
   <CompareBranches
     {patchUrl}
     baseBranch={defaultBranch}
-    compareBranch={Patch.handle(patch)} />
+    compareBranch={{ id: patch.id, peerId: patch.peerId }} />
 </div>

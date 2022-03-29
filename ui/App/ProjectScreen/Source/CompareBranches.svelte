@@ -6,12 +6,14 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import * as format from "design-system/lib/format";
+
   import ArrowLeftIcon from "design-system/icons/ArrowLeft.svelte";
   import BranchBox from "./BranchBox.svelte";
   import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let baseBranch: string;
-  export let compareBranch: string;
+  export let compareBranch: { id: string; peerId: string };
   export let patchUrl: string;
 </script>
 
@@ -28,6 +30,8 @@
   <BranchBox name={baseBranch} />
   <ArrowLeftIcon />
   <Copyable name="shareable link" clipboardContent={patchUrl}>
-    <BranchBox name={compareBranch} dataCy="shareable-patch-link" />
+    <BranchBox
+      name={`${format.shortDeviceId(compareBranch.peerId)}/${compareBranch.id}`}
+      dataCy="shareable-patch-link" />
   </Copyable>
 </div>

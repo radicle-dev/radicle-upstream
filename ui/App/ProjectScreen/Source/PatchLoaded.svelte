@@ -123,7 +123,7 @@
           },
         },
       })}
-      compareBranch={Patch.handle(patch)} />
+      compareBranch={{ id: patch.id, peerId: patch.peerId }} />
     <div class="buttons">
       <CheckoutPatchButton {patch} />
       {#if isMaintainer(session.identity.urn, project) && !patch.merged}
