@@ -16,15 +16,15 @@ use radicle_keystore::{crypto, pinentry::SecUtf8, FileStorage, Keystore};
 use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
-    let key_file_path = if let Ok(value) = std::env::var("IDENTITY_KEY") {
-        PathBuf::from(value)
-    } else {
-        let profile = Profile::load()?;
-        let paths = profile.paths().to_owned();
-        paths.keys_dir().join("librad.key")
-    };
+    let profile = Profile::load()?;
+    let paths = profile.paths().to_owned();
+    let key_file_path = paths.keys_dir().join("librad.key");
 
-    let signer = if std::env::var("RADICLE_UNSAFE_FAST_KEYSTORE") == Ok("1".to_string()) {
+    let signer = if let Ok(signer) =
+        lnk_clib::keys::ssh::signer(&profile, lnk_clib::keys::ssh::SshAuthSock::Env)
+    {
+        Some(signer)
+    } else if std::env::var("RADICLE_UNSAFE_FAST_KEYSTORE") == Ok("1".to_string()) {
         Some(unsafe_fast_keystore_signer(key_file_path)?)
     } else {
         None

@@ -76,12 +76,13 @@ export const exec = (cmd: string, session: NodeSession): void => {
   cy.exec(
     `set -euo pipefail
 export PATH="$PWD/target/debug:$PATH"
-export RADICLE_UNSAFE_FAST_KEYSTORE=1
 ${cmd}`,
     {
       env: {
         HOME: session.lnkHome,
         LNK_HOME: session.lnkHome,
+        RADICLE_UNSAFE_FAST_KEYSTORE: "1",
+        SSH_AUTH_SOCK: "/dev/null",
       },
     }
   );

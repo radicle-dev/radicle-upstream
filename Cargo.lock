@@ -4968,6 +4968,7 @@ dependencies = [
  "librad",
  "link-crypto",
  "link-identities",
+ "lnk-clib",
  "lnk-exe",
  "lnk-identities",
  "percent-encoding",
