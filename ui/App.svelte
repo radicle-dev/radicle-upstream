@@ -42,7 +42,7 @@
   import LoadingScreen from "ui/App/LoadingScreen.svelte";
   import LockScreen from "ui/App/LockScreen.svelte";
   import DiagnosticsScreen from "ui/App/DiagnosticsScreen.svelte";
-  import NetworkScreen from "ui/App/NetworkScreen.svelte";
+  import PushPullNetworkScreen from "ui/App/PushPullNetworkScreen.svelte";
   import OrgsScreen from "ui/App/OrgsScreen.svelte";
   import OrgScreen from "ui/App/OrgScreen.svelte";
   import ProfileScreen from "ui/App/ProfileScreen.svelte";
@@ -212,7 +212,7 @@
       urn={$activeRouteStore.urn}
       anchors={$activeRouteStore.anchors} />
   {:else if $activeRouteStore.type === "network"}
-    <NetworkScreen />
+    <PushPullNetworkScreen />
   {:else if $activeRouteStore.type === "orgs"}
     <OrgsScreen />
   {:else if $activeRouteStore.type === "settings"}

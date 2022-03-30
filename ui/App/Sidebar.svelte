@@ -11,6 +11,7 @@
   import * as Session from "ui/src/session";
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
+  import NetworkIcon from "design-system/icons/Network.svelte";
   import SettingsIcon from "design-system/icons/Settings.svelte";
 
   import Avatar from "design-system/Avatar.svelte";
@@ -18,7 +19,6 @@
 
   import SearchModal from "ui/App/SearchModal.svelte";
 
-  import ConnectionStatusIndicator from "./Sidebar/ConnectionStatusIndicator.svelte";
   import SidebarItem from "./Sidebar/SidebarItem.svelte";
 
   const session = Session.unsealed();
@@ -93,7 +93,15 @@
         <MagnifyingGlassIcon />
       </SidebarItem>
     </Tooltip>
-    <ConnectionStatusIndicator />
+    <Tooltip value="Network">
+      <SidebarItem
+        dataCy="network"
+        indicator
+        active={$activeRouteStore.type === "network"}
+        onClick={() => push({ type: "network" })}>
+        <NetworkIcon />
+      </SidebarItem>
+    </Tooltip>
     <Tooltip value="Settings">
       <SidebarItem
         dataCy="settings"

@@ -14,7 +14,7 @@ const validSeedAddress =
   "hyy5s7ysg96fqa91gbe7h38yddh4mkokft7y4htt8szt9e17sxoe3h@seed.my.org:123";
 
 context("p2p networking", () => {
-  context("network status indicator", () => {
+  context.skip("network status indicator", () => {
     it("reacts to network state changes", () => {
       commands.withTempDir(tempDirPath => {
         nodeManager.withTwoOnboardedNodes(
@@ -282,7 +282,7 @@ context("p2p networking", () => {
     }
   );
 
-  context("network", () => {
+  context.skip("network", () => {
     beforeEach(() => {
       commands.resetProxyState();
       commands.onboardUser();
