@@ -70,7 +70,7 @@ export const getDetails = async (
 ): Promise<PatchDetails> => {
   const patches = await getAll(project.urn);
   const patch = patches.find(patch => {
-    return patch.peerId === peerId, patch.id === id;
+    return patch.peerId === peerId && patch.id === id;
   });
   if (!patch) {
     throw new Error("Patch not found");
