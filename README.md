@@ -2,7 +2,6 @@
 
 [![Is the "build" Action succeeding?][bb]][bu]
 [![Is the "dist" Action succeeding?][db]][dd]
-[![Is the "p2p-network-tests" Action succeeding?][pa]][pb]
 
 Upstream is a cross-platform desktop client for the Radicle code collaboration
 protocol.
