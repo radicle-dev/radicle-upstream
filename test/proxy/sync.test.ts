@@ -7,20 +7,19 @@
 import { expect, test, afterEach } from "@jest/globals";
 import * as Fs from "fs/promises";
 import * as Path from "path";
-import * as P2P from "p2p-tests/lib/p2p";
+import * as ProxyRunner from "./support/proxyRunner";
 import * as proxyEvents from "proxy-client/events";
 
 afterEach(async () => {
-  P2P.killAllProcesses();
+  ProxyRunner.killAllProcesses();
 });
 
 test("fetch initial from seed", async () => {
   const workdir = await createWorkdir("fetch-initial-from-seed");
 
-  const proxy = new P2P.RadicleProxy({
+  const proxy = new ProxyRunner.RadicleProxy({
     dataPath: workdir,
     name: "foo",
-    networkNamespace: false,
     gitSeeds: ["https://willow.radicle.garden"],
   });
   await proxy.start();

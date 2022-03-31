@@ -49,19 +49,6 @@ export function spawn(
   return child;
 }
 
-// Spawn a process in a Linux network namespace.
-export function spawnInNamespace(
-  name: string,
-  args: string[],
-  options?: execa.Options
-): execa.ExecaChildProcess {
-  return spawn(
-    "ip",
-    ["netns", "exec", `upstream-test-${name}`, ...args],
-    options
-  );
-}
-
 // Forwards piped `stdout` and `stderr` of a child process to this
 // process’s `stdout` and prefixes it with the given label. The prefix
 // is colored.

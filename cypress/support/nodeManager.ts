@@ -54,21 +54,6 @@ interface OnboardedUser {
   passphrase?: string;
 }
 
-interface WithTwoOnboardedNodesOptions {
-  dataDir: string;
-  node1User: OnboardedUser;
-  node2User: OnboardedUser;
-}
-
-export function connectTwoNodes(node1: NodeHandle, node2: NodeHandle): void {
-  cy.log(`adding node ${node2.id} as seed to node ${node1.id}`);
-  cy.then(async () => {
-    await node1.client.seedsPut([
-      `${node2.peerId}@127.0.0.1:${node2.httpPort}`,
-    ]);
-  });
-}
-
 // Executes a shell command in the context of a node session.
 //
 // In particular, `.gitconfig` is properly set for the node.
@@ -100,19 +85,6 @@ export function withOneOnboardedNode(
       handle: options.handle,
     }).then(node => {
       callback(node);
-    });
-  });
-}
-
-export function withTwoOnboardedNodes(
-  options: WithTwoOnboardedNodesOptions,
-  callback: (node1: NodeHandle, node2: NodeHandle) => void
-): void {
-  withNodeManager(() => {
-    startAndOnboardNode(options.dataDir, options.node1User).then(node0 => {
-      startAndOnboardNode(options.dataDir, options.node2User).then(node1 => {
-        callback(node0, node1);
-      });
     });
   });
 }
