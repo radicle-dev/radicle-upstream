@@ -19,6 +19,7 @@ async function main() {
   yargs
     .command(upstreamCommand)
     .command(seedCommand)
+    .command(resetCommand)
     .command(shellCommand)
     // Don’t show a version and the --version flag
     .version(false)
@@ -41,7 +42,6 @@ const upstreamCommand: yargs.CommandModule<
   unknown,
   {
     PEER_NO: number;
-    reset: boolean;
     bootstrap?: number;
     headless: boolean;
     "seed-bootstrap": boolean;
@@ -67,12 +67,6 @@ const upstreamCommand: yargs.CommandModule<
           default: true,
           describe: "Add the seed node to the bootstrap addresses",
         },
-        reset: {
-          type: "boolean",
-          default: false,
-          describe:
-            "Delete existing data for the peer and re-initialize the peer",
-        },
         headless: {
           type: "boolean",
           default: false,
@@ -81,29 +75,6 @@ const upstreamCommand: yargs.CommandModule<
       }),
   handler: async opts => {
     const peerConfig = makePeerConfig(opts.PEER_NO);
-    const missing = await Fs.access(peerConfig.lnkHome).catch(() => true);
-    if (opts.reset && !missing) {
-      await Fs.rm(peerConfig.lnkHome, { recursive: true });
-    }
-    if (missing || opts.reset) {
-      await execa(
-        "cargo",
-        [
-          "run",
-          "--bin",
-          "upstream-proxy-dev",
-          "--",
-          "init",
-          peerConfig.userHandle,
-        ],
-        {
-          stdio: "inherit",
-          env: {
-            LNK_HOME: peerConfig.lnkHome,
-          },
-        }
-      );
-    }
 
     const seedAddresses: string[] = [];
 
@@ -141,6 +112,43 @@ const upstreamCommand: yargs.CommandModule<
         },
       });
     }
+  },
+};
+
+const resetCommand: yargs.CommandModule<
+  unknown,
+  {
+    PEER_NO: number;
+  }
+> = {
+  command: "reset PEER_NO",
+  describe: "Delete all data data for the peer re-initialize it",
+  builder: yargs =>
+    yargs.positional("PEER_NO", {
+      demandOption: true,
+      type: "number",
+      describe: "Number identifying the peer. Must be between 1 and 100",
+    }),
+  handler: async opts => {
+    const peerConfig = makePeerConfig(opts.PEER_NO);
+    await Fs.rm(peerConfig.lnkHome, { recursive: true, force: true });
+    await execa(
+      "cargo",
+      [
+        "run",
+        "--bin",
+        "upstream-proxy-dev",
+        "--",
+        "init",
+        peerConfig.userHandle,
+      ],
+      {
+        stdio: "inherit",
+        env: {
+          LNK_HOME: peerConfig.lnkHome,
+        },
+      }
+    );
   },
 };
 
