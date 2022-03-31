@@ -6,7 +6,7 @@
 
 import * as commands from "cypress/support/commands";
 
-context("modal", () => {
+context.skip("modal", () => {
   beforeEach(() => {
     commands.resetProxyState();
     commands.onboardUser();

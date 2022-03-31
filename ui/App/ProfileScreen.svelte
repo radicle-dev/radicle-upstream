@@ -30,7 +30,6 @@
   import * as router from "ui/src/router";
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
-  import PlusIcon from "design-system/icons/Plus.svelte";
   import Button from "design-system/Button.svelte";
   import FollowToggle from "design-system/FollowToggle.svelte";
 
@@ -38,6 +37,7 @@
   import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
+  import NewProjectButton from "ui/App/ProfileScreen/NewProjectButton.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
   import ProfileSidebar from "ui/App/ProfileScreen/ProfileSidebar.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
@@ -255,16 +255,9 @@
         : session.identity.metadata.handle}
       peerId={session.identity.peerId} />
 
-    <Button
-      dataCy="new-project-button"
-      variant="outline"
-      icon={PlusIcon}
-      style="margin-left: auto; align-self: center"
-      on:click={() => {
-        modal.toggle(CreateProjectModal);
-      }}>
-      New project
-    </Button>
+    <div style="position: relative; margin-left: auto; align-self: center">
+      <NewProjectButton />
+    </div>
   </div>
 
   {#if $profileProjectsStore.status === remote.Status.Success}

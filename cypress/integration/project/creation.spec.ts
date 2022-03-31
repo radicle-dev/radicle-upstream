@@ -8,7 +8,7 @@ import * as ipcStub from "cypress/support/ipc-stub";
 import * as commands from "cypress/support/commands";
 import * as project from "ui/src/project";
 
-context("project creation", () => {
+context.skip("project creation", () => {
   const withEmptyDirectoryStub = (callback: () => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;
