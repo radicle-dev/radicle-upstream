@@ -7,7 +7,7 @@
 import * as ipcStub from "cypress/support/ipc-stub";
 import * as commands from "cypress/support/commands";
 
-context("project checkout", () => {
+context.skip("project checkout", () => {
   const withWorkspaceStub = (callback: (path: string) => void) => {
     cy.exec("pwd").then(result => {
       const pwd = result.stdout;

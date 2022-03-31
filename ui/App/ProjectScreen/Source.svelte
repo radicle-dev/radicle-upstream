@@ -41,7 +41,7 @@
   import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
   import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
-  import CheckoutButton from "./Source/CheckoutButton.svelte";
+  import ForkCheckoutProjectButton from "./Source/ForkCheckoutProjectButton.svelte";
   import PatchButton from "./Source/PatchButton.svelte";
   import History from "./Source/SourceBrowser/History.svelte";
 
@@ -232,7 +232,8 @@
       {#if patchesTabSelected}
         <PatchButton />
       {:else}
-        <CheckoutButton
+        <ForkCheckoutProjectButton
+          projectUrn={project.urn}
           fork={!isContributor}
           on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
       {/if}

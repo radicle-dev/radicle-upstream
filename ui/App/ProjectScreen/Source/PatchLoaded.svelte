@@ -17,7 +17,7 @@
   import RevisionIcon from "design-system/icons/Revision.svelte";
   import Markdown from "design-system/Markdown.svelte";
 
-  import AcceptPatchButton from "./AcceptPatchButton.svelte";
+  import MergePatchButton from "./MergePatchButton.svelte";
   import BackButton from "../BackButton.svelte";
   import CheckoutPatchButton from "./CheckoutPatchButton.svelte";
   import CompareBranches from "./CompareBranches.svelte";
@@ -127,7 +127,7 @@
     <div class="buttons">
       <CheckoutPatchButton {patch} />
       {#if isMaintainer(session.identity.urn, project) && !patch.merged}
-        <AcceptPatchButton {patch} />
+        <MergePatchButton {patch} />
       {/if}
     </div>
   </div>

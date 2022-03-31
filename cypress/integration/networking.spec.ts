@@ -32,7 +32,7 @@ context("p2p networking", () => {
     });
   });
 
-  it(
+  it.skip(
     "replicates a project from one node to another",
     {
       // Tests involving two nodes are extremely flaky
