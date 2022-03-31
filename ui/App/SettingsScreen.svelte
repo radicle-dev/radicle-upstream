@@ -11,13 +11,11 @@
   import { updateChecker } from "ui/src/updateChecker";
   import * as ipc from "ui/src/ipc";
   import * as modal from "ui/src/modal";
-  import * as Session from "ui/src/session";
 
   import Button from "design-system/Button.svelte";
   import SegmentedControl from "design-system/SegmentedControl.svelte";
 
   import CodeFontSetting from "ui/App/SharedComponents/CodeFontSetting.svelte";
-  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import PrimaryColorSetting from "ui/App/SharedComponents/PrimaryColorSetting.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
@@ -56,8 +54,6 @@
     { value: "on", title: "Notify Me" },
     { value: "off", title: "Turn off" },
   ];
-
-  const session = Session.unsealed();
 </script>
 
 <style>
@@ -111,25 +107,6 @@
     </span>
   </div>
   <div class="sections">
-    <section>
-      <header>
-        <h3>Devices</h3>
-      </header>
-      <div class="section-item">
-        <p>
-          Share your Device ID with others to be added as a remote.
-          <br />
-          <a
-            class="typo-link"
-            href="https://docs.radicle.xyz/docs/understanding-radicle/faq#can-i-use-radicle-with-multiple-devices"
-            >Learn more about managing devices</a>
-        </p>
-        <div class="action">
-          <CopyableIdentifier value={session.identity.peerId} kind="deviceId" />
-        </div>
-      </div>
-    </section>
-
     <section>
       <header>
         <h3>Appearance</h3>
@@ -188,21 +165,12 @@
         <h3>Feedback</h3>
       </header>
       <div class="section-item">
-        <p class="typo-text-bold">View community forum</p>
+        <p class="typo-text-bold">Get in touch</p>
         <div class="action">
           <a
             class="typo-link"
-            href="https://radicle.community/c/site-feedback/2"
-            >radicle.community</a>
-        </div>
-      </div>
-      <div class="section-item">
-        <p class="typo-text-bold">Get in touch directly</p>
-        <div class="action">
-          <a
-            class="typo-link"
-            href="https://discord.com/channels/841318878125490186/841318878650302488"
-            >Radicle Community Discord</a>
+            href="https://discord.com/channels/841318878125490186/843873418205331506"
+            >Radicle Upstream Discord</a>
         </div>
       </div>
     </section>
@@ -229,8 +197,9 @@
           </div>
         {/if}
       </div>
+
       <div class="section-item">
-        <div>Notification (Allow Upstream to make requests to the web)</div>
+        <div>Allow Upstream to check for the latest version on startup</div>
         <div class="action">
           <SegmentedControl
             active={$appUpdateNotificationEnabled}
