@@ -34,7 +34,7 @@
   $: instructions = [
     `upstream patch fetch ${patchHandle}`,
     `git merge ${Patch.TAG_PREFIX}${patchHandle}`,
-    `git push rad`,
+    `rad push`,
   ].join("\n");
 </script>
 

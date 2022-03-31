@@ -19,7 +19,6 @@
   const toggleDropdown = (): void => {
     expanded = !expanded;
   };
-  const caption = "New Patch";
 </script>
 
 <style>
@@ -48,7 +47,7 @@
     the changes and run the following command:
     <Copyable name="command">
       <pre
-        class="typo-text-small-mono command-line">{`upstream patch create`}</pre>
+        class="typo-text-small-mono command-line">{`upstream patch create\nrad sync`}</pre>
     </Copyable>
   </div>
 
@@ -57,6 +56,6 @@
     icon={RevisionIcon}
     on:click={toggleDropdown}
     dataCy="patch-modal-toggle">
-    {caption}
+    caption="New Patch"
   </Button>
 </Overlay>

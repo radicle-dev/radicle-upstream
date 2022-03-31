@@ -8,13 +8,11 @@
 // Otherwise clippy complains about FromArgs
 #![allow(clippy::default_trait_access)]
 
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
-use anyhow::Context;
 use futures::prelude::*;
-use tokio::sync::watch;
 
-use crate::{cli::Args, config, context, http, service, session};
+use crate::{cli::Args, config, context, http, service};
 
 /// Run the proxy process
 ///
@@ -132,8 +130,6 @@ async fn run_session(
     let sealed = context::Sealed {
         store: store.clone(),
         test: environment.test_mode,
-        default_seeds: args.default_seeds,
-        seeds: args.seeds,
         service_handle,
         keystore: environment.keystore.clone(),
         paths: paths.clone(),
@@ -161,23 +157,11 @@ async fn run_session(
     };
 
     let ctx = if let Some(signer) = maybe_signer {
-        let discovery = if let Some(ref seeds) = sealed.seeds {
-            let seeds = crate::daemon::seed::resolve(seeds)
-                .await
-                .context("failed to parse and resolve seeds")?;
-            let (_, seeds_receiver) = watch::channel(seeds);
-            crate::daemon::config::StreamDiscovery::new(seeds_receiver)
-        } else {
-            let (watch_seeds_run, disco) = watch_seeds_discovery(store.clone()).await;
-            shutdown_runner.add_without_shutdown(watch_seeds_run.map(Ok).boxed());
-            disco
-        };
-
         let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
             paths: paths.clone(),
             signer,
             store,
-            discovery,
+            discovery: crate::daemon::config::NoDiscovery::new(),
             listen: args.peer_listen,
         })?;
 
@@ -227,60 +211,6 @@ async fn run_session(
     }
 
     Ok(())
-}
-
-/// Get and resolve seed settings from the session store.
-async fn session_seeds(store: &kv::Store) -> Result<Vec<crate::daemon::seed::Seed>, anyhow::Error> {
-    let seeds = session::seeds(store)?.unwrap_or_default();
-    Ok(crate::daemon::seed::resolve(&seeds)
-        .await
-        .unwrap_or_else(|err| {
-            tracing::error!(?seeds, ?err, "Error parsing seed list");
-            vec![]
-        }))
-}
-
-/// Create a [`crate::daemon::config::StreamDiscovery`] that emits new peer addresses whenever the
-/// seed configuration changes in `store`.
-///
-/// The returned task is the future that needs to be run to watch the seeds.
-async fn watch_seeds_discovery(
-    store: kv::Store,
-) -> (
-    impl Future<Output = ()> + Send + 'static,
-    crate::daemon::config::StreamDiscovery,
-) {
-    let mut last_seeds = session_seeds(&store)
-        .await
-        .expect("Failed to read session store");
-
-    let (seeds_sender, seeds_receiver) = watch::channel(last_seeds.clone());
-
-    let run = async move {
-        let mut timer = tokio::time::interval(Duration::from_millis(400));
-        loop {
-            let _timestamp = timer.tick().await;
-
-            let seeds = session_seeds(&store)
-                .await
-                .expect("Failed to read session store");
-
-            if seeds == last_seeds {
-                continue;
-            }
-
-            if seeds_sender.send(seeds.clone()).is_err() {
-                break;
-            }
-
-            last_seeds = seeds;
-        }
-    };
-
-    (
-        run,
-        crate::daemon::config::StreamDiscovery::new(seeds_receiver),
-    )
 }
 
 fn serve(

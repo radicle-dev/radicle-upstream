@@ -15,6 +15,13 @@ we need some help.
    "Go to profile". Setting up a wallet is not required for submitting
    patches.
 
+## Set up `rad`
+
+1. Install the latest version of the `rad` CLI. You can find instructions
+   [here](https://github.com/radicle-dev/radicle-cli/#installation).
+
+2. Run `rad auth` to authenticate the CLI
+
 
 ## Get the Upstream project
 
@@ -44,6 +51,9 @@ we need some help.
    After a while a notification should appear confirming the completion of the
    checkout saying "radicle-upstream checked out to …".
 
+4. Navigate to the folder containing working copy and run `git config --local
+   rad.seed https://maple.radicle.garden` to configure the seed peer for
+   Upstream.
 
 ## Make Upstream commands available in your terminal
 
@@ -99,20 +109,15 @@ we need some help.
    Your default editor will open allowing you to enter the title and
    description for the patch. The first line is the title, followed by a blank
    newline, followed by the description of the patch. Reference relevant Github
-   issues by including their URL in the patch description.
+   issues by including their URL in the patch description. Save and exit the editor.
 
-   Save and exit the editor, this will prompt you for the passphrase you chose
-   when setting up your Radicle identity in the "Setting up Upstream" section.
-   After entering your passphrase and pressing the `enter` key, the patch will
-   be published.
+6. Publish your patch:
+   ```bash
+   rad sync
+   ```
 
-   Upstream should be running in the background for the patch to be synced to
-   the seed node. At the moment there is no visual feedback whether the patch
-   has been synced or not.
-
-6. Verify that the patch shows up in Upstream by refreshing the UI via
-   `⌘` + `r` (on macOS) or `ctrl` + `r` (on Linux), navigating to the project
-   and the "Patches" tab, where you should see your patch.
+7. Verify that the patch shows up in Upstream by navigating to the project’s
+   "Patches" tab.
 
 
 ## Inform Upstream maintainers about your proposed patch

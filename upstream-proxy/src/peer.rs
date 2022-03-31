@@ -39,13 +39,12 @@ pub struct Config {
     pub signer: link_crypto::BoxedSigner,
     pub paths: librad::paths::Paths,
     pub listen: std::net::SocketAddr,
-    pub discovery: crate::daemon::config::StreamDiscovery,
+    pub discovery: crate::daemon::config::NoDiscovery,
     pub store: kv::Store,
 }
 
 pub struct Runner {
-    daemon_peer:
-        crate::daemon::Peer<link_crypto::BoxedSigner, crate::daemon::config::StreamDiscovery>,
+    daemon_peer: crate::daemon::Peer<link_crypto::BoxedSigner, crate::daemon::config::NoDiscovery>,
 }
 
 impl Runner {

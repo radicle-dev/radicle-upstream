@@ -121,9 +121,6 @@ pub struct Sealed {
     pub store: kv::Store,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
-    /// Default seeds that will be written to the settings kv store.
-    pub default_seeds: Vec<String>,
-    pub seeds: Option<Vec<String>>,
     /// Handle to control the service configuration.
     pub service_handle: service::Handle,
     /// Reference to the key store.
@@ -161,13 +158,11 @@ impl Unsealed {
         let signer = link_crypto::BoxedSigner::new(link_crypto::SomeSigner { signer: key });
         let paths = librad::paths::Paths::from_root(tmp_dir.path())?;
 
-        let seeds_watch = tokio::sync::watch::channel(vec![]).1;
-
         let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
             paths: paths.clone(),
             signer,
             store: store.clone(),
-            discovery: crate::daemon::config::StreamDiscovery::new(seeds_watch),
+            discovery: crate::daemon::config::NoDiscovery::new(),
             listen: "127.0.0.1:0".parse().expect("invalid IP address"),
         })
         .unwrap();
@@ -195,8 +190,6 @@ impl Unsealed {
                 rest: Sealed {
                     store,
                     test: false,
-                    default_seeds: vec![],
-                    seeds: None,
                     service_handle: service::Handle::dummy(),
                     keystore: Arc::new(keystore::memory()),
                     paths,

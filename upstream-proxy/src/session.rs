@@ -25,17 +25,6 @@ pub struct Session {
     pub settings: settings::Settings,
 }
 
-/// Get the seed nodes (see [`settings::CoCo::seeds`]) from the session settings current session.
-///
-/// If there is no session yet, returns the seeds from the default value of [`settings::CoCo`].
-///
-/// # Errors
-///
-/// Errors if we cannot read data from the store.
-pub fn seeds(store: &kv::Store) -> Result<Option<Vec<String>>, error::Error> {
-    Ok(get_current(store)?.map(|session| session.settings.coco.seeds))
-}
-
 /// Get the current session if present
 ///
 /// # Errors
@@ -62,14 +51,6 @@ pub fn initialize(store: &kv::Store, default_seeds: &[String]) -> Result<Session
 
     set_current(store, session.clone())?;
     Ok(session)
-}
-
-pub fn update_seeds(store: &kv::Store, seeds: Vec<String>) -> Result<(), error::Error> {
-    if let Some(mut session) = get_current(store)? {
-        session.settings.coco.seeds = seeds;
-        set_current(store, session)?;
-    }
-    Ok(())
 }
 
 /// Stores the session as the current session

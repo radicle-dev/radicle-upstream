@@ -12,10 +12,7 @@ use crate::{context, http};
 
 /// Combination of all session filters.
 pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
-    get_filter(ctx.clone())
-        .or(get_seeds_filter(ctx.clone()))
-        .or(put_seeds_filter(ctx))
-        .boxed()
+    get_filter(ctx.clone()).or(get_filter(ctx)).boxed()
 }
 
 /// `GET /`
@@ -28,34 +25,11 @@ fn get_filter(
         .and_then(handler::get)
 }
 
-/// `GET /seeds`
-fn get_seeds_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("seeds")
-        .and(path::end())
-        .and(warp::get())
-        .and(http::with_context_unsealed(ctx))
-        .and_then(handler::get_seeds)
-}
-
-/// `PUT /seeds`
-fn put_seeds_filter(
-    ctx: context::Context,
-) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    path("seeds")
-        .and(path::end())
-        .and(warp::put())
-        .and(http::with_context_unsealed(ctx))
-        .and(warp::body::json())
-        .and_then(handler::update_seeds)
-}
-
 /// Session handlers for conversion between core domain and HTTP request fullfilment.
 mod handler {
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
-    use crate::{context, error, http, session};
+    use crate::{context, error, http};
 
     #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
     #[serde(rename_all = "camelCase")]
@@ -63,7 +37,6 @@ mod handler {
         pub identity: crate::identity::Identity,
     }
 
-    /// Fetch the [`session::Session`].
     #[allow(clippy::unused_async)]
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
         match ctx {
@@ -95,38 +68,6 @@ mod handler {
                     }))
                 }
             },
-        }
-    }
-
-    #[allow(clippy::unused_async)]
-    pub async fn get_seeds(ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        let seeds = if let Some(seeds) = ctx.rest.seeds {
-            seeds
-        } else {
-            match session::seeds(&ctx.rest.store)? {
-                None => vec![],
-                Some(seeds) => seeds,
-            }
-        };
-
-        Ok(reply::json(&seeds))
-    }
-
-    #[allow(clippy::unused_async)]
-    pub async fn update_seeds(
-        ctx: context::Unsealed,
-        seeds: Vec<String>,
-    ) -> Result<impl Reply, Rejection> {
-        if ctx.rest.seeds.is_none() {
-            session::update_seeds(&ctx.rest.store, seeds)?;
-            Ok(warp::reply::with_status(reply(), StatusCode::NO_CONTENT))
-        } else {
-            Err(http::error::Response {
-                status_code: StatusCode::BAD_REQUEST,
-                variant: "STATIC_SEEDS",
-                message: "Seeds are statically configured and cannot be changed".to_string(),
-            }
-            .into())
         }
     }
 }

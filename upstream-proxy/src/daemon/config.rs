@@ -7,16 +7,12 @@
 
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
-use async_stream::stream;
 use futures::stream::BoxStream;
-use tokio::sync::watch;
 
 use librad::{net, net::discovery, paths, PeerId, Signer};
 
 #[cfg(test)]
 use librad::crypto::BoxedSigner;
-
-use crate::daemon::seed;
 
 lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
@@ -65,43 +61,23 @@ where
     }
 }
 
-/// Stream based discovery based on a watch.
+/// Discovery that never provides a boostrap peer
 #[derive(Clone)]
-pub struct StreamDiscovery {
-    /// Stream of new sets of seeds coming from configuration changes.
-    seeds_receiver: watch::Receiver<Vec<seed::Seed>>,
-}
+pub struct NoDiscovery;
 
-impl StreamDiscovery {
+impl NoDiscovery {
     /// Returns a new streaming discovery.
     #[must_use]
-    pub fn new(seeds_receiver: watch::Receiver<Vec<seed::Seed>>) -> Self {
-        Self { seeds_receiver }
+    pub fn new() -> Self {
+        Self
     }
 }
 
-impl discovery::Discovery for StreamDiscovery {
+impl discovery::Discovery for NoDiscovery {
     type Addr = SocketAddr;
     type Stream = BoxStream<'static, (PeerId, Vec<SocketAddr>)>;
 
-    fn discover(mut self) -> Self::Stream {
-        let updates = stream! {
-            loop {
-                let seeds = self.seeds_receiver.borrow().clone();
-                for seed in seeds {
-                    yield seed.into();
-                }
-
-                match self.seeds_receiver.changed().await {
-                    Ok(_) => {},
-                    Err(_) => {
-                        tracing::warn!("Peer discovery stream dropped");
-                        break;
-                    }
-                }
-            }
-        };
-
-        Box::pin(updates)
+    fn discover(self) -> Self::Stream {
+        Box::pin(futures::stream::pending())
     }
 }

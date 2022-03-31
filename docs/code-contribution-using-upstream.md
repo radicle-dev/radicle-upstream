@@ -18,6 +18,16 @@ your shell you need to add the following line to `~/.profile`:
 export PATH="$HOME/.radicle/bin:$PATH"
 ```
 
+Code contribution also requires the [`rad` CLI](https://github.com/radicle-dev/radicle-cli/#installation).
+
+Before working with the `rad` CLI the checked out Upstream Git repository must
+be configured with
+
+```bash
+rad auth
+git config --local rad.seed "https://maple.radicle.garden"
+```
+
 The contribution process goes as follows:
 
 - Author creates patch:
@@ -35,6 +45,7 @@ The contribution process goes as follows:
       Also reference relevant Github issues by including their URL in the
       description.
     - Close the editor
+    - Publish the patch with `rad sync`.
 - Author selects a reviewer from the team and informs the reviewer via Discord
   that there is a new patch that they want to merge.
 - Reviewer confirms that they can see the patch in Upstream.
@@ -58,6 +69,7 @@ The contribution process goes as follows:
       the patch branch. (E.g. by amending the commit)
     - Update the patch: `upstream patch update`. This
       opens the editor and also allows the author to also edit the description
+    - Publish the patch with `rad sync`.
   - Author informs reviewer that their are updates
   - Review process continues with the reviewer reviewing the diff again.
 - Reviewer informs author out of band that they accept the changes
@@ -71,21 +83,27 @@ The contribution process goes as follows:
   ```bash
   upstream patch fetch <peer-id>/<patch-name>
   git switch main
-  git merge radicle-patch/<peer-id>/<patch-name>
+  git merge --ff-only radicle-patch/<peer-id>/<patch-name>
   ```
 
   If a fast-forward merge is not possible, the `--ff-only` option can be
   omitted.
 - The merge coordinator publishes their updates to the main branch to Radicle
   and Github by running
-  `git push rad main` and `git push origin main`.
+
+  ```bash
+  git push origin main
+  rad push
+  ```
+
 - All other maintainers pull updates to the main branch from the merge
   coordinator through Radicle and then push their updated main branches to
   Radicle.
 
   ```bash
   git switch main
+  rad sync --fetch
   git fetch peername@hrnkfoo
   git merge --ff-only peername@hrnkfoo/heads/main
-  git push rad main
+  rad push
   ```

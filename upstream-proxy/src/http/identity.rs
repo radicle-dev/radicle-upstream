@@ -78,7 +78,7 @@ mod handler {
 
         let id = identity::create(ctx.peer.librad_peer(), metadata).await?;
 
-        session::initialize(&ctx.rest.store, &ctx.rest.default_seeds)?;
+        session::initialize(&ctx.rest.store, &[])?;
 
         Ok(reply::with_status(reply::json(&id), StatusCode::CREATED))
     }

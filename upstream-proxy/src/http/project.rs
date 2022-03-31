@@ -373,7 +373,7 @@ mod test {
                 },
             )
             .await?;
-            session::initialize(&ctx.rest.store, &ctx.rest.default_seeds)?;
+            session::initialize(&ctx.rest.store, &[])?;
 
             let platinum_project = crate::control::replicate_platinum(
                 &ctx.peer,
