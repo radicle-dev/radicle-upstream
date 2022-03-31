@@ -30,7 +30,7 @@ context("patches", () => {
       )
       .should("exist");
     commands
-      .pickWithContent(["patch-modal-toggle"], "New Patch")
+      .pickWithContent(["patch-modal-toggle"], "New patch")
       .should("exist");
   });
 
