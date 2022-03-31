@@ -8,6 +8,8 @@
 <script lang="ts">
   import type { Position } from "design-system/Tooltip";
 
+  import { createEventDispatcher } from "svelte";
+
   import { copyToClipboard } from "ui/src/ipc";
   import * as notification from "ui/src/notification";
 
@@ -25,6 +27,8 @@
 
   export let tooltipStyle: string | undefined = undefined;
   export let tooltipPosition: Position = "top";
+
+  const dispatch = createEventDispatcher();
 
   let slotContent: HTMLElement;
 
@@ -45,6 +49,7 @@
 
     copyToClipboard(content.trim());
     notification.show({ type: "info", message: tooltipMessage });
+    dispatch("copy");
   }
 </script>
 

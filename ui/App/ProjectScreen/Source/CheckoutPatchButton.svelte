@@ -18,16 +18,11 @@
   export let patch: Patch.Patch;
 
   let expanded = false;
-  let copyable: Copyable;
   const hide = (): void => {
     expanded = false;
   };
   const toggleDropdown = (): void => {
     expanded = !expanded;
-  };
-  const copy = (): void => {
-    copyable.copy();
-    toggleDropdown();
   };
   $: instructions = [
     `upstream patch fetch ${Patch.handle(patch)}`,
@@ -65,16 +60,11 @@
   <div class="request-dropdown" hidden={!expanded}>
     <p style="margin-bottom: 0.5rem;">
       To fetch and check out this patch in your working copy, run the following
-      command:
+      commands:
     </p>
-    <Copyable name="command" bind:this={copyable}>
+    <Copyable name="commands" on:copy={toggleDropdown}>
       <p class="typo-text-small-mono instructions">{instructions}</p>
     </Copyable>
-    <Button
-      style="display: block; margin: 1rem auto 0; width: 100%;"
-      on:click={copy}>
-      Copy
-    </Button>
   </div>
 
   <Button
@@ -82,6 +72,6 @@
     icon={ArrowBoxUpRightIcon}
     on:click={toggleDropdown}
     dataCy="checkout-patch-modal-toggle">
-    Checkout
+    Checkout patch
   </Button>
 </Overlay>

@@ -14,7 +14,6 @@
   import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   let expanded = false;
-  let copyable: Copyable;
 
   const hide = (): void => {
     expanded = false;
@@ -22,11 +21,6 @@
 
   const toggleDropdown = (): void => {
     expanded = !expanded;
-  };
-
-  const copy = (): void => {
-    copyable.copy();
-    toggleDropdown();
   };
 
   $: instructions = [`rad init`].join("\n");
@@ -64,14 +58,9 @@
       To initialize a Radicle project, run the following command in an existing
       repository:
     </p>
-    <Copyable name="command" bind:this={copyable}>
+    <Copyable name="command" on:copy={toggleDropdown}>
       <p class="typo-text-small-mono instructions">{instructions}</p>
     </Copyable>
-    <Button
-      style="display: block; margin: 1rem auto 0; width: 100%;"
-      on:click={copy}>
-      Copy
-    </Button>
   </div>
 
   <Button variant="outline" icon={PlusIcon} on:click={toggleDropdown}>

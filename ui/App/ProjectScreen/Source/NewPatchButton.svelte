@@ -6,16 +6,18 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import RevisionIcon from "design-system/icons/Revision.svelte";
   import Button from "design-system/Button.svelte";
   import Overlay from "design-system/Overlay.svelte";
+  import RevisionIcon from "design-system/icons/Revision.svelte";
 
   import Copyable from "ui/App/SharedComponents/Copyable.svelte";
 
   export let expanded = false;
+
   const hide = (): void => {
     expanded = false;
   };
+
   const toggleDropdown = (): void => {
     expanded = !expanded;
   };
@@ -44,8 +46,8 @@
 <Overlay {expanded} on:hide={hide} style="position: relative;">
   <div class="request-dropdown" hidden={!expanded}>
     To create a patch in your working copy, check out the branch that contains
-    the changes and run the following command:
-    <Copyable name="command">
+    the changes and run the following commands:
+    <Copyable name="commands" on:copy={hide}>
       <pre
         class="typo-text-small-mono command-line">{`upstream patch create\nrad sync`}</pre>
     </Copyable>
@@ -56,6 +58,6 @@
     icon={RevisionIcon}
     on:click={toggleDropdown}
     dataCy="patch-modal-toggle">
-    caption="New Patch"
+    New patch
   </Button>
 </Overlay>

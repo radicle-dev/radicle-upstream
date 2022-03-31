@@ -42,7 +42,7 @@
   import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
   import ForkCheckoutProjectButton from "./Source/ForkCheckoutProjectButton.svelte";
-  import PatchButton from "./Source/PatchButton.svelte";
+  import NewPatchButton from "./Source/NewPatchButton.svelte";
   import History from "./Source/SourceBrowser/History.svelte";
 
   import Anchors from "./Source/Anchors.svelte";
@@ -230,7 +230,7 @@
     </div>
     <div slot="right">
       {#if patchesTabSelected}
-        <PatchButton />
+        <NewPatchButton />
       {:else}
         <ForkCheckoutProjectButton
           projectUrn={project.urn}

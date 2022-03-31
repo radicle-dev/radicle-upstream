@@ -24,16 +24,11 @@
     ? "To fork this project and checkout a working copy, run the following command in your terminal:"
     : "To checkout a working copy of this project, run the following command in your terminal:";
 
-  let copyable: Copyable;
   const hide = (): boolean => (expanded = false);
   const toggleDropdown = (): void => {
     expanded = !expanded;
   };
 
-  const copy = (): void => {
-    copyable.copy();
-    toggleDropdown();
-  };
   $: instructions = [`rad checkout ${projectUrn}`].join("\n");
 </script>
 
@@ -73,15 +68,9 @@
       </p>
     {/if}
 
-    <Copyable name="command" bind:this={copyable}>
+    <Copyable name="command" on:copy={toggleDropdown}>
       <p class="typo-text-small-mono instructions">{instructions}</p>
     </Copyable>
-
-    <Button
-      style="display: block; margin: 1rem auto 0; width: 100%;"
-      on:click={copy}>
-      Copy
-    </Button>
   </div>
 
   <Button
