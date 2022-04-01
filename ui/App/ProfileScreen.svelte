@@ -63,19 +63,14 @@
 
   loadProfileProjects();
 
-  const unsubscribePeerEvents = localPeer.requestEvents.subscribe(() => {
-    loadProfileProjects();
-  });
-
-  const unsubscribeLocalEvents = localPeer.projectEvents.onValue(value => {
-    if (value.urn.endsWith("refs/rad/id")) {
+  const unsubscribeProjectEvents = localPeer.requestEvents
+    .merge(localPeer.projectEvents)
+    .subscribe(() => {
       loadProfileProjects();
-    }
-  });
+    });
 
   onDestroy(() => {
-    unsubscribePeerEvents();
-    unsubscribeLocalEvents();
+    unsubscribeProjectEvents();
   });
 
   async function loadProfileProjects(): Promise<void> {

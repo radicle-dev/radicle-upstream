@@ -129,17 +129,10 @@ export const fetch = async (project: Project, peer: User): Promise<void> => {
 };
 
 export function watchPatchListUpdates(): () => void {
-  return localPeer.projectEvents.onValue(event => {
+  return localPeer.projectEvents.onValue(() => {
     const screen = get(screenStore);
     if (screen.status === remote.Status.Success) {
-      const patchUrnPrefix = `${screen.data.project.urn}/refs/tags/${patch.TAG_PREFIX}`;
-      const defaultBranchUrn = `${screen.data.project.urn}/refs/heads/${screen.data.project.metadata.defaultBranch}`;
-      if (
-        event.urn.startsWith(patchUrnPrefix) ||
-        event.urn.startsWith(defaultBranchUrn)
-      ) {
-        refreshPatches(screen.data.project.urn);
-      }
+      refreshPatches(screen.data.project.urn);
     }
   });
 }
