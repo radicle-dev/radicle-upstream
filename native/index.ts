@@ -211,6 +211,8 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
       "--dev-log",
       "--http-listen",
       config.httpAddr,
+      "--git-seed",
+      "https://seed.upstream.radicle.xyz",
     ];
   } else {
     proxyArgs = [

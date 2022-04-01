@@ -1,0 +1,12 @@
+[Unit]
+Description=Radicle client services git server
+
+[Service]
+ExecStart=/usr/local/bin/radicle-git-server \
+  --listen 127.0.0.1:1443
+EnvironmentFile=/etc/radicle-git-server.env
+User=1000
+Group=1000
+
+[Install]
+WantedBy=multi-user.target

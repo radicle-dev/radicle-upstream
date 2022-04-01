@@ -1,34 +1,18 @@
 # Upstream Seed Node infrastructure
 
-Provides a GCP instance `seed-node-2` running `upstream-seed` in the cloud. The
-Upstream team uses the seed to collaborate.
+Provides a GCP instance `seed-node-2` running `radicle-http-api` and
+`radicle-git-server` in the cloud. The Upstream team uses the seed for testing
+and development purposes.
 
-The peer address is `hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@seed.upstream.radicle.xyz:8776`.
+It has been assigned the following DNS name: seed.upstream.radicle.xyz
+  - `radicle-http-api` is running on port tcp:8777
+  - `radicle-git-server` is running on port tcp:443
 
-## Configuration
-
-The list of projects the seed node tracks is set in `/etc/upstream-seed.env`.
-After changing the configuration you need to restart the seed with
-
-```bash
-sudo systemctl restart upstream-seed
-```
 
 ## Logging
 
 You can find logs for the seed [here](https://cloudlogging.app.goo.gl/AEcmLeCyix5iY4AY8).
 
-## Update the binary
-
-You can update the `upstream-seed` binary to the latest build of the `main`
-branch by running
-
-```bash
-sudo /home/ubuntu/radicle-upstream/infa/seed-node/update-upstream-seed.sh
-```
-
-The script accepts a commit hash as an optional argument. If provided, it
-downloads the binary build for the given commit hash.
 
 ## Setup
 
@@ -46,4 +30,12 @@ cd radicle-upstream
 sudo infra/seed-node/setup.sh
 ```
 
-The setup script can be re-run at a later point to upgrade the deployment.
+
+## Updating the services
+
+You can update the binaries to the latest build by running:
+
+```bash
+sudo /home/ubuntu/radicle-upstream/infa/seed-node/update-radicle-http-api.sh
+sudo /home/ubuntu/radicle-upstream/infa/seed-node/update-radicle-git-server.sh
+```

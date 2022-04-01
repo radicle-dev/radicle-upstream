@@ -1,3 +1,7 @@
-seed.upstream.radicle.xyz:8777
+seed.upstream.radicle.xyz:8777 {
+  reverse_proxy 127.0.0.1:18777
+}
 
-reverse_proxy 127.0.0.1:18777
+seed.upstream.radicle.xyz:443 {
+  reverse_proxy 127.0.0.1:1443
+}
