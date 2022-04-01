@@ -8,11 +8,11 @@
 
 set -euo pipefail
 
-systemctl stop radicle-http-api
+systemctl stop radicle-git-server
 
 curl -fsSL \
-  "https://storage.googleapis.com/radicle-client-services/radicle-http-api" \
-  -o /usr/local/bin/radicle-http-api
-chmod +x /usr/local/bin/radicle-http-api
+  "https://storage.googleapis.com/radicle-client-services/radicle-git-server" \
+  -o /usr/local/bin/radicle-git-server
+chmod +x /usr/local/bin/radicle-git-server
 
-systemctl start radicle-http-api
+systemctl start radicle-git-server
