@@ -20,10 +20,10 @@ test("fetch initial from seed", async () => {
   const proxy = new ProxyRunner.RadicleProxy({
     dataPath: workdir,
     name: "foo",
-    gitSeeds: ["https://willow.radicle.garden"],
+    gitSeeds: ["https://seed.upstream.radicle.xyz"],
   });
   await proxy.start();
-  const urn = "rad:git:hnrkmg77m8tfzj4gi4pa4mbhgysfgzwntjpao";
+  const urn = "rad:git:hnrkb7mfdtg4uc3bncy6uiakcxdcboc8yx43o";
   const updated = proxy.proxyClient
     .events()
     .filter(ev => {
@@ -33,7 +33,7 @@ test("fetch initial from seed", async () => {
   await proxy.proxyClient.project.requestSubmit(urn);
   await updated;
   expect(await proxy.proxyClient.project.get(urn)).toMatchObject({ urn });
-}, 10000);
+}, 15000);
 
 async function createWorkdir(testName: string): Promise<string> {
   const workdir = Path.resolve(__dirname, "..", "workdir", testName);
