@@ -67,8 +67,6 @@ Upstream uses:
 [db]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/dist.yaml/badge.svg?branch=main
 [dd]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/dist.yaml
 [de]: docs/development.md
-[pa]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/p2p-network-tests.yaml/badge.svg?branch=main
-[pb]: https://github.com/radicle-dev/radicle-upstream/actions/workflows/p2p-network-tests.yaml
 [pr]: proxy
 [ra]: https://rsms.me/inter
 [rc]: https://radicle.community
