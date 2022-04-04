@@ -80,10 +80,10 @@ context("search", () => {
   context("when a project is already followed", () => {
     it("opens the project by clicking the project card", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "urn").then(el => {
+      commands.pick("project-screen", "header", "projectUrn").then(el => {
         const urn = el.attr("data");
         if (!urn) {
-          throw new Error("Could not find URN");
+          throw new Error("Could not find Project URN");
         }
         commands.pick("sidebar", "profile").click();
         commands.pick("profile-screen").should("exist");
@@ -102,10 +102,10 @@ context("search", () => {
 
     it("opens the project by pressing the [enter] hotkey", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "urn").then(el => {
+      commands.pick("project-screen", "header", "projectUrn").then(el => {
         const urn = el.attr("data");
         if (!urn) {
-          throw new Error("Could not find URN");
+          throw new Error("Could not find Project URN");
         }
         commands.pick("sidebar", "profile").click();
         commands.pick("profile-screen").should("exist");

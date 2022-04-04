@@ -6,7 +6,12 @@
  LICENSE file.
 -->
 <script lang="ts">
-  type Kind = "urn" | "peerId" | "seedAddress" | "ethAddress" | "commitHash";
+  type Kind =
+    | "projectUrn"
+    | "peerId"
+    | "seedAddress"
+    | "ethAddress"
+    | "commitHash";
 
   import type { Position } from "design-system/Tooltip";
   import type { SvelteComponent } from "svelte";
@@ -29,8 +34,8 @@
 
   function kindToName(kind: Kind): string {
     switch (kind) {
-      case "urn":
-        return "URN";
+      case "projectUrn":
+        return "Project URN";
       case "peerId":
         return "Peer ID";
       case "seedAddress":
@@ -44,7 +49,7 @@
 
   function kindToIcon(kind: Kind): typeof SvelteComponent | undefined {
     switch (kind) {
-      case "urn":
+      case "projectUrn":
         return AtIcon;
       case "peerId":
         return ComputerIcon;
@@ -59,8 +64,8 @@
 
   function kindToShortenedValue(kind: Kind): string {
     switch (kind) {
-      case "urn":
-        return format.shortUrn(value);
+      case "projectUrn":
+        return format.shortProjectUrn(value);
       case "peerId":
         return format.shortPeerId(value);
       case "seedAddress":

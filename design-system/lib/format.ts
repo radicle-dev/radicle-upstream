@@ -21,7 +21,7 @@ export function shorten(
 
 // rad:git:hnrkjhtohoe3u9mmtqgc6apbzomwwpos9h7ky ->
 // hnrkjhto…pos9h7ky
-export function shortUrn(value: string): string {
+export function shortProjectUrn(value: string): string {
   return shorten(value.replace("rad:git:", ""), 8);
 }
 

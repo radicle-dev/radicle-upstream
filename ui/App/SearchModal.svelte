@@ -183,7 +183,7 @@
       autofocus
       bind:value={searchQuery}
       on:keydown={onKeydown}
-      placeholder="Enter a project’s URN here…"
+      placeholder="Enter a Project URN here…"
       hint={validationState.type === "valid" ? "↵" : ""} />
   </div>
 
@@ -212,7 +212,7 @@
       <h3 class="header">
         <CopyableIdentifier
           value={sanitizedSearchQuery}
-          kind="urn"
+          kind="projectUrn"
           showIcon={false} />
         <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
       </h3>
