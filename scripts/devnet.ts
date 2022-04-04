@@ -168,7 +168,7 @@ interface PeerConfig {
   lnkHome: string;
 }
 
-// Get a peer ID from a private key seed.
+// Get a Peer ID from a private key seed.
 //
 // Uses the same algorithm as `upstream-proxy-dev init`.
 function peerIdFromKeySeed(seed: string): string {
@@ -183,7 +183,7 @@ function peerIdFromKeySeed(seed: string): string {
 }
 
 function makePeerConfig(id: number): PeerConfig {
-  assert(id > 0 && id < 100, `peer id ${id} is not in range`);
+  assert(id > 0 && id < 100, `Peer ID ${id} is not in range`);
   const lnkHome = Path.resolve(
     __dirname,
     "..",

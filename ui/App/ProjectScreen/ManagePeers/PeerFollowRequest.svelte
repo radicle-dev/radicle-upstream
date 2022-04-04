@@ -35,7 +35,7 @@
   <div class="left" style="max-width: 22em">
     <CopyableIdentifier
       value={peer.peerId}
-      kind="deviceId"
+      kind="peerId"
       style="margin-top: 0.5rem" />
   </div>
 

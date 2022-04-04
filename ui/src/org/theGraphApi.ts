@@ -206,7 +206,7 @@ export async function getOrgProjectAnchors(
         anchor: {
           // Transaction ID.
           id: string;
-          // Project ID.
+          // Project URN.
           objectId: string;
           // Commit hash encoded as multihash.
           multihash: string;
@@ -258,7 +258,7 @@ export async function getProjectAnchors(
           // Org address.
           id: string;
         };
-        // Project ID.
+        // Project URN.
         objectId: string;
         // Anchor object type. "0" stands for project commit hash.
         tag: string;

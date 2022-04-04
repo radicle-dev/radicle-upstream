@@ -28,7 +28,7 @@ export interface PatchDetails {
 
 // Handle to reference the patch, for example on the command line.
 //
-// The handle of a patch is `<peer id>/<patch name>`.
+// The handle of a patch is `<Peer ID>/<patch name>`.
 export function handle(patch: Patch): string {
   return `${patch.peerId}/${patch.id}`;
 }

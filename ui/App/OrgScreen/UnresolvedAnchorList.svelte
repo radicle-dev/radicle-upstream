@@ -60,7 +60,7 @@
   <Hoverable let:hovering={hover} style="flex: 1">
     <div class="list-item" data-cy={`project-list-entry-${anchor.id}`}>
       <div class="typo-text anchor-row">
-        <CopyableIdentifier value={anchor.projectId} kind="radicleId" />
+        <CopyableIdentifier value={anchor.projectId} kind="urn" />
         <ProjectAnchorHovercard {anchor} />
       </div>
       {#if hover}

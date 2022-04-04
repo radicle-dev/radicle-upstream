@@ -49,7 +49,7 @@ yarn run devnet upstream 1
 
 This command will start an Upstream instance. The instance will be fully
 initialized with user name `1`. The `LNK_HOME` for the instance is
-`./sandbox/devnet/1`. The peer ID is derived from the instance ID. The default
+`./sandbox/devnet/1`. The Peer ID is derived from the instance ID. The default
 passphrase for all devnet Upstream instances is `asdf`.
 
 To connect a second instance to the first one run:

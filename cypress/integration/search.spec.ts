@@ -47,10 +47,10 @@ context("search", () => {
       commands.pick("search-input").should("have.value", "");
     });
 
-    context("when the Radicle ID is not valid", () => {
+    context("when the Project URN is not valid", () => {
       it("does not follow the project when the [enter] key is pressed", () => {
         cy.intercept(
-          "http://localhost:30000/v1/projects/requests/invalid-project-id",
+          "http://localhost:30000/v1/projects/requests/invalid-project-urn",
           cy.spy().as("projectRequest")
         );
 
@@ -60,7 +60,7 @@ context("search", () => {
 
         commands
           .pick("search-modal")
-          .should("contain", "That’s not a valid Radicle ID.");
+          .should("contain", "That’s not a valid Project URN.");
 
         commands.pasteInto(["search-input"], peerId);
         cy.get("body").type("{enter}");
@@ -69,7 +69,7 @@ context("search", () => {
           .pick("search-modal")
           .should(
             "contain",
-            "You’ve entered a Device ID instead of a Project ID."
+            "You’ve entered a Peer ID instead of a Project URN."
           );
 
         cy.get("@projectRequest").should("not.have.been.called");
@@ -80,7 +80,7 @@ context("search", () => {
   context("when a project is already followed", () => {
     it("opens the project by clicking the project card", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "radicleId").then(el => {
+      commands.pick("project-screen", "header", "urn").then(el => {
         const urn = el.attr("data");
         if (!urn) {
           throw new Error("Could not find URN");
@@ -102,7 +102,7 @@ context("search", () => {
 
     it("opens the project by pressing the [enter] hotkey", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "radicleId").then(el => {
+      commands.pick("project-screen", "header", "urn").then(el => {
         const urn = el.attr("data");
         if (!urn) {
           throw new Error("Could not find URN");

@@ -60,7 +60,7 @@
   }
 </style>
 
-<Modal emoji="🧦" title="Link your Radicle ID and Ethereum address">
+<Modal emoji="🧦" title="Link your Radicle identity and Ethereum address">
   <svelte:fragment slot="description">
     An Ethereum transaction will be sent
   </svelte:fragment>
@@ -83,8 +83,8 @@
     <TransactionButton
       dataCy="confirm-button"
       onClick={() => claim(session.identity)}
-      errorLabel="Failed to claim your Radicle ID on Ethereum">
-      Link your Radicle ID
+      errorLabel="Failed to claim your Radicle identity on Ethereum">
+      Link your Radicle identity
     </TransactionButton>
   </svelte:fragment>
 </Modal>

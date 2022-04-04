@@ -98,12 +98,12 @@
       validationState = {
         type: "invalid",
         message:
-          "You’ve entered a Device ID instead of a Project ID. To collaborate with someone, add their Device ID as a remote directly to a project.",
+          "You’ve entered a Peer ID instead of a Project URN. To collaborate with someone, add their Peer ID as a remote directly to a project.",
       };
     } else {
       validationState = {
         type: "invalid",
-        message: "That’s not a valid Radicle ID.",
+        message: "That’s not a valid Project URN.",
       };
     }
   } else {
@@ -183,7 +183,7 @@
       autofocus
       bind:value={searchQuery}
       on:keydown={onKeydown}
-      placeholder="Enter a project’s Radicle ID here…"
+      placeholder="Enter a project’s URN here…"
       hint={validationState.type === "valid" ? "↵" : ""} />
   </div>
 
@@ -212,7 +212,7 @@
       <h3 class="header">
         <CopyableIdentifier
           value={sanitizedSearchQuery}
-          kind="radicleId"
+          kind="urn"
           showIcon={false} />
         <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
       </h3>

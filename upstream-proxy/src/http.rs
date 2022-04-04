@@ -209,7 +209,7 @@ where
         .boxed()
 }
 
-/// Guard against access of wrong paths by the owners peer id.
+/// Guard against access of wrong paths by the owners Peer ID.
 #[must_use]
 pub fn guard_self_peer_id(peer: &crate::peer::Peer, peer_id: Option<PeerId>) -> Option<PeerId> {
     match peer_id {
@@ -219,7 +219,7 @@ pub fn guard_self_peer_id(peer: &crate::peer::Peer, peer_id: Option<PeerId>) -> 
     }
 }
 
-/// Guard against access of the wrong paths by the owners peer id when inside a `Revision`.
+/// Guard against access of the wrong paths by the owners Peer ID when inside a `Revision`.
 #[must_use]
 pub fn guard_self_revision(
     peer: &crate::peer::Peer,

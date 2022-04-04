@@ -60,13 +60,13 @@
   function menuItems(project: Project): MenuItem[] {
     return [
       {
-        title: "Copy Radicle ID",
+        title: "Copy Project URN",
         icon: AtIcon,
         event: () => {
           copyToClipboard(project.urn);
           notification.show({
             type: "info",
-            message: "Radicle ID copied to your clipboard",
+            message: "Project URN copied to your clipboard",
           });
         },
         tooltip: format.shortUrn(project.urn),

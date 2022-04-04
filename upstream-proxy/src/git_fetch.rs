@@ -165,7 +165,7 @@ impl UniqueDelayQueue {
 /// Returns `true` if the project refernces were updated and `false` otherwise. Also returns
 /// `false` if the project was not found on any of the seeds tried.
 ///
-/// If the project ID is present in `identity_providers`, then we only fetch it from that seed.
+/// If the Project URN is present in `identity_providers`, then we only fetch it from that seed.
 /// Otherwise, we try to fetch the projects from each of the `seeds`. If we find the project, we
 /// update `identity_providers`.
 async fn fetch_project(
@@ -228,7 +228,7 @@ async fn fetch_project_from_seed(
     let monorepo_path = peer.paths().git_dir().to_owned();
     let urn = link_identities::Urn::new(project_id);
     let id = urn.encode_id();
-    let proj_seed_url = seed_url.join(&id).expect("invalid project ID");
+    let proj_seed_url = seed_url.join(&id).expect("invalid Project URN");
     peer.librad_peer()
         .using_storage(move |storage| {
             match rad_common::seed::fetch_identity(&monorepo_path, &proj_seed_url, &urn) {

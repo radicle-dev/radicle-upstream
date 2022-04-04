@@ -77,10 +77,7 @@
     on:click={() => (onClick ? onClick() : {})}>
     {name}
   </h1>
-  <CopyableIdentifier
-    value={urn}
-    kind="radicleId"
-    style="margin-top: 0.5rem;" />
+  <CopyableIdentifier value={urn} kind="urn" style="margin-top: 0.5rem;" />
   {#if description}
     <p class="description typo-overflow-ellipsis" title={description}>
       {description}

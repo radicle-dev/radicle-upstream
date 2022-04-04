@@ -77,25 +77,26 @@
         {#if $attestationStatus === AttestationStatus.Fetching}
           <Emoji emoji="🧦" size="huge" />
           <p class="typo-text">
-            Checking whether your Radicle ID and Ethereum address are linked…
+            Checking whether your Radicle identity and Ethereum address are
+            linked…
           </p>
         {:else if $attestationStatus === AttestationStatus.Valid}
           <Emoji emoji="🧦" size="huge" />
           <p class="typo-text">
-            Your Radicle ID and Ethereum address are linked.
+            Your Radicle identity and Ethereum address are linked.
           </p>
         {:else}
           <Emoji emoji="👛" size="huge" />
           <p class="typo-text">
-            To use Ethereum features, you need to link your Radicle ID and
+            To use Ethereum features, you need to link your Radicle identity and
             Ethereum address.
           </p>
           {#if !$lastClaimed || $lastClaimed !== address}
             <Button on:click={onLink} dataCy="link-button"
-              >Link your Radicle ID</Button>
+              >Link your Radicle identity</Button>
           {:else}
             <div class="spinner-wrapper">
-              Linking your Radicle ID…
+              Linking your Radicle identity…
               <Button variant="transparent" on:click={onLink}>Retry</Button>
             </div>
           {/if}

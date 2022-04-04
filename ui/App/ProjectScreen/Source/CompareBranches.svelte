@@ -31,7 +31,7 @@
   <ArrowLeftIcon />
   <Copyable name="shareable link" clipboardContent={patchUrl}>
     <BranchBox
-      name={`${format.shortDeviceId(compareBranch.peerId)}/${compareBranch.id}`}
+      name={`${format.shortPeerId(compareBranch.peerId)}/${compareBranch.id}`}
       dataCy="shareable-patch-link" />
   </Copyable>
 </div>

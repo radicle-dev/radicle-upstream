@@ -10,14 +10,14 @@ Download binaries for the latest `main` branch builds.
 * <https://storage.googleapis.com/radicle-upstream-build-artifacts/v1/main/x86_64-linux/upstream-seed>
 * <https://storage.googleapis.com/radicle-upstream-build-artifacts/v1/main/x86_64-darwin/upstream-seed>
 
-The seed is run with the project URNs it is supposed to replicate as a
+The seed is run with the Project URNs it is supposed to replicate as a
 parameter.
 
 ```bash
 upstream-seed --project rad:git:hkfoo
 ```
 
-The seed will output its peer ID. Together with the hosts IP address it gives
+The seed will output its Peer ID. Together with the hosts IP address it gives
 you the P2P address `hkpeerid@1.2.3.4:8776`. In Upstream on the “Network” page
 add this address as a seed.
 

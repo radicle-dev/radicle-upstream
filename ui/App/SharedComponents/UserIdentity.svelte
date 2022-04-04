@@ -150,7 +150,7 @@
               value={user.metadata.ethereum.address} />
           {/if}
           {#each user.peerIds as peerId}
-            <CopyableIdentifier kind="deviceId" value={peerId} />
+            <CopyableIdentifier kind="peerId" value={peerId} />
           {/each}
         {/if}
       </div>

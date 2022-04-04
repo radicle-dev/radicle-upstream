@@ -94,7 +94,7 @@
 {#if $store.status === remote.Status.Success}
   <Modal dataCy="remotes-modal" emoji="💻" title="Edit remotes">
     <svelte:fragment slot="description">
-      Add a user’s Device ID to collaborate with them on this project.
+      Add a user’s Peer ID to collaborate with them on this project.
     </svelte:fragment>
 
     <form class="peer-entry-form" on:submit|preventDefault>
@@ -102,7 +102,7 @@
         <TextInput
           dataCy="peer-input"
           bind:value={newPeer}
-          placeholder="Enter a Device ID here"
+          placeholder="Enter a Peer ID here"
           validationState={$peerValidation}
           style="width: 100%; margin-right: .5rem;" />
         <Button

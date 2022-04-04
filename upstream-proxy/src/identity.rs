@@ -28,7 +28,7 @@ use std::convert::TryFrom;
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Identity {
-    /// The Peer Id for the user.
+    /// The Peer ID for the user.
     pub peer_id: PeerId,
     /// The coco URN.
     pub urn: Urn,

@@ -48,9 +48,9 @@
         kind="ethAddress" />
     </div>
   {/if}
-  {#each user.peerIds as deviceId}
-    <div class="row" title={deviceId}>
-      <CopyableIdentifier value={deviceId} kind="deviceId" />
+  {#each user.peerIds as peerId}
+    <div class="row" title={peerId}>
+      <CopyableIdentifier value={peerId} kind="peerId" />
     </div>
   {/each}
 </div>

@@ -190,7 +190,7 @@
   <TextInput
     disabled={setRecordsInProgress}
     style="margin-bottom: 24px"
-    placeholder="The Device ID of the seed"
+    placeholder="The Peer ID of the seed"
     bind:value={seedIdValue} />
 
   <div class="label typo-text-bold">Seed Host</div>

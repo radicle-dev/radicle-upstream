@@ -36,7 +36,7 @@
     </h1>
     <CopyableIdentifier
       value={peerId}
-      kind="deviceId"
+      kind="peerId"
       style="margin-top: 0.5rem;" />
   </div>
 </div>

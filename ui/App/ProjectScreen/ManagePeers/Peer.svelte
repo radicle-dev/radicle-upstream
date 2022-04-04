@@ -48,7 +48,7 @@
     </div>
     <CopyableIdentifier
       value={peer.peerId}
-      kind="deviceId"
+      kind="peerId"
       style="margin-top: 0.5rem;" />
   </div>
   {#if peer.type !== project.PeerType.Local}

@@ -27,7 +27,7 @@ export function shortUrn(value: string): string {
 
 // hyyo6u8rhnuswory4c6symx471yseke74oq1myfesoig7zggcixejy ->
 // hyyo6u8r…ggcixejy
-export function shortDeviceId(value: string): string {
+export function shortPeerId(value: string): string {
   return shorten(value, 8);
 }
 
@@ -44,7 +44,7 @@ export function shortSeedAddress(value: string): string {
   const match = value.match(/^(.{54})@(.*)$/);
 
   if (match && match[1] && match[2]) {
-    return `${shortDeviceId(match[1])}@${match[2]}`;
+    return `${shortPeerId(match[1])}@${match[2]}`;
   }
 
   return value;

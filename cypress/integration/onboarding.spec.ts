@@ -47,7 +47,7 @@ context("onboarding", () => {
       cy.focused().type("{enter}");
 
       // Success screen.
-      commands.pick("deviceId").should("exist");
+      commands.pick("peerId").should("exist");
 
       // Land on profile screen.
       cy.get("body").type("{enter}");
@@ -70,7 +70,7 @@ context("onboarding", () => {
       commands.pick("set-passphrase-button").click();
 
       // Success screen.
-      commands.pick("deviceId").should("exist");
+      commands.pick("peerId").should("exist");
 
       // Land on profile screen.
       commands.pick("go-to-profile-button").click();

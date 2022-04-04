@@ -98,7 +98,7 @@ impl std::str::FromStr for PatchHandle {
             .split_once('/')
             .ok_or_else(|| "missing `/` separator".to_string())?;
         let peer_id = librad::PeerId::from_default_encoding(peer_id_str)
-            .map_err(|err| format!("invalid peer ID: {}", err))?;
+            .map_err(|err| format!("invalid Peer ID: {}", err))?;
         Ok(PatchHandle {
             peer_id,
             name: name.to_owned(),
@@ -133,7 +133,7 @@ enum PatchCommand {
     ///
     /// The tag for a patch has the name `radicle-patch/<PATCH_HANDLE>`.
     Fetch {
-        /// Patch to fetch in the format <peer id>/<patch name>
+        /// Patch to fetch in the format <Peer ID>/<patch name>
         patch_handle: PatchHandle,
     },
 }
