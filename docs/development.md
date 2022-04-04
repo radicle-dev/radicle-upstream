@@ -74,13 +74,13 @@ yarn run devnet seed --project <urn>
 By default, all Upstream instances include the seed address as a bootstrap peer.
 You can find the seed peer data in `./sandbox/devnet/seed`.
 
-## Merging changes into main branch
+## Merging changes into the `main` branch
 
 Maintainers are responsible for adding contribution to the `main` branch on
 the command line. We avoid the Github UI for merging changes. See the [Licensing
-and DCO RFC][dco-rfc] for background on this.
+and DCO RFC][dr] for background on this.
 
-We require commits on `main` to be [signed with GPG][commit-sign-gpg].
+We require commits on `main` to be [signed with GPG][cm].
 
 After successful review, Github pull requests can be merged to `main` in two
 ways with a fast-forward merge being preferred.
@@ -151,18 +151,6 @@ the `cypress/` directory and unit tests next to the modules they correspond to.
   the [`.only` method][on].
 - To develop unit tests in watch mode, run: `yarn test:unit:watch`
 
-### Running p2p network tests
-
-The network tests use Linux namespaces to set up the required network
-topologies, thus they only work on a Linux host. For the tests to work
-properly, make sure that the `FORWARD` chain in the `filter` table is set to
-`ACCEPT`.
-
-To run the p2p network test suite locally:
-
-```bash
-sudo FORCE_COLOR=1 ./p2p-tests/maintainer-update-propagation-test.ts
-```
 
 ### Running on Windows (experimental)
 
@@ -173,7 +161,6 @@ for this is to set `LNK_HOME` to a root folder, for example:
 
 To try out Upstream on Windows, you can use a [free VM][fv] provided by
 Microsoft.
-
 
 ### Building an Upstream package for your platform
 
@@ -210,7 +197,6 @@ NOTARIZE=true \
 yarn dist
 ```
 
-
 ### Scripts
 
 To get a list of all available script commands, run: `yarn run`.
@@ -220,7 +206,7 @@ the CLI, they're only to be used by other scripts.
 
 Here's a list of all scripts that are intended for developer use:
 
-    yarn start                  # Start Upstream with hot-UI-code-reload
+    yarn start                  # Start Upstream in development mode
 
     yarn test                   # Run all UI tests
     yarn test:integration       # Run only Cypress integration tests
@@ -242,64 +228,7 @@ Here's a list of all scripts that are intended for developer use:
                                 #   - monorepo
                                 #   - saved preferences
 
-
-### Styling
-
-The main entry point of the electron renderer is `public/index.html`. This is
-the file where any global styling which is not managed by Svelte should be
-imported.
-
-To avoid extra wrappers for positioning and spacing, and to allow style
-overrides, components expose a `style` prop:
-
-```html
-  <Component style="margin-right: 24px"/>
-```
-
-
-### Typography
-
-The design system provides a constrained set of typographic styles. This
-consists of a set of styled headers, a set of styled paragraphs and a set of
-modifiers. These also overlap with the components we have in our design system
-in Figma, where the design of the app exists. All classes are prefixed with
-`typo-` so this might be helpful if you have any autocomplete in your editor.
-
-For the headers you can just use `<h1>` up to `<h5>`, if you want to apply the
-same styles to other html elements you can use the matching classes
-`typo-header-1` to `typo-header-5` (use `<h1>` to `<h5>` where you can).
-
-For text we you can use the classes that start with `typo-text`. These come
-in 2 sizes, the normal one and `typo-text-small`. Check out
-[typography.css](../design-system/static/typography.css) to get an idea of the
-possible combinations. All the ones we're using in Figma are represented here.
-
-The modifiers give us some flexibility and allow us to create classes for
-certain css functionality we use over and over. Such as,
-`typo-overflow-ellipsis` and `typo-all-caps`. These should be self-explanatory.
-
-We also added a set of modifiers that allow you to add the font-family as a
-class where you need it, here again we would recommend not doing that as most
-styles should fit into one of the two categories above.
-
-The only place in the app where we're not using this is in `<Markdown />`,
-since the library we use doesn't allow us to overwrite the styles without using
-global declarations. If you have any questions or improvements, open an issue
-and we're happy to help you along.
-
-### Colors
-
-The design system supports multiple color palettes via themes which can be
-changed in the Settings screen.
-
-Throughout the codebase we use only CSS variables. Raw color codes should not
-be used so changes to global styling can be applied in one central place:
-`public/colors.css`.
-
-Read more about the colors used in Upstream in the [Color System post][cg].
-
-
-## Proxy
+## upstream-proxy
 
 All of Upstream's business logic tying together the Radicle code collaboration
 is provided to the UI via an HTTP API by a rust binary called `upstream-proxy`.
@@ -312,15 +241,6 @@ the exhaustive [Cargo Book][cb].
 The proxy binary's lifecycle is managed by the main renderer of the UI in:
 `native/main.ts`. When running `yarn dist` it is bundled together into an
 application package by [electron-builder][eb].
-
-
-### Running the proxy in stand-alone mode
-
-To be able to build the proxy first install all required dependencies from the
-[Running Upstream](#running-upstream-from-source) section.
-
-To start the proxy binary, run `cargo run`.
-
 
 ### Testing
 
@@ -341,18 +261,6 @@ implementation files and integration tests. The integration tests are meant to
 assert correctness of the API provided by the proxy, these can be found under
 `proxy/tests`. To find out where to place and how to lay out tests, check the
 Rust book [test chapter][rt].
-
-
-### File structure
-
-The API exposes the application's domain logic. Therefore we try to treat it as
-a thin layer exposing well-typed entities. The heavy lifting is done in the
-modules named after the protocols we consume - [radicle-link][rl] through it
-[radicle-surf][rs], for code collaboration. By isolating concerns this way, we
-hope to enable ease-of-contribution to downstream teams. Empowering them to
-reflect changes in their public APIs easily with code contributions to
-Upstream.
-
 
 ## CI setup
 
@@ -397,7 +305,7 @@ This section describes how to release a new version of Upstream.
 * [`gcloud`][gc] to upload artifacts. You need to ask for access to the
   `radicle-upstream-releases` storage bucket.
 * [`hub`][hb] version >= 2.14 to interact with GitHub’s API. See [its
-  documentation][hub-config] on how to configure access
+  documentation][hc] on how to configure access
 * [`brew`][br] to update the Uptream cask.
 
 All Github access tokens _must_ have the `public_repo` scope.
@@ -452,7 +360,7 @@ All Github access tokens _must_ have the `public_repo` scope.
     5. Test the release by walking through the QA issues.
     6. (Optional) To fix bugs, create a PR with the fixes based on the release
        candidate branch. Once it has been approved, squash merge it into the
-       release candidate branch (see [“Merging Pull Requests"][merging-prs]).
+       release candidate branch (see [“Merging Pull Requests"][mp]).
        Then restart the “Test the release” step. (Skip creating a QA
        issue in 2.3.)
     7. Close the QA issues.
@@ -499,48 +407,29 @@ All Github access tokens _must_ have the `public_repo` scope.
     Merging may produce a merge commit on `main` instead of fast-forwarding.
     This is ok for release candidate branches.
 
-[an]: #apple-notarization
+
 [br]: https://brew.sh
-[bs]: https://docs.brew.sh/How-To-Open-a-Homebrew-Pull-Request#submit-a-new-version-of-an-existing-formula
 [ca]: https://developer.apple.com/account/resources/certificates/add
 [cb]: https://doc.rust-lang.org/cargo/
-[cc]: https://www.conventionalcommits.org/en/v1.0.0
-[cg]: https://radicle.community/t/color-system/166
-[ch]: CHANGELOG.md
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
+[cm]: https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification/signing-commits
 [co]: https://github.com/rust-lang/cargo
-[cs]: https://help.github.com/en/github/authenticating-to-github/signing-commits
-[do]: #docker-image-updates
+[dr]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
 [eb]: https://github.com/electron-userland/electron-builder
 [el]: https://www.electronjs.org
 [es]: https://eslint.org
 [fv]: https://developer.microsoft.com/en-us/windows/downloads/virtual-machines
 [ga]: https://docs.github.com/en/actions
 [gc]: https://cloud.google.com/sdk/docs/quickstart-macos
-[gg]: https://cloud.google.com/storage/docs/gsutil_install
-[gp]: https://console.cloud.google.com/storage/browser/builds.radicle.xyz/releases/radicle-upstream
-[gt]: https://github.com/settings/tokens
 [hb]: https://github.com/github/hub
-[hub-config]: https://hub.github.com/hub.1.html#configuration
+[hc]: https://hub.github.com/hub.1.html#configuration
 [hu]: https://github.com/typicode/husky
 [lf]: https://github.com/libgit2/libgit2/issues/3053
 [ls]: https://github.com/okonet/lint-staged
 [ma]: https://appleid.apple.com/account/manage
-[merging-prs]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
+[mp]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
 [on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
-[pc]: https://github.com/libgit2/libgit2/issues/3053
 [pr]: https://prettier.io
-[qa]: qa.md
-[rd]: https://github.com/radicle-dev/radicle.xyz/blob/master/pages/downloads.html.mustache
-[rl]: https://github.com/radicle-dev/radicle-link
-[rs]: https://github.com/radicle-dev/radicle-surf/
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev
-[sn]: https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution
-[so]: https://support.apple.com/en-us/HT202491
-[sv]: https://github.com/conventional-changelog/standard-version
-[sw]: https://support.apple.com/en-gb/guide/mac-help/mh40616/mac
-[tp]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [wa]: https://github.com/seanmonstar/warp
-[commit-sign-gpg]: https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification/signing-commits
-[dco-rfc]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
