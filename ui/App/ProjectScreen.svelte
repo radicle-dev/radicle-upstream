@@ -8,15 +8,13 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
 
-  import * as Session from "ui/src/session";
   import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
-  import type { User, Project, ConfirmedAnchor } from "ui/src/project";
-  import { copyToClipboard } from "ui/src/ipc";
-  import { isDelegate, isContributor } from "ui/src/project";
+  import type { User, ConfirmedAnchor } from "ui/src/project";
+  import { isContributor } from "ui/src/project";
   import {
     fetch,
     selectPeer,
@@ -24,15 +22,9 @@
     store,
   } from "ui/src/screen/project";
 
-  import AtIcon from "design-system/icons/At.svelte";
-  import NetworkIcon from "design-system/icons/Network.svelte";
   import PenIcon from "design-system/icons/Pen.svelte";
 
-  import * as format from "design-system/lib/format";
-
   import Button from "design-system/Button.svelte";
-  import ThreeDotsMenu, { MenuItem } from "design-system/ThreeDotsMenu.svelte";
-
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
   import ManagePeersModal from "./ProjectScreen/ManagePeersModal.svelte";
@@ -52,36 +44,6 @@
   const mouseleave = (): void => {
     hoverstyle = "";
   };
-
-  const session = Session.unsealed();
-  const trackTooltipDelegate = "You can't unfollow your own project";
-  const trackTooltip = "Unfollowing is not yet supported";
-
-  function menuItems(project: Project): MenuItem[] {
-    return [
-      {
-        title: "Copy Project URN",
-        icon: AtIcon,
-        event: () => {
-          copyToClipboard(project.urn);
-          notification.show({
-            type: "info",
-            message: "Project URN copied to your clipboard",
-          });
-        },
-        tooltip: format.shortUrn(project.urn),
-      },
-      {
-        title: "Unfollow",
-        icon: NetworkIcon,
-        disabled: true,
-        event: () => {},
-        tooltip: isDelegate(session.identity.urn, project)
-          ? trackTooltipDelegate
-          : trackTooltip,
-      },
-    ];
-  }
 
   const onPeerModal = (): void => {
     modal.toggle(ManagePeersModal);
@@ -148,9 +110,8 @@
             on:click={onPeerModal}
             on:mouseenter={mouseenter}
             on:mouseleave={mouseleave}
-            style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
+            style={`border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         </div>
-        <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
       </div>
     {/if}
   </div>
