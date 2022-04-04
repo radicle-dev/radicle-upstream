@@ -42,7 +42,7 @@
   }
   .text {
     color: var(--color-foreground-level-6);
-    margin: 1.5rem 0;
+    margin-top: 1.5rem;
     max-width: 20rem;
   }
 </style>
@@ -69,10 +69,11 @@
   {/if}
   {#if secondaryActionText}
     <button
+      class="typo-link"
       data-cy="secondary-action"
       style="margin-top: 0.5rem;"
       on:click={() => dispatch("secondaryAction")}>
-      <p class="typo-link">{secondaryActionText}</p>
+      {secondaryActionText}
     </button>
   {/if}
   <div style="margin: 1.5rem;">

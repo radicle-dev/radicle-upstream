@@ -29,15 +29,16 @@
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
 
+  import PlusIcon from "design-system/icons/Plus.svelte";
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
   import Button from "design-system/Button.svelte";
   import FollowToggle from "design-system/FollowToggle.svelte";
 
-  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
-  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
+  import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+
+  import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import Error from "ui/App/ProfileScreen/Error.svelte";
-  import NewProjectButton from "ui/App/ProfileScreen/NewProjectButton.svelte";
   import ProfileHeader from "ui/App/ProfileScreen/ProfileHeader.svelte";
   import ProfileSidebar from "ui/App/ProfileScreen/ProfileSidebar.svelte";
   import ProjectCardSquare from "ui/App/ProfileScreen/ProjectCardSquare.svelte";
@@ -255,25 +256,38 @@
         : session.identity.metadata.handle}
       peerId={session.identity.peerId} />
 
-    <div style="position: relative; margin-left: auto; align-self: center">
-      <NewProjectButton />
-    </div>
+    <CommandModal
+      let:prop={toggleDropdown}
+      command={"rad init"}
+      description="To initialize a Radicle project, run the following command in an existing repository:">
+      <Button variant="outline" icon={PlusIcon} on:click={toggleDropdown}>
+        New project
+      </Button>
+    </CommandModal>
   </div>
 
   {#if $profileProjectsStore.status === remote.Status.Success}
     <div class="sidebar-layout" class:one-column={!showSidebar}>
       {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
         <div class="empty" class:three-columns={!showSidebar}>
-          <EmptyState
-            text="You haven’t created or followed any projects yet."
-            primaryActionText="Start your first project"
-            on:primaryAction={() => {
-              modal.toggle(CreateProjectModal);
-            }}
-            secondaryActionText="Or look for a project"
-            on:secondaryAction={() => {
-              modal.toggle(SearchModal);
-            }} />
+          <EmptyState text="You haven’t created or followed any projects yet.">
+            <CommandModal
+              let:prop={onClickhandler}
+              command={"rad init"}
+              description="To initialize a Radicle project, run the following command in an existing repository:">
+              <Button on:click={onClickhandler} dataCy="primary-action">
+                Start your first project
+              </Button>
+            </CommandModal>
+            <button
+              class="typo-link"
+              style="margin-top: 0.5rem;"
+              on:click={() => {
+                modal.toggle(SearchModal);
+              }}>
+              Or look for a project
+            </button>
+          </EmptyState>
         </div>
       {:else}
         <ul class="grid" data-cy="project-list" class:two-columns={showSidebar}>

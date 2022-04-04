@@ -22,14 +22,6 @@ context("documented shortcuts", () => {
     commands.pick("hotkey-modal").should("not.exist");
   });
 
-  it("opens and closes the project creation", () => {
-    cy.get("body").type(`{${metaKey}+n}`);
-    commands.pick("create-project-modal").should("exist");
-    // Closing the modal
-    cy.get("body").type("{esc}");
-    commands.pick("create-project-modal").should("not.exist");
-  });
-
   it("opens and closes the search", () => {
     cy.get("body").type(`{${metaKey}+p}`);
     commands.pick("search-modal").should("exist");

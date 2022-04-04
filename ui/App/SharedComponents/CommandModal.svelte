@@ -11,6 +11,7 @@
 
   export let command: string;
   export let description: string;
+  export let dataCy: string | undefined = undefined;
 
   let expanded = false;
 
@@ -53,7 +54,7 @@
   }
 </style>
 
-<div class="container">
+<div class="container" data-cy={dataCy}>
   <Overlay
     {expanded}
     on:hide={() => {

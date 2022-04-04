@@ -9,7 +9,6 @@
   import { pop, push, activeRouteStore } from "ui/src/router";
   import type { SvelteComponent } from "svelte";
 
-  import CreateProjectModal from "ui/App/CreateProjectModal.svelte";
   import SearchModal from "ui/App/SearchModal.svelte";
   import ShortcutsModal from "ui/App/ShortcutsModal.svelte";
 
@@ -84,9 +83,6 @@
           push({ type: "designSystemGuide" });
           modal.hide();
         }
-        break;
-      case hotkeys.ShortcutKey.NewProjects:
-        toggleModal(CreateProjectModal);
         break;
       case hotkeys.ShortcutKey.Network:
         modal.hide();

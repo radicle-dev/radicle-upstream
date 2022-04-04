@@ -14,15 +14,18 @@
   import * as Session from "ui/src/session";
   import * as router from "ui/src/router";
 
-  import RevisionIcon from "design-system/icons/Revision.svelte";
+  import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
+  import Button from "design-system/Button.svelte";
   import Markdown from "design-system/Markdown.svelte";
+  import MergeIcon from "design-system/icons/Merge.svelte";
+  import RevisionIcon from "design-system/icons/Revision.svelte";
 
-  import MergePatchButton from "./MergePatchButton.svelte";
+  import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
+
   import BackButton from "../BackButton.svelte";
-  import CheckoutPatchButton from "./CheckoutPatchButton.svelte";
   import CompareBranches from "./CompareBranches.svelte";
   import History from "./SourceBrowser/History.svelte";
-  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let project: Project;
   export let patch: Patch.Patch;
@@ -125,9 +128,31 @@
       })}
       compareBranch={{ id: patch.id, peerId: patch.peerId }} />
     <div class="buttons">
-      <CheckoutPatchButton {patch} />
+      <CommandModal
+        dataCy="checkout-patch-modal-toggle"
+        let:prop={toggleDropdown}
+        command={[
+          `upstream patch fetch ${Patch.handle(patch)}`,
+          `git checkout ${Patch.TAG_PREFIX}${Patch.handle(patch)}`,
+        ].join("\n")}
+        description="To fetch and check out this patch in your working copy, run the following commands:">
+        <Button
+          variant="transparent"
+          icon={ArrowBoxUpRightIcon}
+          on:click={toggleDropdown}>Checkout patch</Button>
+      </CommandModal>
       {#if isMaintainer(session.identity.urn, project) && !patch.merged}
-        <MergePatchButton {patch} />
+        <CommandModal
+          dataCy="merge-patch-modal-toggle"
+          let:prop={toggleDropdown}
+          command={[
+            `upstream patch fetch ${Patch.handle(patch)}`,
+            `git merge ${Patch.TAG_PREFIX}${Patch.handle(patch)}`,
+            `rad push`,
+          ].join("\n")}
+          description="To merge this patch and publish the changes, run these commands in your working copy:">
+          <Button icon={MergeIcon} on:click={toggleDropdown}>Merge</Button>
+        </CommandModal>
       {/if}
     </div>
   </div>

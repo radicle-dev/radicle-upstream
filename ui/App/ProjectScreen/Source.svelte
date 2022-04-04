@@ -31,17 +31,20 @@
   import * as wallet from "ui/src/wallet";
 
   import AnchorIcon from "design-system/icons/Anchor.svelte";
+  import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
+  import Button from "design-system/Button.svelte";
   import CommitIcon from "design-system/icons/Commit.svelte";
   import FileIcon from "design-system/icons/File.svelte";
+  import ForkIcon from "design-system/icons/Fork.svelte";
   import RevisionIcon from "design-system/icons/Revision.svelte";
 
   import Loading from "design-system/Loading.svelte";
 
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
+  import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
   import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
   import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
-  import ForkCheckoutProjectButton from "./Source/ForkCheckoutProjectButton.svelte";
   import NewPatchButton from "./Source/NewPatchButton.svelte";
   import History from "./Source/SourceBrowser/History.svelte";
 
@@ -136,11 +139,12 @@
 
   $: patchesTabSelected = activeView.type === "patches";
 
-  const onCheckout = async (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async function onCheckout(
     { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
     project: Project,
     peer: User
-  ): Promise<void> => {
+  ): Promise<void> {
     await screen.withLock(async () => {
       try {
         const path = await proxy.client.project.checkout(project.urn, {
@@ -176,7 +180,7 @@
         );
       }
     });
-  };
+  }
 
   const onSelectRevision = ({
     detail: revision,
@@ -231,11 +235,28 @@
     <div slot="right">
       {#if patchesTabSelected}
         <NewPatchButton />
+      {:else if isContributor}
+        <CommandModal
+          let:prop={toggleDropdown}
+          command={`rad checkout ${project.urn}`}
+          description="To checkout a working copy of this project, run the following command in your terminal:">
+          <Button
+            variant="transparent"
+            icon={ArrowBoxUpRightIcon}
+            on:click={toggleDropdown}>Checkout</Button>
+        </CommandModal>
       {:else}
-        <ForkCheckoutProjectButton
-          projectUrn={project.urn}
-          fork={!isContributor}
-          on:checkout={ev => onCheckout(ev, project, selectedPeer)} />
+        <CommandModal
+          let:prop={toggleDropdown}
+          command={`rad checkout ${project.urn}`}
+          description="To fork this project and checkout a working copy, run the following command in your terminal:">
+          <Button
+            variant="transparent"
+            icon={ForkIcon}
+            on:click={toggleDropdown}>
+            Fork
+          </Button>
+        </CommandModal>
       {/if}
     </div>
   </ActionBar>

@@ -27,7 +27,6 @@ export enum ShortcutKey {
   DesignSystem = "d",
   Help = "?",
   Escape = "Escape",
-  NewProjects = "n",
   Network = "b",
   Search = "p",
   Settings = ",",
@@ -51,11 +50,6 @@ export interface KeyboardShortcut {
 
 export const shortcuts: KeyboardShortcut[] = [
   { description: "Keyboard shortcuts", key: ShortcutKey.Help },
-  {
-    description: "New project",
-    key: ShortcutKey.NewProjects,
-    modifierKey: true,
-  },
   { description: "Search", key: ShortcutKey.Search, modifierKey: true },
   { description: "Network", key: ShortcutKey.Network, modifierKey: true },
   { description: "Settings", key: ShortcutKey.Settings, modifierKey: true },
