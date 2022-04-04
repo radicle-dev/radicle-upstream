@@ -27,8 +27,8 @@ pub struct Metadata {
     pub description: String,
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
-    /// List of maintainers.
-    pub maintainers: HashSet<Urn>,
+    /// List of delegates.
+    pub delegates: HashSet<Urn>,
 }
 
 impl TryFrom<LinkProject> for Metadata {
@@ -37,9 +37,9 @@ impl TryFrom<LinkProject> for Metadata {
     #[allow(clippy::redundant_closure_for_method_calls)]
     fn try_from(project: LinkProject) -> Result<Self, Self::Error> {
         let subject = project.subject();
-        // TODO(finto): Some maintainers may be directly delegating, i.e. only supply their
+        // TODO(finto): Some delegates may be directly delegating, i.e. only supply their
         // PublicKey. Should we display these?
-        let maintainers = project
+        let delegates = project
             .delegations()
             .iter()
             .indirect()
@@ -58,7 +58,7 @@ impl TryFrom<LinkProject> for Metadata {
                 .clone()
                 .map_or_else(|| "".into(), |desc| desc.to_string()),
             default_branch,
-            maintainers,
+            delegates,
         })
     }
 }
@@ -148,7 +148,7 @@ pub struct Projects {
     ///     b. Has replicated (see tracked above), checked out a working copy, and pushed changes
     ///     to references.
     ///
-    /// The conditions imply that a project is "contributed" if I am the maintainer or I have
+    /// The conditions imply that a project is "contributed" if I am the delegate or I have
     /// contributed to the project.
     pub contributed: Vec<Project>,
 

@@ -16,7 +16,7 @@
   import * as router from "ui/src/router";
   import type { User, Project, ConfirmedAnchor } from "ui/src/project";
   import { copyToClipboard } from "ui/src/ipc";
-  import { isMaintainer, isContributor } from "ui/src/project";
+  import { isDelegate, isContributor } from "ui/src/project";
   import {
     fetch,
     selectPeer,
@@ -54,7 +54,7 @@
   };
 
   const session = Session.unsealed();
-  const trackTooltipMaintainer = "You can't unfollow your own project";
+  const trackTooltipDelegate = "You can't unfollow your own project";
   const trackTooltip = "Unfollowing is not yet supported";
 
   function menuItems(project: Project): MenuItem[] {
@@ -76,8 +76,8 @@
         icon: NetworkIcon,
         disabled: true,
         event: () => {},
-        tooltip: isMaintainer(session.identity.urn, project)
-          ? trackTooltipMaintainer
+        tooltip: isDelegate(session.identity.urn, project)
+          ? trackTooltipDelegate
           : trackTooltip,
       },
     ];

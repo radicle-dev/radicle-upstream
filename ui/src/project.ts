@@ -136,7 +136,7 @@ async function fetchBranches(path: string): Promise<void> {
 // * Filters out peers that are not replicated
 // * Only includes the local peer if we forked the project
 // * Sorts the list with the local peer at the beginning, then
-// maintainers, then contributors, then trackers.
+// delegates, then contributors, then trackers.
 export const userList = (peers: Peer[]): User[] => {
   return peers
     .map(peer => {
@@ -160,10 +160,10 @@ export const userList = (peers: Peer[]): User[] => {
     })
     .filter((user): user is User => user !== undefined)
     .sort((a, b) => {
-      if (a.role === PeerRole.Maintainer && b.role !== PeerRole.Maintainer) {
+      if (a.role === PeerRole.Delegate && b.role !== PeerRole.Delegate) {
         return -1;
       }
-      if (a.role !== PeerRole.Maintainer && b.role === PeerRole.Maintainer) {
+      if (a.role !== PeerRole.Delegate && b.role === PeerRole.Delegate) {
         return 1;
       }
 
@@ -278,9 +278,9 @@ export const repositoryPathValidationStore = (
   }
 };
 
-// Checks if the provided user is part of the maintainer list of the project.
-export const isMaintainer = (userUrn: string, project: Project): boolean => {
-  return project.metadata.maintainers.includes(userUrn);
+// Checks if the provided user is part of the delegate list of the project.
+export const isDelegate = (userUrn: string, project: Project): boolean => {
+  return project.metadata.delegates.includes(userUrn);
 };
 
 // Checks if any of the contributors in the list is the current user.
@@ -288,6 +288,6 @@ export const isContributor = (users: User[]): boolean => {
   return !!users.find(
     u =>
       u.type === PeerType.Local &&
-      (u.role === PeerRole.Maintainer || u.role === PeerRole.Contributor)
+      (u.role === PeerRole.Delegate || u.role === PeerRole.Contributor)
   );
 };

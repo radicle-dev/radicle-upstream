@@ -9,7 +9,7 @@
   import type { Project } from "ui/src/project";
   import type { GroupedCommitsHistory } from "ui/src/source";
 
-  import { isMaintainer } from "ui/src/project";
+  import { isDelegate } from "ui/src/project";
   import * as Patch from "ui/src/project/patch";
   import * as Session from "ui/src/session";
   import * as router from "ui/src/router";
@@ -141,7 +141,7 @@
           icon={ArrowBoxUpRightIcon}
           on:click={toggleDropdown}>Checkout patch</Button>
       </CommandModal>
-      {#if isMaintainer(session.identity.urn, project) && !patch.merged}
+      {#if isDelegate(session.identity.urn, project) && !patch.merged}
         <CommandModal
           dataCy="merge-patch-modal-toggle"
           let:prop={toggleDropdown}

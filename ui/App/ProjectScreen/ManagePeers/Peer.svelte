@@ -52,8 +52,8 @@
       style="margin-top: 0.5rem;" />
   </div>
   {#if peer.type !== project.PeerType.Local}
-    {#if peer.role === project.PeerRole.Maintainer}
-      <Tooltip position="top" value="Can't unfollow the maintainer's remote">
+    {#if peer.role === project.PeerRole.Delegate}
+      <Tooltip position="top" value="Can't unfollow the delegate's remote">
         <FollowToggle disabled following />
       </Tooltip>
     {:else}

@@ -16,7 +16,7 @@
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let project: Project;
-  export let isMaintainer: boolean;
+  export let isDelegate: boolean;
 </script>
 
 <style>
@@ -67,8 +67,8 @@
   <div>
     <div class="title-row">
       <h2 class="typo-overflow-ellipsis">{project.metadata.name}</h2>
-      {#if isMaintainer}
-        <Badge style="margin-left: 0.5rem" text="maintainer" />
+      {#if isDelegate}
+        <Badge style="margin-left: 0.5rem" text="delegate" />
       {/if}
     </div>
     <CopyableIdentifier kind="urn" value={project.urn} />
@@ -86,7 +86,7 @@
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
     <UserIdentity
-      urn={project.metadata.maintainers[0]}
+      urn={project.metadata.delegates[0]}
       modalStyle="top: -16rem; left: -17rem;" />
   </div>
 </div>

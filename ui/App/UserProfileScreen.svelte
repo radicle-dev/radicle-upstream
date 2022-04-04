@@ -9,7 +9,7 @@
   import type * as proxyIdentity from "proxy-client/identity";
   import type * as proxyProject from "proxy-client/project";
 
-  import { isMaintainer, Project } from "ui/src/project";
+  import { isDelegate, Project } from "ui/src/project";
   import * as router from "ui/src/router";
   import * as svelteStore from "ui/src/svelteStore";
   import * as ethereum from "ui/src/ethereum";
@@ -139,7 +139,7 @@
           <li>
             <ProjectCardSquare
               {project}
-              isMaintainer={isMaintainer(ownUserUrn, project)}
+              isDelegate={isDelegate(ownUserUrn, project)}
               on:click={() => openProject(project)} />
           </li>
         {/each}

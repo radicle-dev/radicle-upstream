@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
   import type { Project } from "ui/src/project";
-  import { isMaintainer } from "ui/src/project";
+  import { isDelegate } from "ui/src/project";
 
   import List from "design-system/List.svelte";
 
@@ -41,7 +41,7 @@
     <ProjectCard
       title={project.metadata.name}
       description={project.metadata.description || ""}
-      showMaintainerBadge={isMaintainer(userUrn, project)}
+      showDelegateBadge={isDelegate(userUrn, project)}
       anchor={project.anchor} />
 
     {#if project.stats}

@@ -13,8 +13,8 @@
 
   let text: string | undefined = undefined;
 
-  $: if (user.role === PeerRole.Maintainer) {
-    text = "maintainer";
+  $: if (user.role === PeerRole.Delegate) {
+    text = "delegate";
   } else if (user.type === PeerType.Local) {
     text = "you";
   } else {

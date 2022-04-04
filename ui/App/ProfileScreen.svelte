@@ -12,7 +12,7 @@
   import { onDestroy } from "svelte";
   import { fade } from "svelte/transition";
 
-  import { isMaintainer } from "ui/src/project";
+  import { isDelegate } from "ui/src/project";
   import * as Session from "ui/src/session";
   import * as error from "ui/src/error";
   import * as localPeer from "ui/src/localPeer";
@@ -295,14 +295,14 @@
             <li>
               <ProjectCardSquare
                 {project}
-                isMaintainer={isMaintainer(session.identity.urn, project)}
+                isDelegate={isDelegate(session.identity.urn, project)}
                 on:click={() => openProject({ detail: project })} />
             </li>
           {/each}
           {#each $profileProjectsStore.data.follows as project}
             <li>
               <ProjectCardSquare
-                isMaintainer={isMaintainer(session.identity.urn, project)}
+                isDelegate={isDelegate(session.identity.urn, project)}
                 {project}
                 on:click={() => openProject({ detail: project })} />
             </li>

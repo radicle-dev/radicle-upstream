@@ -481,7 +481,7 @@ mod test {
             .into_iter()
             .next()
             .unwrap();
-        let maintainer = project.metadata.maintainers.iter().next().unwrap();
+        let delegate = project.metadata.delegates.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
@@ -489,8 +489,8 @@ mod test {
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
-                "maintainers": [
-                    maintainer
+                "delegates": [
+                    delegate
                 ],
                 "name": "Upstream",
             },
@@ -571,7 +571,7 @@ mod test {
             .into_iter()
             .next()
             .unwrap();
-        let maintainer = project.metadata.maintainers.iter().next().unwrap();
+        let delegate = project.metadata.delegates.iter().next().unwrap();
 
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
@@ -580,8 +580,8 @@ mod test {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
                 "name": "Upstream",
-                "maintainers": [
-                    maintainer
+                "delegates": [
+                    delegate
                 ],
             },
             "stats": {

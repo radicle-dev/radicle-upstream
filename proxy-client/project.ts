@@ -12,14 +12,14 @@ export interface Metadata {
   name: string;
   defaultBranch: string;
   description: string | null;
-  maintainers: string[];
+  delegates: string[];
 }
 
 const metadataSchema: zod.Schema<Metadata> = zod.object({
   name: zod.string(),
   defaultBranch: zod.string(),
   description: zod.string().nullable(),
-  maintainers: zod.array(zod.string()),
+  delegates: zod.array(zod.string()),
 });
 
 export interface CreateParams {
@@ -119,7 +119,7 @@ export enum PeerType {
 
 export enum PeerRole {
   Contributor = "contributor",
-  Maintainer = "maintainer",
+  Delegate = "delegate",
   Tracker = "tracker",
 }
 
@@ -151,7 +151,7 @@ const peerSchema: zod.Schema<Peer> = zod.object({
       type: zod.literal(PeerReplicationStatusType.Replicated),
       role: zod.enum([
         PeerRole.Tracker,
-        PeerRole.Maintainer,
+        PeerRole.Delegate,
         PeerRole.Contributor,
       ]),
       user: identitySchema,

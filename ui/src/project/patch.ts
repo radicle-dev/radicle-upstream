@@ -85,7 +85,7 @@ export const getDetails = async (
 
 // Get the grouped commit history from a patch.
 //
-// If the head commit of the maintainers default branch (the “base
+// If the head commit of the delegate's default branch (the “base
 // head”) is in the patch commit history that commit and all its
 // ancestory are filtered.
 //

@@ -705,7 +705,7 @@ where
 /// It does this by:
 ///     * First checking if the owner of this storage has a reference to the default
 /// branch.
-///     * If the owner does not have this reference then it falls back to the first maintainer.
+///     * If the owner does not have this reference then it falls back to the first delegate.
 ///
 /// # Errors
 ///   * If the storage operations fail.
@@ -823,7 +823,7 @@ fn role(
         .owner(peer.into_inner().as_public_key())
         .is_some()
     {
-        peer::Role::Maintainer
+        peer::Role::Delegate
     } else if Refs::load(store, &project.urn(), peer.right())?
         .map_or(false, |refs| refs.heads().next().is_some())
     {

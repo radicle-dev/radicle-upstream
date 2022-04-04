@@ -18,7 +18,7 @@ use crate::project;
 
 const TAG_PREFIX: &str = "radicle-patch/";
 
-/// A patch is a change set that a user wants the maintainer to merge into a projects default
+/// A patch is a change set that a user wants the delegate to merge into a projects default
 /// branch.
 ///
 /// A patch is represented by an annotated tag, prefixed with `radicle-patch/`.
@@ -33,7 +33,7 @@ pub struct Patch {
     pub message: Option<String>,
     /// Head commit that the author wants to merge with this patch.
     pub commit: Oid,
-    /// The merge base of [`Patch::commit`] and the head commit of the first maintainer's default
+    /// The merge base of [`Patch::commit`] and the head commit of the first delegate's default
     /// branch.
     pub merge_base: Option<Oid>,
 }
@@ -53,7 +53,7 @@ pub async fn list(
         let project = crate::daemon::state::get_project(peer.librad_peer(), project_urn.clone())
             .await?
             .ok_or_else(|| crate::daemon::state::Error::ProjectNotFound(project_urn.clone()))?;
-        let maintainer = project
+        let delegate = project
             .delegations()
             .iter()
             .flat_map(|either| match either {
@@ -65,7 +65,7 @@ pub async fn list(
         let default_branch = crate::daemon::state::get_branch(
             peer.librad_peer(),
             project_urn.clone(),
-            Some(PeerId::from(*maintainer)),
+            Some(PeerId::from(*delegate)),
             None,
         )
         .await?;

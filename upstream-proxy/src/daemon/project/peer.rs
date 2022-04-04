@@ -7,7 +7,7 @@
 //! project.
 //!
 //! A [`Peer`] can be `Local` or `Remote`, it can be `NotReplicated` or
-//! `Replicated`, and it can be a `Tracker`, `Contributor`, or `Maintainer` of
+//! `Replicated`, and it can be a `Tracker`, `Contributor`, or `Delegate` of
 //! the project.
 use serde::Serialize;
 
@@ -21,8 +21,8 @@ pub enum Role {
     Tracker,
     /// Participated with unique changes.
     Contributor,
-    /// Part of the set of maintainers.
-    Maintainer,
+    /// Part of the set of delegates.
+    Delegate,
 }
 
 /// A peer is split between a `Local` peer and a `Remote` peer. The `Local`

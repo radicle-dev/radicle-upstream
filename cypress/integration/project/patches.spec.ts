@@ -178,12 +178,12 @@ context("patches", () => {
       nodeManager.withOneOnboardedNode(
         {
           dataDir: tempDirPath,
-          handle: "maintainer",
+          handle: "delegate",
         },
         node => {
           nodeManager.asNode(node);
 
-          const projectsDir = path.join(tempDirPath, "maintainer-projects");
+          const projectsDir = path.join(tempDirPath, "delegate-projects");
           cy.exec(`mkdir -p "${projectsDir}"`);
 
           const projectName = "test-project";

@@ -15,7 +15,7 @@
 
   export let description: string | undefined = undefined;
 
-  export let showMaintainerBadge: boolean = false;
+  export let showDelegateBadge: boolean = false;
   export let anchor: project.Anchor | undefined;
 </script>
 
@@ -49,8 +49,8 @@
 <div class="project-card">
   <div class="title-row">
     <p class="typo-text-bold typo-overflow-ellipsis" {title}>{title}</p>
-    {#if showMaintainerBadge}
-      <Badge style="margin-left: 0.5rem" text="maintainer" />
+    {#if showDelegateBadge}
+      <Badge style="margin-left: 0.5rem" text="delegate" />
     {/if}
     {#if anchor}
       <ProjectAnchorHovercard {anchor} replicated={true} />

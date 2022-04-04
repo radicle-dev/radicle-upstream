@@ -23,7 +23,7 @@ context("project peer management", () => {
       .pick("followed-peers")
       .contains("li", "secretariat")
       .within(() => {
-        cy.contains("maintainer").should("exist");
+        cy.contains("delegate").should("exist");
       });
   });
 
