@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { app, type App, ipcMain, dialog, clipboard, shell } from "electron";
+import { app, type App, ipcMain, clipboard, shell } from "electron";
 import fs from "fs";
 import path from "path";
 import execa from "execa";
@@ -281,22 +281,6 @@ function createMainProcessIpcHandlers(): MainProcess {
         return stderr ? undefined : stdout.trim();
       } catch (error: unknown) {
         return undefined;
-      }
-    },
-    async selectDirectory(): Promise<string> {
-      const window = windowManager.window;
-      if (window === null) {
-        return "";
-      }
-
-      const result = await dialog.showOpenDialog(window, {
-        properties: ["openDirectory", "showHiddenFiles", "createDirectory"],
-      });
-
-      if (result.filePaths.length === 1) {
-        return result.filePaths[0];
-      } else {
-        return "";
       }
     },
   };

@@ -13,7 +13,6 @@
 
   import { onDestroy } from "svelte";
 
-  import { openPath } from "ui/src/ipc";
   import { unreachable } from "ui/src/unreachable";
   import {
     fetch,
@@ -22,12 +21,9 @@
     selectRevision,
     store,
   } from "ui/src/screen/project/source";
-  import * as error from "ui/src/error";
   import * as notification from "ui/src/notification";
-  import * as proxy from "ui/src/proxy";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
-  import * as screen from "ui/src/screen";
   import * as wallet from "ui/src/wallet";
 
   import AnchorIcon from "design-system/icons/Anchor.svelte";
@@ -138,49 +134,6 @@
   };
 
   $: patchesTabSelected = activeView.type === "patches";
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async function onCheckout(
-    { detail: { checkoutPath } }: { detail: { checkoutPath: string } },
-    project: Project,
-    peer: User
-  ): Promise<void> {
-    await screen.withLock(async () => {
-      try {
-        const path = await proxy.client.project.checkout(project.urn, {
-          path: checkoutPath,
-          peerId: peer.identity.peerId,
-        });
-
-        notification.show({
-          type: "info",
-          message: `${project.metadata.name} checked out to ${path}`,
-          actions: [
-            {
-              label: "Open folder",
-              handler: () => {
-                openPath(path);
-              },
-            },
-          ],
-        });
-      } catch (err: unknown) {
-        let message;
-        if (err instanceof proxy.ResponseError) {
-          message = `Checkout failed: ${err.message}`;
-        } else {
-          message = `Checkout failed`;
-        }
-        notification.showException(
-          new error.Error({
-            code: error.Code.ProjectCheckoutFailure,
-            message,
-            source: err,
-          })
-        );
-      }
-    });
-  }
 
   const onSelectRevision = ({
     detail: revision,

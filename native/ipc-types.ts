@@ -39,9 +39,6 @@ export interface MainProcess {
   getProxyLogs(): Promise<string>;
   openPath(path: string): Promise<void>;
   openUrl(path: string): Promise<void>;
-  // Open a system dialog to select a directory and returns the
-  // selected directory.
-  selectDirectory(): Promise<string>;
   // Get the git global default branch, which can be customized by the user.
   getGitGlobalDefaultBranch(): Promise<string | undefined>;
 }
@@ -52,6 +49,5 @@ export const mainProcessMethods: Array<keyof MainProcess> = [
   "getProxyLogs",
   "openPath",
   "openUrl",
-  "selectDirectory",
   "getGitGlobalDefaultBranch",
 ];

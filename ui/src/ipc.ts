@@ -25,8 +25,6 @@ function makeMainProcessClient(): ipcTypes.MainProcess {
 
 const mainProcess = makeMainProcessClient();
 
-export const getDirectoryPath = mainProcess.selectDirectory;
-
 export const getVersion = mainProcess.getVersion;
 
 export const getProxyLogs = mainProcess.getProxyLogs;

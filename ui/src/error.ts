@@ -70,8 +70,6 @@ export enum Code {
   ProxyEventParseFailure = "ProxyEventParseFailure",
   KeyStoreUnsealFailure = "KeyStoreUnsealFailure",
   LocalStateFetchFailure = "LocalStateFetchFailure",
-  ProjectCheckoutFailure = "ProjectCheckoutFailure",
-  ProjectCreationFailure = "ProjectCreationFailure",
   ProjectRequestFailure = "ProjectRequestFailure",
   RemoteStoreError = "RemoteStoreError",
   RequestAbortError = "RequestAbortError",

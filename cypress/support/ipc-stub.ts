@@ -15,7 +15,6 @@ import * as sinon from "sinon";
 // up the stub and call it.
 interface ElectronStubs extends MainProcess {
   getVersion: sinon.SinonStub;
-  selectDirectory: sinon.SinonStub;
   openPath: sinon.SinonStub;
   openUrl: sinon.SinonStub;
   getGitGlobalDefaultBranch: sinon.SinonStub;
@@ -40,7 +39,6 @@ export function setup(window: Window): void {
   const electronStubs: ElectronStubs = {
     getProxyLogs: sinon.stub().returns(Promise.resolve("Dummy log line")),
     getVersion: sinon.stub().returns(Promise.resolve("v1.2.3")),
-    selectDirectory: sinon.stub().throws(new Error("not implemented")),
     openPath: sinon.stub().throws(new Error("not implemented")),
     openUrl: sinon.stub(),
     async clipboardWriteText(text: string): Promise<void> {

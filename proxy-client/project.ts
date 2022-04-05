@@ -71,11 +71,6 @@ interface ExistingRepo {
   path: string;
 }
 
-export interface CheckoutParams {
-  peerId?: string;
-  path: string;
-}
-
 export enum RequestStatus {
   Created = "created",
   Requested = "requested",
@@ -300,17 +295,6 @@ export class Client {
         path: `projects/${urn}/untrack/${peerId}`,
       },
       zod.boolean()
-    );
-  }
-
-  public async checkout(urn: string, params: CheckoutParams): Promise<string> {
-    return this.fetcher.fetchOk(
-      {
-        method: "POST",
-        path: `projects/${urn}/checkout`,
-        body: params,
-      },
-      zod.string()
     );
   }
 
