@@ -6,6 +6,8 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import { config } from "ui/src/config";
+
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
   import Emoji from "design-system/Emoji.svelte";
 </script>
@@ -45,24 +47,33 @@
   <section>
     <p class="typo-text">Seeds help you find more projects on the network.</p>
     <div class="seeds">
-      <a
-        href="https://app.radicle.network/seeds/willow.radicle.garden"
-        class="seed">
-        <Emoji emoji="🪵" size="huge" />
-        <p class="typo-text-bold">willow.radicle.garden</p>
-      </a>
-      <a
-        href="https://app.radicle.network/seeds/pine.radicle.garden"
-        class="seed">
-        <Emoji emoji="🌲" size="huge" />
-        <p class="typo-text-bold">pine.radicle.garden</p>
-      </a>
-      <a
-        href="https://app.radicle.network/seeds/maple.radicle.garden"
-        class="seed">
-        <Emoji emoji="🍁" size="huge" />
-        <p class="typo-text-bold">maple.radicle.garden</p>
-      </a>
+      {#if config.isDev}
+        <a
+          href="https://app.radicle.network/seeds/seed.upstream.radicle.xyz"
+          class="seed">
+          <Emoji emoji="🌱" size="huge" />
+          <p class="typo-text-bold">seed.upstream.radicle.xyz</p>
+        </a>
+      {:else}
+        <a
+          href="https://app.radicle.network/seeds/willow.radicle.garden"
+          class="seed">
+          <Emoji emoji="🪵" size="huge" />
+          <p class="typo-text-bold">willow.radicle.garden</p>
+        </a>
+        <a
+          href="https://app.radicle.network/seeds/pine.radicle.garden"
+          class="seed">
+          <Emoji emoji="🌲" size="huge" />
+          <p class="typo-text-bold">pine.radicle.garden</p>
+        </a>
+        <a
+          href="https://app.radicle.network/seeds/maple.radicle.garden"
+          class="seed">
+          <Emoji emoji="🍁" size="huge" />
+          <p class="typo-text-bold">maple.radicle.garden</p>
+        </a>
+      {/if}
     </div>
   </section>
 </ScreenLayout>
