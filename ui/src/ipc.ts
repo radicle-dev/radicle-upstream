@@ -35,6 +35,10 @@ export const openPath = mainProcess.openPath;
 
 export const openUrl = mainProcess.openUrl;
 
+export const checkGitVersion = mainProcess.checkGitVersion;
+
+export const checkRadCliVersion = mainProcess.checkRadCliVersion;
+
 export const getGitGlobalDefaultBranch = mainProcess.getGitGlobalDefaultBranch;
 
 // Register a listener for the `ipcTypes.ProxyError` message.

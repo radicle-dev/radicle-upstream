@@ -22,6 +22,17 @@ use crate::{cli::Args, config, context, http, service};
 pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     setup_logging(&args);
 
+    if !args.skip_identity_check && !args.test {
+        loop {
+            match lnk_profile::get(None, None) {
+                Ok(Some(_)) => break,
+                Ok(None) | Err(_) => {
+                    tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                },
+            };
+        }
+    }
+
     let mut service_manager = service::Manager::new(service::EnvironmentConfig {
         test_mode: args.test,
         unsafe_fast_keystore: args.unsafe_fast_keystore,

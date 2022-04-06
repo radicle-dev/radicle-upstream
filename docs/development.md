@@ -34,6 +34,21 @@ source ./scripts/env
 
 Make sure to source the script from the repository root.
 
+
+## Creating a Radicle identity in development mode
+
+To create a Radicle identity during development, ensure you have the [Radicle CLI
+installed][rc]. Then,
+before running `rad auth`, configure your shell environment for development by
+running:
+
+```bash
+source ./scripts/env
+```
+
+Now, you can run `rad auth` and follow the instructions, after which upstream
+will recognize your identity and proceed to the profile route.
+
 ## Run and connect multiple instances
 
 We provide the `scripts/devnet.ts` tool for running, connecting and managing
@@ -434,3 +449,4 @@ All Github access tokens _must_ have the `public_repo` scope.
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev
 [wa]: https://github.com/seanmonstar/warp
+[rc]: https://github.com/radicle-dev/radicle-cli#installation

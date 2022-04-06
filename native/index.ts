@@ -283,7 +283,27 @@ function createMainProcessIpcHandlers(): MainProcess {
         return undefined;
       }
     },
+    async checkGitVersion(): Promise<undefined | string> {
+      return checkShellForCommand("git");
+    },
+    async checkRadCliVersion(): Promise<undefined | string> {
+      return checkShellForCommand("rad");
+    },
   };
+}
+
+async function checkShellForCommand(
+  command: "rad" | "git"
+): Promise<string | undefined> {
+  try {
+    const { stdout, stderr } = await execa(command, ["--version"], {
+      shell: process.env.SHELL || true,
+    });
+
+    return stderr ? undefined : stdout;
+  } catch (e: unknown) {
+    return undefined;
+  }
 }
 
 async function installPrograms(): Promise<void> {

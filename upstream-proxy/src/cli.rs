@@ -12,6 +12,10 @@ pub struct Args {
     #[clap(long)]
     pub test: bool,
 
+    /// Don't wait for identity creation on proxy startup.
+    #[clap(long)]
+    pub skip_identity_check: bool,
+
     /// run HTTP API on a specified address:port
     #[clap(
         long,

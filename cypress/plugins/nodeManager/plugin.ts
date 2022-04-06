@@ -74,6 +74,7 @@ class NodeManager implements NodeManagerPlugin {
         "--peer-listen",
         `${HOST}:${id}`,
         "--unsafe-fast-keystore",
+        `--skip-identity-check`,
       ],
       {
         buffer: false,

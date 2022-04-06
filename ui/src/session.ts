@@ -17,6 +17,7 @@ export enum Status {
   NoSession = "NO_SESSION",
   SealedSession = "SEALED_SESSION",
   UnsealedSession = "UNSEALED_SESSION",
+  ProxyDown = "PROXY_DOWN",
 }
 
 export type UnsealedSession = { status: Status.UnsealedSession } & SessionData;
@@ -24,6 +25,7 @@ export type UnsealedSession = { status: Status.UnsealedSession } & SessionData;
 export type Session =
   | { status: Status.NoSession }
   | { status: Status.SealedSession }
+  | { status: Status.ProxyDown }
   | UnsealedSession;
 
 export interface SessionData {
@@ -100,7 +102,7 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
           return false;
         }
       },
-      100,
+      10,
       200 // 20 seconds timeout
     );
     sessionStore.success({ status: Status.UnsealedSession, ...ses });
@@ -113,6 +115,9 @@ const fetchSession = async (waitUnsealed = false): Promise<void> => {
         sessionStore.success({ status: Status.SealedSession });
         return;
       }
+    } else if (err instanceof Error && err.message === "Failed to fetch") {
+      sessionStore.success({ status: Status.ProxyDown });
+      return;
     }
 
     sessionStore.error(

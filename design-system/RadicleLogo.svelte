@@ -6,10 +6,9 @@
  LICENSE file.
 -->
 <svg
-  width="151"
-  height="40"
+  width="124"
   viewBox="0 0 151 40"
-  fill="var(--color-foreground)"
+  fill="var(--color-foreground-level-4)"
   xmlns="http://www.w3.org/2000/svg">
   <path
     d="M58.2329 17.9029C58.2329 13.337 58.2329 8.85168 58.2329 4.33008C60.195

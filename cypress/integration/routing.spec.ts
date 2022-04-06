@@ -34,7 +34,7 @@ context("routing", () => {
 
     context("first time app start with no stored session data", () => {
       it("opens on the identity creation wizard", () => {
-        commands.pick("get-started-button").should("exist");
+        commands.pick("onboarding-checklist").should("exist");
       });
     });
 

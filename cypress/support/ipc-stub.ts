@@ -49,6 +49,8 @@ export function setup(window: Window): void {
       ipcRendererMessages.emit("message", undefined, message);
     },
     getClipboard: () => clipboard,
+    checkGitVersion: sinon.stub().returns(Promise.resolve("2.35.1")),
+    checkRadCliVersion: sinon.stub().returns(Promise.resolve("0.4.0")),
   };
 
   window.electronStubs = electronStubs;

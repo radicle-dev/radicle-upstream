@@ -5006,6 +5006,7 @@ dependencies = [
  "lnk-clib",
  "lnk-exe",
  "lnk-identities",
+ "lnk-profile",
  "percent-encoding",
  "pretty_assertions",
  "rad-common",

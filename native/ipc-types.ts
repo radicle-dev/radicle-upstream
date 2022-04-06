@@ -41,6 +41,8 @@ export interface MainProcess {
   openUrl(path: string): Promise<void>;
   // Get the git global default branch, which can be customized by the user.
   getGitGlobalDefaultBranch(): Promise<string | undefined>;
+  checkRadCliVersion(): Promise<string | undefined>;
+  checkGitVersion(): Promise<string | undefined>;
 }
 
 export const mainProcessMethods: Array<keyof MainProcess> = [
@@ -50,4 +52,6 @@ export const mainProcessMethods: Array<keyof MainProcess> = [
   "openPath",
   "openUrl",
   "getGitGlobalDefaultBranch",
+  "checkGitVersion",
+  "checkRadCliVersion",
 ];

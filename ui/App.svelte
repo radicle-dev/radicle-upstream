@@ -109,6 +109,8 @@
           ) {
             router.replace({ type: "profile" });
           }
+        } else if (session.data.status === Session.Status.ProxyDown) {
+          router.replace({ type: "onboarding" });
         } else {
           unreachable(session.data);
         }
