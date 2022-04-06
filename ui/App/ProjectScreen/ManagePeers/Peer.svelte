@@ -11,7 +11,7 @@
 
   import * as project from "ui/src/project";
 
-  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TrackToggle from "design-system/TrackToggle.svelte";
   import Tooltip from "design-system/Tooltip.svelte";
 
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
@@ -53,14 +53,14 @@
   </div>
   {#if peer.type !== project.PeerType.Local}
     {#if peer.role === project.PeerRole.Delegate}
-      <Tooltip position="top" value="Can't unfollow the delegate's remote">
-        <FollowToggle disabled following />
+      <Tooltip position="top" value="Can't untrack the delegate's remote">
+        <TrackToggle disabled tracking />
       </Tooltip>
     {:else}
-      <FollowToggle
-        following
-        on:unfollow={() => {
-          dispatch("unfollow", { projectUrn, peerId: peer.peerId });
+      <TrackToggle
+        tracking
+        on:untrack={() => {
+          dispatch("untrack", { projectUrn, peerId: peer.peerId });
         }} />
     {/if}
   {/if}

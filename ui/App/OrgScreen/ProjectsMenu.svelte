@@ -26,7 +26,7 @@
     disabled = availableProjectCount === 0 || hasPendingAnchors;
 
     if (availableProjectCount === 0) {
-      tooltipMessage = "Create or follow a project first";
+      tooltipMessage = "Create or track a project first";
     } else if (hasPendingAnchors) {
       tooltipMessage = "You already have pending anchors";
     } else {

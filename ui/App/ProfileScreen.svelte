@@ -32,7 +32,7 @@
   import PlusIcon from "design-system/icons/Plus.svelte";
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
   import Button from "design-system/Button.svelte";
-  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TrackToggle from "design-system/TrackToggle.svelte";
 
   import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
@@ -52,7 +52,7 @@
 
   interface ProfileProjects {
     cloned: project.Project[];
-    follows: project.Project[];
+    tracked: project.Project[];
     requests: project.Request[];
   }
 
@@ -89,12 +89,12 @@
   }
 
   async function fetchProfileProjects(): Promise<ProfileProjects> {
-    const [cloned, follows, allRequests] = await Promise.all([
+    const [cloned, tracked, allRequests] = await Promise.all([
       proxy.client.project.listContributed(),
       proxy.client.project.listTracked(),
       proxy.client.project.requestsList(),
     ]);
-    const urns = [...cloned, ...follows].map(p => p.urn);
+    const urns = [...cloned, ...tracked].map(p => p.urn);
 
     const requests = allRequests.filter(
       req =>
@@ -104,7 +104,7 @@
         !urns.includes(req.urn)
     );
 
-    return { cloned, follows, requests };
+    return { cloned, tracked, requests };
   }
 
   const showNotificationsForFailedProjects = async (): Promise<void> => {
@@ -139,7 +139,7 @@
     });
   }
 
-  function onUnFollow(urn: string): void {
+  function onUntrack(urn: string): void {
     proxy.client.project.requestCancel(urn).then(loadProfileProjects);
   }
 
@@ -263,9 +263,9 @@
 
   {#if $profileProjectsStore.status === remote.Status.Success}
     <div class="sidebar-layout" class:one-column={!showSidebar}>
-      {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.follows.length === 0 && $profileProjectsStore.data.requests.length === 0}
+      {#if $profileProjectsStore.data.cloned.length === 0 && $profileProjectsStore.data.tracked.length === 0 && $profileProjectsStore.data.requests.length === 0}
         <div class="empty" class:three-columns={!showSidebar}>
-          <EmptyState text="You haven’t created or followed any projects yet.">
+          <EmptyState text="You haven’t created or tracked any projects yet.">
             <CommandModal
               let:prop={onClickhandler}
               command={"rad init"}
@@ -294,7 +294,7 @@
                 on:click={() => openProject({ detail: project })} />
             </li>
           {/each}
-          {#each $profileProjectsStore.data.follows as project}
+          {#each $profileProjectsStore.data.tracked as project}
             <li>
               <ProjectCardSquare
                 isDelegate={isDelegate(session.identity.urn, project)}
@@ -309,8 +309,8 @@
                 <p style="margin-top: 1rem;">
                   {projectCountText($profileProjectsStore.data.requests.length)}
                   {$profileProjectsStore.data.requests.length > 1
-                    ? `you’re following haven’t been found yet.`
-                    : `you’re following hasn't been found yet.`}
+                    ? `you’re tracking haven’t been found yet.`
+                    : `you’re tracking hasn't been found yet.`}
                 </p>
               </div>
               <Button
@@ -331,10 +331,10 @@
                   data-cy="undiscovered-project"
                   out:fade|local={{ duration: 200 }}>
                   <CopyableIdentifier kind="projectUrn" value={project.urn} />
-                  <FollowToggle
+                  <TrackToggle
                     style="align-self: flex-start;"
-                    following
-                    on:unfollow={() => onUnFollow(project.urn)} />
+                    tracking
+                    on:untrack={() => onUntrack(project.urn)} />
                 </li>
               {/each}
             {/if}
@@ -342,7 +342,7 @@
           <li class="search box" data-cy="search-box">
             <p
               style="color: var(--color-foreground-level-5); margin-bottom: 1.5rem;">
-              Follow a new project
+              Track a new project
             </p>
             <Button
               on:click={() => {

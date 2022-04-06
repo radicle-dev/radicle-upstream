@@ -17,7 +17,7 @@
   import GlobeIcon from "design-system/icons/Globe.svelte";
   import EthereumIcon from "design-system/icons/Ethereum.svelte";
 
-  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TrackToggle from "design-system/TrackToggle.svelte";
   import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -99,7 +99,7 @@
   <div slot="header" style="display: flex; gap: 1rem">
     <OrgHeader {registration} slot="left" orgAddress={address} />
     <div style="margin-left: auto; align-self: center; display: flex">
-      <FollowToggle following disabled style="margin-right: 1rem;" />
+      <TrackToggle tracking disabled style="margin-right: 1rem;" />
       <ThreeDotsMenu {menuItems} />
     </div>
   </div>

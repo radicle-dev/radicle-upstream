@@ -96,9 +96,7 @@ context("deep linking", () => {
       commands
         .pick("search-modal", "search-input")
         .should("have.value", "rad:git:hnrkjm5z3rwae9g3n6jhyo6kzh9eup5ku5odo");
-      commands
-        .pick("search-modal", "follow-toggle")
-        .should("contain", "Follow");
+      commands.pick("search-modal", "track-toggle").should("contain", "Track");
     });
   });
 

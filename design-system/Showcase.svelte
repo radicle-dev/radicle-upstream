@@ -17,7 +17,7 @@
   import Button from "./Button.svelte";
   import Checkbox from "./Checkbox.svelte";
   import Dropdown from "./Dropdown.svelte";
-  import FollowToggle from "./FollowToggle.svelte";
+  import TrackToggle from "./TrackToggle.svelte";
   import IdentifierLink from "./IdentifierLink.svelte";
   import Loading from "./Loading.svelte";
   import SegmentedControl from "./SegmentedControl.svelte";
@@ -685,10 +685,10 @@
         </div>
 
         <div class="swatch">
-          <FollowToggle disabled style="margin-right: 1rem;" />
-          <FollowToggle disabled style="margin-right: 1rem;" following />
-          <FollowToggle style="margin-right: 1rem;" />
-          <FollowToggle following />
+          <TrackToggle disabled style="margin-right: 1rem;" />
+          <TrackToggle disabled style="margin-right: 1rem;" tracking />
+          <TrackToggle style="margin-right: 1rem;" />
+          <TrackToggle tracking />
         </div>
 
         <div class="swatch">

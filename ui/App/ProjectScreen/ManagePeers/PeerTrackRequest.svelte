@@ -10,7 +10,7 @@
 
   import { createEventDispatcher } from "svelte";
 
-  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TrackToggle from "design-system/TrackToggle.svelte";
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
 
   export let peer: User;
@@ -39,9 +39,9 @@
       style="margin-top: 0.5rem" />
   </div>
 
-  <FollowToggle
-    following
-    on:unfollow={() => {
+  <TrackToggle
+    tracking
+    on:untrack={() => {
       dispatch("cancel", { projectUrn, peerId: peer.peerId });
     }} />
 </div>

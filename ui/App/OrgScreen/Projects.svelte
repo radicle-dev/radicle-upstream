@@ -120,7 +120,7 @@
   <div class="header">
     <p style="color: var(--color-foreground-level-6);">
       These anchored projects haven't been found in your network yet, try
-      following them.
+      tracking them.
     </p>
   </div>
   <UnresolvedAnchorList anchors={anchors.confirmedUnresolved} />
@@ -135,7 +135,7 @@
         ? "Anchor with Gnosis Safe"
         : "Anchor project"}
       primaryActionDisabled={disableAnchorCreation}
-      primaryActionTooltipMessage="Create or follow a project first"
+      primaryActionTooltipMessage="Create or track a project first"
       on:primaryAction={() => {
         org.openAnchorProjectModal(address, ownerAddress, isMultiSig);
       }} />

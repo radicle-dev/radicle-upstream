@@ -28,7 +28,7 @@
 
   import Modal from "ui/App/ModalLayout/Modal.svelte";
   import Peer from "./ManagePeers/Peer.svelte";
-  import PeerFollowRequest from "./ManagePeers/PeerFollowRequest.svelte";
+  import PeerTrackRequest from "./ManagePeers/PeerTrackRequest.svelte";
 
   let newPeer: PeerId;
 
@@ -42,12 +42,12 @@
     }
   };
 
-  const cancelFollowRequest = (projectUrn: string, peerId: PeerId): void => {
+  const cancelTrackRequest = (projectUrn: string, peerId: PeerId): void => {
     removePeer(projectUrn, peerId);
     peerValidation.reset();
   };
 
-  const unfollowPeer = (projectUrn: string, peerId: PeerId): void => {
+  const untrackPeer = (projectUrn: string, peerId: PeerId): void => {
     removePeer(projectUrn, peerId);
     peerValidation.reset();
   };
@@ -106,7 +106,7 @@
           validationState={$peerValidation}
           style="width: 100%; margin-right: .5rem;" />
         <Button
-          dataCy="follow-button"
+          dataCy="track-button"
           style="display: flex; align-self: flex-start;"
           disabled={!newPeer}
           on:click={bindSubmitPeer($store.data.project.urn)}>
@@ -116,7 +116,7 @@
     </form>
 
     <List
-      dataCy="followed-peers"
+      dataCy="tracked-peers"
       key="peerId"
       items={filteredPeers($store.data.peerSelection)}
       let:item={peer}
@@ -124,8 +124,8 @@
       style="width: 100%; margin: 1.5rem 0 0; padding: 0;">
       <Peer
         {peer}
-        on:unfollow={event => {
-          unfollowPeer(event.detail.projectUrn, event.detail.peerId);
+        on:untrack={event => {
+          untrackPeer(event.detail.projectUrn, event.detail.peerId);
         }}
         projectUrn={$store.data.project.urn} />
     </List>
@@ -148,10 +148,10 @@
       let:item={peer}
       styleHoverState={false}
       style="width: 100%; margin: 1rem 0 0; padding: 0;">
-      <PeerFollowRequest
+      <PeerTrackRequest
         {peer}
         on:cancel={event => {
-          cancelFollowRequest(event.detail.projectUrn, event.detail.peerId);
+          cancelTrackRequest(event.detail.projectUrn, event.detail.peerId);
         }}
         projectUrn={$store.data.project.urn} />
     </List>

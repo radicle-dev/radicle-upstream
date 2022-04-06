@@ -128,7 +128,7 @@ export const peerValidation = validation.createValidationStore(
   [
     {
       promise: checkPeerUniqueness,
-      validationMessage: "This remote is already being followed",
+      validationMessage: "This remote is already being tracked",
     },
   ]
 );

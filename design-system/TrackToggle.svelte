@@ -12,7 +12,7 @@
   import NetworkIcon from "./icons/Network.svelte";
 
   export let disabled: boolean = false;
-  export let following: boolean = false;
+  export let tracking: boolean = false;
   export let style: string | undefined = undefined;
 
   let hovering: boolean = false;
@@ -25,8 +25,8 @@
       return;
     }
 
-    following = !following;
-    dispatch(following ? "follow" : "unfollow");
+    tracking = !tracking;
+    dispatch(tracking ? "track" : "untrack");
   };
 
   const mouseenter = () => {
@@ -38,18 +38,18 @@
   };
 
   $: {
-    if (following) {
+    if (tracking) {
       variant = "outline";
-      title = hovering ? "Unfollow" : "Following";
+      title = hovering ? "Untrack" : "Tracking";
     } else {
       variant = "primary";
-      title = "Follow";
+      title = "Track";
     }
   }
 </script>
 
 <Button
-  dataCy="follow-toggle"
+  dataCy="track-toggle"
   {disabled}
   {style}
   {variant}

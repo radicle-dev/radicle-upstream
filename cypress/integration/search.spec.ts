@@ -17,11 +17,11 @@ context("search", () => {
     cy.visit("./public/index.html");
   });
 
-  context("when a project is not yet followed", () => {
-    it("follows the project by clicking the follow button", () => {
+  context("when a project is not yet tracked", () => {
+    it("tracks the project by clicking the track button", () => {
       commands.pick("sidebar", "search").click();
       commands.pasteInto(["search-input"], `rad:git:${projectId}`);
-      commands.pick("follow-toggle").click();
+      commands.pick("track-toggle").click();
       commands.pick("show-requests").click();
       commands
         .pickWithContent(["undiscovered-project"], projectId.slice(-5))
@@ -32,10 +32,10 @@ context("search", () => {
       commands.pick("search-input").should("have.value", "");
     });
 
-    it("follows the project by pressing the [enter] hotkey", () => {
+    it("tracks the project by pressing the [enter] hotkey", () => {
       commands.pick("sidebar", "search").click();
       commands.pasteInto(["search-input"], `rad:git:${projectId}`);
-      commands.pick("search-modal", "follow-toggle").should("exist");
+      commands.pick("search-modal", "track-toggle").should("exist");
       cy.get("body").type("{enter}");
       commands.pick("show-requests").click();
       commands
@@ -48,7 +48,7 @@ context("search", () => {
     });
 
     context("when the Project URN is not valid", () => {
-      it("does not follow the project when the [enter] key is pressed", () => {
+      it("does not track the project when the [enter] key is pressed", () => {
         cy.intercept(
           "http://localhost:30000/v1/projects/requests/invalid-project-urn",
           cy.spy().as("projectRequest")
@@ -77,7 +77,7 @@ context("search", () => {
     });
   });
 
-  context("when a project is already followed", () => {
+  context("when a project is already tracked", () => {
     it("opens the project by clicking the project card", () => {
       commands.pick("project-list-entry-platinum").click();
       commands.pick("project-screen", "header", "projectUrn").then(el => {

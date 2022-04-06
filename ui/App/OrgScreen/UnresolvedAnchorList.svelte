@@ -14,7 +14,7 @@
   import * as proxy from "ui/src/proxy";
   import * as router from "ui/src/router";
 
-  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TrackToggle from "design-system/TrackToggle.svelte";
   import Hoverable from "design-system/Hoverable.svelte";
   import List from "design-system/List.svelte";
 
@@ -23,7 +23,7 @@
 
   export let anchors: project.Anchor[];
 
-  const onFollow = (projectId: string) => {
+  const onTrack = (projectId: string) => {
     proxy.client.project.requestSubmit(projectId);
     router.push({ type: "profile" });
     notification.show({
@@ -65,9 +65,9 @@
       </div>
       {#if hover}
         <div transition:fade|local={{ duration: 200 }}>
-          <FollowToggle
-            on:follow={() => {
-              onFollow(anchor.projectId);
+          <TrackToggle
+            on:track={() => {
+              onTrack(anchor.projectId);
             }} />
         </div>
       {/if}

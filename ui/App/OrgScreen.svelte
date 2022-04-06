@@ -21,7 +21,7 @@
   import GnosisIcon from "design-system/icons/Gnosis.svelte";
   import UserIcon from "design-system/icons/User.svelte";
 
-  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TrackToggle from "design-system/TrackToggle.svelte";
   import ThreeDotsMenu from "design-system/ThreeDotsMenu.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -117,7 +117,7 @@
   <div slot="header" style="display: flex; gap: 1rem">
     <OrgHeader {registration} orgAddress={address} />
     <div style="margin-left: auto; align-self: center; display: flex">
-      <FollowToggle following disabled style="margin-right: 1rem;" />
+      <TrackToggle tracking disabled style="margin-right: 1rem;" />
       <ThreeDotsMenu menuItems={menuItems(address, gnosisSafeAddress)} />
     </div>
   </div>

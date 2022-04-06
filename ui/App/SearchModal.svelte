@@ -22,7 +22,7 @@
 
   import MagnifyingGlassIcon from "design-system/icons/MagnifyingGlass.svelte";
 
-  import FollowToggle from "design-system/FollowToggle.svelte";
+  import TrackToggle from "design-system/TrackToggle.svelte";
   import TextInput from "design-system/TextInput.svelte";
 
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
@@ -51,7 +51,7 @@
         if ($projectSearchStore.status === remote.Status.Success) {
           navigateToProject($projectSearchStore.data);
         } else if ($projectSearchStore.status === remote.Status.Error) {
-          follow();
+          track();
         }
         break;
       case "Escape":
@@ -66,7 +66,7 @@
     projectSearchStore.reset();
   }
 
-  function follow(): void {
+  function track(): void {
     if (validationState.type === "valid") {
       remote.fetch(
         projectRequestStore,
@@ -195,7 +195,7 @@
         on:click={navigateToProject.bind(null, $projectSearchStore.data)}>
         <span class="project-name"
           >{$projectSearchStore.data.metadata.name}</span>
-        <FollowToggle disabled following={true} />
+        <TrackToggle disabled tracking={true} />
       </h3>
 
       <p style="margin-bottom: 1rem;">
@@ -214,12 +214,12 @@
           value={sanitizedSearchQuery}
           kind="projectUrn"
           showIcon={false} />
-        <FollowToggle on:follow={follow} style="margin-left: 1rem;" />
+        <TrackToggle on:track={track} style="margin-left: 1rem;" />
       </h3>
 
       <p>
-        You’re not following this project yet, so there’s nothing to show here.
-        Follow it and you’ll be notified as soon as it’s available.
+        You’re not tracking this project yet, so there’s nothing to show here.
+        Track it and you’ll be notified as soon as it’s available.
       </p>
     </div>
   {:else if validationState.type === "invalid"}

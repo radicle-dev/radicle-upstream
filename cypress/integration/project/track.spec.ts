@@ -6,7 +6,7 @@
 
 import * as commands from "cypress/support/commands";
 
-context("project following", () => {
+context("project tracking", () => {
   const projectId = "hnrkfr9g6gxymefc3hto37bgmq3eo86sfckky";
 
   beforeEach(() => {
@@ -16,13 +16,13 @@ context("project following", () => {
     cy.visit("./public/index.html");
   });
 
-  it("follows and unfollows", () => {
+  it("tracks and untracks", () => {
     commands.pick("search-box").contains("Look for a project").click();
     // The extra whitespace is intentional to check that the input is
     // trimmed.
     commands.pick("search-input").type(`  rad:git:${projectId}  `);
-    commands.pick("follow-toggle").should("contain", "Follow");
-    commands.pick("follow-toggle").click();
+    commands.pick("track-toggle").should("contain", "Track");
+    commands.pick("track-toggle").click();
     commands
       .pick("notification")
       .should("contain", "You’ll be notified when this project has been found");
@@ -31,7 +31,7 @@ context("project following", () => {
     commands
       .pickWithContent(["undiscovered-project"], projectId.slice(-5))
       .within(() => {
-        commands.pick("follow-toggle").click();
+        commands.pick("track-toggle").click();
       });
 
     commands

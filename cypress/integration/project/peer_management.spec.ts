@@ -20,34 +20,34 @@ context("project peer management", () => {
 
   it("shows our own peer", () => {
     commands
-      .pick("followed-peers")
+      .pick("tracked-peers")
       .contains("li", "secretariat")
       .within(() => {
         cy.contains("delegate").should("exist");
       });
   });
 
-  it("allows adding a new peer follow request", () => {
-    // The follow button is disabled when the input field is empty.
-    commands.pick("follow-button").should("have.class", "disabled");
+  it("allows adding a new peer track request", () => {
+    // The track button is disabled when the input field is empty.
+    commands.pick("track-button").should("have.class", "disabled");
 
     commands.pasteInto(
       ["peer-input"],
       "hynsejpdsftse6f9bczzf69c1im9ewanb5ajnqruq3cq19keiuzk4c"
     );
 
-    commands.pick("follow-button").should("not.have.class", "disabled");
+    commands.pick("track-button").should("not.have.class", "disabled");
 
-    commands.pick("follow-button").click();
+    commands.pick("track-button").click();
 
     commands
       .pick("pending-peers")
       .contains("li", "hynsejpd…keiuzk4c")
       .within(() => {
-        commands.pick("follow-toggle").should("exist");
-        commands.pick("follow-toggle").trigger("mouseenter");
-        commands.pick("follow-toggle").contains("Unfollow").should("exist");
-        commands.pick("follow-toggle").trigger("mouseleave");
+        commands.pick("track-toggle").should("exist");
+        commands.pick("track-toggle").trigger("mouseenter");
+        commands.pick("track-toggle").contains("Untrack").should("exist");
+        commands.pick("track-toggle").trigger("mouseleave");
       });
 
     // Disallows adding the same peer again
@@ -56,24 +56,24 @@ context("project peer management", () => {
       "hynsejpdsftse6f9bczzf69c1im9ewanb5ajnqruq3cq19keiuzk4c"
     );
 
-    commands.pick("follow-button").click();
-    cy.contains("This remote is already being followed").should("exist");
+    commands.pick("track-button").click();
+    cy.contains("This remote is already being tracked").should("exist");
 
     // Clears the validation message when the input is cleared.
     commands.pick("peer-input").type("{selectall}{backspace}");
-    cy.contains("This remote is already being followed").should("not.exist");
+    cy.contains("This remote is already being tracked").should("not.exist");
 
     // Disallows adding an invalid peer.
     commands.pick("peer-input").type("123");
-    commands.pick("follow-button").click();
+    commands.pick("track-button").click();
     cy.contains("This is not a valid remote").should("exist");
 
-    // Allows deleting a peer follow request.
+    // Allows deleting a peer track request.
     commands
       .pick("pending-peers")
       .contains("li", "hynsejpd…keiuzk4c")
       .within(() => {
-        commands.pick("follow-toggle").click();
+        commands.pick("track-toggle").click();
       });
 
     cy.contains("li", "hynsejpd…keiuzk4c").should("not.exist");
