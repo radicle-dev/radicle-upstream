@@ -57,6 +57,7 @@ impl Peer {
                 network: Network::Main,
                 replication: librad::net::replication::Config::default(),
                 rate_limits: Default::default(),
+                request_pull: protocol::config::DenyAll,
             },
             storage,
         };

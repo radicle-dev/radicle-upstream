@@ -12,43 +12,43 @@ branch = "master"
 
 [patch.crates-io.lnk-clib]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.lnk-profile]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.librad]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.link-crypto]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.link-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.lnk-identities]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.radicle-git-ext]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.radicle-git-helpers]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.lnk-exe]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 [patch.crates-io.radicle-data]
 git = "https://github.com/radicle-dev/radicle-link.git"
-tag = "cycle/2022-03-15"
+tag = "cycle/2022-04-05"
 
 
 # Uncomment the following lines and comment out the radicle-link patches above
@@ -64,4 +64,4 @@ tag = "cycle/2022-03-15"
 # radicle-git-helpers = { path = "../radicle-link/git-helpers" }
 
 # These patches are the same as those listed in
-# https://github.com/radicle-dev/radicle-link/blob/cycle/2022-03-15/Cargo.toml
+# https://github.com/radicle-dev/radicle-link/blob/cycle/2022-04-05/Cargo.toml

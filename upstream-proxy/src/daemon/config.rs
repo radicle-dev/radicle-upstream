@@ -56,6 +56,7 @@ where
             network: net::Network::default(),
             replication: net::replication::Config::default(),
             rate_limits: net::protocol::Quota::default(),
+            request_pull: net::protocol::config::DenyAll,
         },
         storage: net::peer::config::Storage::default(),
     }
