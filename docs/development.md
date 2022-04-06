@@ -285,10 +285,11 @@ On pushes of the master branch we also build and upload distribution artifacts.
      * `exit-hook`
      * `strip-ansi`
      * `execa`
-   * Don’t update `radicle-contracts`.
+   * Don’t update `radicle-contracts` or `radicle-avatar`.
    * Don’t do a major upgrade of `@types/node`.
    * `electron-builder` shows `^22.14.5` as the latest version. This is
-     not the latest version. Choose the version from the “Range” column.
+     not the latest version. Choose the version from the “Range” column. Same
+     for `@types/prompts`, `electron-builder`
    * Don’t update `graphql` to v16. v15 is required as a peer dependency for
      `@apollo/client`.
 
