@@ -73,24 +73,34 @@ pub struct Project {
     pub urn: Urn,
     /// Attached metadata, mostly for human pleasure.
     pub metadata: Metadata,
-    /// High-level statistics about the project
+    /// High-level statistics about the project.
     pub stats: Stats,
+    /// The seed address where the project is hosted.
+    pub seed: Option<String>,
 }
 
 /// Construct a Project from its metadata and stats
-impl TryFrom<(LinkProject, Stats)> for Project {
+impl TryFrom<(LinkProject, Stats, Option<rad_common::Url>)> for Project {
     type Error = error::Error;
 
     /// Create a `Project` given a [`LinkProject`] and the [`Stats`]
     /// for the repository.
-    fn try_from((project, stats): (LinkProject, Stats)) -> Result<Self, Self::Error> {
+    fn try_from(
+        (project, stats, seed): (LinkProject, Stats, Option<rad_common::Url>),
+    ) -> Result<Self, Self::Error> {
         let urn = project.urn();
         let metadata = Metadata::try_from(project)?;
+
+        let maybe_seed_domain = match seed {
+            Some(url) => url.domain().map(|domain| domain.to_string()),
+            None => None,
+        };
 
         Ok(Self {
             urn,
             metadata,
             stats,
+            seed: maybe_seed_domain,
         })
     }
 }
@@ -219,6 +229,7 @@ impl Projects {
                 urn,
                 metadata,
                 stats,
+                seed: None,
             };
 
             let refs = match crate::daemon::state::load_refs(
@@ -257,7 +268,11 @@ impl Projects {
 ///
 ///   * Failed to get the project.
 ///   * Failed to get the stats of the project.
-pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Project, error::Error> {
+pub async fn get(
+    peer: &crate::peer::Peer,
+    project_urn: Urn,
+    project_seed_store: crate::git_fetch::ProjectSeedStore,
+) -> Result<Project, error::Error> {
     let project = crate::daemon::state::get_project(peer.librad_peer(), project_urn.clone())
         .await?
         .ok_or(crate::error::Error::ProjectNotFound)?;
@@ -265,8 +280,9 @@ pub async fn get(peer: &crate::peer::Peer, project_urn: Urn) -> Result<Project, 
     let branch =
         crate::daemon::state::find_default_branch(peer.librad_peer(), project_urn.clone()).await?;
     let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
+    let seed = project_seed_store.get(project_urn.id);
 
-    Project::try_from((project, project_stats))
+    Project::try_from((project, project_stats, seed))
 }
 
 /// This lists all the projects for a given `user`. This `user` should not be your particular
@@ -306,7 +322,7 @@ pub async fn list_for_user(
             )
             .await?;
             let stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
-            let full = Project::try_from((project, stats))?;
+            let full = Project::try_from((project, stats, None))?;
 
             projects.push(full);
         }

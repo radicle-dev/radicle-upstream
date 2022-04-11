@@ -15,6 +15,7 @@ pub async fn create(
     peer: crate::peer::Peer,
     seeds: Vec<rad_common::Url>,
     fetch_interval: std::time::Duration,
+    project_seed_store: ProjectSeedStore,
 ) -> anyhow::Result<(Handle, Runner)> {
     let (update_tx, update_rx) = async_broadcast::broadcast(32);
     let (identity_queue, identity_rx) = UniqueDelayQueue::new();
@@ -39,6 +40,7 @@ pub async fn create(
         identity_rx,
         identity_queue,
         fetch_interval,
+        project_seed_store,
     };
     Ok((handle, runner))
 }
@@ -77,6 +79,7 @@ pub struct Runner {
     identity_queue: UniqueDelayQueue,
     /// Time after which project updates are fetched again.
     fetch_interval: std::time::Duration,
+    project_seed_store: ProjectSeedStore,
 }
 
 impl Runner {
@@ -88,16 +91,14 @@ impl Runner {
             identity_rx,
             identity_queue,
             fetch_interval,
+            project_seed_store,
         } = self;
 
         let identity_rx = identity_rx.into_stream().take_until(shutdown_signal);
         futures::pin_mut!(identity_rx);
-        let mut identity_provider = std::collections::HashMap::new();
-
-        let seeds = seeds.into_iter().map(Arc::new).collect::<Vec<_>>();
 
         while let Some(identity) = identity_rx.next().await {
-            match fetch_project(&peer, &seeds, &mut identity_provider, identity).await {
+            match fetch_project(&peer, &seeds, identity, &project_seed_store).await {
                 Ok(true) => {
                     if let Err(err) = update_tx.try_broadcast(identity) {
                         tracing::warn!(?err, "failed to broadcast Git fetch result")
@@ -163,6 +164,53 @@ impl UniqueDelayQueue {
     }
 }
 
+#[derive(Clone)]
+pub struct ProjectSeedStore {
+    bucket: kv::Bucket<'static, String, String>,
+}
+
+impl ProjectSeedStore {
+    pub fn new(store: kv::Store) -> Result<Self, kv::Error> {
+        let bucket = store.bucket(Some("projects_seeds"))?;
+        Ok(Self { bucket })
+    }
+
+    pub fn get(&self, project_urn: Revision) -> Option<rad_common::Url> {
+        let result = self.bucket.get(project_urn.to_string());
+
+        let maybe_value = match result {
+            Ok(maybe_value) => maybe_value,
+            Err(err) => {
+                tracing::error!(?err, "could not get value from kv bucket");
+                return None;
+            },
+        };
+
+        let value = match maybe_value {
+            Some(value) => value,
+            None => return None,
+        };
+
+        match rad_common::Url::parse(&value) {
+            Ok(url) => Some(url),
+            Err(err) => {
+                tracing::error!(?err, "could not parse url");
+                None
+            },
+        }
+    }
+
+    fn set(&self, project_urn: Revision, seed_url: rad_common::Url) {
+        let result = self
+            .bucket
+            .set(project_urn.to_string(), seed_url.to_string());
+
+        if let Err(err) = result {
+            tracing::error!(?err, "could not store project seed in kv store");
+        };
+    }
+}
+
 /// Try to fetch a project from one or more seeds.
 ///
 /// Returns `true` if the project refernces were updated and `false` otherwise. Also returns
@@ -173,30 +221,30 @@ impl UniqueDelayQueue {
 /// update `identity_providers`.
 async fn fetch_project(
     peer: &crate::peer::Peer,
-    seeds: &[Arc<rad_common::Url>],
-    identity_providers: &mut std::collections::HashMap<Revision, Arc<rad_common::Url>>,
+    seeds: &[rad_common::Url],
     identity: Revision,
+    project_seed_store: &ProjectSeedStore,
 ) -> Result<bool, Vec<anyhow::Error>> {
     let mut errors = vec![];
 
-    let seeds_to_try = match identity_providers.get(&identity) {
-        Some(seed) => std::borrow::Cow::Owned(vec![seed.clone()]),
-        None => std::borrow::Cow::Borrowed(seeds),
+    let seeds_to_try = match project_seed_store.get(identity) {
+        Some(seed_url) => vec![seed_url],
+        None => seeds.to_owned(),
     };
 
-    for seed in &*seeds_to_try {
-        let result = fetch_project_from_seed(peer, identity, seed)
+    for seed in seeds_to_try {
+        let result = fetch_project_from_seed(peer, identity, &seed)
             .await
             .context(format!("failed to fetch project from seed {}", &seed));
         tracing::debug!(identity = %link_identities::Urn::new(identity), seed = %seed, ?result, "fetched identity from git seed");
         match result {
             Ok(FetchResult::NotFound) => {},
             Ok(FetchResult::UpToDate) => {
-                identity_providers.insert(identity, seed.clone());
+                project_seed_store.set(identity, seed.clone());
                 return Ok(false);
             },
             Ok(FetchResult::Updated) => {
-                identity_providers.insert(identity, seed.clone());
+                project_seed_store.set(identity, seed.clone());
                 return Ok(true);
             },
             Err(err) => errors.push(err),

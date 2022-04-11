@@ -119,6 +119,8 @@ pub struct Unsealed {
 pub struct Sealed {
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
+    /// Maps projects to the seed we got the project data from.
+    pub project_seed_store: crate::git_fetch::ProjectSeedStore,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
     /// Handle to control the service configuration.
@@ -176,10 +178,14 @@ impl Unsealed {
             drop(shutdown_tx);
         };
 
+        let project_seed_store = crate::git_fetch::ProjectSeedStore::new(store.clone())
+            .expect("could not create project seed kv store");
+
         let (git_fetch, _) = futures::executor::block_on(crate::git_fetch::create(
             peer.clone(),
             Vec::new(),
             std::time::Duration::from_secs(1000),
+            project_seed_store.clone(),
         ))
         .unwrap();
 
@@ -192,6 +198,7 @@ impl Unsealed {
                 watch_monorepo,
                 rest: Sealed {
                     store,
+                    project_seed_store,
                     test: false,
                     service_handle: service::Handle::dummy(),
                     keystore: Arc::new(keystore::memory()),

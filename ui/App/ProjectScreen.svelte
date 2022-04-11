@@ -6,14 +6,17 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import type { ConfirmedAnchor, User, Project } from "ui/src/project";
+
   import { onDestroy } from "svelte";
 
+  import * as ipc from "ui/src/ipc";
   import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
-  import type { User, ConfirmedAnchor } from "ui/src/project";
+
   import { isContributor } from "ui/src/project";
   import {
     fetch,
@@ -22,9 +25,11 @@
     store,
   } from "ui/src/screen/project";
 
-  import PenIcon from "design-system/icons/Pen.svelte";
-
   import Button from "design-system/Button.svelte";
+  import PenIcon from "design-system/icons/Pen.svelte";
+  import GlobeIcon from "design-system/icons/Globe.svelte";
+  import ThreeDotsMenu, { MenuItem } from "design-system/ThreeDotsMenu.svelte";
+
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
   import ManagePeersModal from "./ProjectScreen/ManagePeersModal.svelte";
@@ -70,6 +75,20 @@
   }
 
   let peerSelectorExpanded: boolean = false;
+
+  function menuItems(project: Project): MenuItem[] {
+    return [
+      {
+        title: "View in browser",
+        icon: GlobeIcon,
+        event: () => {
+          ipc.openUrl(
+            `https://app.radicle.network/seeds/${project.seed}/${project.urn}`
+          );
+        },
+      },
+    ];
+  }
 </script>
 
 <ScreenLayout
@@ -110,8 +129,9 @@
             on:click={onPeerModal}
             on:mouseenter={mouseenter}
             on:mouseleave={mouseleave}
-            style={`border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
+            style={`margin-right: 1rem; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 0.5rem; ${hoverstyle}`} />
         </div>
+        <ThreeDotsMenu menuItems={menuItems($store.data.project)} />
       </div>
     {/if}
   </div>

@@ -216,7 +216,7 @@ mod handler {
             browser.get_stats().map_err(radicle_source::Error::from)
         })
         .map_err(Error::from)?;
-        let project = project::Project::try_from((project, stats))?;
+        let project = project::Project::try_from((project, stats, None))?;
 
         Ok(reply::with_status(
             reply::json(&project),
@@ -226,7 +226,9 @@ mod handler {
 
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(urn: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        Ok(reply::json(&project::get(&ctx.peer, urn).await?))
+        Ok(reply::json(
+            &project::get(&ctx.peer, urn, ctx.rest.project_seed_store).await?,
+        ))
     }
 
     /// List all failed projects.
@@ -486,6 +488,7 @@ mod test {
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
             "urn": project.urn,
+            "seed": project.seed,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -576,6 +579,7 @@ mod test {
         let have: Value = serde_json::from_slice(res.body()).unwrap();
         let want = json!({
             "urn": project.urn,
+            "seed": project.seed,
             "metadata": {
                 "defaultBranch": "master",
                 "description": "Desktop client for radicle.",
@@ -622,7 +626,7 @@ mod test {
             platinum_project.urn()
         };
 
-        let project = project::get(&ctx.peer, urn.clone()).await?;
+        let project = project::get(&ctx.peer, urn.clone(), ctx.rest.project_seed_store).await?;
 
         let res = request()
             .method("GET")

@@ -46,10 +46,12 @@
 <Overlay {expanded} on:hide={hide} style="position: relative;">
   <div class="request-dropdown" hidden={!expanded}>
     To create a patch in your working copy, check out the branch that contains
-    the changes and run the following commands:
-    <Copyable name="commands" on:copy={hide}>
-      <pre
-        class="typo-text-small-mono command-line">{`upstream patch create\nrad sync`}</pre>
+    the changes and run the following command:
+    <Copyable name="command" on:copy={hide}>
+      <pre class="typo-text-small-mono command-line">{[
+          "upstream patch create && \\",
+          "rad sync",
+        ].join("\n")}</pre>
     </Copyable>
   </div>
 

@@ -10,6 +10,7 @@
 
 use std::sync::Arc;
 
+use anyhow::Context;
 use futures::prelude::*;
 
 use crate::{cli::Args, config, context, http, service};
@@ -137,9 +138,12 @@ async fn run_session(
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
     let paths = environment.coco_profile.paths();
+    let project_seed_store = crate::git_fetch::ProjectSeedStore::new(store.clone())
+        .context("failed to create ProjectSeedStore")?;
 
     let sealed = context::Sealed {
         store: store.clone(),
+        project_seed_store: project_seed_store.clone(),
         test: environment.test_mode,
         service_handle,
         keystore: environment.keystore.clone(),
@@ -171,7 +175,7 @@ async fn run_session(
         let (peer, peer_runner) = crate::peer::create(crate::peer::Config {
             paths: paths.clone(),
             signer,
-            store,
+            store: store.clone(),
             discovery: crate::daemon::config::NoDiscovery::new(),
             listen: args.peer_listen,
         })?;
@@ -180,12 +184,17 @@ async fn run_session(
             peer.clone(),
             args.git_seeds.unwrap_or_default(),
             std::time::Duration::from_secs(args.git_fetch_interval),
+            project_seed_store,
         )
         .await?;
 
         let (watch_monorepo, watch_monorepo_runner) = crate::watch_monorepo::create(peer.clone());
 
         tokio::task::spawn(log_daemon_peer_events(peer.events()));
+        tokio::task::spawn(handle_monorepo_events(
+            watch_monorepo.updates(),
+            git_fetch.clone(),
+        ));
 
         shutdown_runner
             .add_with_shutdown(|shutdown| git_fetch_runner.run(shutdown).map(Ok).boxed());
@@ -281,6 +290,23 @@ async fn log_daemon_peer_events(events: impl Stream<Item = crate::daemon::peer::
                 _ => {},
             };
             future::ready(())
+        })
+        .await;
+}
+
+// Trigger a `git_fetch` whenever a project is cloned via `rad clone` to set the project's seed URL
+// in the KV store.
+async fn handle_monorepo_events(
+    events: impl Stream<Item = link_identities::Urn<link_identities::Revision>>,
+    git_fetch_handle: crate::git_fetch::Handle,
+) {
+    events
+        .for_each(|event| async {
+            if let Some(path) = event.path {
+                if path == librad::reflike!("refs/rad/id") {
+                    git_fetch_handle.add(event.id).await;
+                }
+            }
         })
         .await;
 }

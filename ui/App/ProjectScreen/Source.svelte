@@ -150,6 +150,26 @@
   $: if ($store.status === remote.Status.Error) {
     notification.showException($store.error);
   }
+
+  function checkoutWorkingCopyCommand(
+    radAction: "push" | "sync",
+    projectUrn: string,
+    projectName: string,
+    projectSeed: string | null
+  ): string {
+    const command = [
+      `rad checkout ${projectUrn} && \\`,
+      `cd "${projectName}" && \\`,
+    ];
+
+    if (projectSeed) {
+      command.push(`rad ${radAction} --seed ${projectSeed}`);
+    } else {
+      command.push(`rad ${radAction}`);
+    }
+
+    return command.join("\n");
+  }
 </script>
 
 <style>
@@ -191,7 +211,12 @@
       {:else if isContributor}
         <CommandModal
           let:prop={toggleDropdown}
-          command={`rad checkout ${project.urn}`}
+          command={checkoutWorkingCopyCommand(
+            "sync",
+            project.urn,
+            project.metadata.name,
+            project.seed
+          )}
           description="To checkout a working copy of this project, run the following command in your terminal:">
           <Button
             variant="transparent"
@@ -201,7 +226,12 @@
       {:else}
         <CommandModal
           let:prop={toggleDropdown}
-          command={`rad checkout ${project.urn}`}
+          command={checkoutWorkingCopyCommand(
+            "push",
+            project.urn,
+            project.metadata.name,
+            project.seed
+          )}
           description="To fork this project and checkout a working copy, run the following command in your terminal:">
           <Button
             variant="transparent"

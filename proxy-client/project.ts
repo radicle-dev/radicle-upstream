@@ -32,6 +32,7 @@ export interface Project {
   urn: string;
   metadata: Metadata;
   stats: Stats;
+  seed: string | null;
 }
 
 const projectSchema: zod.Schema<Project> = zod.object({
@@ -42,6 +43,7 @@ const projectSchema: zod.Schema<Project> = zod.object({
     commits: zod.number(),
     contributors: zod.number(),
   }),
+  seed: zod.string().nullable(),
 });
 
 export interface FailedProject {
