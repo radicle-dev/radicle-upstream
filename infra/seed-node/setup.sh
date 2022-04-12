@@ -16,11 +16,6 @@ systemctl restart "google-cloud-ops-agent*"
 
 mkdir -p /var/local/upstream-seed
 chown 1000:1000 /var/local/upstream-seed
-
-# if [[ ! -f /etc/upstream-seed.env ]]; then
-#   cp "$(pwd)/infra/seed-node/upstream-seed.env" /etc
-# fi
-
 if [[ ! -f /etc/radicle-http-api.env ]]; then
   cp "$(pwd)/infra/seed-node/radicle-http-api.env" /etc
 fi
@@ -29,20 +24,9 @@ if [[ ! -f /etc/radicle-git-server.env ]]; then
   cp "$(pwd)/infra/seed-node/radicle-git-server.env" /etc
 fi
 
-# ln -sf "$(pwd)/infra/seed-node/upstream-seed.service" /etc/systemd/system/
 ln -sf "$(pwd)/infra/seed-node/radicle-http-api.service" /etc/systemd/system/
 ln -sf "$(pwd)/infra/seed-node/radicle-git-server.service" /etc/systemd/system/
 systemctl daemon-reload
-
-# systemctl enable upstream-seed
-# systemctl stop upstream-seed
-
-# curl -fsSL \
-#   https://storage.googleapis.com/radicle-upstream-build-artifacts/v1/main/x86_64-linux/upstream-seed \
-#   -o /usr/local/bin/upstream-seed
-# chmod +x /usr/local/bin/upstream-seed
-
-# systemctl start upstream-seed
 
 systemctl enable radicle-http-api
 systemctl stop radicle-http-api

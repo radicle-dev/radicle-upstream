@@ -32,6 +32,9 @@ The storage bucket uses the following schema to store artifacts.
 
 ## seed-node instance
 
+The seed node instance runs the Radicle Git server and the Radicle source
+browsing service.
+
 The seed node uses the following resources
 * GCE VM `seed-node-2`
   * Zone `europe-north1-a`
@@ -43,7 +46,5 @@ The seed node uses the following resources
   * bound to the VM instance `seed-node-2`
   * reachable under `34.88.37.244` or `seed.upstream.radicle.xyz`
 * Firewall rule `seed-node` to allow traffic to the VM.
-
-The peer address is `hydyq6xmgp3amt44z41n6cbods1osx73j5z6fky5xx4yx33afycyfc@seed.upstream.radicle.xyz:8776`.
 
 For more details see the [readme](../infra/seed-node/README.md).
