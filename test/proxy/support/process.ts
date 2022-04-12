@@ -55,7 +55,7 @@ export function spawn(
 export function prefixOutput(
   childProcess: execa.ExecaChildProcess,
   label: string
-): void {
+): execa.ExecaChildProcess {
   const pref = makePrefix(label);
   if (childProcess.stdout) {
     const stdoutPrefix = new LinePrefix(pref);
@@ -65,6 +65,8 @@ export function prefixOutput(
     const stderrPrefix = new LinePrefix(pref);
     childProcess.stderr.pipe(stderrPrefix).pipe(process.stderr);
   }
+
+  return childProcess;
 }
 
 function makePrefix(label: string): string {

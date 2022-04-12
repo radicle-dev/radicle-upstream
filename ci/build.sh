@@ -8,7 +8,7 @@
 
 source ci/env.sh
 
-log-group-start "install toolcahin"
+log-group-start "install toolchain"
 time rustup component add clippy rustfmt
 if ! command -v cargo-deny >/dev/null; then
   declare -r cargo_deny_version="0.10.1"
@@ -18,9 +18,17 @@ if ! command -v cargo-deny >/dev/null; then
     declare -r target="x86_64-unknown-linux-musl"
   fi
   echo "installing cargo-deny v${cargo_deny_version} for ${target}"
-  curl -sSL \
+  curl -fsSL \
     "https://github.com/EmbarkStudios/cargo-deny/releases/download/${cargo_deny_version}/cargo-deny-${cargo_deny_version}-${target}.tar.gz" |
     tar -xz -C /usr/local/bin --strip-components=1
+fi
+log-group-end
+
+log-group-start "install rad"
+if [[ "${RUNNER_OS:-}" == "Linux" ]]; then
+  rad_cli_pkg_file="radicle-cli_0.5.1_amd64_4308bda3187f3ee8a1c0d2e06be90d26.deb"
+  curl -fsSLO https://europe-west6-apt.pkg.dev/projects/radicle-services/pool/radicle-cli/$rad_cli_pkg_file
+  sudo apt install "./$rad_cli_pkg_file"
 fi
 log-group-end
 
@@ -84,6 +92,9 @@ time yarn run webpack --config-name main
 log-group-end
 
 log-group-start "Starting proxy daemon and runing app tests"
+if [[ "${RUNNER_OS:-}" != "macOS" ]]; then
+  ./scripts/git-server-test.sh --detach
+fi
 # We modify the output of the tests to add log groups to the cypress
 # tests.
 time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |

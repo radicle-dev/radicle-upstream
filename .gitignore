@@ -13,7 +13,7 @@ proxy/**/target
 proxy/**/*.rs.bk
 p2p-tests/workspace
 /target
-/test/workdir
+/test/**/*--state
 sandbox
 .yarn/*
 !.yarn/patches
