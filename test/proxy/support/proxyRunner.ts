@@ -12,8 +12,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import execa from "execa";
 
-import { retryOnError } from "ui/src/retryOnError";
-
 import * as Process from "./process";
 
 export { killAllProcesses } from "./process";
@@ -124,78 +122,5 @@ export class RadicleProxy {
     this.#childProcess.kill("SIGTERM");
     await this.#childProcess;
     this.#childProcess = undefined;
-  }
-}
-
-interface CommitParams {
-  author: string;
-  checkoutPath: string;
-}
-
-export function commit({ author, checkoutPath }: CommitParams): void {
-  execa.sync("git", ["commit", "--allow-empty", "-m", "commit-message"], {
-    cwd: checkoutPath,
-    env: {
-      GIT_AUTHOR_NAME: author,
-      GIT_AUTHOR_EMAIL: `${author}@${author}.com`,
-      GIT_COMMITTER_NAME: author,
-      GIT_COMMITTER_EMAIL: `${author}@${author}.com`,
-    },
-  });
-}
-
-export function getLatestCommitSha(checkoutPath: string): string {
-  return execa
-    .sync("git", ["rev-parse", "HEAD"], {
-      cwd: checkoutPath,
-    })
-    .stdout.trim();
-}
-
-interface PushRadParams {
-  lnkHome: string;
-  checkoutPath: string;
-  keyPassphrase: string;
-}
-
-export function pushRad({
-  lnkHome,
-  checkoutPath,
-  keyPassphrase,
-}: PushRadParams): void {
-  execa.sync("git", ["push", "rad"], {
-    cwd: checkoutPath,
-    env: {
-      RADICLE_UNSAFE_FAST_KEYSTORE: "1",
-      LNK_HOME: lnkHome,
-      KEY_PASSPHRASE: keyPassphrase,
-      GIT_EXEC_PATH: BIN_PATH,
-    },
-  });
-}
-
-export async function withRetry(
-  action: () => Promise<unknown>
-): Promise<unknown> {
-  return await retryOnError(action, () => true, 1000, 10);
-}
-
-interface LnkCliParams {
-  lnkHome: string;
-  args: string[];
-}
-
-export function lnkCli({ lnkHome, args }: LnkCliParams): unknown {
-  const radBinaryPath = path.join(BIN_PATH, "lnk");
-  const result = execa.sync(radBinaryPath, args, {
-    env: {
-      LNK_HOME: lnkHome,
-    },
-  });
-
-  try {
-    return JSON.parse(result.stdout);
-  } catch {
-    throw new Error(`Couldn't parse rad cli output: ${result.stdout}`);
   }
 }
