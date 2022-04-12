@@ -27,6 +27,7 @@ interface RadicleProxyParams {
   dataPath: string;
   // IP address to bind to. Defaults to 127.0.0.1
   ipAddress?: string;
+  httpPort?: number;
   name: string;
   gitSeeds?: string[];
 }
@@ -43,17 +44,20 @@ export class RadicleProxy {
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
   #ipAddress: string;
   #gitSeeds: string[] | undefined;
+  #httpSocketAddr: string;
 
   public constructor({
     dataPath,
     ipAddress,
     name,
     gitSeeds,
+    httpPort,
   }: RadicleProxyParams) {
     this.#ipAddress = ipAddress ?? "127.0.0.1";
     this.#gitSeeds = gitSeeds;
     this.name = name;
     this.passphrase = name;
+    this.#httpSocketAddr = `${this.#ipAddress}:${httpPort ?? 3000}`;
 
     this.checkoutPath = path.join(dataPath, `${name}-checkouts`);
     this.lnkHome = path.join(dataPath, `${name}-lnk-home`);
@@ -75,7 +79,7 @@ export class RadicleProxy {
     this.peerId = initResult.peerId;
 
     this.proxyClient = new ProxyClient.ProxyClient(
-      `http://${this.#ipAddress}:30000`,
+      `http://${this.#httpSocketAddr}`,
       fetch,
       EventSource
     );
@@ -87,12 +91,9 @@ export class RadicleProxy {
     }
 
     const bin = path.join(BIN_PATH, "upstream-proxy");
-    const httpSocketAddr = `${this.#ipAddress}:30000`;
     const args = [
-      "--peer-listen",
-      `${this.#ipAddress}:8776`,
       "--http-listen",
-      httpSocketAddr,
+      this.#httpSocketAddr,
       "--key-passphrase",
       this.passphrase,
       "--unsafe-fast-keystore",
@@ -112,7 +113,7 @@ export class RadicleProxy {
 
     Process.prefixOutput(this.#childProcess, this.name);
 
-    await waitOn({ resources: [`tcp:${httpSocketAddr}`], timeout: 7000 });
+    await waitOn({ resources: [`tcp:${this.#httpSocketAddr}`], timeout: 7000 });
   }
 
   public async stop(): Promise<void> {
