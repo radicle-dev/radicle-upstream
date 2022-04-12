@@ -53,6 +53,10 @@ pub struct Args {
         use_value_delimiter = true
     )]
     pub git_seeds: Option<Vec<rad_common::Url>>,
+
+    /// Interval at which to fetch project updates from Git+HTTP seeds in seconds.
+    #[clap(long, default_value_t = 10)]
+    pub git_fetch_interval: u64,
 }
 
 impl Args {

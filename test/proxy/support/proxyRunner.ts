@@ -97,6 +97,7 @@ export class RadicleProxy {
       this.passphrase,
       "--unsafe-fast-keystore",
       "--dev-log",
+      "--git-fetch-interval=1",
     ];
 
     for (const gitSeed of this.#gitSeeds || []) {

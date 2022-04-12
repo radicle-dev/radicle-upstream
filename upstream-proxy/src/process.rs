@@ -176,8 +176,12 @@ async fn run_session(
             listen: args.peer_listen,
         })?;
 
-        let (git_fetch, git_fetch_runner) =
-            crate::git_fetch::create(peer.clone(), args.git_seeds.unwrap_or_default()).await?;
+        let (git_fetch, git_fetch_runner) = crate::git_fetch::create(
+            peer.clone(),
+            args.git_seeds.unwrap_or_default(),
+            std::time::Duration::from_secs(args.git_fetch_interval),
+        )
+        .await?;
 
         let (watch_monorepo, watch_monorepo_runner) = crate::watch_monorepo::create(peer.clone());
 

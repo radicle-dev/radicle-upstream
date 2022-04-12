@@ -14,6 +14,7 @@ use std::sync::Arc;
 pub async fn create(
     peer: crate::peer::Peer,
     seeds: Vec<rad_common::Url>,
+    fetch_interval: std::time::Duration,
 ) -> anyhow::Result<(Handle, Runner)> {
     let (update_tx, update_rx) = async_broadcast::broadcast(32);
     let (identity_queue, identity_rx) = UniqueDelayQueue::new();
@@ -37,6 +38,7 @@ pub async fn create(
         update_tx,
         identity_rx,
         identity_queue,
+        fetch_interval,
     };
     Ok((handle, runner))
 }
@@ -73,6 +75,8 @@ pub struct Runner {
     identity_rx: futures_delay_queue::Receiver<Revision>,
     /// Queue of identities to fetch updates for
     identity_queue: UniqueDelayQueue,
+    /// Time after which project updates are fetched again.
+    fetch_interval: std::time::Duration,
 }
 
 impl Runner {
@@ -83,6 +87,7 @@ impl Runner {
             update_tx,
             identity_rx,
             identity_queue,
+            fetch_interval,
         } = self;
 
         let identity_rx = identity_rx.into_stream().take_until(shutdown_signal);
@@ -103,9 +108,7 @@ impl Runner {
                     tracing::warn!(?errs, ?identity, "failed to fetch project with git");
                 },
             };
-            identity_queue
-                .add(identity, std::time::Duration::from_secs(10))
-                .await;
+            identity_queue.add(identity, fetch_interval).await;
         }
     }
 }

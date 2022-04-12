@@ -176,9 +176,12 @@ impl Unsealed {
             drop(shutdown_tx);
         };
 
-        let (git_fetch, _) =
-            futures::executor::block_on(crate::git_fetch::create(peer.clone(), Vec::new()))
-                .unwrap();
+        let (git_fetch, _) = futures::executor::block_on(crate::git_fetch::create(
+            peer.clone(),
+            Vec::new(),
+            std::time::Duration::from_secs(1000),
+        ))
+        .unwrap();
 
         let (watch_monorepo, _) = crate::watch_monorepo::create(peer.clone());
 
