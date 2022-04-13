@@ -39,7 +39,7 @@
 
   function support(): void {
     ipc.openUrl(
-      "https://matrix.radicle.community/#/room/#support:radicle.community"
+      "https://discord.com/channels/841318878125490186/843873418205331506"
     );
   }
 </script>
