@@ -135,15 +135,6 @@ impl Keystore for FileStore {
     }
 }
 
-/// Create an insecure in-memory [`Keystore`] for testing.
-#[must_use]
-#[cfg(test)]
-pub fn memory() -> impl Keystore + Send + Sync {
-    MemoryStore {
-        key_and_passphrase: std::sync::Mutex::new(None),
-    }
-}
-
 /// Insecure in-memory [`Keystore`]
 #[cfg(test)]
 struct MemoryStore {

@@ -30,9 +30,6 @@ use crate::daemon::{
     state::{self, Error},
 };
 
-#[cfg(test)]
-pub use test::*;
-
 /// Create a copy of the git-platinum repo, init with coco and push tags and the additional dev
 /// branch.
 ///
@@ -176,69 +173,4 @@ pub fn clone_platinum(platinum_into: impl AsRef<path::Path>) -> Result<(), Error
     }
 
     Ok(())
-}
-
-#[cfg(test)]
-mod test {
-    use crate::daemon::{
-        librad::{
-            git::identities::local::LocalIdentity, git_ext::OneLevel, identities::Project, reflike,
-            PeerId,
-        },
-        state::Error,
-    };
-
-    /// Generate a fresh `PeerId` for use in tests.
-    #[must_use]
-    pub fn generate_peer_id() -> PeerId {
-        PeerId::from(link_crypto::SecretKey::new())
-    }
-
-    /// **Testing Only**
-    ///
-    /// Default reference name for testing purposes.
-    #[must_use]
-    pub fn default_branch() -> OneLevel {
-        OneLevel::from(reflike!("master"))
-    }
-
-    /// Creates a small set of projects in your peer.
-    ///
-    /// # Errors
-    ///
-    /// Will error if filesystem access is not granted or broken for the configured
-    /// [`librad::paths::Paths`].
-    pub async fn setup_fixtures(
-        peer: &crate::peer::Peer,
-        owner: &LocalIdentity,
-    ) -> Result<Vec<Project>, Error> {
-        let infos = vec![
-            (
-                "monokel",
-                "A looking glass into the future",
-                default_branch(),
-            ),
-            (
-                "Monadic",
-                "Open source organization of amazing things.",
-                default_branch(),
-            ),
-            (
-                "open source coin",
-                "Research for the sustainability of the open source community.",
-                default_branch(),
-            ),
-            (
-                "radicle",
-                "Decentralized open source collaboration",
-                default_branch(),
-            ),
-        ];
-
-        let mut projects = Vec::with_capacity(infos.len());
-        for info in infos {
-            projects.push(super::replicate_platinum(peer, owner, info.0, info.1, info.2).await?);
-        }
-        Ok(projects)
-    }
 }

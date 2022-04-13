@@ -231,21 +231,4 @@ impl Handle {
         }
         self.reload_notify.notify_waiters()
     }
-
-    /// Create a handle where none of the methods have any effect.
-    #[cfg(test)]
-    pub fn dummy() -> Self {
-        let (message_sender, mut message_receiver) = mpsc::channel(1);
-        tokio::spawn(async move {
-            loop {
-                if message_receiver.recv().await.is_none() {
-                    break;
-                }
-            }
-        });
-        Self {
-            reload_notify: Arc::new(Notify::new()),
-            message_sender,
-        }
-    }
 }

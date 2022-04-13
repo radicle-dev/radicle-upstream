@@ -244,13 +244,6 @@ impl RunState {
             input::Control::Status(sender) => vec![Command::Control(command::Control::Respond(
                 control::Response::CurrentStatus(sender, self.status.clone()),
             ))],
-
-            #[cfg(test)]
-            input::Control::GetRequest(urn, sender) => {
-                vec![Command::Control(command::Control::Respond(
-                    control::Response::GetSearch(sender, self.waiting_room.get(&urn).cloned()),
-                ))]
-            },
         }
     }
 

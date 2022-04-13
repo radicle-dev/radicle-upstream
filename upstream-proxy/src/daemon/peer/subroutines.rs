@@ -176,11 +176,6 @@ where
                     control::Request::StartSearch(urn, time, sender) => {
                         Input::Control(input::Control::CreateRequest(urn, time, sender))
                     },
-
-                    #[cfg(test)]
-                    control::Request::GetSearch(urn, sender) => {
-                        Input::Control(input::Control::GetRequest(urn, sender))
-                    },
                 })
                 .boxed(),
             );
@@ -339,9 +334,6 @@ async fn control_respond(cmd: control::Response) {
         control::Response::ListenAddrs(sender, addrs) => sender.send(addrs).ok(),
         control::Response::ListSearches(sender, requests) => sender.send(requests).ok(),
         control::Response::StartSearch(sender, request) => sender.send(request).ok(),
-
-        #[cfg(test)]
-        control::Response::GetSearch(sender, request) => sender.send(request).ok(),
     };
 }
 

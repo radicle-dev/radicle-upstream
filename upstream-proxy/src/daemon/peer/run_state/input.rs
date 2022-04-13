@@ -62,10 +62,6 @@ pub enum Control {
     ),
     /// Request the list of project searches.
     ListRequests(oneshot::Sender<Vec<SomeRequest<SystemTime>>>),
-
-    #[cfg(test)]
-    /// Request a project search.
-    GetRequest(Urn, oneshot::Sender<Option<SomeRequest<SystemTime>>>),
 }
 
 /// Request event for projects requested from the network.

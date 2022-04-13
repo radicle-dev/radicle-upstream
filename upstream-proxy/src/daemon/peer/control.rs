@@ -29,12 +29,6 @@ pub enum Request {
         SystemTime,
         oneshot::Sender<Result<Option<request::SomeRequest<SystemTime>>, waiting_room::Error>>,
     ),
-    #[cfg(test)]
-    /// Get a project search.
-    GetSearch(
-        Urn,
-        oneshot::Sender<Option<request::SomeRequest<SystemTime>>>,
-    ),
     /// List all project searches.
     ListSearches(oneshot::Sender<Vec<request::SomeRequest<SystemTime>>>),
     /// Initiate a search for a project on the network.
@@ -65,13 +59,6 @@ pub enum Response {
     StartSearch(
         oneshot::Sender<waiting_room::Created<SystemTime>>,
         waiting_room::Created<SystemTime>,
-    ),
-
-    #[cfg(test)]
-    /// Response to get project search request.
-    GetSearch(
-        oneshot::Sender<Option<request::SomeRequest<SystemTime>>>,
-        Option<request::SomeRequest<SystemTime>>,
     ),
 }
 
@@ -127,22 +114,6 @@ impl Control {
 
         self.sender
             .send(Request::CancelSearch(urn.clone(), timestamp, sender))
-            .await
-            .expect("peer is gone");
-
-        receiver.await.expect("receiver is gone")
-    }
-
-    #[cfg(test)]
-    /// Initiate a new request to fetch a project from the network.
-    pub async fn get_project_request(
-        &mut self,
-        urn: &Urn,
-    ) -> Option<request::SomeRequest<SystemTime>> {
-        let (sender, receiver) = oneshot::channel::<Option<request::SomeRequest<SystemTime>>>();
-
-        self.sender
-            .send(Request::GetSearch(urn.clone(), sender))
             .await
             .expect("peer is gone");
 
