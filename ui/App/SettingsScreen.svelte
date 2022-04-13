@@ -165,6 +165,15 @@
         <h3>Feedback</h3>
       </header>
       <div class="section-item">
+        <p class="typo-text-bold">Leave feedback for our team!</p>
+        <div class="action">
+          <a
+            class="typo-link"
+            href="https://js8wy5qabol.typeform.com/to/eQrzRPFB"
+            >TypeForm Feedback Form</a>
+        </div>
+      </div>
+      <div class="section-item">
         <p class="typo-text-bold">Get in touch</p>
         <div class="action">
           <a
