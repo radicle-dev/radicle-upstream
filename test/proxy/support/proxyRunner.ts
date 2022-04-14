@@ -8,7 +8,7 @@ import fetch from "node-fetch";
 import EventSource from "eventsource";
 import waitOn from "wait-on";
 import * as ProxyClient from "proxy-client";
-import * as fs from "fs-extra";
+import * as fs from "node:fs/promises";
 import * as path from "path";
 import execa from "execa";
 
@@ -24,8 +24,6 @@ const PATH = [BIN_PATH, process.env.PATH].join(path.delimiter);
 
 interface RadicleProxyParams {
   dataPath: string;
-  // IP address to bind to. Defaults to 127.0.0.1
-  ipAddress?: string;
   httpPort?: number;
   name: string;
   gitSeeds?: string[];
@@ -34,63 +32,76 @@ interface RadicleProxyParams {
 
 export class RadicleProxy {
   public checkoutPath: string;
-  public identityUrn: string;
-  public name: string;
-  public passphrase: string;
   public peerId: string;
   public proxyClient: ProxyClient.ProxyClient;
-  public lnkHome: string;
 
+  #name: string;
+  #lnkHome: string;
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
-  #ipAddress: string;
-  #gitSeeds: string[] | undefined;
+  #gitSeeds: string[];
   #httpSocketAddr: string;
   #sshAuthSock: string;
 
-  public constructor({
+  public static async create({
     dataPath,
-    ipAddress,
     name,
     gitSeeds,
     httpPort,
-    sshAuthSock,
-  }: RadicleProxyParams) {
-    this.#ipAddress = ipAddress ?? "127.0.0.1";
-    this.#gitSeeds = gitSeeds;
-    this.name = name;
-    this.passphrase = name;
-    this.#httpSocketAddr = `${this.#ipAddress}:${httpPort ?? 3000}`;
-    this.#sshAuthSock = sshAuthSock ?? "/dev/null";
+    sshAuthSock = "/dev/null",
+  }: RadicleProxyParams): Promise<RadicleProxy> {
+    const httpSocketAddr = `127.0.0.1:${httpPort ?? 3000}`;
 
-    this.checkoutPath = path.join(dataPath, `${name}-checkouts`);
-    fs.mkdirsSync(this.checkoutPath);
+    const checkoutPath = path.join(dataPath, `${name}-checkouts`);
+    await fs.mkdir(checkoutPath, { recursive: true });
 
-    this.lnkHome = path.join(dataPath, `${name}-lnk-home`);
-    fs.mkdirsSync(this.lnkHome);
+    const lnkHome = path.join(dataPath, `${name}-lnk-home`);
+    await fs.mkdir(lnkHome, { recursive: true });
 
-    const initResult = JSON.parse(
-      execa.sync(
-        path.join(BIN_PATH, "upstream-proxy-dev"),
-        [
-          "--lnk-home",
-          this.lnkHome,
-          "init",
-          this.name,
-          "--key-passphrase",
-          this.passphrase,
-        ],
-        { env: { SSH_AUTH_SOCK: this.#sshAuthSock } }
-      ).stdout
+    const initResult = await execa(
+      path.join(BIN_PATH, "upstream-proxy-dev"),
+      ["--lnk-home", lnkHome, "init", name, "--key-passphrase", "asdf"],
+      { env: { SSH_AUTH_SOCK: sshAuthSock } }
     );
+    const peerId = JSON.parse(initResult.stdout).peerId;
 
-    this.identityUrn = initResult.identityUrn;
-    this.peerId = initResult.peerId;
-
-    this.proxyClient = new ProxyClient.ProxyClient(
-      `http://${this.#httpSocketAddr}`,
+    const proxyClient = new ProxyClient.ProxyClient(
+      `http://${httpSocketAddr}`,
       fetch,
       EventSource
     );
+
+    return new RadicleProxy({
+      checkoutPath,
+      peerId,
+      proxyClient,
+      name,
+      lnkHome,
+      gitSeeds,
+      httpSocketAddr,
+      sshAuthSock,
+    });
+  }
+
+  private constructor(props: {
+    checkoutPath: string;
+    peerId: string;
+    proxyClient: ProxyClient.ProxyClient;
+
+    name: string;
+    lnkHome: string;
+    gitSeeds: string[] | undefined;
+    httpSocketAddr: string;
+    sshAuthSock: string;
+  }) {
+    this.checkoutPath = props.checkoutPath;
+    this.peerId = props.peerId;
+    this.proxyClient = props.proxyClient;
+
+    this.#name = props.name;
+    this.#lnkHome = props.lnkHome;
+    this.#gitSeeds = props.gitSeeds ?? [];
+    this.#httpSocketAddr = props.httpSocketAddr;
+    this.#sshAuthSock = props.sshAuthSock;
   }
 
   public async start(): Promise<void> {
@@ -102,8 +113,6 @@ export class RadicleProxy {
     const args = [
       "--http-listen",
       this.#httpSocketAddr,
-      "--key-passphrase",
-      this.passphrase,
       "--unsafe-fast-keystore",
       "--dev-log",
       "--git-fetch-interval=1",
@@ -114,13 +123,13 @@ export class RadicleProxy {
     }
 
     const env = {
-      LNK_HOME: this.lnkHome,
+      LNK_HOME: this.#lnkHome,
       SSH_AUTH_SOCK: this.#sshAuthSock,
     };
 
     this.#childProcess = Process.spawn(bin, args, { env });
 
-    Process.prefixOutput(this.#childProcess, this.name);
+    Process.prefixOutput(this.#childProcess, this.#name);
 
     await waitOn({ resources: [`tcp:${this.#httpSocketAddr}`], timeout: 7000 });
   }
@@ -146,7 +155,7 @@ export class RadicleProxy {
     opts: execa.Options = {}
   ): execa.ExecaChildProcess {
     const defaultOpts = {
-      LNK_HOME: this.lnkHome,
+      LNK_HOME: this.#lnkHome,
       SSH_AUTH_SOCK: this.#sshAuthSock,
       GIT_CONFIG_GLOBAL: "/dev/null",
       GIT_CONFIG_NOSYSTEM: "1",
@@ -165,7 +174,7 @@ export class RadicleProxy {
     };
     return Process.prefixOutput(
       Process.spawn(cmd, args, opts),
-      `${this.name}-shell`
+      `${this.#name}-shell`
     );
   }
 }

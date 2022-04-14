@@ -37,7 +37,7 @@ test("contributor follows", async () => {
   // are different between runs
   const maintainerName = `maintainer-${randomTag()}`;
 
-  const maintainer = new ProxyRunner.RadicleProxy({
+  const maintainer = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: maintainerName,
     sshAuthSock,
@@ -46,7 +46,7 @@ test("contributor follows", async () => {
 
   const projectUrn = await createProject(maintainer, "foo");
 
-  const contributor = new ProxyRunner.RadicleProxy({
+  const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: `contributor-${randomTag()}`,
     httpPort: 30001,
@@ -82,7 +82,7 @@ test("contributor patch replication", async () => {
   // are different between runs
   const maintainerName = `maintainer-${randomTag()}`;
 
-  const maintainer = new ProxyRunner.RadicleProxy({
+  const maintainer = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: maintainerName,
     gitSeeds: [seedUrl],
@@ -91,7 +91,7 @@ test("contributor patch replication", async () => {
   await maintainer.start();
 
   const projectUrn = await createProject(maintainer, "foo");
-  const contributor = new ProxyRunner.RadicleProxy({
+  const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: `contributor-${randomTag()}`,
     httpPort: 30001,
