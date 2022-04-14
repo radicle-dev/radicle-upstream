@@ -94,7 +94,6 @@ mod handler {
     }
 
     /// Get the [`identity::Person`] for the given `id`.
-    #[allow(clippy::unused_async)]
     pub async fn get_remote(id: Urn, ctx: context::Context) -> Result<impl Reply, Rejection> {
         let storage = ctx.read_only_storage()?;
         let user =

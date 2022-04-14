@@ -274,7 +274,6 @@ where
     }
 
     pub async fn run(mut self) -> Result<(), JoinError> {
-        #![allow(clippy::mut_mut)]
         loop {
             futures::select! {
                 maybe_result = self.pending_tasks.next() => {

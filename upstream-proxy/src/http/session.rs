@@ -37,7 +37,6 @@ mod handler {
         pub identity: crate::identity::Identity,
     }
 
-    #[allow(clippy::unused_async)]
     pub async fn get(ctx: context::Context) -> Result<impl Reply, Rejection> {
         match ctx {
             context::Context::Unsealed(ctx) => {

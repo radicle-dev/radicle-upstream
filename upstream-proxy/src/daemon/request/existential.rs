@@ -5,11 +5,6 @@
 
 //! The enumeration of different [`super::Request`] states unified under a
 //! single enum called [`SomeRequest`].
-
-// I reserve the right to not match all the arms when picking out particular cases, thank you very
-// much.
-#![allow(clippy::wildcard_enum_match_arm)]
-
 use librad::PeerId;
 use serde::{Deserialize, Serialize};
 

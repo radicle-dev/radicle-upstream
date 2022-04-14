@@ -11,7 +11,6 @@ use crate::daemon::{peer::control, request::waiting_room::WaitingRoom};
 
 /// Instructions to issue side-effectful operations which are the results from
 /// state transitions.
-#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Command {
     /// Start the announcement subroutine.

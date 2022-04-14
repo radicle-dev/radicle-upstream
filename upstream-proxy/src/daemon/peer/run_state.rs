@@ -47,7 +47,6 @@ pub use running_waiting_room::Event as WaitingRoomEvent;
 use running_waiting_room::{RunningWaitingRoom, WaitingRoomTransition};
 
 /// Events external subscribers can observe for internal peer operations.
-#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug)]
 pub enum Event {
     /// Announcement subroutine completed and emitted the enclosed updates.
@@ -240,7 +239,6 @@ impl RunState {
     }
 
     /// Handle [`ProtocolEvent`]s.
-    #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_protocol(&mut self, event: ProtocolEvent) -> Vec<Command> {
         match (&self.status, event) {
             (Status::Stopped, ProtocolEvent::Endpoint(upstream::Endpoint::Up { .. })) => {
@@ -280,7 +278,6 @@ impl RunState {
     }
 
     /// Handle [`input::Request`]s.
-    #[allow(clippy::wildcard_enum_match_arm)]
     fn handle_request(&mut self, input: input::Request) -> Vec<Command> {
         match (&self.status, input) {
             // Check for new query and clone requests.

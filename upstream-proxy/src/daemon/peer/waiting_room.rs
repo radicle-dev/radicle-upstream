@@ -41,7 +41,6 @@ pub fn load(store: &kv::Store) -> Result<Option<WaitingRoom<SystemTime, Duration
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
-#[allow(clippy::implicit_hasher)]
 pub fn save(
     store: &kv::Store,
     waiting_room: WaitingRoom<SystemTime, Duration>,

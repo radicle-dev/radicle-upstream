@@ -4,11 +4,6 @@
 // Linking Exception. For full terms see the included LICENSE file.
 
 //! The black box tracker of [`Request`]s and their lifecycles.
-
-// I reserve the right to not match all the arms when picking out a single case, thank you very
-// much.
-#![allow(clippy::wildcard_enum_match_arm)]
-
 use std::{
     cmp::PartialOrd,
     collections::HashMap,
@@ -326,7 +321,6 @@ impl<T, D> WaitingRoom<T, D> {
     where
         T: Clone,
     {
-        #[allow(clippy::non_ascii_literal)]
         let reason_str = anyhow::Chain::new(reason.as_ref())
             .fold("".to_string(), |acc, e| format!("{} ⮩ {}", acc, e));
         self.transition(

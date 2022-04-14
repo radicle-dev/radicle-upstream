@@ -48,7 +48,6 @@ impl Response {
 
 impl warp::reject::Reject for Response {}
 
-#[allow(clippy::unused_async)]
 pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallible> {
     let error_response = if err.is_not_found() {
         Response {
@@ -124,7 +123,6 @@ impl From<&radicle_source::error::Error> for Response {
 }
 
 impl From<&crate::daemon::state::Error> for Response {
-    #[allow(clippy::too_many_lines)]
     fn from(err: &crate::daemon::state::Error) -> Self {
         let (status_code, variant, message) = match err {
             crate::daemon::state::Error::Checkout(checkout_error) => match checkout_error {

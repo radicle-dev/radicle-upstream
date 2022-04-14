@@ -84,7 +84,6 @@ where
 ///   * Fails to initialise `User`.
 ///   * Fails to verify `User`.
 ///   * Fails to set the default `rad/self` for this `PeerApi`.
-#[allow(clippy::single_match_else)]
 pub async fn init_owner<S, P>(peer: &Peer<S>, payload: P) -> Result<LocalIdentity, Error>
 where
     S: Clone + Signer,
@@ -120,7 +119,6 @@ where
 ///   * Fails to load the default owner
 ///   * Fails to verify `User`.
 ///   * Fails to set the default `rad/self` for this `PeerApi`.
-#[allow(clippy::single_match_else)]
 pub async fn update_owner_payload<S, P>(peer: &Peer<S>, payload: P) -> Result<(), Error>
 where
     S: Clone + Signer,
@@ -437,7 +435,6 @@ where
 /// # Panics
 ///
 /// * if the default owner can't be fetched
-#[allow(clippy::blocks_in_if_conditions)]
 pub async fn list_project_peers<S>(
     peer: &Peer<S>,
     urn: Urn,

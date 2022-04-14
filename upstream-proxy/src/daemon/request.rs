@@ -12,7 +12,6 @@
 // is changing during state transitions.
 // See https://github.com/rust-lang/rust-clippy/issues/4859 for more information.
 #![allow(clippy::module_name_repetitions)]
-#![allow(clippy::use_self)]
 
 use std::{collections::HashMap, ops::Deref};
 
@@ -191,7 +190,7 @@ impl<T> Request<Created, T> {
     ///
     /// Once this request has been made, we can transition this `Request` to the
     /// `Requested` state by calling [`Request::request`].
-    #[allow(clippy::missing_const_for_fn, clippy::needless_pass_by_value)]
+    #[allow(clippy::needless_pass_by_value)]
     pub fn new(urn: Urn, timestamp: T) -> Self {
         let urn = Urn { path: None, ..urn };
         Self {
@@ -282,7 +281,6 @@ impl<T> Request<Found, T> {
     ///
     /// Should be used in tandem with [`HasPeers::all_failed`] to ensure that we
     /// transition back when all peers have failed to clone.
-    #[allow(clippy::missing_const_for_fn)]
     pub fn failed(self) -> Either<Request<Requested, T>, Request<Found, T>> {
         if self.state.all_failed() {
             Either::Left(Request {
@@ -332,7 +330,6 @@ impl<T> Request<Cloning, T> {
     ///
     /// This signifies that the clone was successful and that the whole request
     /// was successful, congratulations.
-    #[allow(clippy::missing_const_for_fn)]
     pub fn cloned(self, remote_peer: PeerId, timestamp: T) -> Request<Cloned, T> {
         Request {
             urn: self.urn.clone(),

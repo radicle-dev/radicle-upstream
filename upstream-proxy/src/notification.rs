@@ -15,7 +15,6 @@ use link_identities::git::Urn;
 use radicle_git_ext::Oid;
 
 /// Event observed about the local peer.
-#[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum Notification {
@@ -65,7 +64,6 @@ pub enum Notification {
     },
 }
 
-#[allow(clippy::wildcard_enum_match_arm)]
 pub fn from_peer_event(event: crate::daemon::PeerEvent) -> Option<Notification> {
     match event {
         crate::daemon::PeerEvent::GossipFetched { gossip, .. } => {

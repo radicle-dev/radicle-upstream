@@ -5,9 +5,6 @@
 // LICENSE file.
 
 //! Provides [`run`] to run the proxy process.
-// Otherwise clippy complains about FromArgs
-#![allow(clippy::default_trait_access)]
-
 use std::sync::Arc;
 
 use anyhow::Context;
@@ -122,9 +119,6 @@ async fn run_session(
     restart_signal: impl Future<Output = ()> + Send + Sync + 'static,
     args: Args,
 ) -> Result<(), anyhow::Error> {
-    // Required for `tokio::select`. We can’t put it on the element directly, though.
-    #![allow(clippy::mut_mut)]
-
     let store_path = if let Some(temp_dir) = &environment.temp_dir {
         temp_dir.path().join("store")
     } else {

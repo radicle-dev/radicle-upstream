@@ -215,7 +215,6 @@ impl Handle {
 
     /// Send [`Message`] to [`Manager`]
     fn send_message(&mut self, message: Message) {
-        #![allow(clippy::panic)]
         match self.message_sender.try_send(message) {
             Ok(()) => {},
             Err(err) => match err {

@@ -15,18 +15,7 @@
     unused_import_braces,
     unused_qualifications
 )]
-#![allow(
-    clippy::cargo_common_metadata,
-    clippy::clone_on_ref_ptr,
-    clippy::expect_used,
-    clippy::implicit_return,
-    clippy::integer_arithmetic,
-    clippy::missing_inline_in_public_items,
-    clippy::multiple_crate_versions,
-    clippy::multiple_inherent_impl,
-    clippy::similar_names,
-    clippy::too_many_lines
-)]
+#![allow(clippy::similar_names, clippy::too_many_lines)]
 
 pub use librad::{
     self, crypto,

@@ -35,7 +35,6 @@ mod handler {
     use crate::context;
 
     /// Get diagnostics information.
-    #[allow(clippy::unused_async)]
     pub async fn get(mut ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
         let listen_addrs = ctx.peer.daemon_control().listen_addrs().await;
         let protocol_config = ctx.peer.librad_peer().protocol_config();

@@ -9,11 +9,10 @@
 #![warn(
     clippy::all,
     clippy::cargo,
+    clippy::unwrap_used,
     unused_import_braces,
     unused_qualifications
 )]
-#![cfg_attr(not(test), warn(clippy::unwrap_used))]
-#![allow(clippy::multiple_crate_versions)]
 
 mod browser;
 mod cli;

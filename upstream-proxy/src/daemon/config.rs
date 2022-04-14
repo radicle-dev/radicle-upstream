@@ -18,7 +18,6 @@ lazy_static::lazy_static! {
 }
 
 /// Configure a [`net::peer::Config`].
-#[allow(clippy::as_conversions)]
 #[must_use]
 pub fn configure<S>(paths: paths::Paths, signer: S, listen_addr: SocketAddr) -> net::peer::Config<S>
 where

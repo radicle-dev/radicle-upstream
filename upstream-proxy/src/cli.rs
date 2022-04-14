@@ -5,7 +5,6 @@
 // LICENSE file.
 
 #[derive(Debug, Clone, clap::Parser)]
-#[allow(clippy::struct_excessive_bools)]
 #[clap(disable_version_flag = true)]
 pub struct Args {
     /// Put proxy in test mode to use certain fixtures

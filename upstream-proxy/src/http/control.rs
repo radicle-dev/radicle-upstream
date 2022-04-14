@@ -58,7 +58,6 @@ mod handler {
     use crate::{context, error, project};
 
     /// Create a project from the fixture repo.
-    #[allow(clippy::let_underscore_must_use)]
     pub async fn create_project(
         ctx: context::Unsealed,
         owner: crate::daemon::LocalIdentity,
@@ -85,7 +84,6 @@ mod handler {
     }
 
     /// Abort the server task, which causes `main` to restart it.
-    #[allow(clippy::unused_async)]
     pub async fn reset(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         tracing::info!("reload requested");
         ctx.service_handle().reset();
@@ -93,7 +91,6 @@ mod handler {
     }
 
     /// Seals the keystore.
-    #[allow(clippy::unused_async)]
     pub async fn seal(mut ctx: context::Context) -> Result<impl Reply, Rejection> {
         tracing::info!("keystore seal requested");
         ctx.service_handle().seal();

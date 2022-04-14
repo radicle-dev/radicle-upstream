@@ -14,7 +14,6 @@ use crate::daemon::{
 };
 
 /// Significant events that occur during peer’s lifetime.
-#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Input {
     /// Announcement subroutine lifecycle events.

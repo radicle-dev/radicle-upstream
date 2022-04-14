@@ -105,7 +105,6 @@ where
 /// Computes the list of announcements based on the difference of the `new` and
 /// `old` state. An [`Announcement`] will be included if an entry in `new` can't
 /// be found in `old`.
-#[allow(clippy::implicit_hasher)]
 #[must_use]
 fn diff<'a>(old_state: &'a Updates, new_state: &'a Updates) -> Updates {
     new_state.difference(old_state).cloned().collect()
@@ -157,7 +156,6 @@ where
 ///
 /// * if the [`kv::Bucket`] can't be accessed
 /// * if the storage of the new updates fails
-#[allow(clippy::implicit_hasher)]
 fn save(store: &kv::Store, updates: Updates) -> Result<(), Error> {
     let bucket = store.bucket::<&'static str, kv::Json<Updates>>(Some(BUCKET_NAME))?;
     bucket.set(KEY_NAME, kv::Json(updates)).map_err(Error::from)

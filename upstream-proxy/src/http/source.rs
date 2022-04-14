@@ -211,7 +211,6 @@ mod handler {
     }
 
     /// Fetch the list [`radicle_source::Branch`] for a local repository.
-    #[allow(clippy::unused_async)]
     pub async fn local_state(
         commits_query: super::LocalStateQuery,
     ) -> Result<impl Reply, Rejection> {
