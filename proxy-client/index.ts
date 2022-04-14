@@ -143,27 +143,4 @@ export class ProxyClient {
       options,
     });
   }
-
-  public async seedsGet(options?: RequestOptions): Promise<string[]> {
-    return this.fetcher.fetchOk(
-      {
-        method: "GET",
-        path: "session/seeds",
-        options,
-      },
-      zod.array(zod.string())
-    );
-  }
-
-  public async seedsPut(
-    seeds: string[],
-    options?: RequestOptions
-  ): Promise<void> {
-    return this.fetcher.fetchOkNoContent({
-      method: "PUT",
-      path: "session/seeds",
-      body: seeds,
-      options,
-    });
-  }
 }
