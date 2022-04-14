@@ -49,7 +49,7 @@ export interface Project extends ProxyProject {
   anchor?: Anchor;
 }
 export interface User {
-  peerId: identity.PeerId;
+  peerId: string;
   type: PeerType;
   identity: identity.Identity;
   role: PeerRole;

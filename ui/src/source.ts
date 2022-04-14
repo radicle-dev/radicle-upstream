@@ -7,7 +7,6 @@
 import { format } from "timeago.js";
 
 import * as error from "./error";
-import type { PeerId } from "./identity";
 import * as proxy from "./proxy";
 import type {
   Blob,
@@ -98,7 +97,7 @@ export const fetchBlob = async (
 
 export async function fetchCommits(
   projectUrn: string,
-  peerId: PeerId,
+  peerId: string,
   revision: RevisionSelector
 ): Promise<CommitsHistory> {
   const { headers, stats } = await proxy.client.source.commitsGet({
@@ -114,7 +113,7 @@ export async function fetchCommits(
 
 export const fetchReadme = async (
   projectUrn: string,
-  peerId: PeerId,
+  peerId: string,
   revision: RevisionSelector,
   tree: Tree,
   signal?: AbortSignal
@@ -149,7 +148,7 @@ export const fetchReadme = async (
 
 export async function fetchRevisions(
   projectUrn: string,
-  peerId?: PeerId
+  peerId?: string
 ): Promise<Revisions> {
   const [branchNames, tagNames] = await Promise.all([
     proxy.client.source.branchesGet({ projectUrn, peerId }),

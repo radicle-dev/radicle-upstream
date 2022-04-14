@@ -12,9 +12,6 @@ import type { Ethereum, Identity, Metadata } from "proxy-client/identity";
 
 export type { Identity, Metadata };
 
-// FIXME(xla): Improve type safety of it, this is a placeholder to avoid using strings everywhere.
-export type PeerId = string;
-
 // Claim the ownership of an Ethereum address, stored on the user's Radicle Identity.
 export const claimEthAddress = async (address: string): Promise<void> =>
   updateEthereumClaim({
