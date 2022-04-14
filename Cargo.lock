@@ -84,12 +84,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
 
 [[package]]
-name = "assert_matches"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b34d609dfbaf33d6889b2b7106d3ca345eacad44200913df5ba02bfd31d2ba9"
-
-[[package]]
 name = "async-broadcast"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4100,12 +4094,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
-name = "rustc-hex"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e75f6a532d0fd9f7f13144f392b6ad56a32696bfcd9c78f797f16bbb6f072d6"
-
-[[package]]
 name = "rustc-serialize"
 version = "0.3.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4747,20 +4735,6 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
- "tokio-util 0.6.9",
-]
-
-[[package]]
-name = "tokio-test"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "53474327ae5e166530d17f2d956afcb4f8a004de581b3cae10f12006bc8163e3"
-dependencies = [
- "async-stream",
- "bytes 1.1.0",
- "futures-core",
- "tokio",
- "tokio-stream",
 ]
 
 [[package]]
@@ -4981,7 +4955,6 @@ name = "upstream-proxy"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "assert_matches",
  "async-broadcast",
  "async-stream",
  "blocking",
@@ -5025,8 +4998,6 @@ dependencies = [
  "tempfile",
  "thiserror",
  "tokio",
- "tokio-stream",
- "tokio-test",
  "tracing",
  "tracing-subscriber",
  "url",
@@ -5043,12 +5014,10 @@ dependencies = [
  "clap",
  "either",
  "futures 0.3.21",
- "futures-delay-queue",
  "git2",
  "librad",
  "link-identities",
  "lnk-identities",
- "rustc-hex",
  "serde",
  "serde_json",
  "thiserror",

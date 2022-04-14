@@ -16,9 +16,7 @@ async-shutdown = "0.1.2"
 clap = { version = "3.0", features = ["derive", "env"] }
 either = { version = "1.6" }
 futures = { version = "0.3" }
-futures-delay-queue = "0.5"
 git2 = { version = "0.13", default-features = false }
-rustc-hex = { version = "2.1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 thiserror = { version = "1" }
