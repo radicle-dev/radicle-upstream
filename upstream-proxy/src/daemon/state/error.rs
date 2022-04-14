@@ -30,11 +30,6 @@ pub enum Error {
     #[error(transparent)]
     Git(#[from] git2::Error),
 
-    #[cfg(test)]
-    /// An attempt to create an identity failed.
-    #[error("failed to create identity")]
-    IdentityCreationFailed,
-
     /// An interaction involving an identity failed.
     #[error(transparent)]
     Identities(#[from] Box<librad::git::identities::Error>),

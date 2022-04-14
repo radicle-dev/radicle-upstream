@@ -11,31 +11,10 @@ use futures::stream::BoxStream;
 
 use librad::{net, net::discovery, paths, PeerId, Signer};
 
-#[cfg(test)]
-use librad::crypto::BoxedSigner;
-
 lazy_static::lazy_static! {
     /// Localhost binding to any available port, i.e. `127.0.0.1:0`.
     pub static ref LOCALHOST_ANY: SocketAddr =
         SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::new(127, 0, 0, 1), 0));
-}
-
-#[cfg(test)]
-/// Provide the default config.
-///
-/// Address: 127.0.0.1:0
-/// No seeds.
-/// Default gossip parameters.
-///
-/// # Errors
-///
-/// Results in an error if the [`paths::Paths`] could not be created.
-pub fn default(
-    signer: BoxedSigner,
-    path: impl AsRef<std::path::Path>,
-) -> Result<net::peer::Config<BoxedSigner>, std::io::Error> {
-    let paths = paths::Paths::from_root(path)?;
-    Ok(configure(paths, signer, *LOCALHOST_ANY))
 }
 
 /// Configure a [`net::peer::Config`].

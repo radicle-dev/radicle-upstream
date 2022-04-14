@@ -28,9 +28,6 @@
     clippy::too_many_lines
 )]
 
-#[cfg(test)]
-extern crate assert_matches;
-
 pub use librad::{
     self, crypto,
     git::{self, identities::local::LocalIdentity, include, local::url::LocalUrl, Urn},
