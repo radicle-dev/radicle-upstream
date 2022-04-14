@@ -4,8 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { PeerId } from "ui/src/identity";
-
 import { get } from "svelte/store";
 
 import * as error from "ui/src/error";
@@ -13,7 +11,6 @@ import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as project from "ui/src/project";
 import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
-import * as validation from "ui/src/validation";
 
 interface Screen {
   peers: project.Peer[];
@@ -22,13 +19,12 @@ interface Screen {
   selectedPeer: project.User;
 }
 
-const refreshExecutor = mutexExecutor.create();
+export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
+export const screenRemoteStore = remote.createStore<Screen>();
+export const store = screenRemoteStore.readable;
 
-const screenStore = remote.createStore<Screen>();
-export const store = screenStore.readable;
-
-export const fetch = (projectUrn: string): void => {
-  screenStore.loading();
+export function fetch(projectUrn: string): void {
+  screenRemoteStore.loading();
 
   proxy.client.project
     .get(projectUrn)
@@ -36,18 +32,47 @@ export const fetch = (projectUrn: string): void => {
       const peers = await proxy.client.project.listPeers(projectUrn);
       const peerSelection = project.userList(peers);
       throwUnlessPeersPresent(peerSelection, projectUrn);
-      screenStore.success({
+      screenRemoteStore.success({
         peers,
         peerSelection,
         project: prj,
         selectedPeer: peerSelection[0],
       });
     })
-    .catch(err => screenStore.error(error.fromUnknown(err)));
-};
+    .catch(err => screenRemoteStore.error(error.fromUnknown(err)));
+}
 
-export const refreshPeers = async (): Promise<void> => {
-  const screen = get(screenStore);
+export function removePeer(projectId: string, peerId: string): void {
+  const screen = get(screenRemoteStore);
+
+  if (screen.status === remote.Status.Success) {
+    const { peerSelection, selectedPeer } = screen.data;
+
+    proxy.client.project
+      .peerUntrack(projectId, peerId)
+      .then(() => refreshPeers())
+      .catch(err => screenRemoteStore.error(error.fromUnknown(err)));
+
+    if (selectedPeer.peerId === peerId) {
+      screenRemoteStore.success({
+        ...screen.data,
+        selectedPeer: peerSelection[0],
+      });
+    }
+  }
+}
+
+export function addPeer(projectId: string, newRemote: string): void {
+  proxy.client.project
+    .peerTrack(projectId, newRemote)
+    .then(() => refreshPeers())
+    .catch(err => screenRemoteStore.error(error.fromUnknown(err)));
+}
+
+const refreshExecutor = mutexExecutor.create();
+
+export async function refreshPeers(): Promise<void> {
+  const screen = get(screenRemoteStore);
 
   if (screen.status === remote.Status.Success) {
     try {
@@ -60,112 +85,28 @@ export const refreshPeers = async (): Promise<void> => {
 
       const peerSelection = project.userList(peers);
       throwUnlessPeersPresent(peerSelection, screen.data.project.urn);
-      screenStore.success({
+      screenRemoteStore.success({
         ...screen.data,
         peers,
         peerSelection,
       });
     } catch (err: unknown) {
-      screenStore.error(error.fromUnknown(err));
+      screenRemoteStore.error(error.fromUnknown(err));
     }
   }
-};
+}
 
-export const selectPeer = (peer: project.User): void => {
-  const screen = get(screenStore);
+export function selectPeer(peer: project.User): void {
+  const screen = get(screenRemoteStore);
 
   if (screen.status === remote.Status.Success) {
     const { data: current } = screen;
 
     if (peer.peerId !== current.selectedPeer.peerId) {
-      screenStore.success({ ...current, selectedPeer: peer });
+      screenRemoteStore.success({ ...current, selectedPeer: peer });
     }
   }
-};
-
-export const trackPeer = (projectUrn: string, peerId: PeerId): void => {
-  proxy.client.project
-    .peerTrack(projectUrn, peerId)
-    .then(() => refreshPeers())
-    .catch(err => screenStore.error(error.fromUnknown(err)));
-};
-
-export const untrackPeer = (projectUrn: string, peerId: PeerId): void => {
-  proxy.client.project
-    .peerUntrack(projectUrn, peerId)
-    .then(() => refreshPeers())
-    .catch(err => screenStore.error(error.fromUnknown(err)));
-};
-
-export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
-
-const checkPeerUniqueness = (peer: string): Promise<boolean> => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const {
-      data: { peers },
-    } = screen;
-    const includes = !peers
-      .map((peer: project.Peer) => {
-        return peer.peerId;
-      })
-      .includes(peer);
-
-    return Promise.resolve(includes);
-  }
-
-  return Promise.resolve(false);
-};
-
-export const peerValidation = validation.createValidationStore(
-  {
-    format: {
-      pattern: VALID_PEER_MATCH,
-      message: "This is not a valid remote",
-    },
-  },
-  [
-    {
-      promise: checkPeerUniqueness,
-      validationMessage: "This remote is already being tracked",
-    },
-  ]
-);
-
-export const addPeer = async (
-  projectId: string,
-  newRemote: PeerId
-): Promise<boolean> => {
-  // This has to be awaited contrary to what tslint suggests, because we're
-  // running async remote validations in in the background. If we remove the
-  // async then the seed input form will have to be submitted twice to take any
-  // effect.
-  await peerValidation.validate(newRemote);
-  if (get(peerValidation).type !== "valid") {
-    return false;
-  }
-
-  trackPeer(projectId, newRemote);
-  return true;
-};
-
-export const removePeer = (projectId: string, peerId: PeerId): void => {
-  const screen = get(screenStore);
-
-  if (screen.status === remote.Status.Success) {
-    const { peerSelection, selectedPeer } = screen.data;
-
-    untrackPeer(projectId, peerId);
-
-    if (selectedPeer.peerId === peerId) {
-      screenStore.success({
-        ...screen.data,
-        selectedPeer: peerSelection[0],
-      });
-    }
-  }
-};
+}
 
 function throwUnlessPeersPresent(
   peers: project.User[],

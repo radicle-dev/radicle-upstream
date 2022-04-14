@@ -10929,7 +10929,6 @@ __metadata:
     typescript: ^4.6.3
     util: ^0.12.4
     uuid: ^8.3.2
-    validate.js: ^0.13.1
     wait-on: ^6.0.1
     webpack: ^5.71.0
     webpack-cli: ^4.9.2
@@ -13323,13 +13322,6 @@ __metadata:
     spdx-correct: ^3.0.0
     spdx-expression-parse: ^3.0.0
   checksum: 35703ac889d419cf2aceef63daeadbe4e77227c39ab6287eeb6c1b36a746b364f50ba22e88591f5d017bc54685d8137bc2d328d0a896e4d3fd22093c0f32a9ad
-  languageName: node
-  linkType: hard
-
-"validate.js@npm:^0.13.1":
-  version: 0.13.1
-  resolution: "validate.js@npm:0.13.1"
-  checksum: a3ddc8744bf1e97afeef6129083e5a4f6c3378a82927c94effa4ec9954ff0cc3a9155c3894101b781f20b6256dde1010b69a96145e0bfb2229da3a8b7bd331a6
   languageName: node
   linkType: hard
 

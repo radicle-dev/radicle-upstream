@@ -75,7 +75,6 @@
     "timeago.js": "^4.0.2",
     "twemoji": "14.0.2",
     "uuid": "^8.3.2",
-    "validate.js": "^0.13.1",
     "zod": "^3.14.4"
   },
   "devDependencies": {
