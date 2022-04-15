@@ -49,7 +49,6 @@ test("contributor follows", async () => {
   const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: `contributor-${randomTag()}`,
-    httpPort: 30001,
     gitSeeds: [seedUrl],
     sshAuthSock,
   });
@@ -94,7 +93,6 @@ test("contributor patch replication", async () => {
   const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: `contributor-${randomTag()}`,
-    httpPort: 30001,
     gitSeeds: [seedUrl],
     sshAuthSock,
   });

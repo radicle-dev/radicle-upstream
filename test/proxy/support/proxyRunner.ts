@@ -11,6 +11,7 @@ import * as ProxyClient from "proxy-client";
 import * as fs from "node:fs/promises";
 import * as path from "path";
 import execa from "execa";
+import getPort from "get-port";
 
 import * as Process from "./process";
 
@@ -24,7 +25,6 @@ const PATH = [BIN_PATH, process.env.PATH].join(path.delimiter);
 
 interface RadicleProxyParams {
   dataPath: string;
-  httpPort?: number;
   name: string;
   gitSeeds?: string[];
   sshAuthSock?: string;
@@ -46,10 +46,10 @@ export class RadicleProxy {
     dataPath,
     name,
     gitSeeds,
-    httpPort,
     sshAuthSock = "/dev/null",
   }: RadicleProxyParams): Promise<RadicleProxy> {
-    const httpSocketAddr = `127.0.0.1:${httpPort ?? 3000}`;
+    const httpPort = await getPort();
+    const httpSocketAddr = `127.0.0.1:${httpPort}`;
 
     const checkoutPath = path.join(dataPath, `${name}-checkouts`);
     await fs.mkdir(checkoutPath, { recursive: true });

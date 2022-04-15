@@ -6681,6 +6681,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"get-port@npm:^5.1.1":
+  version: 5.1.1
+  resolution: "get-port@npm:5.1.1"
+  checksum: 0162663ffe5c09e748cd79d97b74cd70e5a5c84b760a475ce5767b357fb2a57cb821cee412d646aa8a156ed39b78aab88974eddaa9e5ee926173c036c0713787
+  languageName: node
+  linkType: hard
+
 "get-stream@npm:^4.0.0, get-stream@npm:^4.1.0":
   version: 4.1.0
   resolution: "get-stream@npm:4.1.0"
@@ -10881,6 +10888,7 @@ __metadata:
     execa: ^5.1.1
     exit-hook: ^2.2.1
     ganache-cli: ^6.12.2
+    get-port: ^5.1.1
     graphql: ^15.8.0
     html-webpack-plugin: ^5.5.0
     husky: ^7.0.4

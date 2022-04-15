@@ -300,6 +300,7 @@ On pushes of the master branch we also build and upload distribution artifacts.
      * `exit-hook`
      * `strip-ansi`
      * `execa`
+     * `get-port`
    * Don’t update `radicle-contracts` or `radicle-avatar`.
    * Don’t do a major upgrade of `@types/node`.
    * `electron-builder` shows `^22.14.5` as the latest version. This is
