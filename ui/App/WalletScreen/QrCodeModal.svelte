@@ -46,7 +46,7 @@
 <Modal emoji="👛" title="Connect your wallet">
   <p style="text-align: center;">
     Scan this code with your wallet. Not working? <br />
-    <a class="typo-link" href="https://walletconnect.com/registry/wallets"
+    <a class="typo-link" href="https://walletconnect.com/registry?type=wallet"
       >View compatible wallets</a>
   </p>
 
