@@ -14,7 +14,7 @@ import * as source from "./source";
 import { events, Event, EventSourceConstructor } from "./events";
 import { Fetcher, BaseFetch, ResponseError, RequestOptions } from "./fetcher";
 
-export { ResponseError, Event };
+export { RequestOptions, ResponseError, Event };
 
 export interface Session {
   identity: identity.Identity;

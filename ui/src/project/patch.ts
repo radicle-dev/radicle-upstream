@@ -58,8 +58,14 @@ function makePatch(proxyPatch: proxyProject.Patch): Patch {
 
 export const TAG_PREFIX = "radicle-patch/";
 
-export const getAll = async (projectUrn: string): Promise<Patch[]> => {
-  const proxyPatches = await proxy.client.project.patchList(projectUrn);
+export const getAll = async (
+  projectUrn: string,
+  options?: proxy.RequestOptions
+): Promise<Patch[]> => {
+  const proxyPatches = await proxy.client.project.patchList(
+    projectUrn,
+    options
+  );
   return proxyPatches.map(makePatch);
 };
 

@@ -11,12 +11,9 @@
   import type { Branch, Tag } from "ui/src/source";
   import type * as projectRoute from "./route";
 
-  import { onDestroy } from "svelte";
-
   import { unreachable } from "ui/src/unreachable";
   import {
     fetch,
-    watchPatchListUpdates,
     selectPath,
     selectRevision,
     store,
@@ -143,8 +140,6 @@
     selectRevision(revision);
   };
 
-  const unwatchPatchListUpdates = watchPatchListUpdates();
-  onDestroy(unwatchPatchListUpdates);
   $: fetch(project, selectedPeer);
 
   $: if ($store.status === remote.Status.Error) {

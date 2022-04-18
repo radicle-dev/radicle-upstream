@@ -11,7 +11,6 @@
   import { onDestroy } from "svelte";
 
   import * as ipc from "ui/src/ipc";
-  import * as localPeer from "ui/src/localPeer";
   import * as modal from "ui/src/modal";
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
@@ -21,8 +20,8 @@
   import {
     fetch,
     selectPeer,
-    refreshPeers,
     store,
+    watchProjectUpdates,
   } from "ui/src/screen/project";
 
   import Button from "design-system/Button.svelte";
@@ -58,14 +57,8 @@
     selectPeer(peer);
   };
 
-  const unsubscribeFromProjectEvents = localPeer.projectEvents.onValue(
-    event => {
-      if (event.urn === urn) {
-        refreshPeers();
-      }
-    }
-  );
-  onDestroy(unsubscribeFromProjectEvents);
+  const unwatchProjectUpdates = watchProjectUpdates(urn);
+  onDestroy(unwatchProjectUpdates);
 
   // Initialise the screen by fetching the project and associated data.
   fetch(urn);

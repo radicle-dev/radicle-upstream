@@ -5,41 +5,67 @@
 // LICENSE file.
 
 import { get } from "svelte/store";
+import lodash from "lodash";
 
+import * as Project from "ui/src/project";
 import * as error from "ui/src/error";
+import * as localPeer from "ui/src/localPeer";
 import * as mutexExecutor from "ui/src/mutexExecutor";
-import * as project from "ui/src/project";
 import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
 
 interface Screen {
-  peers: project.Peer[];
-  peerSelection: project.User[];
-  project: project.Project;
-  selectedPeer: project.User;
+  peers: Project.Peer[];
+  peerSelection: Project.User[];
+  project: Project.Project;
+  selectedPeer: Project.User;
 }
 
 export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
 export const screenRemoteStore = remote.createStore<Screen>();
 export const store = screenRemoteStore.readable;
 
-export function fetch(projectUrn: string): void {
+const fetchExecutor = mutexExecutor.create();
+export async function fetch(projectUrn: string): Promise<void> {
   screenRemoteStore.loading();
 
-  proxy.client.project
-    .get(projectUrn)
-    .then(async prj => {
-      const peers = await proxy.client.project.listPeers(projectUrn);
-      const peerSelection = project.userList(peers);
+  try {
+    const response = await fetchExecutor.run(async abort => {
+      const project = await proxy.client.project.get(projectUrn, { abort });
+      const peers = await proxy.client.project.listPeers(projectUrn, { abort });
+      return { project, peers };
+    });
+
+    if (response) {
+      const peerSelection = Project.userList(response.peers);
       throwUnlessPeersPresent(peerSelection, projectUrn);
+
       screenRemoteStore.success({
-        peers,
+        peers: response.peers,
         peerSelection,
-        project: prj,
+        project: response.project,
         selectedPeer: peerSelection[0],
       });
-    })
-    .catch(err => screenRemoteStore.error(error.fromUnknown(err)));
+    }
+  } catch (err: unknown) {
+    screenRemoteStore.error(error.fromUnknown(err));
+  }
+}
+
+const fetchThrottled: (projectId: string) => void = lodash.throttle(
+  fetch,
+  1000 // 1 second
+);
+
+export function watchProjectUpdates(projectId: string): () => void {
+  return localPeer.projectEvents.onValue(event => {
+    const screen = get(store);
+    if (screen.status === remote.Status.Success) {
+      if (event.urn.startsWith(projectId)) {
+        fetchThrottled(projectId);
+      }
+    }
+  });
 }
 
 export function removePeer(projectId: string, peerId: string): void {
@@ -70,7 +96,6 @@ export function addPeer(projectId: string, newRemote: string): void {
 }
 
 const refreshExecutor = mutexExecutor.create();
-
 export async function refreshPeers(): Promise<void> {
   const screen = get(screenRemoteStore);
 
@@ -83,7 +108,7 @@ export async function refreshPeers(): Promise<void> {
         return;
       }
 
-      const peerSelection = project.userList(peers);
+      const peerSelection = Project.userList(peers);
       throwUnlessPeersPresent(peerSelection, screen.data.project.urn);
       screenRemoteStore.success({
         ...screen.data,
@@ -96,7 +121,7 @@ export async function refreshPeers(): Promise<void> {
   }
 }
 
-export function selectPeer(peer: project.User): void {
+export function selectPeer(peer: Project.User): void {
   const screen = get(screenRemoteStore);
 
   if (screen.status === remote.Status.Success) {
@@ -109,7 +134,7 @@ export function selectPeer(peer: project.User): void {
 }
 
 function throwUnlessPeersPresent(
-  peers: project.User[],
+  peers: Project.User[],
   projectId: string
 ): void {
   if (peers.length === 0) {

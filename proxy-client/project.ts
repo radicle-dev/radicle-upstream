@@ -190,11 +190,12 @@ export class Client {
     );
   }
 
-  public async get(urn: string): Promise<Project> {
+  public async get(urn: string, options?: RequestOptions): Promise<Project> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
         path: `projects/${urn}`,
+        options,
       },
       projectSchema
     );
@@ -300,11 +301,15 @@ export class Client {
     );
   }
 
-  public async patchList(projectUrn: string): Promise<Patch[]> {
+  public async patchList(
+    projectUrn: string,
+    options?: RequestOptions
+  ): Promise<Patch[]> {
     return this.fetcher.fetchOk(
       {
         method: "GET",
         path: `projects/${projectUrn}/patches`,
+        options,
       },
       zod.array(patchSchema)
     );

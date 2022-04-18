@@ -33,7 +33,7 @@ export type {
 };
 export { RevisionType };
 
-export interface CommitsHistory {
+interface CommitsHistory {
   history: CommitHeader[];
   stats: Stats;
 }
@@ -57,7 +57,7 @@ export interface Readme {
   path: string;
 }
 
-export interface Revisions {
+interface Revisions {
   branches: Branch[];
   tags: Tag[];
 }
@@ -98,13 +98,17 @@ export const fetchBlob = async (
 export async function fetchCommits(
   projectUrn: string,
   peerId: string,
-  revision: RevisionSelector
+  revision: RevisionSelector,
+  options?: proxy.RequestOptions
 ): Promise<CommitsHistory> {
-  const { headers, stats } = await proxy.client.source.commitsGet({
-    projectUrn,
-    peerId,
-    revision,
-  });
+  const { headers, stats } = await proxy.client.source.commitsGet(
+    {
+      projectUrn,
+      peerId,
+      revision,
+    },
+    options
+  );
   return {
     stats,
     history: headers,
@@ -148,11 +152,12 @@ export const fetchReadme = async (
 
 export async function fetchRevisions(
   projectUrn: string,
-  peerId?: string
+  peerId?: string,
+  options?: proxy.RequestOptions
 ): Promise<Revisions> {
   const [branchNames, tagNames] = await Promise.all([
-    proxy.client.source.branchesGet({ projectUrn, peerId }),
-    proxy.client.source.tagsGet({ projectUrn, peerId }),
+    proxy.client.source.branchesGet({ projectUrn, peerId }, options),
+    proxy.client.source.tagsGet({ projectUrn, peerId }, options),
   ]);
 
   const branches = branchNames.map(

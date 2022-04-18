@@ -11,7 +11,6 @@ import { derived, get, writable } from "svelte/store";
 
 import * as appearance from "ui/src/appearance";
 import * as error from "ui/src/error";
-import * as localPeer from "ui/src/localPeer";
 import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as patch from "ui/src/project/patch";
 import * as proxy from "ui/src/proxy";
@@ -59,7 +58,6 @@ export interface Screen {
   peer: User;
   project: Project;
   revisions: Array<source.Branch | source.Tag>;
-  requestInProgress: AbortController | null;
   selectedPath: Readable<source.SelectedPath>;
   selectedRevision: source.SelectedRevision;
   tree: Writable<source.Tree>;
@@ -73,92 +71,76 @@ const pathStore = writable<source.SelectedPath>({
 const screenStore = remote.createStore<Screen>();
 export const store = screenStore.readable;
 
-export const fetch = async (project: Project, peer: User): Promise<void> => {
+async function fetchTreeRoot(
+  selectedRevision: source.RevisionSelector,
+  project: Project,
+  peer: User
+): Promise<[source.Tree, Code]> {
+  const tree = await proxy.client.source.treeGet({
+    projectUrn: project.urn,
+    peerId: peer.peerId,
+    revision: selectedRevision,
+    prefix: "",
+  });
+  const root = await fetchCode(project, peer, selectedRevision, tree, "");
+  return [tree, root];
+}
+
+const fetchProjectExecutor = mutexExecutor.create();
+export async function fetch(project: Project, peer: User): Promise<void> {
   if (!screenStore.is(remote.Status.Success)) {
     screenStore.loading();
   }
 
-  const fetchTreeRoot = async (
-    selectedRevision: source.RevisionSelector
-  ): Promise<[source.Tree, Code]> => {
-    const tree = await proxy.client.source.treeGet({
-      projectUrn: project.urn,
-      peerId: peer.peerId,
-      revision: selectedRevision,
-      prefix: "",
-    });
-    const root = await fetchCode(project, peer, selectedRevision, tree, "");
-    return [tree, root];
-  };
-
   try {
-    const { branches, tags } = await source.fetchRevisions(
-      project.urn,
-      peer.peerId
-    );
-    const revisions = [...branches, ...tags];
-    const patches = await patch.getAll(project.urn);
-    const defaultBranch = branches.find(
-      (branch: source.Branch) => branch.name === project.metadata.defaultBranch
-    );
-    const selectedRevision = defaultBranch || branches[0];
-    const [history, [tree, root]] = await Promise.all([
-      source.fetchCommits(project.urn, peer.peerId, selectedRevision),
-      fetchTreeRoot(selectedRevision),
-    ]);
-    const groupedHistory = source.groupCommitHistory(history);
+    const newScreenData = await fetchProjectExecutor.run(async abort => {
+      const { branches, tags } = await source.fetchRevisions(
+        project.urn,
+        peer.peerId,
+        { abort }
+      );
+      const revisions = [...branches, ...tags];
+      const patches = await patch.getAll(project.urn, { abort });
+      const defaultBranch = branches.find(
+        (branch: source.Branch) =>
+          branch.name === project.metadata.defaultBranch
+      );
+      const selectedRevision = defaultBranch || branches[0];
+      const [history, [tree, root]] = await Promise.all([
+        source.fetchCommits(project.urn, peer.peerId, selectedRevision, {
+          abort,
+        }),
+        // FIXME(rudolfs): convert the following function to accept an
+        // abort signal.
+        fetchTreeRoot(selectedRevision, project, peer),
+      ]);
+      const groupedHistory = source.groupCommitHistory(history);
 
-    screenStore.success({
-      code: writable<Code>(root),
-      history: groupedHistory,
-      patches,
-      peer,
-      project,
-      revisions,
-      requestInProgress: null,
-      selectedPath: derived(pathStore, store => store),
-      selectedRevision: {
-        request: null,
-        selected: selectedRevision,
-      },
-      tree: writable<source.Tree>(tree),
-    });
-  } catch (err: unknown) {
-    screenStore.error(error.fromUnknown(err));
-  }
-};
-
-export function watchPatchListUpdates(): () => void {
-  return localPeer.projectEvents.onValue(() => {
-    const screen = get(screenStore);
-    if (screen.status === remote.Status.Success) {
-      refreshPatches(screen.data.project.urn);
-    }
-  });
-}
-
-const refreshPatchesExecutor = mutexExecutor.create();
-async function refreshPatches(urn: string): Promise<void> {
-  try {
-    const patches = await refreshPatchesExecutor.run(async () => {
-      return await patch.getAll(urn);
+      return {
+        code: writable<Code>(root),
+        history: groupedHistory,
+        patches,
+        peer,
+        project,
+        revisions,
+        selectedPath: derived(pathStore, store => store),
+        selectedRevision: {
+          request: null,
+          selected: selectedRevision,
+        },
+        tree: writable<source.Tree>(tree),
+      };
     });
 
-    if (patches) {
-      const screen = get(screenStore);
-      if (screen.status === remote.Status.Success) {
-        screenStore.success({
-          ...screen.data,
-          patches,
-        });
-      }
+    if (newScreenData) {
+      screenStore.success(newScreenData);
     }
   } catch (err: unknown) {
     screenStore.error(error.fromUnknown(err));
   }
 }
 
-export const selectPath = async (path: string): Promise<void> => {
+export async function selectPath(path: string): Promise<void> {
   const screen = get(screenStore);
   const current = get(pathStore);
 
@@ -177,11 +159,11 @@ export const selectPath = async (path: string): Promise<void> => {
       screen.data.code.set(code);
     }
   }
-};
+}
 
-export const selectRevision = async (
+export async function selectRevision(
   revision: source.Branch | source.Tag
-): Promise<void> => {
+): Promise<void> {
   const screen = get(screenStore);
 
   if (screen.status === remote.Status.Success) {
@@ -254,15 +236,15 @@ export const selectRevision = async (
       screenStore.error(error.fromUnknown(err));
     }
   }
-};
+}
 
-const fetchBlob = async (
+async function fetchBlob(
   project: Project,
   peer: User,
   revision: source.RevisionSelector,
   path: string,
   signal: AbortSignal
-): Promise<Code> => {
+): Promise<Code> {
   const blob = await source.fetchBlob(
     project.urn,
     peer.peerId,
@@ -279,15 +261,15 @@ const fetchBlob = async (
       blob,
     },
   };
-};
+}
 
-const fetchCode = async (
+async function fetchCode(
   project: Project,
   peer: User,
   revision: source.RevisionSelector,
   tree: source.Tree,
   path: string
-): Promise<Code> => {
+): Promise<Code> {
   const currentPath = get(pathStore);
   if (currentPath.request) {
     currentPath.request.abort();
@@ -330,15 +312,15 @@ const fetchCode = async (
   }
 
   return code;
-};
+}
 
-const fetchRoot = async (
+async function fetchRoot(
   project: Project,
   peer: User,
   revision: source.RevisionSelector,
   tree: source.Tree,
   signal: AbortSignal
-): Promise<Code> => {
+): Promise<Code> {
   return {
     lastCommit: tree.info.lastCommit,
     path: "",
@@ -353,4 +335,4 @@ const fetchRoot = async (
       ),
     },
   };
-};
+}
