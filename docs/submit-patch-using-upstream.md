@@ -109,14 +109,10 @@ we need some help.
    Your default editor will open allowing you to enter the title and
    description for the patch. The first line is the title, followed by a blank
    newline, followed by the description of the patch. Reference relevant Github
-   issues by including their URL in the patch description. Save and exit the editor.
+   issues by including their URL in the patch description. Save and exit the
+   editor.
 
-6. Publish your patch:
-   ```bash
-   rad sync
-   ```
-
-7. Verify that the patch shows up in Upstream by navigating to the project’s
+6. Verify that the patch shows up in Upstream by navigating to the project’s
    "Patches" tab.
 
 

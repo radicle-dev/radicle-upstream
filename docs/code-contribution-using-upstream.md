@@ -45,7 +45,6 @@ The contribution process goes as follows:
       Also reference relevant Github issues by including their URL in the
       description.
     - Close the editor
-    - Publish the patch with `rad sync`.
 - Author selects a reviewer from the team and informs the reviewer via Discord
   that there is a new patch that they want to merge.
 - Reviewer confirms that they can see the patch in Upstream.
@@ -69,7 +68,6 @@ The contribution process goes as follows:
       the patch branch. (E.g. by amending the commit)
     - Update the patch: `upstream patch update`. This
       opens the editor and also allows the author to also edit the description
-    - Publish the patch with `rad sync`.
   - Author informs reviewer that their are updates
   - Review process continues with the reviewer reviewing the diff again.
 - Reviewer informs author out of band that they accept the changes

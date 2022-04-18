@@ -116,6 +116,9 @@ enum PatchCommand {
         /// Use the given message as the patch message.
         #[clap(short, long)]
         message: Option<String>,
+        /// Don't sync with the seed.
+        #[clap(short, long)]
+        no_sync: bool,
     },
 
     /// Updates a patch to the current branch and publishes it to the Radicle network.
@@ -127,6 +130,9 @@ enum PatchCommand {
         /// Use the given message as the patch message.
         #[clap(short, long)]
         message: Option<String>,
+        /// Don't sync with the seed.
+        #[clap(short, long)]
+        no_sync: bool,
     },
 
     /// Fetch a patch from a peer and create a tag for the patch in the local repository.
@@ -141,17 +147,17 @@ enum PatchCommand {
 impl PatchCommand {
     fn run(self, options: Options) -> anyhow::Result<()> {
         match self {
-            PatchCommand::Create { message } => create_patch(options, message),
-            PatchCommand::Update { message } => update_patch(options, message),
+            PatchCommand::Create { message, no_sync } => create_patch(options, message, no_sync),
+            PatchCommand::Update { message, no_sync } => update_patch(options, message, no_sync),
             PatchCommand::Fetch { patch_handle } => fetch_patch(options, patch_handle),
         }
     }
 }
 
-fn create_patch(options: Options, message: Option<String>) -> anyhow::Result<()> {
+fn create_patch(options: Options, message: Option<String>, no_sync: bool) -> anyhow::Result<()> {
     let patch_name = get_current_branch_name().context("failed to get current branch name")?;
     if let Some(message) = message {
-        create_or_update_patch(&options, &patch_name, Some(message), true, false)?;
+        create_or_update_patch(&options, &patch_name, Some(message), true, false, no_sync)?;
     } else {
         let git_show = std::process::Command::new("git")
             .arg("show")
@@ -178,16 +184,16 @@ fn create_patch(options: Options, message: Option<String>) -> anyhow::Result<()>
 # Any lines starting with '#' will be ignored.";
 
         let message = format!("{}{}", last_commit_message, patch_help_message);
-        create_or_update_patch(&options, &patch_name, Some(message), true, true)?;
+        create_or_update_patch(&options, &patch_name, Some(message), true, true, no_sync)?;
     };
     println!("Created patch {}", patch_name);
 
     Ok(())
 }
 
-fn update_patch(options: Options, message: Option<String>) -> anyhow::Result<()> {
+fn update_patch(options: Options, message: Option<String>, no_sync: bool) -> anyhow::Result<()> {
     let patch_name = get_current_branch_name().context("failed to get current branch name")?;
-    create_or_update_patch(&options, &patch_name, message, true, false)?;
+    create_or_update_patch(&options, &patch_name, message, true, false, no_sync)?;
     println!("Updated patch {}", patch_name);
 
     Ok(())
@@ -225,6 +231,7 @@ fn create_or_update_patch(
     message: Option<String>,
     force: bool,
     edit: bool,
+    no_sync: bool,
 ) -> anyhow::Result<()> {
     let patch_tag_name = format!("radicle-patch/{}", patch_name);
 
@@ -245,7 +252,7 @@ fn create_or_update_patch(
         .args(message_opts)
         .arg(&patch_tag_name)
         .status()
-        .context("failed to spawn command")?;
+        .context("failed to spawn git command")?;
     if !exit_status.success() {
         anyhow::bail!(ProgramError::new("Failed to create git tag"));
     }
@@ -258,9 +265,22 @@ fn create_or_update_patch(
         .arg("tag")
         .arg(patch_tag_name)
         .status()
-        .context("failed to spawn command")?;
+        .context("failed to spawn git command")?;
     if !exit_status.success() {
         anyhow::bail!(ProgramError::new("Failed to push git tag"));
+    }
+
+    if no_sync {
+        return Ok(());
+    }
+
+    let exit_status = std::process::Command::new("rad")
+        .envs(lnk_home_env)
+        .arg("sync")
+        .status()
+        .context("failed to spawn rad command")?;
+    if !exit_status.success() {
+        anyhow::bail!(ProgramError::new("Failed to sync data with seed"));
     }
 
     Ok(())

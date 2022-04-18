@@ -59,7 +59,7 @@ context("patches", () => {
             `cd "${tempDirPath}/new-project"
             git checkout -b "${patchName}"
             git commit --allow-empty -m "${commitMessage}"
-            upstream patch create -m "${patchTitle}\n\n${patchDescription}"`,
+            upstream patch create --no-sync -m "${patchTitle}\n\n${patchDescription}"`,
             node
           );
           commands.pick("sidebar", "profile").click();
@@ -146,7 +146,7 @@ context("patches", () => {
             `cd "${tempDirPath}/new-project"
             git checkout -b "${patchName}"
             git commit --allow-empty -m "${commitMessage}"
-            upstream patch create -m ""`,
+            upstream patch create --no-sync -m ""`,
             node
           );
           commands.pick("sidebar", "profile").click();
@@ -206,7 +206,7 @@ context("patches", () => {
             `cd "${projectPath}"
             git checkout -b "${patchName}"
             git commit --allow-empty -m "commit message"
-            upstream patch create --message "patch message"`,
+            upstream patch create --no-sync --message "patch message"`,
             node
           );
           commands.pick("patches-tab", "counter").should("contain", "1");
@@ -221,7 +221,7 @@ context("patches", () => {
           );
           nodeManager.exec(
             `cd "${projectPath}"
-            upstream patch update --message "updated patch message"`,
+            upstream patch update --no-sync --message "updated patch message"`,
             node
           );
 
