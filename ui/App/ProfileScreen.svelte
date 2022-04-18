@@ -330,7 +330,7 @@
                   class="request-card box"
                   data-cy="undiscovered-project"
                   out:fade|local={{ duration: 200 }}>
-                  <CopyableIdentifier kind="projectUrn" value={project.urn} />
+                  <CopyableIdentifier kind="projectId" value={project.urn} />
                   <TrackToggle
                     style="align-self: flex-start;"
                     tracking

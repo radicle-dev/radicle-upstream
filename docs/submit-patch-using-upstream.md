@@ -28,7 +28,7 @@ we need some help.
 1. Open the "Search" dialog by pressing `⌘` + `p` (on macOS) or `ctrl` + `p`
    (on Linux).
 
-2. Follow the Upstream project by pasting its Project URN
+2. Follow the Upstream project by pasting its Project ID
    `rad:git:hnrk8ueib11sen1g9n1xbt71qdns9n4gipw1o` into the search bar and
    pressing the `enter` key.
 

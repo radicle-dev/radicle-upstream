@@ -79,7 +79,7 @@
   </h1>
   <CopyableIdentifier
     value={urn}
-    kind="projectUrn"
+    kind="projectId"
     style="margin-top: 0.5rem;" />
   {#if description}
     <p class="description typo-overflow-ellipsis" title={description}>

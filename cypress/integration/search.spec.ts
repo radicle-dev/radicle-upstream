@@ -47,7 +47,7 @@ context("search", () => {
       commands.pick("search-input").should("have.value", "");
     });
 
-    context("when the Project URN is not valid", () => {
+    context("when the Project ID is not valid", () => {
       it("does not track the project when the [enter] key is pressed", () => {
         cy.intercept(
           "http://localhost:30000/v1/projects/requests/invalid-project-urn",
@@ -60,7 +60,7 @@ context("search", () => {
 
         commands
           .pick("search-modal")
-          .should("contain", "That’s not a valid Project URN.");
+          .should("contain", "That’s not a valid Project ID.");
 
         commands.pasteInto(["search-input"], peerId);
         cy.get("body").type("{enter}");
@@ -69,7 +69,7 @@ context("search", () => {
           .pick("search-modal")
           .should(
             "contain",
-            "You’ve entered a Peer ID instead of a Project URN."
+            "You’ve entered a Peer ID instead of a Project ID."
           );
 
         cy.get("@projectRequest").should("not.have.been.called");
@@ -80,10 +80,10 @@ context("search", () => {
   context("when a project is already tracked", () => {
     it("opens the project by clicking the project card", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "projectUrn").then(el => {
+      commands.pick("project-screen", "header", "projectId").then(el => {
         const urn = el.attr("data");
         if (!urn) {
-          throw new Error("Could not find Project URN");
+          throw new Error("Could not find Project ID");
         }
         commands.pick("sidebar", "profile").click();
         commands.pick("profile-screen").should("exist");
@@ -102,10 +102,10 @@ context("search", () => {
 
     it("opens the project by pressing the [enter] hotkey", () => {
       commands.pick("project-list-entry-platinum").click();
-      commands.pick("project-screen", "header", "projectUrn").then(el => {
+      commands.pick("project-screen", "header", "projectId").then(el => {
         const urn = el.attr("data");
         if (!urn) {
-          throw new Error("Could not find Project URN");
+          throw new Error("Could not find Project ID");
         }
         commands.pick("sidebar", "profile").click();
         commands.pick("profile-screen").should("exist");

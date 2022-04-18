@@ -83,7 +83,7 @@ context("deep linking", () => {
   });
 
   context("when passing in a valid project url", () => {
-    it("opens the search modal and pre-fills the input field with the Project URN", () => {
+    it("opens the search modal and pre-fills the input field with the Project ID", () => {
       ipcStub.getStubs().then(stubs => {
         stubs.sendMessage({
           kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,

@@ -71,7 +71,7 @@
         <Badge style="margin-left: 0.5rem" text="delegate" />
       {/if}
     </div>
-    <CopyableIdentifier kind="projectUrn" value={project.urn} />
+    <CopyableIdentifier kind="projectId" value={project.urn} />
     {#if project.metadata.description}
       <p class="desc">{project.metadata.description}</p>
     {/if}

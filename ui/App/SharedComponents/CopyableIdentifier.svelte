@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
   type Kind =
-    | "projectUrn"
+    | "projectId"
     | "peerId"
     | "seedAddress"
     | "ethAddress"
@@ -34,8 +34,8 @@
 
   function kindToName(kind: Kind): string {
     switch (kind) {
-      case "projectUrn":
-        return "Project URN";
+      case "projectId":
+        return "Project ID";
       case "peerId":
         return "Peer ID";
       case "seedAddress":
@@ -49,7 +49,7 @@
 
   function kindToIcon(kind: Kind): typeof SvelteComponent | undefined {
     switch (kind) {
-      case "projectUrn":
+      case "projectId":
         return AtIcon;
       case "peerId":
         return ComputerIcon;
@@ -64,8 +64,8 @@
 
   function kindToShortenedValue(kind: Kind): string {
     switch (kind) {
-      case "projectUrn":
-        return format.shortProjectUrn(value);
+      case "projectId":
+        return format.shortProjectId(value);
       case "peerId":
         return format.shortPeerId(value);
       case "seedAddress":
