@@ -1,6 +1,75 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See
+[standard-version](https://github.com/conventional-changelog/standard-version)
+for commit guidelines.
+
+## [0.3.0](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.14...v0.3.0) (2022-04-18)
+
+### 💡 General Notes
+
+As you’ll see below, we’ve made some fairly significant changes to the Radicle
+Upstream client for this release. The primary thing we were focused on is to
+**make sure that the client is stable** so your teams can begin using it for
+code collaboration. As such, we’ve had to make the difficult decision to remove
+a few features that were causing networking problems.
+
+Moving forward, our goal is to **make sure that all products within Radicle are
+compatible.** This means that any projects that your team is collaborating on
+will be available in the Upstream client, the `rad-cli`, and the Radicle [web
+client](https://app.radicle.network).
+
+Be sure to check out our [new onboarding docs](https://www.notion.so/Onboarding-Docs-ebf2b8a25e7a4ca98a626825e1a6f33c)
+that explain how to get set up using Radicle for your project!
+
+### 🎉 Notable Changes
+
+#### Temporary removal of Organizations
+
+You’ll notice that the Orgs tab has disappeared. That’s because **we’ve
+temporarily hidden the tab on the UI**. Don’t worry, though, your organizations
+are still there and can be found on our [web client](https://app.radicle.network/).
+The reason we decided to remove it for the time being on the Upstream client is
+that not only was it causing stability problems, but we want to **make sure
+it’s actually useful for you**. In the next development cycle, our team will be
+compiling your feedback to make sure that once we implement organizations
+again, we also include valuable features.
+
+#### Temporary removal of Ethereum integration
+
+We’ve also **temporarily removed the Ethereum integration from Upstream**.
+Similar to the organization issues, we’ve also run into a few problems with the
+current Ethereum implementation. Thus, we’ve decided to remove it for the time
+being. Along with the Organizations, we’ll also be going back to the drawing
+board to make sure that what we implement will be useful for everyone.
+
+**Note:** We know some of you that have created organizations and integrated
+with Ethereum have spent money. You should have already been compensated for
+any transaction fees you’ve spent. If not, please reach out to us on
+[Discord](https://canary.discord.com/channels/841318878125490186/843873418205331506)
+and we’ll make sure you’re reimbursed.
+
+#### New onboarding flow
+
+We’ve **greatly improved our app onboarding flow**. Not only is it much more
+friendly, but we also perform a number of system checks to make sure your
+environment is all ready to go. The checks the `rad-cli`, `upstream-cli`, and
+Rad ID. That way we can make sure that you’re able to use all of the features
+in Radicle. Further, we’ve also integrated with your `ssh-agent` so your
+password only needs to be input once per session. Subsequent app opens will
+detect your Radicle ID and automatically unlock.
+
+#### Network compatibility
+
+We’ve ensured that the Upstream client works with all the other tools in the
+Radicle suite, including the `rad-cli` and Radicle web app. This means we’ve
+**integrated the push/pull network** to be compatible in Upstream and **removed
+the p2p network**. On the network screen, you’ll see that we’ve automatically
+added 3 seeds to the client: Willow, Pine, and Maple. These are the three
+default seeds run by Radicle. We are **currently working on re-implementing the
+p2p network** to ensure decentralization; it’ll be available once we can ensure
+system stability.
+
 
 ### [0.2.14](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.13...v0.2.14) (2022-02-22)
 
