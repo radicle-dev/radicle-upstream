@@ -167,10 +167,8 @@
       <div class="section-item">
         <p class="typo-text-bold">Leave feedback for our team!</p>
         <div class="action">
-          <a
-            class="typo-link"
-            href="https://js8wy5qabol.typeform.com/to/eQrzRPFB"
-            >TypeForm Feedback Form</a>
+          <a class="typo-link" href="https://airtable.com/shrjkHSDyisPyzw80"
+            >Upstream Feedback Form</a>
         </div>
       </div>
       <div class="section-item">
