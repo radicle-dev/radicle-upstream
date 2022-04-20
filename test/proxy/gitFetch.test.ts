@@ -7,7 +7,6 @@
 import * as Os from "node:os";
 import * as Fs from "node:fs/promises";
 import * as Path from "node:path";
-import * as Crypto from "node:crypto";
 import execa from "execa";
 import { afterEach, beforeAll, test } from "@jest/globals";
 import waitOn from "wait-on";
@@ -33,13 +32,10 @@ test("contributor follows", async () => {
   const seedUrl = "http://localhost:8778";
   const stateDir = await prepareStateDir();
   const sshAuthSock = await startSshAgent();
-  // We need a random user handle so that the Radicle identity IDs
-  // are different between runs
-  const maintainerName = `maintainer-${randomTag()}`;
 
   const maintainer = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
-    name: maintainerName,
+    name: "maintainer",
     sshAuthSock,
   });
   await maintainer.start();
@@ -48,7 +44,7 @@ test("contributor follows", async () => {
 
   const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
-    name: `contributor-${randomTag()}`,
+    name: "contributor",
     gitSeeds: [seedUrl],
     sshAuthSock,
   });
@@ -77,13 +73,10 @@ test("contributor follows", async () => {
 test("contributor patch replication", async () => {
   const stateDir = await prepareStateDir();
   const sshAuthSock = await startSshAgent();
-  // We need a random user handle so that the Radicle identity IDs
-  // are different between runs
-  const maintainerName = `maintainer-${randomTag()}`;
 
   const maintainer = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
-    name: maintainerName,
+    name: "maintainer",
     gitSeeds: [seedUrl],
     sshAuthSock,
   });
@@ -92,7 +85,7 @@ test("contributor patch replication", async () => {
   const projectUrn = await createProject(maintainer, "foo");
   const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
-    name: `contributor-${randomTag()}`,
+    name: "contributor",
     gitSeeds: [seedUrl],
     sshAuthSock,
   });
@@ -210,11 +203,6 @@ async function startSshAgent(): Promise<string> {
   });
   await waitOn({ resources: [sshAuthSock], timeout: 5000 });
   return sshAuthSock;
-}
-
-// Generate string of 12 random characters with 8 bits of entropy.
-function randomTag(): string {
-  return Crypto.randomBytes(8).toString("hex");
 }
 
 async function createProject(

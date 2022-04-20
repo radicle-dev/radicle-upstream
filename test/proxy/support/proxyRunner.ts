@@ -4,6 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import * as Crypto from "node:crypto";
 import fetch from "node-fetch";
 import EventSource from "eventsource";
 import waitOn from "wait-on";
@@ -25,6 +26,10 @@ const PATH = [BIN_PATH, process.env.PATH].join(path.delimiter);
 
 interface RadicleProxyParams {
   dataPath: string;
+  // Name to quickly identify this peer.
+  //
+  // Used as a prefix for directories, as a prefix for the user
+  // handle, and as a prefix for the console logs.
   name: string;
   gitSeeds?: string[];
   sshAuthSock?: string;
@@ -57,9 +62,13 @@ export class RadicleProxy {
     const lnkHome = path.join(dataPath, `${name}-lnk-home`);
     await fs.mkdir(lnkHome, { recursive: true });
 
+    // We need a random user handle so that the Radicle identity IDs
+    // are different between runs
+    const userHandle = `${name}-${randomTag()}`;
+
     const initResult = await execa(
       path.join(BIN_PATH, "upstream-proxy-dev"),
-      ["--lnk-home", lnkHome, "init", name, "--key-passphrase", "asdf"],
+      ["--lnk-home", lnkHome, "init", userHandle, "--key-passphrase", "asdf"],
       { env: { SSH_AUTH_SOCK: sshAuthSock } }
     );
     const peerId = JSON.parse(initResult.stdout).peerId;
@@ -177,4 +186,9 @@ export class RadicleProxy {
       `${this.#name}-shell`
     );
   }
+}
+
+// Generate string of 12 random characters with 8 bits of entropy.
+function randomTag(): string {
+  return Crypto.randomBytes(8).toString("hex");
 }
