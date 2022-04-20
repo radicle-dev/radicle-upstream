@@ -7,7 +7,6 @@
 //! Provides [`run`] to run the proxy process.
 use std::sync::Arc;
 
-use anyhow::Context;
 use futures::prelude::*;
 
 use crate::{cli::Args, config, context, http, service};
@@ -132,12 +131,9 @@ async fn run_session(
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
     let paths = environment.coco_profile.paths();
-    let project_seed_store = crate::git_fetch::ProjectSeedStore::new(store.clone())
-        .context("failed to create ProjectSeedStore")?;
 
     let sealed = context::Sealed {
         store: store.clone(),
-        project_seed_store: project_seed_store.clone(),
         test: environment.test_mode,
         service_handle,
         keystore: environment.keystore.clone(),
@@ -178,7 +174,7 @@ async fn run_session(
             peer.clone(),
             args.git_seeds.unwrap_or_default(),
             std::time::Duration::from_secs(args.git_fetch_interval),
-            project_seed_store,
+            &store,
         )
         .await?;
 

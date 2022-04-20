@@ -226,9 +226,8 @@ mod handler {
 
     /// Get the [`project::Project`] for the given `id`.
     pub async fn get(urn: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
-        Ok(reply::json(
-            &project::get(&ctx.peer, urn, ctx.rest.project_seed_store).await?,
-        ))
+        let seed = ctx.git_fetch.get_seed(urn.id);
+        Ok(reply::json(&project::get(&ctx.peer, urn, seed).await?))
     }
 
     /// List all failed projects.

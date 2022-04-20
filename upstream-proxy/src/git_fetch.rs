@@ -15,13 +15,16 @@ pub async fn create(
     peer: crate::peer::Peer,
     seeds: Vec<rad_common::Url>,
     fetch_interval: std::time::Duration,
-    project_seed_store: ProjectSeedStore,
+    store: &kv::Store,
 ) -> anyhow::Result<(Handle, Runner)> {
+    let project_seed_store =
+        ProjectSeedStore::new(store).context("failed to get project seed bucket")?;
     let (update_tx, update_rx) = async_broadcast::broadcast(32);
     let (identity_queue, identity_rx) = UniqueDelayQueue::new();
     let handle = Handle {
         update_rx: update_rx.deactivate(),
         identity_queue: identity_queue.clone(),
+        project_seed_store: project_seed_store.clone(),
     };
 
     let projects = crate::project::list_link(&peer)
@@ -45,10 +48,11 @@ pub async fn create(
     Ok((handle, runner))
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Handle {
     update_rx: async_broadcast::InactiveReceiver<Revision>,
     identity_queue: UniqueDelayQueue,
+    project_seed_store: ProjectSeedStore,
 }
 
 impl Handle {
@@ -64,6 +68,11 @@ impl Handle {
     /// identity from a seed.
     pub fn updates(&self) -> async_broadcast::Receiver<Revision> {
         self.update_rx.activate_cloned()
+    }
+
+    /// Returns the URL of a seed node that replicates `identity`.
+    pub fn get_seed(&self, identity: Revision) -> Option<rad_common::Url> {
+        self.project_seed_store.get(identity)
     }
 }
 
@@ -165,17 +174,17 @@ impl UniqueDelayQueue {
 }
 
 #[derive(Clone)]
-pub struct ProjectSeedStore {
+struct ProjectSeedStore {
     bucket: kv::Bucket<'static, String, String>,
 }
 
 impl ProjectSeedStore {
-    pub fn new(store: kv::Store) -> Result<Self, kv::Error> {
+    fn new(store: &kv::Store) -> Result<Self, kv::Error> {
         let bucket = store.bucket(Some("projects_seeds"))?;
         Ok(Self { bucket })
     }
 
-    pub fn get(&self, project_urn: Revision) -> Option<rad_common::Url> {
+    fn get(&self, project_urn: Revision) -> Option<rad_common::Url> {
         let result = self.bucket.get(project_urn.to_string());
 
         let maybe_value = match result {

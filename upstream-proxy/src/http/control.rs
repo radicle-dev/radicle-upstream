@@ -73,7 +73,8 @@ mod handler {
         .await
         .map_err(error::Error::from)?;
 
-        let project = project::get(&ctx.peer, meta.urn(), ctx.rest.project_seed_store)
+        let seed = ctx.git_fetch.get_seed(meta.urn().id);
+        let project = project::get(&ctx.peer, meta.urn(), seed)
             .await
             .map_err(error::Error::from)?;
 

@@ -119,8 +119,6 @@ pub struct Unsealed {
 pub struct Sealed {
     /// [`kv::Store`] used for session state and cache.
     pub store: kv::Store,
-    /// Maps projects to the seed we got the project data from.
-    pub project_seed_store: crate::git_fetch::ProjectSeedStore,
     /// Flag to control if the stack is set up in test mode.
     pub test: bool,
     /// Handle to control the service configuration.

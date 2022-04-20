@@ -270,7 +270,7 @@ impl Projects {
 pub async fn get(
     peer: &crate::peer::Peer,
     project_urn: Urn,
-    project_seed_store: crate::git_fetch::ProjectSeedStore,
+    seed: Option<rad_common::Url>,
 ) -> Result<Project, error::Error> {
     let project = crate::daemon::state::get_project(peer.librad_peer(), project_urn.clone())
         .await?
@@ -279,7 +279,6 @@ pub async fn get(
     let branch =
         crate::daemon::state::find_default_branch(peer.librad_peer(), project_urn.clone()).await?;
     let project_stats = browser::using(peer, branch, |browser| Ok(browser.get_stats()?))?;
-    let seed = project_seed_store.get(project_urn.id);
 
     Project::try_from((project, project_stats, seed))
 }
