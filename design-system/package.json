@@ -1,0 +1,32 @@
+{
+  "name": "radicle-design-system",
+  "version": "0.1.0",
+  "author": {
+    "name": "radicle team",
+    "email": "dev@radicle.xyz",
+    "url": "https://radicle.xyz"
+  },
+  "license": "GPL-3.0-only",
+  "description": "Radicle Design System",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/radicle-dev/radicle-upstream.git"
+  },
+  "dependencies": {
+    "marked": "^4.0.12",
+    "radicle-avatar": "github:radicle-dev/radicle-avatar",
+    "sanitize-html": "^2.7.0",
+    "svelte": "^3.46.6",
+    "twemoji": "14.0.2"
+  },
+  "packageManager": "yarn@3.2.0",
+  "files": [
+    "!node_modules/*",
+    "!build/*",
+    "*.svelte",
+    "*.ts",
+    "*.css",
+    "*.html",
+    "*.otf"
+  ]
+}

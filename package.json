@@ -1,4 +1,8 @@
 {
+  "private": true,
+  "workspaces": [
+    "design-system"
+  ],
   "name": "radicle-upstream",
   "productName": "Radicle Upstream",
   "version": "0.3.0",

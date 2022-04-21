@@ -10813,7 +10813,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radicle-avatar@github:radicle-dev/radicle-avatar#commit=55640c89666c25fa95390c58a73f0e55d83e2e61":
+"radicle-avatar@github:radicle-dev/radicle-avatar, radicle-avatar@github:radicle-dev/radicle-avatar#commit=55640c89666c25fa95390c58a73f0e55d83e2e61":
   version: 0.1.0
   resolution: "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#commit=55640c89666c25fa95390c58a73f0e55d83e2e61"
   dependencies:
@@ -10833,6 +10833,18 @@ __metadata:
   checksum: 7e7156073d4958e26b7624924c021ac3ad9d668788e0bc1d3cee7ecb434f3aa57d7f5c9005352c39abcf929e9495b683c07f7a475633f43a7e4d77a4ebd102ae
   languageName: node
   linkType: hard
+
+"radicle-design-system@workspace:design-system":
+  version: 0.0.0-use.local
+  resolution: "radicle-design-system@workspace:design-system"
+  dependencies:
+    marked: ^4.0.12
+    radicle-avatar: "github:radicle-dev/radicle-avatar"
+    sanitize-html: ^2.7.0
+    svelte: ^3.46.6
+    twemoji: 14.0.2
+  languageName: unknown
+  linkType: soft
 
 "radicle-upstream@workspace:.":
   version: 0.0.0-use.local
