@@ -57,10 +57,7 @@ cargo clippy --all --all-targets --all-features -- --deny warnings
 log-group-end
 
 log-group-start "cargo doc"
-(
-  export RUSTDOCFLAGS="-D broken-intra-doc-links"
-  cargo doc --workspace --no-deps --all-features --document-private-items
-)
+RUSTDOCFLAGS="-Dwarnings" cargo doc --workspace --no-deps --all-features --document-private-items
 log-group-end
 
 log-group-start "cargo build"
