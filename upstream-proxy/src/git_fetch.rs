@@ -4,11 +4,21 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-//! Service for fetching projects seeds peers via Git+HTTPS.
+//! Service for syncing identities with Radicle Git seeds via Git+HTTPS fetch and push.
+//!
+//! For every project identity, we try to find a seed that replicates that project by querying all
+//! potential seeds. The set of potential seeds is the `seeds` argument to [`create`]. We persist
+//! the project-seed mapping to disk.
+//!
+//! It is not guaranteed that the found seed is the only seed that replicates the project and has
+//! up-to-date data. We make no effort to get data from multiple seeds.
+//!
+//! For every project stored on this peer we continously fetch updates in the background at an
+//! interval configured by the `fetch_interval` argument.
 
 use anyhow::Context as _;
 use futures::prelude::*;
-use link_identities::git::Revision;
+use radicle_git_ext::Oid;
 use std::sync::Arc;
 
 pub async fn create(
@@ -50,7 +60,7 @@ pub async fn create(
 
 #[derive(Clone)]
 pub struct Handle {
-    update_rx: async_broadcast::InactiveReceiver<Revision>,
+    update_rx: async_broadcast::InactiveReceiver<Oid>,
     identity_queue: UniqueDelayQueue,
     project_seed_store: ProjectSeedStore,
 }
@@ -58,7 +68,7 @@ pub struct Handle {
 impl Handle {
     /// Add an identity to continuously fetch from the configured seeds. The identity will be
     /// fetched immediately after calling this function, even if it has been added before.
-    pub async fn add(&self, identity: Revision) {
+    pub async fn add(&self, identity: Oid) {
         self.identity_queue
             .add(identity, std::time::Duration::new(0, 0))
             .await
@@ -66,12 +76,12 @@ impl Handle {
 
     /// Stream that emits the identifier of an identity whenever we’ve fetched new updates for the
     /// identity from a seed.
-    pub fn updates(&self) -> async_broadcast::Receiver<Revision> {
+    pub fn updates(&self) -> async_broadcast::Receiver<Oid> {
         self.update_rx.activate_cloned()
     }
 
     /// Returns the URL of a seed node that replicates `identity`.
-    pub fn get_seed(&self, identity: Revision) -> Option<rad_common::Url> {
+    pub fn get_seed(&self, identity: Oid) -> Option<rad_common::Url> {
         self.project_seed_store.get(identity)
     }
 }
@@ -81,9 +91,9 @@ pub struct Runner {
     /// List of seed URLs to try to fetch identities from if we don’t know the seed yet.
     seeds: Vec<rad_common::Url>,
     /// Inform subscribers that an identity has been updated
-    update_tx: async_broadcast::Sender<Revision>,
+    update_tx: async_broadcast::Sender<Oid>,
     /// Stream of queued identities to fetch updates for
-    identity_rx: futures_delay_queue::Receiver<Revision>,
+    identity_rx: futures_delay_queue::Receiver<Oid>,
     /// Queue of identities to fetch updates for
     identity_queue: UniqueDelayQueue,
     /// Time after which project updates are fetched again.
@@ -123,23 +133,19 @@ impl Runner {
     }
 }
 
-/// Queue for [`Revision`]s that will be emitted by a receiver after a delay.
+/// Queue for [`Oid`]s that will be emitted by a receiver after a delay.
 ///
 /// This is a wrapper around [`futures_delay_queue::DelayQueue`] that guarantees that each
-/// [`Revision`] is only queued once.
+/// [`Oid`] is only queued once.
 #[derive(Debug, Clone)]
 struct UniqueDelayQueue {
-    handles: Arc<dashmap::DashMap<Revision, Option<futures_delay_queue::DelayHandle>>>,
-    queue: Arc<
-        futures_delay_queue::DelayQueue<
-            Revision,
-            futures_intrusive::buffer::GrowingHeapBuf<Revision>,
-        >,
-    >,
+    handles: Arc<dashmap::DashMap<Oid, Option<futures_delay_queue::DelayHandle>>>,
+    queue:
+        Arc<futures_delay_queue::DelayQueue<Oid, futures_intrusive::buffer::GrowingHeapBuf<Oid>>>,
 }
 
 impl UniqueDelayQueue {
-    fn new() -> (Self, futures_delay_queue::Receiver<Revision>) {
+    fn new() -> (Self, futures_delay_queue::Receiver<Oid>) {
         let (queue, receiver) = futures_delay_queue::delay_queue();
         (
             Self {
@@ -150,10 +156,10 @@ impl UniqueDelayQueue {
         )
     }
 
-    /// Add a new [`Revision`] to the queue to be emitted after `delay`.
+    /// Add a new [`Oid`] to the queue to be emitted after `delay`.
     ///
     /// If `revision` is already queued we update its entry so that it’s queued after `delay`.
-    async fn add(&self, revision: Revision, delay: std::time::Duration) {
+    async fn add(&self, revision: Oid, delay: std::time::Duration) {
         match self.handles.entry(revision) {
             dashmap::mapref::entry::Entry::Occupied(mut occupied) => {
                 let handle = occupied
@@ -184,8 +190,8 @@ impl ProjectSeedStore {
         Ok(Self { bucket })
     }
 
-    fn get(&self, project_urn: Revision) -> Option<rad_common::Url> {
-        let result = self.bucket.get(project_urn.to_string());
+    fn get(&self, identity: Oid) -> Option<rad_common::Url> {
+        let result = self.bucket.get(identity.to_string());
 
         let maybe_value = match result {
             Ok(maybe_value) => maybe_value,
@@ -209,10 +215,8 @@ impl ProjectSeedStore {
         }
     }
 
-    fn set(&self, project_urn: Revision, seed_url: rad_common::Url) {
-        let result = self
-            .bucket
-            .set(project_urn.to_string(), seed_url.to_string());
+    fn set(&self, identity: Oid, seed_url: rad_common::Url) {
+        let result = self.bucket.set(identity.to_string(), seed_url.to_string());
 
         if let Err(err) = result {
             tracing::error!(?err, "could not store project seed in kv store");
@@ -231,7 +235,7 @@ impl ProjectSeedStore {
 async fn fetch_project(
     peer: &crate::peer::Peer,
     seeds: &[rad_common::Url],
-    identity: Revision,
+    identity: Oid,
     project_seed_store: &ProjectSeedStore,
 ) -> Result<bool, Vec<anyhow::Error>> {
     let mut errors = vec![];
@@ -281,7 +285,7 @@ enum FetchResult {
 /// Try to fetch a project and all references of all the delegates from the Git seed.
 async fn fetch_project_from_seed(
     peer: &crate::peer::Peer,
-    project_id: Revision,
+    project_id: Oid,
     seed_url: &rad_common::Url,
 ) -> anyhow::Result<FetchResult> {
     let this_peer_id = peer.librad_peer().peer_id();
