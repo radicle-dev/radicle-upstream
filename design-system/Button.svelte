@@ -12,6 +12,7 @@
     | "primary"
     | "vanilla"
     | "transparent"
+    | "primary-outline"
     | "outline"
     | "destructive"
     | "embedded" = "primary";
@@ -99,6 +100,24 @@
   }
 
   .primary.disabled :global(svg) {
+    fill: var(--color-background);
+  }
+
+  .primary-outline {
+    background-color: transparent;
+    border-color: var(--color-primary-level-2);
+    color: var(--color-foreground);
+  }
+  .primary-outline:hover {
+    color: var(--color-foreground);
+    background-color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+  .primary-outline.disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+  }
+  .primary-outline.disabled :global(svg) {
     fill: var(--color-background);
   }
 
@@ -245,7 +264,7 @@
   class="button typo-text-bold {buttonClass}"
   {title}
   {disabled}
-  on:click
+  on:click|stopPropagation
   on:mouseenter
   on:mouseleave
   {style}>
