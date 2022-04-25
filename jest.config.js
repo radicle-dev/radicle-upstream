@@ -6,6 +6,7 @@
 
 module.exports = {
   roots: ["<rootDir>/ui/src", "<rootDir>/native", "<rootDir>/test"],
+  testPathIgnorePatterns: ["<rootDir>/test/e2e"],
   transform: {
     "^.+\\.ts$": "ts-jest",
   },
@@ -15,10 +16,9 @@ module.exports = {
     "^proxy-client$": "<rootDir>/proxy-client/index",
     "^design-system/(.*)$": "<rootDir>/design-system/$1",
     "^design-system$": "<rootDir>/design-system/index",
-    "^p2p-tests/(.*)$": "<rootDir>/p2p-tests/$1",
   },
   testEnvironment: "jsdom",
-  testRegex: "(/__tests__/.*|(\\.|/)(test))\\.ts$",
+  testRegex: "((\\.|/)(test))\\.ts$",
   moduleFileExtensions: ["ts", "js", "json"],
   globals: {
     "ts-jest": { isolatedModules: true },

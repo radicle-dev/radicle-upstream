@@ -4,22 +4,27 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type { Config } from "ui/src/config";
+
 import * as Crypto from "node:crypto";
-import fetch from "node-fetch";
-import EventSource from "eventsource";
-import waitOn from "wait-on";
-import * as Jest from "@jest/globals";
 import * as ProxyClient from "proxy-client";
 import * as fs from "node:fs/promises";
 import * as path from "path";
+import EventSource from "eventsource";
+import Polka from "polka";
+import Sirv from "sirv";
 import execa from "execa";
+import fetch from "node-fetch";
 import getPort from "get-port";
+import qs from "qs";
+import waitOn from "wait-on";
+import { Server } from "http";
 
 import * as Process from "./process";
 
 export { killAllProcesses } from "./process";
 
-const ROOT_PATH = path.join(__dirname, "..", "..", "..");
+const ROOT_PATH = path.join(__dirname, "..", "..");
 const CARGO_TARGET_DIR =
   process.env.CARGO_TARGET_DIR ?? path.join(ROOT_PATH, "target");
 const BIN_PATH = path.join(CARGO_TARGET_DIR, "debug");
@@ -27,7 +32,7 @@ const PATH = [BIN_PATH, process.env.PATH].join(path.delimiter);
 
 export const SEED_URL = "http://127.0.0.1:8778";
 
-interface RadicleProxyParams {
+interface UpstreamPeerParams {
   dataPath: string;
   // Name to quickly identify this peer.
   //
@@ -37,45 +42,71 @@ interface RadicleProxyParams {
   sshAuthSock?: string;
 }
 
-// Registers a test hook that ensures that `upstream-proxy` is built.
-// We skip this hook if the `CI` environment variable is "true".
-export function buildBeforeAll(): void {
+// Builds the `upstream-proxy` when this is run locally, we skip the build if
+// the `CI` environment variable is "true".
+export async function buildProxy(): Promise<void> {
   if (process.env.CI === "true") {
     return;
   }
 
-  Jest.beforeAll(async () => {
-    // Because we’re using `--quiet` to build the proxy we want to show
-    // some progress to the user. But only after some initial delay so
-    // that we don’t show it when we don’t need to rebuild or the rebuild
-    // is quick.
-    const notifyTimeout = setTimeout(() => {
-      // We’re not using `console.log()` because it is patched by Jest
-      process.stdout.write("Building upstream-proxy...");
-    }, 3000);
-    await execa("cargo", ["build", "--bin", "upstream-proxy", "--quiet"], {
-      stdio: "inherit",
-    });
-    clearTimeout(notifyTimeout);
-  }, 10 * 60 * 1000);
+  // Because we’re using `--quiet` to build the proxy we want to show
+  // some progress to the user. But only after some initial delay so
+  // that we don’t show it when we don’t need to rebuild or the rebuild
+  // is quick.
+  const notifyTimeout = setTimeout(() => {
+    // We’re not using `console.log()` because it is patched by Jest
+    process.stdout.write("Building upstream-proxy…");
+  }, 3000);
+  await execa("cargo", ["build", "--bin", "upstream-proxy", "--quiet"], {
+    stdio: "inherit",
+  });
+  clearTimeout(notifyTimeout);
 }
 
-export class RadicleProxy {
+export async function buildUi(): Promise<void> {
+  if (process.env.CI === "true") {
+    return;
+  }
+
+  // Because we’re using `--quiet` to build the proxy we want to show
+  // some progress to the user. But only after some initial delay so
+  // that we don’t show it when we don’t need to rebuild or the rebuild
+  // is quick.
+  const notifyTimeout = setTimeout(() => {
+    console.log("Building UI…");
+  }, 3000);
+  await execa("webpack", ["build", "--config-name", "ui", "--progress"], {
+    stdio: "inherit",
+  });
+  clearTimeout(notifyTimeout);
+}
+
+export class UpstreamPeer {
   public checkoutPath: string;
   public peerId: string;
   public proxyClient: ProxyClient.ProxyClient;
 
-  #name: string;
-  #lnkHome: string;
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
   #httpSocketAddr: string;
+  #lnkHome: string;
+  #name: string;
   #sshAuthSock: string;
+  #uiServer?: Server;
+  #uiUrl?: string;
+
+  public get uiUrl(): string {
+    if (this.#uiUrl) {
+      return this.#uiUrl;
+    } else {
+      throw new Error("Trying to access UI before it is started.");
+    }
+  }
 
   public static async create({
     dataPath,
     name,
     sshAuthSock = "/dev/null",
-  }: RadicleProxyParams): Promise<RadicleProxy> {
+  }: UpstreamPeerParams): Promise<UpstreamPeer> {
     const httpPort = await getPort();
     const httpSocketAddr = `127.0.0.1:${httpPort}`;
 
@@ -102,7 +133,7 @@ export class RadicleProxy {
       EventSource
     );
 
-    return new RadicleProxy({
+    return new UpstreamPeer({
       checkoutPath,
       peerId,
       proxyClient,
@@ -118,22 +149,22 @@ export class RadicleProxy {
     peerId: string;
     proxyClient: ProxyClient.ProxyClient;
 
-    name: string;
-    lnkHome: string;
     httpSocketAddr: string;
+    lnkHome: string;
+    name: string;
     sshAuthSock: string;
   }) {
     this.checkoutPath = props.checkoutPath;
     this.peerId = props.peerId;
     this.proxyClient = props.proxyClient;
 
-    this.#name = props.name;
-    this.#lnkHome = props.lnkHome;
     this.#httpSocketAddr = props.httpSocketAddr;
+    this.#lnkHome = props.lnkHome;
+    this.#name = props.name;
     this.#sshAuthSock = props.sshAuthSock;
   }
 
-  public async start(): Promise<void> {
+  public async startProxy(): Promise<void> {
     if (this.#childProcess) {
       throw new Error("Tried to start a process that already was running.");
     }
@@ -161,14 +192,76 @@ export class RadicleProxy {
     await waitOn({ resources: [`tcp:${this.#httpSocketAddr}`], timeout: 7000 });
   }
 
-  public async stop(): Promise<void> {
+  public async stopProxy(): Promise<void> {
     if (!this.#childProcess) {
-      throw new Error("Tried to stop() process that wasn't started.");
+      throw new Error(
+        "Tried to run stopProxy() on a process that wasn't started."
+      );
     }
 
     this.#childProcess.kill("SIGTERM");
     await this.#childProcess;
     this.#childProcess = undefined;
+  }
+
+  private async startUi(): Promise<void> {
+    const uiPort = (await getPort()).toString();
+
+    const uiConfig: Config = {
+      proxyAddress: this.#httpSocketAddr,
+      isDev: true,
+    };
+
+    const query = qs.stringify({
+      config: JSON.stringify(uiConfig),
+    });
+
+    this.#uiUrl = `http://127.0.0.1:${uiPort}/?${query}`;
+
+    const polka = Polka().use(Sirv("public"));
+
+    await new Promise<void>((resolve, reject) => {
+      polka.listen(uiPort, (err: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    console.log(`UI ready at ${this.#uiUrl}`);
+    this.#uiServer = polka.server;
+  }
+
+  private async stopUi(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      if (this.#uiServer) {
+        this.#uiServer.close(err => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      } else {
+        reject(
+          new Error("Tried to run stopUi() on a process that wasn't started.")
+        );
+      }
+    });
+
+    this.#uiServer = undefined;
+  }
+
+  public async start(): Promise<void> {
+    await this.startProxy();
+    await this.startUi();
+  }
+
+  public async stop(): Promise<void> {
+    await this.stopUi();
+    await this.stopProxy();
   }
 
   // Spawn a process with an environment configured for this proxy

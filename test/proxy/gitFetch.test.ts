@@ -8,10 +8,12 @@ import * as Path from "node:path";
 import { afterEach, beforeAll, test } from "@jest/globals";
 
 import * as ProxyEvents from "proxy-client/events";
-import * as ProxyRunner from "./support/proxyRunner";
-import * as Support from "./support";
+import * as PeerRunner from "../support/peerRunner";
+import * as Support from "../support";
 
-ProxyRunner.buildBeforeAll();
+beforeAll(async () => {
+  await PeerRunner.buildProxy();
+}, 10 * 60 * 1000);
 
 beforeAll(async () => {
   await Support.assertRadInstalled();
@@ -19,29 +21,32 @@ beforeAll(async () => {
 });
 
 afterEach(async () => {
-  ProxyRunner.killAllProcesses();
+  PeerRunner.killAllProcesses();
 });
 
 test("contributor follows", async () => {
-  const stateDir = await Support.prepareStateDir();
+  const stateDir = await Support.prepareStateDir(
+    expect.getState().testPath,
+    expect.getState().currentTestName
+  );
   const sshAuthSock = await Support.startSshAgent();
 
-  const maintainer = await ProxyRunner.RadicleProxy.create({
+  const maintainer = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
     name: "maintainer",
     sshAuthSock,
   });
-  await maintainer.start();
+  await maintainer.startProxy();
 
   const projectUrn = await Support.createProject(maintainer, "foo");
 
-  const contributor = await ProxyRunner.RadicleProxy.create({
+  const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
     name: "contributor",
     sshAuthSock,
   });
 
-  await contributor.start();
+  await contributor.startProxy();
 
   const projectUpdated = contributor.proxyClient
     .events()
@@ -63,24 +68,27 @@ test("contributor follows", async () => {
 }, 10_000);
 
 test("contributor patch replication", async () => {
-  const stateDir = await Support.prepareStateDir();
+  const stateDir = await Support.prepareStateDir(
+    expect.getState().testPath,
+    expect.getState().currentTestName
+  );
   const sshAuthSock = await Support.startSshAgent();
 
-  const maintainer = await ProxyRunner.RadicleProxy.create({
+  const maintainer = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
     name: "maintainer",
     sshAuthSock,
   });
-  await maintainer.start();
+  await maintainer.startProxy();
 
   const projectUrn = await Support.createProject(maintainer, "foo");
-  const contributor = await ProxyRunner.RadicleProxy.create({
+  const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
     name: "contributor",
     sshAuthSock,
   });
 
-  await contributor.start();
+  await contributor.startProxy();
 
   const contributorProjectPath = Path.join(contributor.checkoutPath, "foo");
   await contributor.spawn(

@@ -88,10 +88,25 @@ log-group-start "Bundle electron main files"
 time yarn run webpack --config-name main
 log-group-end
 
-log-group-start "Starting proxy daemon and runing app tests"
 if [[ "${RUNNER_OS:-}" != "macOS" ]]; then
+  log-group-start "Starting test seed node"
   ./scripts/git-server-test.sh --detach
+  log-group-end
+
+  log-group-start "yarn playwright install"
+  time yarn playwright install
+  log-group-end
+
+  log-group-start "yarn webpack --config-name ui"
+  time yarn webpack --config-name ui
+  log-group-end
+
+  log-group-start "yarn playwright test"
+  time yarn playwright test
+  log-group-end
 fi
+
+log-group-start "Runing app tests"
 # We modify the output of the tests to add log groups to the cypress
 # tests.
 time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |

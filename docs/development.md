@@ -145,26 +145,34 @@ make sure only properly formatted and lint-free code lands into main.
 
 ### Running tests
 
-Before running UI end-to-end tests locally you'll need to check out the latest
-test fixtures which are included in this repository as a git submodule:
+Before running tests you'll need to check out the latest test fixtures which
+are included in this repository as a git submodule:
 
 ```sh
 ./scripts/test-setup.sh
 ```
 
-💡 *You'll have to run the previous command every time there are any updates to
-the test fixture repository.*
+💡 *You'll have to run that command every time there are any updates to the
+test fixture repository.*
 
-We use [Cypress](https://www.cypress.io/) for integration tests and
-[Jest](https://jestjs.io/) for unit tests. You can find integration tests in
-the `cypress/` directory and unit tests next to the modules they correspond to.
+~~We use [Cypress](https://www.cypress.io/) for integration tests.~~
+We're deprecating Cypress in favour of [Playwright](https://playwright.dev/).
+For every other type of test we use [Jest](https://jestjs.io/).
 
-- To run all UI tests run: `yarn test`.
-- To troubleshoot integration tests via the Cypress GUI, run:
-  `yarn test:integration:debug`.
-- To isolate a single integration test for debugging purposes, use
-  the [`.only` method][on].
-- To develop unit tests in watch mode, run: `yarn test:unit:watch`
+  - run Jest tests with:
+    `yarn jest`
+
+  - run Playwright tests with:
+    `yarn playwright test`
+
+  - run Playwright tests in debug mode with:
+    `PWDEBUG=console yarn playwright test`
+
+  - run legacy Cypress tests with:
+    `yarn test:integration`
+
+  - run legacy Cypress tests in debug mode with:
+    `yarn test:integration:debug`
 
 
 ### Running on Windows (experimental)
@@ -211,37 +219,6 @@ APPLE_ID_PASSWORD="<APP_SPECIFIC_PASSWORD>" \
 NOTARIZE=true \
 yarn dist
 ```
-
-### Scripts
-
-To get a list of all available script commands, run: `yarn run`.
-
-**Note:** Scripts marked with `_private` are not meant to be executed from the
-the CLI, they're only to be used by other scripts.
-
-Here's a list of all scripts that are intended for developer use:
-
-    yarn start                  # Start Upstream in development mode
-
-    yarn test                   # Run all UI tests
-    yarn test:integration       # Run only Cypress integration tests
-    yarn test:integration:debug # Show the Cypress GUI, useful for
-                                # visual debugging
-    yarn test:unit              # Run only Jest unit tests
-    yarn test:unit:watch        # Run Jest tests in watch mode
-
-    yarn dist                   # Build an installable Upstream package for the
-                                # current platform
-
-    yarn typescript:check       # Type-check all UI *.ts and *.svelte files
-    yarn prettier:check         # Check UI code formatting
-    yarn prettier:write         # Auto-format UI code
-    yarn lint                   # Check UI code for linting errors
-
-    yarn reset:state            # Delete all local state:
-                                #   - identity keys
-                                #   - monorepo
-                                #   - saved preferences
 
 ## upstream-proxy
 

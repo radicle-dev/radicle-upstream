@@ -11,7 +11,6 @@ cypress/fixtures/example.json
 cypress/workspace
 proxy/**/target
 proxy/**/*.rs.bk
-p2p-tests/workspace
 /target
 /test/**/*--state
 sandbox

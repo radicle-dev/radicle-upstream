@@ -11,7 +11,7 @@ import execa from "execa";
 import waitOn from "wait-on";
 import Semver from "semver";
 
-import * as ProxyRunner from "./support/proxyRunner";
+import * as PeerRunner from "./support/peerRunner";
 import * as Process from "./support/process";
 import { retryOnError } from "ui/src/retryOnError";
 
@@ -58,12 +58,11 @@ export async function assertRadInstalled(): Promise<void> {
 // Returns a path to a directory where the test can store files.
 //
 // The directory is cleared before it is returned.
-export async function prepareStateDir(): Promise<string> {
-  const testPath = expect.getState().testPath;
-  const stateDir = Path.resolve(
-    `${testPath}--state`,
-    expect.getState().currentTestName
-  );
+export async function prepareStateDir(
+  testPath: string,
+  testName: string
+): Promise<string> {
+  const stateDir = Path.resolve(`${testPath}--state`, testName);
   await Fs.rm(stateDir, { recursive: true, force: true });
   await Fs.mkdir(stateDir, { recursive: true });
   return stateDir;
@@ -90,7 +89,7 @@ export function retry<T>(fn: () => Promise<T>): Promise<T> {
 // Create a project using the rad CLI and wait until the proxy
 // registers the seed for the project.
 export async function createProject(
-  proxy: ProxyRunner.RadicleProxy,
+  proxy: PeerRunner.UpstreamPeer,
   name: string
 ): Promise<string> {
   const maintainerProjectPath = Path.join(proxy.checkoutPath, name);
@@ -117,7 +116,7 @@ export async function createProject(
 
   await proxy.spawn(
     "git",
-    ["config", "--add", "rad.seed", ProxyRunner.SEED_URL],
+    ["config", "--add", "rad.seed", PeerRunner.SEED_URL],
     {
       cwd: maintainerProjectPath,
     }
@@ -133,7 +132,9 @@ export async function createProject(
 
   await retry(async () => {
     const project = await proxy.proxyClient.project.get(projectUrn);
-    expect(project.seed).not.toBeNull();
+    if (project.seed === null) {
+      throw new Error("Proxy hasn't set the project seed yet.");
+    }
   });
 
   return projectUrn;
