@@ -77,38 +77,79 @@ fn make_router(ctx: crate::context::Context) -> axum::Router {
         .layer(cors)
 }
 
-/// Wrapper for [`anyhow::Error`] that implements [`axum::response::IntoResponse`]. The HTTP
-/// response has status code 500 and the following body.
+/// Error type for request handlers that return [`Result`].
+///
+/// Error has two variants: [`Error::Internal`] is intended for errors that the client cannot
+/// recover from (like failed file system access). [`Error::Custom`] is intended for errors that
+/// convey some information so the client can take action (like failed authentication).
+///
+/// ## HTTP Response
+///
+/// The response body generated from `Error` is a JSON object with the following schema:
 ///
 /// ```json
 /// {
-///   "variant": "INTERNAL_SERVER_ERROR",
-///   "message": "<error message>",
-///   "details": "<error message and list of causes>",
+///   "variant": string,
+///   "message": string,
+///   "details": string | null,
 /// }
 /// ```
-struct Error {
-    inner: anyhow::Error,
+///
+/// [`Error::Custom`] allows you to control the response status code and the individual fields of
+/// the response object. [`Error::Internal`] wraps [`anyhow::Error`] and results in a response with
+/// a 500 status code, "INTERNAL_SERVER_ERROR" in the `variant` field, the error message in the
+/// `message` field and the chain of causes and the backtrace in the `details` field.
+enum Error {
+    Internal(anyhow::Error),
+    Custom {
+        status_code: http::StatusCode,
+        /// The triggered error variant.
+        variant: &'static str,
+        /// Human readable message to convery error case.
+        message: String,
+        details: Option<String>,
+    },
+}
+
+impl Error {
+    pub fn internal(err: impl std::error::Error + Sync + Send + 'static) -> Self {
+        Self::Internal(anyhow::Error::new(err))
+    }
 }
 
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        tracing::error!(err = ?self.inner, "internal server error");
-        axum::response::IntoResponse::into_response((
-            http::StatusCode::INTERNAL_SERVER_ERROR,
-            axum::response::Json(serde_json::json!({
-                "variant": "INTERNAL_SERVER_ERROR",
-                "message": self.inner.to_string(),
-                "details": format!("{:?}", self.inner)
-            })),
-        ))
+        match self {
+            Error::Internal(err) => {
+                tracing::error!(?err, "internal server error");
+                axum::response::IntoResponse::into_response((
+                    http::StatusCode::INTERNAL_SERVER_ERROR,
+                    axum::response::Json(serde_json::json!({
+                        "variant": "INTERNAL_SERVER_ERROR",
+                        "message":err.to_string(),
+                        "details": format!("{:?}",err)
+                    })),
+                ))
+            },
+            Error::Custom {
+                status_code,
+                variant,
+                message,
+                details,
+            } => axum::response::IntoResponse::into_response((
+                status_code,
+                axum::response::Json(serde_json::json!({
+                    "variant": variant,
+                    "message": message,
+                    "details": details,
+                })),
+            )),
+        }
     }
 }
-impl<T: std::error::Error + Send + Sync + 'static> From<T> for Error {
-    fn from(err: T) -> Self {
-        Error {
-            inner: anyhow::Error::from(err),
-        }
+impl From<anyhow::Error> for Error {
+    fn from(inner: anyhow::Error) -> Self {
+        Error::Internal(inner)
     }
 }
 
@@ -131,7 +172,12 @@ impl axum::extract::FromRequest<axum::body::Body> for ExtractUnsealedContext {
             .expect("context request extension not set");
 
         match ctx {
-            crate::context::Context::Sealed(_) => Err(crate::error::Error::KeystoreSealed.into()),
+            crate::context::Context::Sealed(_) => Err(Error::Custom {
+                status_code: http::StatusCode::FORBIDDEN,
+                variant: "FORBIDDEN",
+                message: "keystore is sealed".to_string(),
+                details: None,
+            }),
             crate::context::Context::Unsealed(unsealed) => {
                 Ok(ExtractUnsealedContext(unsealed.clone()))
             },

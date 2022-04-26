@@ -48,17 +48,6 @@ impl Response {
 
 impl warp::reject::Reject for Response {}
 
-impl axum::response::IntoResponse for Response {
-    fn into_response(self) -> axum::response::Response {
-        let body = serde_json::json!({
-            "message": self.message,
-            "variant": self.variant,
-        });
-
-        (self.status_code, axum::response::Json(body)).into_response()
-    }
-}
-
 pub async fn recover(err: warp::Rejection) -> Result<impl warp::Reply, Infallible> {
     let error_response = if err.is_not_found() {
         Response {

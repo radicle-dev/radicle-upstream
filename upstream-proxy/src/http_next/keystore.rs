@@ -29,14 +29,15 @@ async fn unseal(
         Ok(()) => Ok(http::StatusCode::NO_CONTENT.into_response()),
         Err(err) => {
             if err.is_invalid_passphrase() {
-                Ok(crate::http::error::Response {
+                Ok(super::Error::Custom {
                     status_code: http::StatusCode::FORBIDDEN,
                     variant: "INCORRECT_PASSPHRASE",
                     message: "That\u{2019}s the wrong passphrase.".to_string(),
+                    details: None,
                 }
                 .into_response())
             } else {
-                Err(err.into())
+                Err(super::Error::internal(err))
             }
         },
     }
@@ -56,14 +57,14 @@ async fn create(
         Ok(()) => Ok(http::StatusCode::CREATED.into_response()),
         Err(err) => {
             if err.is_key_exists() {
-                Ok(crate::http::error::Response {
+                Err(super::Error::Custom {
                     status_code: http::StatusCode::CONFLICT,
                     variant: "KEY_EXISTS",
                     message: "A key already exists".to_string(),
-                }
-                .into_response())
+                    details: None,
+                })
             } else {
-                Err(err.into())
+                Err(super::Error::internal(err))
             }
         },
     }
