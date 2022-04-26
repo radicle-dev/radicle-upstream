@@ -166,7 +166,6 @@ async fn run_session(
             paths: paths.clone(),
             signer,
             store: store.clone(),
-            discovery: crate::daemon::config::NoDiscovery::new(),
             listen: args.peer_listen,
         })?;
 

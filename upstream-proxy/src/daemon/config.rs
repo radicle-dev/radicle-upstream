@@ -44,14 +44,6 @@ where
 #[derive(Clone)]
 pub struct NoDiscovery;
 
-impl NoDiscovery {
-    /// Returns a new streaming discovery.
-    #[must_use]
-    pub fn new() -> Self {
-        Self
-    }
-}
-
 impl discovery::Discovery for NoDiscovery {
     type Addr = SocketAddr;
     type Stream = BoxStream<'static, (PeerId, Vec<SocketAddr>)>;

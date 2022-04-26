@@ -39,7 +39,6 @@ pub struct Config {
     pub signer: link_crypto::BoxedSigner,
     pub paths: librad::paths::Paths,
     pub listen: std::net::SocketAddr,
-    pub discovery: crate::daemon::config::NoDiscovery,
     pub store: kv::Store,
 }
 
@@ -74,7 +73,7 @@ pub fn create(config: Config) -> anyhow::Result<(Peer, Runner)> {
         crate::daemon::config::configure(config.paths.clone(), config.signer, config.listen);
     let daemon_peer = crate::daemon::Peer::new(
         daemon_config,
-        config.discovery,
+        crate::daemon::config::NoDiscovery,
         config.store,
         crate::daemon::RunConfig::default(),
     )
