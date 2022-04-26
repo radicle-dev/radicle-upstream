@@ -14,6 +14,9 @@ import * as proxyProject from "proxy-client/project";
 import * as router from "ui/src/router";
 import * as source from "ui/src/source";
 
+import * as zod from "zod";
+import { flatten } from "lodash";
+
 export interface Patch {
   id: string;
   peerId: string;
@@ -23,6 +26,21 @@ export interface Patch {
   commit: string;
   mergeBase: string | null;
   merged: boolean;
+  status: {
+    current: "open" | "merged" | "closed";
+    byPeerId?: string;
+  };
+}
+
+// Global identifier for a patch
+export interface PatchId {
+  // URN of the project the patch is for
+  projectUrn: string;
+  // The peer that authored the patch
+  peerId: string;
+  // The name of the patch given to it by the peer. This corresponds to
+  // `Patch.id`.
+  name: string;
 }
 
 export interface PatchDetails {
@@ -37,7 +55,44 @@ export function handle(patch: Patch): string {
   return `${patch.peerId}/${patch.id}`;
 }
 
-function makePatch(proxyPatch: proxyProject.Patch): Patch {
+function inferStatus(
+  events: proxyProject.EventEnvelope<PatchEventOrUnknown>[],
+  proxyPatch: proxyProject.Patch,
+  delegates: string[]
+): {
+  status: "closed" | "open" | "merged";
+  byPeerId?: string;
+} {
+  // Ignore events by users who are neither delegates nor the patch creator
+  const lastStatusUpdate = events.find(
+    e =>
+      (e.peer_id === proxyPatch.peer.peerId || delegates.includes(e.peer_id)) &&
+      e.event.type === "setStatus"
+  );
+
+  const merged = proxyPatch.mergeBase === proxyPatch.commit;
+
+  if (merged) {
+    return {
+      status: "merged",
+    };
+  } else {
+    const event = lastStatusUpdate?.event;
+    const status =
+      (event && event.type === "setStatus" && event.data.status) || "open";
+
+    return {
+      status,
+      byPeerId: lastStatusUpdate?.peer_id,
+    };
+  }
+}
+
+function makePatch(
+  proxyPatch: proxyProject.Patch,
+  project: Project,
+  patchEvents: proxyProject.EventEnvelope<PatchEventOrUnknown>[]
+): Patch {
   const messageLines = proxyPatch.message ? proxyPatch.message.split("\n") : [];
   const title = messageLines.shift() || null;
   // Throw away empty line that separates title from description
@@ -48,6 +103,14 @@ function makePatch(proxyPatch: proxyProject.Patch): Patch {
       ? proxyPatch.peer.status.user
       : null;
 
+  const merged = proxyPatch.mergeBase === proxyPatch.commit;
+
+  const { status, byPeerId } = inferStatus(
+    patchEvents,
+    proxyPatch,
+    flatten(Object.values(project.metadata.delegates))
+  );
+
   return {
     id: proxyPatch.id,
     peerId: proxyPatch.peer.peerId,
@@ -56,29 +119,98 @@ function makePatch(proxyPatch: proxyProject.Patch): Patch {
     description,
     commit: proxyPatch.commit,
     mergeBase: proxyPatch.mergeBase,
-    merged: proxyPatch.mergeBase === proxyPatch.commit,
+    status: {
+      current: status,
+      byPeerId,
+    },
+    merged,
   };
 }
 
 export const TAG_PREFIX = "radicle-patch/";
 
 export const getAll = async (
-  projectUrn: string,
+  project: Project,
   options?: proxy.RequestOptions
 ): Promise<Patch[]> => {
   const proxyPatches = await proxy.client.project.patchList(
-    projectUrn,
+    project.urn,
     options
   );
-  return proxyPatches.map(makePatch);
+  return Promise.all(
+    proxyPatches.map(async patch => {
+      const patchEvents = await getAllEvents({
+        projectUrn: project.urn,
+        peerId: patch.peer.peerId,
+        name: patch.id,
+      });
+      return makePatch(patch, project, patchEvents);
+    })
+  );
 };
+
+export async function publishEvent(
+  patchId: PatchId,
+  event: PatchEvent
+): Promise<void> {
+  await proxy.client.project.eventPublish(
+    patchId.projectUrn,
+    eventTopic(patchId),
+    event
+  );
+}
+
+async function getAllEvents(
+  patchId: PatchId
+): Promise<Array<proxyProject.EventEnvelope<PatchEventOrUnknown>>> {
+  const envelopes = await proxy.client.project.eventList(
+    patchId.projectUrn,
+    eventTopic(patchId)
+  );
+  return envelopes.map(({ event, ...envelope }) => {
+    const patchEvent = patchEventOrUnknownSchema.parse(event);
+    return {
+      event: patchEvent,
+      ...envelope,
+    };
+  });
+}
+
+function eventTopic(patchId: PatchId) {
+  return ["patch", patchId.peerId, patchId.name].join("/");
+}
+
+export type PatchEvent = {
+  type: "setStatus";
+  data: { status: "open" | "closed" };
+};
+
+export type PatchEventOrUnknown =
+  | PatchEvent
+  | { type: null; unknownType: string; data?: unknown };
+
+// We can’t have explicit schema type annotations because we’re using
+// `.transform()`.
+const patchEventOrUnknownSchema = zod.union([
+  zod.object({
+    type: zod.literal("setStatus"),
+    data: zod.object({
+      status: zod.enum(["open", "closed"]),
+    }),
+  }),
+  zod
+    .object({ type: zod.string(), data: zod.unknown() })
+    .transform<{ type: null; unknownType: string; data?: unknown }>(
+      ({ type, data }) => ({ type: null, unknownType: type, data })
+    ),
+]);
 
 export const getDetails = async (
   project: Project,
   peerId: string,
   id: string
 ): Promise<PatchDetails | undefined> => {
-  const patches = await getAll(project.urn);
+  const patches = await getAll(project);
   const patch = patches.find(patch => {
     return patch.peerId === peerId && patch.id === id;
   });

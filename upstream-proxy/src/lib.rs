@@ -22,6 +22,7 @@ mod context;
 mod control;
 mod daemon;
 mod error;
+mod events;
 mod git_fetch;
 mod http_next;
 mod peer;

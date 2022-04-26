@@ -152,3 +152,36 @@ async fn forward_broadcast<T: Clone>(
         }
     }
 }
+
+#[cfg(test)]
+pub mod test {
+    use super::*;
+    pub struct TestPeer {
+        pub peer: Peer,
+        pub temp_dir: tempfile::TempDir,
+        pub store: kv::Store,
+    }
+
+    impl TestPeer {
+        pub fn new() -> Self {
+            let temp_dir = tempfile::TempDir::new().unwrap();
+            let signer = link_crypto::BoxedSigner::from(link_crypto::SecretKey::new());
+            let profile =
+                librad::profile::Profile::from_root(&temp_dir.path().join("lnk_home"), None)
+                    .unwrap();
+            let store = kv::Store::new(kv::Config::new(temp_dir.path().join("store"))).unwrap();
+            let (peer, _) = create(Config {
+                signer,
+                paths: profile.paths().clone(),
+                listen: "127.0.0.1:0".parse().unwrap(),
+                store: store.clone(),
+            })
+            .unwrap();
+            TestPeer {
+                peer,
+                temp_dir,
+                store,
+            }
+        }
+    }
+}

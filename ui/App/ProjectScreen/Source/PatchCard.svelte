@@ -7,20 +7,30 @@
 -->
 <script lang="ts">
   import * as Patch from "ui/src/project/patch";
+  import { store } from "ui/src/screen/project";
 
   import Button from "design-system/Button.svelte";
   import Hoverable from "design-system/Hoverable.svelte";
   import LinkIcon from "design-system/icons/Link.svelte";
-  import RevisionIcon from "design-system/icons/Revision.svelte";
+  import PatchIcon from "./PatchIcon.svelte";
 
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
+  import { Status } from "ui/src/remote";
+  import { User } from "ui/src/project";
 
   export let patch: Patch.Patch;
   export let projectId: string;
 
-  $: iconColor = patch.merged
-    ? "var(--color-negative)"
-    : "var(--color-positive)";
+  function getUserForPeerId(peerId: string): User | undefined {
+    if ($store.status !== Status.Success) {
+      return undefined;
+    }
+
+    return $store.data.peerSelection.find(p => p.peerId === peerId);
+  }
+
+  $: lastUpdateBy =
+    patch.status.byPeerId && getUserForPeerId(patch.status.byPeerId);
 </script>
 
 <style>
@@ -34,6 +44,10 @@
 
   .left {
     display: flex;
+  }
+
+  .icon {
+    margin-right: 8px;
   }
 
   .info-column {
@@ -59,6 +73,12 @@
     display: flex;
     margin-top: 0.125rem;
     width: -webkit-fill-available;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .item {
+    display: flex;
   }
   .list-item {
     display: flex;
@@ -74,7 +94,9 @@
   <div class="list-item">
     <div class="patch-card" data-cy={`patch-card-${patch.id}`}>
       <div class="left">
-        <RevisionIcon style={`margin-right: 0.5rem; fill: ${iconColor};`} />
+        <div class="icon">
+          <PatchIcon status={patch.status.current} />
+        </div>
         <div>
           <div class="info-column">
             <div class="title-row" data-cy={`patch-card-title-${patch.id}`}>
@@ -83,14 +105,39 @@
               </p>
             </div>
             <div class="desc-row">
-              <p style="margin-right: 0.5rem;">Opened by</p>
-              {#if patch.identity}
-                <UserIdentity
-                  modalStyle="top: 0.5rem; left: 3rem;"
-                  urn={patch.identity.urn}
-                  handle={patch.identity.metadata.handle} />
-              {:else}
-                <p style="margin-left: 0.5rem;">{patch.peerId}</p>
+              {#if patch.status.current === "open" || patch.status.current === "merged"}
+                <div class="item">
+                  <p style="margin-right: 0.5rem;">Opened by</p>
+                  {#if patch.identity}
+                    <UserIdentity
+                      modalStyle="top: 0.5rem; left: 3rem;"
+                      urn={patch.identity.urn}
+                      handle={patch.identity.metadata.handle} />
+                  {:else}
+                    <p style="margin-left: 0.5rem;">{patch.peerId}</p>
+                  {/if}
+                </div>
+              {:else if patch.status.current === "closed"}
+                {#if patch.identity}
+                  <div class="item">
+                    <p style="margin-right: 0.5rem;">Opened by</p>
+                    <UserIdentity
+                      modalStyle="top: 0.5rem; left: 3rem;"
+                      urn={patch.identity.urn}
+                      handle={patch.identity.metadata.handle} />
+                  </div>
+                {:else}
+                  <p style="margin-left: 0.5rem;">{patch.peerId}</p>
+                {/if}
+                {#if lastUpdateBy}
+                  <div class="item">
+                    <p style="margin-right: 0.5rem;">• Closed by</p>
+                    <UserIdentity
+                      modalStyle="top: 0.5rem; left: 3rem;"
+                      urn={lastUpdateBy.identity.urn}
+                      handle={lastUpdateBy.identity.metadata.handle} />
+                  </div>
+                {/if}
               {/if}
             </div>
           </div>
@@ -106,5 +153,4 @@
           }}>Copy link</Button>
       {/if}
     </div>
-  </div>
-</Hoverable>
+  </div></Hoverable>

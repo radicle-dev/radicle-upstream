@@ -9,6 +9,7 @@ use futures::prelude::*;
 mod diagnostics;
 mod identity;
 mod keystore;
+mod project;
 mod session;
 
 pub fn serve(
@@ -72,6 +73,7 @@ fn make_router(ctx: crate::context::Context) -> axum::Router {
         .merge(diagnostics::router())
         .merge(identity::router())
         .merge(session::router())
+        .merge(project::router())
         .layer(axum::Extension(ctx));
 
     axum::Router::new()

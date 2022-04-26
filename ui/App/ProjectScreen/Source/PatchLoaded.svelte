@@ -6,7 +6,7 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { Project } from "ui/src/project";
+  import { Project } from "ui/src/project";
   import type { GroupedCommitsHistory } from "ui/src/source";
 
   import * as Patch from "ui/src/project/patch";
@@ -14,7 +14,7 @@
 
   import LinkIcon from "design-system/icons/Link.svelte";
   import Markdown from "design-system/Markdown.svelte";
-  import RevisionIcon from "design-system/icons/Revision.svelte";
+  import PatchIcon from "./PatchIcon.svelte";
 
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
@@ -24,10 +24,6 @@
   export let project: Project;
   export let patch: Patch.Patch;
   export let commits: GroupedCommitsHistory;
-
-  $: iconColor = patch.merged
-    ? "var(--color-negative);"
-    : "var(--color-positive);";
 </script>
 
 <style>
@@ -71,7 +67,7 @@
     on:arrowClick={() => router.pop()}>
     <div>
       <div class="title" data-cy="patch-title">
-        <RevisionIcon style={`fill: ${iconColor};`} />
+        <PatchIcon status={patch.status.current} />
         {#if patch}
           <h2>
             {#if patch.title}{patch.title}{:else}{patch.id}{/if}

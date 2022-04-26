@@ -100,6 +100,7 @@ impl From<Sealed> for Context {
 #[derive(Clone)]
 pub struct Unsealed {
     pub peer: crate::peer::Peer,
+    pub event_log: crate::events::EventLog,
     pub git_fetch: crate::git_fetch::Handle,
     pub rest: Sealed,
     pub watch_monorepo: crate::watch_monorepo::Handle,

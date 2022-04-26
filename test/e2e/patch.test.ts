@@ -7,6 +7,8 @@
 import { test, expect } from "test/support/playwright/fixtures";
 import * as Support from "test/support";
 import * as PeerRunner from "test/support/peerRunner";
+import { App } from "test/support/playwright/fixtures/app";
+import { Locator } from "@playwright/test";
 
 test("show placeholder if there are no patches", async ({
   app,
@@ -182,7 +184,7 @@ test("patch list reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
     await expect(app.projectScreen.patchCounter).toContainText("1");
     await expect(app.projectScreen.patchList).not.toContainText(newPatchTitle);
 
-    await page.locator('button:has-text("Closed")').click();
+    await page.locator('button:has-text("Merged")').click();
     await expect(app.projectScreen.patchList).toContainText(newPatchTitle);
   }
 });
@@ -246,7 +248,10 @@ test("patch reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
   }
 });
 
-test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
+test("patch statuses", async ({ app, page, sshAuthSock, stateDir }) => {
+  const patchActions = makePatchAction(app);
+  test.setTimeout(60_000);
+
   const maintainer = await PeerRunner.UpstreamPeer.createAndStart({
     dataPath: stateDir,
     name: "maintainer",
@@ -254,10 +259,8 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
   });
 
   const projectName = "foo";
-  const { urn: projectUrn } = await Support.createAndPublishProject(
-    maintainer,
-    projectName
-  );
+  const { urn: projectUrn, checkoutPath } =
+    await Support.createAndPublishProject(maintainer, projectName);
 
   const contributor = await PeerRunner.UpstreamPeer.createAndStart({
     dataPath: stateDir,
@@ -273,7 +276,8 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
 
   const patchTitle = "Patch title";
 
-  // Contributor tracks and forks the project and creates a patch.
+  let branchName: string;
+  // Contributor tracks and forks the project, then creates a patch.
   {
     await page.goto(contributor.uiUrl);
     await app.trackProject(projectUrn);
@@ -284,7 +288,7 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
       projectName,
       contributor
     );
-    await Support.createOrUpdatePatch(
+    branchName = await Support.createOrUpdatePatch(
       patchTitle,
       "Patch description",
       contributor,
@@ -295,12 +299,11 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
     await app.projectScreen.goToPatchesTab();
     await app.projectScreen.goToPatchByTitle(patchTitle);
 
-    await expect(
-      app.projectScreen.actionBar.locator('button:has-text("Checkout patch")')
-    ).toBeVisible();
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.closeButton).toBeVisible();
   }
 
-  // Observer tracks the project and contributor.
+  // Observer tracks the project and contributor and sees the patch.
   {
     await page.goto(observer.uiUrl);
     await app.trackProject(projectUrn);
@@ -309,9 +312,8 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
     await app.projectScreen.goToPatchesTab();
     await app.projectScreen.goToPatchByTitle(patchTitle);
 
-    await expect(
-      app.projectScreen.actionBar.locator('button:has-text("Checkout patch")')
-    ).toBeVisible();
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.closeButton).toBeHidden();
   }
 
   // Maintainer tracks contributor and sees the patch.
@@ -323,11 +325,226 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
     await app.projectScreen.goToPatchesTab();
     await app.projectScreen.goToPatchByTitle(patchTitle);
 
-    await expect(
-      app.projectScreen.actionBar.locator('button:has-text("Checkout patch")')
-    ).toBeVisible();
-    await expect(
-      app.projectScreen.actionBar.locator('button:has-text("Merge patch")')
-    ).toBeVisible();
+    await expect(patchActions.mergeButton).toBeVisible();
+    await expect(patchActions.closeButton).toBeVisible();
+  }
+
+  // Maintainer closes the patch.
+  {
+    await patchActions.closeButton.click();
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+    await page.locator('button:has-text("Closed")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+
+    // The maintainer sees a Reopen button.
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.reopenButton).toBeVisible();
+  }
+
+  // Observer sees that the patch is closed.
+  {
+    await page.goto(observer.uiUrl);
+    await app.goToProjectByName(projectName);
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+    await page.locator('button:has-text("Closed")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.closeButton).toBeHidden();
+  }
+
+  // Contributor sees that the patch is closed.
+  {
+    await page.goto(contributor.uiUrl);
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.goToPatchesTab();
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+
+    await page.locator('button:has-text("Closed")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+  }
+
+  // Contributor reopens the patch.
+  {
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.reopenButton).toBeVisible();
+
+    await patchActions.reopenButton.click();
+
+    // Patch only shows up in the Open patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+  }
+
+  // Maintainer sees the patch open again.
+  {
+    await page.goto(maintainer.uiUrl);
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.goToPatchesTab();
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await expect(patchActions.mergeButton).toBeVisible();
+    await expect(patchActions.closeButton).toBeVisible();
+  }
+
+  // Observer sees the patch open again.
+  {
+    await page.goto(observer.uiUrl);
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.goToPatchesTab();
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.closeButton).toBeHidden();
+  }
+
+  // Contributor closes the patch.
+  {
+    await page.goto(contributor.uiUrl);
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.goToPatchesTab();
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await patchActions.closeButton.click();
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+
+    await page.locator('button:has-text("Closed")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+  }
+
+  // Observer sees the patch closed again.
+  {
+    await page.goto(observer.uiUrl);
+    await app.goToProjectByName(projectName);
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+    await page.locator('button:has-text("Closed")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+  }
+
+  // Maintainer reopens and merges the patch.
+  {
+    await page.goto(maintainer.uiUrl);
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.goToPatchesTab();
+    await page.locator('button:has-text("Closed")').click();
+
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+    await patchActions.reopenButton.click();
+
+    // Patch only shows up in the Open patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await Support.mergePatch(
+      maintainer,
+      checkoutPath,
+      // TODO: get the Patch ID by copying it to the clipboard, requires IPC mocks.
+      `${contributor.peerId}/${branchName}`
+    );
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+
+    await page.locator('button:has-text("Merged")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.closeButton).toBeHidden();
+  }
+
+  // Observer sees the patch as merged.
+  {
+    await page.goto(observer.uiUrl);
+    await app.goToProjectByName(projectName);
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+    await page.locator('button:has-text("Merged")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.closeButton).toBeHidden();
+  }
+
+  // Contributor sees that the patch is merged.
+  {
+    await page.goto(contributor.uiUrl);
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.goToPatchesTab();
+
+    // Patch only shows up in the Closed patches list.
+    await app.projectScreen.goToPatchesTab();
+    await expect(page.locator("[data-cy=empty-state]")).toContainText(
+      "There are no patches to show at the moment."
+    );
+
+    await page.locator('button:has-text("Merged")').click();
+    await expect(app.projectScreen.patchList).toContainText(patchTitle);
+
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await expect(patchActions.mergeButton).toBeHidden();
+    await expect(patchActions.closeButton).toBeHidden();
   }
 });
+
+interface PatchActions {
+  mergeButton: Locator;
+  checkoutButton: Locator;
+  closeButton: Locator;
+  reopenButton: Locator;
+}
+
+function makePatchAction(app: App): PatchActions {
+  return {
+    mergeButton: app.projectScreen.actionBar.locator('button:text("Merge")'),
+    checkoutButton: app.projectScreen.actionBar.locator(
+      'button:text("Checkout patch")'
+    ),
+    closeButton: app.projectScreen.actionBar.locator(
+      'button:text("Close patch")'
+    ),
+    reopenButton: app.projectScreen.actionBar.locator(
+      'button:text("Reopen patch")'
+    ),
+  };
+}

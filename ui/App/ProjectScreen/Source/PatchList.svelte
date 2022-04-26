@@ -17,10 +17,13 @@
 
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import PatchCard from "./PatchCard.svelte";
+  import RevisionIcon from "design-system/icons/Revision.svelte";
+  import MergeIcon from "design-system/icons/Merge.svelte";
+  import CrossIcon from "design-system/icons/Cross.svelte";
 
   export let patches: Patch.Patch[];
   export let project: Project;
-  export let filter: "open" | "closed" | "all";
+  export let filter: "open" | "closed" | "merged" | "all";
 
   const selectPatch = ({ detail: patch }: { detail: Patch.Patch }): void => {
     router.push({
@@ -36,19 +39,28 @@
     });
   };
 
-  $: openPatches = patches.filter(patch => !patch.merged);
-  $: closedPatches = patches.filter(patch => patch.merged);
+  $: openPatches = patches.filter(patch => patch.status.current === "open");
+  $: mergedPatches = patches.filter(patch => patch.status.current === "merged");
+  $: closedPatches = patches.filter(patch => patch.status.current === "closed");
 
   $: filterOptions = [
     {
       title: "Open",
       value: "open",
       counter: openPatches.length,
+      icon: RevisionIcon,
+    },
+    {
+      title: "Merged",
+      value: "merged",
+      counter: mergedPatches.length,
+      icon: MergeIcon,
     },
     {
       title: "Closed",
       value: "closed",
       counter: closedPatches.length,
+      icon: CrossIcon,
     },
     {
       title: "All",
@@ -65,6 +77,9 @@
         break;
       case "closed":
         filteredPatches = closedPatches;
+        break;
+      case "merged":
+        filteredPatches = mergedPatches;
         break;
       case "all":
         filteredPatches = patches;

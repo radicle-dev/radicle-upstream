@@ -24,12 +24,18 @@ pub fn filters(ctx: context::Context) -> BoxedFilter<(impl Reply,)> {
         .or(create_filter(ctx.clone()))
         .or(failed_filter(ctx.clone()))
         .or(get_filter(ctx.clone()))
+        // Sprinkle random `.boxed()` in here so warp doesn’t generate stack overflows
+        .boxed()
         .or(owner_contributed_filter(ctx.clone()))
         .or(owner_tracked_filter(ctx.clone()))
         .or(peers_filter(ctx.clone()))
         .or(path("requests").and(request::filters(ctx.clone())))
+        // Sprinkle random `.boxed()` in here so warp doesn’t generate stack overflows
+        .boxed()
         .or(track_filter(ctx.clone()))
         .or(patches_filter(ctx.clone()))
+        // Sprinkle random `.boxed()` in here so warp doesn’t generate stack overflows
+        .boxed()
         .or(untrack_filter(ctx.clone()))
         .or(user_filter(ctx))
         .boxed()

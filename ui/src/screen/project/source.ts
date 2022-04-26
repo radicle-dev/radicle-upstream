@@ -100,7 +100,7 @@ export async function fetch(project: Project, peer: User): Promise<void> {
         { abort }
       );
       const revisions = [...branches, ...tags];
-      const patches = await patch.getAll(project.urn, { abort });
+      const patches = await patch.getAll(project, { abort });
       const defaultBranch = branches.find(
         (branch: source.Branch) =>
           branch.name === project.metadata.defaultBranch

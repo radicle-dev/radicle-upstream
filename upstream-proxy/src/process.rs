@@ -197,9 +197,12 @@ async fn run_session(
                 .boxed()
         });
 
+        let event_log = crate::events::EventLog::new(peer.clone(), git_fetch.clone());
+
         context::Context::Unsealed(context::Unsealed {
             peer,
             rest: sealed,
+            event_log,
             git_fetch,
             watch_monorepo,
         })

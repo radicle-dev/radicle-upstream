@@ -314,4 +314,47 @@ export class Client {
       zod.array(patchSchema)
     );
   }
+
+  public async eventPublish(
+    projectUrn: string,
+    topic: string,
+    event: Event
+  ): Promise<void> {
+    return this.fetcher.fetchOkNoContent({
+      method: "PUT",
+      path: `projects-v2/${projectUrn}/events/${encodeURIComponent(topic)}`,
+      body: event,
+    });
+  }
+
+  public async eventList(
+    projectUrn: string,
+    topic: string
+  ): Promise<EventEnvelope[]> {
+    return this.fetcher.fetchOk(
+      {
+        method: "GET",
+        path: `projects-v2/${projectUrn}/events/${encodeURIComponent(topic)}`,
+      },
+      zod.array(eventEnvelopeSchema)
+    );
+  }
 }
+
+export interface EventEnvelope<T = Event> {
+  peer_id: string;
+  event: T;
+}
+
+export interface Event {
+  type: string;
+  data?: unknown;
+}
+
+const eventEnvelopeSchema = zod.object({
+  peer_id: zod.string(),
+  event: zod.object({
+    type: zod.string(),
+    data: zod.unknown(),
+  }),
+});

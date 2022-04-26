@@ -92,7 +92,8 @@
         title: "Patches",
         active: active.type === "patches",
         icon: RevisionIcon,
-        counter: screen.patches.filter(patch => !patch.merged).length,
+        counter: screen.patches.filter(patch => patch.status.current === "open")
+          .length,
         onClick: () => {
           router.push({
             type: "project",

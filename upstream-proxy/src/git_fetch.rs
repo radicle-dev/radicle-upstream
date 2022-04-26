@@ -32,6 +32,7 @@ pub async fn create(
     let (update_tx, update_rx) = async_broadcast::broadcast(32);
     let (identity_queue, identity_rx) = UniqueDelayQueue::new();
     let handle = Handle {
+        peer: peer.clone(),
         update_rx: update_rx.deactivate(),
         identity_queue: identity_queue.clone(),
         project_seed_store: project_seed_store.clone(),
@@ -60,6 +61,7 @@ pub async fn create(
 
 #[derive(Clone)]
 pub struct Handle {
+    peer: crate::peer::Peer,
     update_rx: async_broadcast::InactiveReceiver<Oid>,
     identity_queue: UniqueDelayQueue,
     project_seed_store: ProjectSeedStore,
@@ -70,7 +72,17 @@ impl Handle {
     /// fetched immediately after calling this function, even if it has been added before.
     pub async fn add(&self, identity: Oid) {
         self.identity_queue
-            .add(identity, std::time::Duration::new(0, 0))
+            .add(
+                SyncAction::PushEvents(identity),
+                std::time::Duration::new(0, 0),
+            )
+            .await;
+
+        self.identity_queue
+            .add(
+                SyncAction::FetchIdentity(identity),
+                std::time::Duration::new(0, 0),
+            )
             .await
     }
 
@@ -84,6 +96,10 @@ impl Handle {
     pub fn get_seed(&self, identity: Oid) -> Option<rad_common::Url> {
         self.project_seed_store.get(identity)
     }
+
+    pub async fn push_event_logs(&self, identity: Oid) -> Result<bool, anyhow::Error> {
+        push_event_logs(&self.peer, identity, &self.project_seed_store).await
+    }
 }
 
 pub struct Runner {
@@ -93,7 +109,7 @@ pub struct Runner {
     /// Inform subscribers that an identity has been updated
     update_tx: async_broadcast::Sender<Oid>,
     /// Stream of queued identities to fetch updates for
-    identity_rx: futures_delay_queue::Receiver<Oid>,
+    identity_rx: futures_delay_queue::Receiver<SyncAction>,
     /// Queue of identities to fetch updates for
     identity_queue: UniqueDelayQueue,
     /// Time after which project updates are fetched again.
@@ -116,25 +132,44 @@ impl Runner {
         let identity_rx = identity_rx.into_stream().take_until(shutdown_signal);
         futures::pin_mut!(identity_rx);
 
-        while let Some(identity) = identity_rx.next().await {
-            match fetch_project(&peer, &seeds, identity, &project_seed_store).await {
-                Ok(true) => {
-                    let result = update_tx.try_broadcast(identity);
-                    match result {
-                        Err(err) if !err.is_disconnected() => {
-                            tracing::warn!(?err, "failed to broadcast Git fetch result")
+        while let Some(entry) = identity_rx.next().await {
+            match entry {
+                SyncAction::FetchIdentity(identity) => {
+                    match fetch_project(&peer, &seeds, identity, &project_seed_store).await {
+                        Ok(true) => {
+                            let result = update_tx.try_broadcast(identity);
+                            match result {
+                                Err(err) if !err.is_disconnected() => {
+                                    tracing::warn!(?err, "failed to broadcast Git fetch result")
+                                },
+                                _ => {},
+                            };
                         },
-                        _ => {},
+                        Ok(false) => {},
+                        Err(errs) => {
+                            tracing::warn!(?errs, ?identity, "failed to fetch project with git");
+                        },
                     };
                 },
-                Ok(false) => {},
-                Err(errs) => {
-                    tracing::warn!(?errs, ?identity, "failed to fetch project with git");
+                SyncAction::PushEvents(identity) => {
+                    match push_event_logs(&peer, identity, &project_seed_store).await {
+                        Ok(_) => {},
+                        Err(errs) => {
+                            tracing::warn!(?errs, ?identity, "failed to push event refs");
+                        },
+                    };
                 },
-            };
-            identity_queue.add(identity, fetch_interval).await;
+            }
+
+            identity_queue.add(entry, fetch_interval).await;
         }
     }
+}
+
+#[derive(Eq, Hash, PartialEq, Debug, Clone, Copy)]
+enum SyncAction {
+    FetchIdentity(Oid),
+    PushEvents(Oid),
 }
 
 /// Queue for [`Oid`]s that will be emitted by a receiver after a delay.
@@ -143,13 +178,17 @@ impl Runner {
 /// [`Oid`] is only queued once.
 #[derive(Debug, Clone)]
 struct UniqueDelayQueue {
-    handles: Arc<dashmap::DashMap<Oid, Option<futures_delay_queue::DelayHandle>>>,
-    queue:
-        Arc<futures_delay_queue::DelayQueue<Oid, futures_intrusive::buffer::GrowingHeapBuf<Oid>>>,
+    handles: Arc<dashmap::DashMap<SyncAction, Option<futures_delay_queue::DelayHandle>>>,
+    queue: Arc<
+        futures_delay_queue::DelayQueue<
+            SyncAction,
+            futures_intrusive::buffer::GrowingHeapBuf<SyncAction>,
+        >,
+    >,
 }
 
 impl UniqueDelayQueue {
-    fn new() -> (Self, futures_delay_queue::Receiver<Oid>) {
+    fn new() -> (Self, futures_delay_queue::Receiver<SyncAction>) {
         let (queue, receiver) = futures_delay_queue::delay_queue();
         (
             Self {
@@ -163,7 +202,7 @@ impl UniqueDelayQueue {
     /// Add a new [`Oid`] to the queue to be emitted after `delay`.
     ///
     /// If `revision` is already queued we update its entry so that it’s queued after `delay`.
-    async fn add(&self, revision: Oid, delay: std::time::Duration) {
+    async fn add(&self, revision: SyncAction, delay: std::time::Duration) {
         match self.handles.entry(revision) {
             dashmap::mapref::entry::Entry::Occupied(mut occupied) => {
                 let handle = occupied
@@ -226,6 +265,80 @@ impl ProjectSeedStore {
             tracing::error!(?err, "could not store project seed in kv store");
         };
     }
+}
+
+async fn push_event_logs(
+    peer: &crate::peer::Peer,
+    identity: Oid,
+    project_seed_store: &ProjectSeedStore,
+) -> Result<bool, anyhow::Error> {
+    push_refs(
+        peer,
+        identity,
+        &format!("{}/*", crate::events::REF_PREFIX),
+        project_seed_store,
+    )
+    .await
+    .context("failed to push refs/notes/upstream")
+}
+
+/// Push all `refs` under the given identity to a Radicle Git seed
+/// if one is known and return `true`. If no seed is known, return `false`.
+///
+/// `refs` is the refname excluding the leading namespace and "refs" at the beginning. For
+/// instance, "heads/*" will push all heads for the identity to the seed.
+async fn push_refs(
+    peer: &crate::peer::Peer,
+    identity: Oid,
+    refs: &str,
+    project_seed_store: &ProjectSeedStore,
+) -> anyhow::Result<bool> {
+    let urn = link_identities::Urn::new(identity);
+    let monorepo_path = peer.paths().git_dir().to_owned();
+
+    let seed_url = match project_seed_store.get(identity) {
+        Some(seed_url) => seed_url,
+        None => return Ok(false),
+    };
+
+    let id = urn.encode_id();
+    let proj_seed_url = seed_url.join(&id).expect("invalid Project URN");
+    let this_peer_id = peer.librad_peer().peer_id();
+    let child = tokio::process::Command::new("git")
+        .current_dir(monorepo_path)
+        .args(["push", "--signed", "--atomic"])
+        .arg(proj_seed_url.to_string())
+        .arg(format!(
+            "+refs/namespaces/{id}/refs/{refs}:refs/remotes/{this_peer_id}/{refs}",
+        ))
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .context("failed to spawn git")?;
+    let output = child
+        .wait_with_output()
+        .await
+        .context("`git push` failed")?;
+    if output.status.success() {
+        tracing::debug!(
+            identity = %link_identities::Urn::new(identity),
+            seed = %proj_seed_url,
+            %refs,
+            "pushed refs to seed"
+        );
+    } else {
+        tracing::error!(
+            identity = %link_identities::Urn::new(identity),
+            seed = %proj_seed_url,
+            %refs,
+            exit_status = %output.status,
+            stdout = ?std::str::from_utf8(&output.stdout),
+            stderr = ?std::str::from_utf8(&output.stderr),
+            "failed to push refs to seed with git"
+        )
+    }
+    Ok(true)
 }
 
 /// Try to fetch a project from one or more seeds.
@@ -357,6 +470,22 @@ async fn fetch_project_from_seed(
                 tracked_remotes.clone(),
             )
             .context("failed to fetch remotes")?;
+
+            let repo = git2::Repository::open(&monorepo_path).context("failed to open monorepo")?;
+            let invalid_refs = crate::events::validate(&repo, project_urn.id)
+                .context("failed to run event log validation")?;
+            if !invalid_refs.is_empty() {
+                tracing::warn!(?invalid_refs, "invalid event logs refs detected");
+            }
+
+            for reference_name in invalid_refs {
+                let mut reference = repo
+                    .find_reference(&reference_name)
+                    .context(format!("failed to get reference {reference_name}"))?;
+                reference
+                    .delete()
+                    .context(format!("failed to delete reference {reference_name}"))?;
+            }
 
             // Fetch the Person identities of all the project remotes. If a Person identity isn't
             // replicated on the seed, but we have its data locally, then initialise a Person

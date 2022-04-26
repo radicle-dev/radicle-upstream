@@ -228,7 +228,22 @@ export async function mergeOwnPatch(
   await peer.spawn("rad", ["push", "--seed", "127.0.0.1:8778"], {
     cwd: projectCheckoutPath,
   });
+}
 
+export async function mergePatch(
+  peer: PeerRunner.UpstreamPeer,
+  projectCheckoutPath: string,
+  patchId: string
+): Promise<void> {
+  await peer.spawn("git", ["checkout", "main"], {
+    cwd: projectCheckoutPath,
+  });
+  await peer.spawn("upstream", ["patch", "fetch", patchId], {
+    cwd: projectCheckoutPath,
+  });
+  await peer.spawn("git", ["merge", `radicle-patch/${patchId}`], {
+    cwd: projectCheckoutPath,
+  });
   await peer.spawn("rad", ["push", "--seed", "127.0.0.1:8778"], {
     cwd: projectCheckoutPath,
   });
