@@ -13,6 +13,7 @@
     unused_import_braces,
     unused_qualifications
 )]
+#![cfg_attr(test, allow(clippy::unwrap_used))]
 
 mod browser;
 mod cli;
