@@ -18,7 +18,6 @@ pub mod error;
 mod identity;
 mod notification;
 mod project;
-mod session;
 mod source;
 
 /// Helper to combine the multiple filters together with Filter::or, possibly boxing the types in
@@ -58,7 +57,6 @@ pub fn api(
     let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter = path("notifications").and(notification::filters(ctx.clone()));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
-    let session_filter = path("session").and(session::filters(ctx.clone()));
     let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
@@ -66,7 +64,6 @@ pub fn api(
         identity_filter,
         notification_filter,
         project_filter,
-        session_filter,
         source_filter
     ));
 

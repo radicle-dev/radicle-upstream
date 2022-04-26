@@ -8,6 +8,7 @@ use futures::prelude::*;
 
 mod diagnostics;
 mod keystore;
+mod session;
 
 pub fn serve(
     ctx: crate::context::Context,
@@ -68,6 +69,7 @@ fn make_router(ctx: crate::context::Context) -> axum::Router {
     let handlers = axum::Router::new()
         .merge(keystore::router())
         .merge(diagnostics::router())
+        .merge(session::router())
         .layer(axum::Extension(ctx));
 
     axum::Router::new()
