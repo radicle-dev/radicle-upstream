@@ -87,6 +87,8 @@ export function retry<T>(fn: () => Promise<T>): Promise<T> {
   return retryOnError(fn, () => true, 100, 20);
 }
 
+// Create a project using the rad CLI and wait until the proxy
+// registers the seed for the project.
 export async function createProject(
   proxy: ProxyRunner.RadicleProxy,
   name: string
@@ -127,6 +129,11 @@ export async function createProject(
 
   const { stdout: projectUrn } = await proxy.spawn("rad", ["inspect"], {
     cwd: maintainerProjectPath,
+  });
+
+  await retry(async () => {
+    const project = await proxy.proxyClient.project.get(projectUrn);
+    expect(project.seed).not.toBeNull();
   });
 
   return projectUrn;
