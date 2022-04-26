@@ -33,6 +33,7 @@ http = "0.2"
 hyper = { version ="0.14.17", features = ["server"] }
 kv = { version = "0.22", features = [ "json-value" ] }
 lazy_static = "1.4"
+parking_lot = "0.12.0"
 percent-encoding = "2.1"
 rand = "0.8"
 radicle-keystore = "0.2"

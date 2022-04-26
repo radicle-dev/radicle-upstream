@@ -5084,6 +5084,7 @@ dependencies = [
  "lnk-exe",
  "lnk-identities",
  "lnk-profile",
+ "parking_lot 0.12.0",
  "percent-encoding",
  "pretty_assertions",
  "rad-common",

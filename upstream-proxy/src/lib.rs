@@ -25,6 +25,7 @@ mod error;
 mod git_fetch;
 mod http_next;
 mod peer;
+mod semaphore_map;
 mod shutdown_runner;
 mod ethereum {
     pub mod address;
