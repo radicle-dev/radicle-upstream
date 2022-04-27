@@ -26,51 +26,54 @@
   import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
   import Tooltip from "./Tooltip.svelte";
 
+  import ColorSwatch from "./Showcase/ColorSwatch.svelte";
+  import ElevationSwatch from "./Showcase/ElevationSwatch.svelte";
   import Section from "./Showcase/Section.svelte";
   import TypographySwatch from "./Showcase/TypographySwatch.svelte";
-  import ColorSwatch from "./Showcase/ColorSwatch.svelte";
 
   export let onClose: (() => void) | undefined = undefined;
 
-  // TODO: fix types on this.
-  const colors = Array.from(document.styleSheets)
-    .filter(
-      sheet =>
-        sheet.href === null || sheet.href.startsWith(window.location.origin)
-    )
-    .reduce<string[]>(
-      (acc, sheet) =>
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        (acc = [
-          ...acc,
+  function extractCssVariables(variableName: string) {
+    return Array.from(document.styleSheets)
+      .filter(
+        sheet =>
+          sheet.href === null || sheet.href.startsWith(window.location.origin)
+      )
+      .reduce<string[]>(
+        (acc, sheet) =>
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          ...Array.from(sheet.cssRules).reduce(
-            (def, rule) =>
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              (def =
+          (acc = [
+            ...acc,
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            ...Array.from(sheet.cssRules).reduce(
+              (def, rule) =>
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                rule.selectorText === ":root"
-                  ? [
-                      ...def,
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                      // @ts-ignore
-                      ...Array.from(rule.style).filter(name =>
+                (def =
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  rule.selectorText === ":root"
+                    ? [
+                        ...def,
                         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                         // @ts-ignore
-                        name.startsWith("--color")
-                      ),
-                    ]
-                  : def),
-            []
-          ),
-        ]),
-      []
-    );
+                        ...Array.from(rule.style).filter(name =>
+                          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                          // @ts-ignore
+                          name.startsWith(variableName)
+                        ),
+                      ]
+                    : def),
+              []
+            ),
+          ]),
+        []
+      );
+  }
 
+  const colors = extractCssVariables("--color");
   const colorGroups = [
     ...new Set(
       colors.map(color => {
@@ -83,6 +86,8 @@
       })
     ),
   ];
+
+  const elevations = extractCssVariables("--elevation");
 
   function onKeydown(event: KeyboardEvent) {
     if (
@@ -164,6 +169,15 @@
               <ColorSwatch {color} style="margin: 0 1rem 1rem 0;" />
             {/each}
           </div>
+        {/each}
+      </Section>
+
+      <Section
+        title="Elevations"
+        subTitle="Three levels of elevation"
+        contentStyle="display: flex; gap: 3rem;">
+        {#each elevations as elevation}
+          <ElevationSwatch {elevation} />
         {/each}
       </Section>
 

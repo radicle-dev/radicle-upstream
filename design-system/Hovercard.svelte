@@ -32,7 +32,7 @@
     position: absolute;
     border-radius: 1rem;
     background: var(--color-background);
-    box-shadow: var(--color-shadows);
+    box-shadow: var(--elevation-high);
     top: -1rem;
     left: 2rem;
     z-index: 1;

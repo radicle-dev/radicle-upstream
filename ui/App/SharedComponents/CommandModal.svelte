@@ -35,7 +35,7 @@
     z-index: 1;
     border-radius: 1rem;
     background: var(--color-background);
-    box-shadow: var(--color-shadows);
+    box-shadow: var(--elevation-high);
     padding: 1rem;
     width: 25rem;
   }

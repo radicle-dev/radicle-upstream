@@ -30,13 +30,6 @@
   --color-foreground-level-5: #90a0af;
   --color-foreground-level-6: #546474;
   --color-background: #ffffff;
-  --color-shadows: 0px 27px 58px rgba(0, 0, 0, 0.07),
-    0px 12.4829px 26.8152px rgba(0, 0, 0, 0.0519173),
-    0px 7.14244px 15.343px rgba(0, 0, 0, 0.0438747),
-    0px 4.33541px 9.3131px rgba(0, 0, 0, 0.0377964),
-    0px 2.61228px 5.61156px rgba(0, 0, 0, 0.0322036),
-    0px 1.45468px 3.12488px rgba(0, 0, 0, 0.0261253),
-    0px 0.62565px 1.34399px rgba(0, 0, 0, 0.0180827);
 }
 
 [data-theme="dark"] {
@@ -64,10 +57,6 @@
   --color-foreground-level-5: #8594a1;
   --color-foreground-level-6: #d3dee8;
   --color-background: #0e171f;
-  --color-shadows: 0px -1px 1px rgba(255, 255, 255, 0.1),
-    0 4px 8px rgba(0, 0, 0, 0.25), -12px 12.4829px 90.82px rgba(255, 0, 0, 0.2),
-    8px -5.39px 69.61px rgba(0, 255, 0, 0.2),
-    8px 7.14244px 79.34px rgba(0, 0, 255, 0.4);
 }
 
 [data-theme="h4x0r"] {
@@ -95,8 +84,6 @@
   --color-foreground-level-5: #81f976;
   --color-foreground-level-6: #c0ffba;
   --color-background: #021400;
-  --color-shadows: 0 0 8rem rgba(0, 255, 0, 0.38),
-    0 0 0.5rem rgba(0, 255, 0, 0.19);
 }
 
 [data-primary-color="blue"] {

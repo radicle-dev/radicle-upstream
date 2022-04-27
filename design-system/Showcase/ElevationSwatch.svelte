@@ -9,28 +9,22 @@
   import Tooltip from "../Tooltip.svelte";
 
   export let style: string | undefined = undefined;
-  export let color: string;
+  export let elevation: string;
 </script>
 
 <style>
   .wrapper {
     display: inline-flex;
   }
-  .color {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 0.5rem;
-  }
-  .border {
-    border: 1px solid var(--color-foreground-level-3);
+  .elevation {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 1rem;
   }
 </style>
 
 <div class="wrapper" {style}>
-  <Tooltip value={`var(${color})`} position="top">
-    <div
-      class:border={color === "--color-background"}
-      class="color"
-      style={`background-color: var(${color});`} />
+  <Tooltip value={`var(${elevation})`} position="top">
+    <div class="elevation" style={`box-shadow: var(${elevation});`} />
   </Tooltip>
 </div>

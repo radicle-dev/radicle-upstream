@@ -8,6 +8,7 @@
 <script lang="ts">
   export let title: string;
   export let subTitle: string;
+  export let contentStyle: string | undefined = undefined;
 </script>
 
 <style>
@@ -36,7 +37,7 @@
     <h2>{title}</h2>
     <p>{subTitle}</p>
   </div>
-  <div class="content">
+  <div class="content" style={contentStyle}>
     <slot />
   </div>
 </div>

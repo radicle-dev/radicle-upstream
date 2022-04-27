@@ -21,7 +21,7 @@
     background: var(--color-background);
     border-radius: 1rem;
     padding: 2rem;
-    box-shadow: var(--color-shadows);
+    box-shadow: var(--elevation-high);
     display: flex;
     flex-direction: column;
     align-items: center;

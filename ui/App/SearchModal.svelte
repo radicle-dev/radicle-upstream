@@ -142,7 +142,7 @@
     align-items: center;
     background-color: var(--color-foreground-level-1);
     border-radius: 0.5rem;
-    box-shadow: var(--color-shadows);
+    box-shadow: var(--elevation-high);
     color: var(--color-foreground-level-6);
     display: flex;
     height: 3rem;
@@ -153,7 +153,7 @@
   .result {
     background: var(--color-background);
     border-radius: 0.5rem;
-    box-shadow: var(--color-shadows);
+    box-shadow: var(--elevation-high);
     color: var(--color-foreground-level-6);
     padding: 1.5rem;
   }
