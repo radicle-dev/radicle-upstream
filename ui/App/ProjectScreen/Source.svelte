@@ -38,7 +38,6 @@
   import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
   import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
-  import NewPatchButton from "./Source/NewPatchButton.svelte";
   import History from "./Source/SourceBrowser/History.svelte";
 
   import Anchors from "./Source/Anchors.svelte";
@@ -203,7 +202,15 @@
     </div>
     <div slot="right">
       {#if patchesTabSelected}
-        <NewPatchButton />
+        <CommandModal
+          let:prop={toggleDropdown}
+          command={"upstream patch create"}
+          description="To create a patch in your working copy, check out the branch that contains the changes and run the following command:">
+          <Button
+            variant="transparent"
+            icon={RevisionIcon}
+            on:click={toggleDropdown}>New patch</Button>
+        </CommandModal>
       {:else if isContributor}
         <CommandModal
           let:prop={toggleDropdown}
