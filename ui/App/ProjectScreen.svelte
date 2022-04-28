@@ -74,6 +74,11 @@
       {
         title: "View in browser",
         icon: GlobeIcon,
+        disabled: project.seed === null,
+        tooltip:
+          project.seed === null
+            ? "Couldn't find the project on any of the official seeds yet"
+            : undefined,
         event: () => {
           ipc.openUrl(
             `https://app.radicle.network/seeds/${project.seed}/${project.urn}`
