@@ -13,6 +13,7 @@ export interface Config {
   httpAddr: string;
   lnkHome?: string;
   testWalletMnemonic?: string;
+  proxyGitSeeds: string;
 }
 
 // Process environment variables that configure Upstream.
@@ -26,6 +27,7 @@ interface ProcessEnv {
   RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC?: string;
   // Port on 127.0.0.1 to bind HTTP API to
   RADICLE_UPSTREAM_HTTP_PORT?: string;
+  RADICLE_PROXY_GIT_SEEDS?: string;
 }
 
 export const config = buildConfig(process.env as ProcessEnv);
@@ -54,10 +56,26 @@ function buildConfig(processEnv: ProcessEnv): Config {
     httpPort = 17246;
   }
 
+  let proxyGitSeeds: string;
+  if (processEnv.RADICLE_PROXY_GIT_SEEDS === undefined) {
+    if (environment === "development") {
+      proxyGitSeeds = "https://seed.upstream.radicle.xyz";
+    } else {
+      proxyGitSeeds = [
+        "https://maple.radicle.garden",
+        "https://pine.radicle.garden",
+        "https://willow.radicle.garden",
+      ].join(",");
+    }
+  } else {
+    proxyGitSeeds = processEnv.RADICLE_PROXY_GIT_SEEDS;
+  }
+
   return {
     environment,
     lnkHome,
     httpAddr: `127.0.0.1:${httpPort.toString()}`,
     testWalletMnemonic: processEnv.RADICLE_UPSTREAM_TEST_WALLET_MNEMONIC,
+    proxyGitSeeds,
   };
 }

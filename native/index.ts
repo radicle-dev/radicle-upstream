@@ -211,18 +211,9 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
       "--dev-log",
       "--http-listen",
       config.httpAddr,
-      "--git-seed",
-      "https://seed.upstream.radicle.xyz",
     ];
   } else {
-    proxyArgs = [
-      "--git-seed",
-      "https://maple.radicle.garden",
-      "--git-seed",
-      "https://pine.radicle.garden",
-      "--git-seed",
-      "https://willow.radicle.garden",
-    ];
+    proxyArgs = [];
   }
 
   return {
@@ -231,6 +222,7 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
     lineLimit: 500,
     env: {
       LNK_HOME: config.lnkHome,
+      RADICLE_PROXY_GIT_SEEDS: config.proxyGitSeeds,
     },
   };
 }
