@@ -209,7 +209,7 @@ function getProxyEnv(
     RADICLE_PROXY_HTTP_LISTEN: `127.0.0.1:${peerConfig.httpPort}`,
     RADICLE_PROXY_PEER_LISTEN: `127.0.0.1:${peerConfig.p2pPort}`,
     RADICLE_PROXY_KEY_PASSPHRASE: "asdf",
-    RADICLE_PROXY_GIT_SEEDS: `http://localhost:8778`,
+    RADICLE_PROXY_GIT_SEEDS: `http://127.0.0.1:8778`,
   };
 }
 
