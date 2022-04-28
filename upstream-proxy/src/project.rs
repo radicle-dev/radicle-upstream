@@ -74,8 +74,8 @@ pub struct Project {
     pub metadata: Metadata,
     /// High-level statistics about the project.
     pub stats: Stats,
-    /// The seed address where the project is hosted.
-    pub seed: Option<String>,
+    /// The seed URL where the project is hosted.
+    pub seed: Option<rad_common::Url>,
 }
 
 /// Construct a Project from its metadata and stats
@@ -90,16 +90,11 @@ impl TryFrom<(LinkProject, Stats, Option<rad_common::Url>)> for Project {
         let urn = project.urn();
         let metadata = Metadata::try_from(project)?;
 
-        let maybe_seed_domain = match seed {
-            Some(url) => url.domain().map(|domain| domain.to_string()),
-            None => None,
-        };
-
         Ok(Self {
             urn,
             metadata,
             stats,
-            seed: maybe_seed_domain,
+            seed,
         })
     }
 }

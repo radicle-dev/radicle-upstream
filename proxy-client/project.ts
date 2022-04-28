@@ -43,7 +43,7 @@ const projectSchema: zod.Schema<Project> = zod.object({
     commits: zod.number(),
     contributors: zod.number(),
   }),
-  seed: zod.string().nullable(),
+  seed: zod.string().url().nullable(),
 });
 
 export interface FailedProject {

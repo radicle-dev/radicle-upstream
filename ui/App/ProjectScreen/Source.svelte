@@ -150,15 +150,16 @@
     radAction: "push" | "sync",
     projectUrn: string,
     projectName: string,
-    projectSeed: string | null
+    projectSeedUrl: string | null
   ): string {
     const command = [
       `rad checkout ${projectUrn} && \\`,
       `cd "${projectName}" && \\`,
     ];
 
-    if (projectSeed) {
-      command.push(`rad ${radAction} --seed ${projectSeed}`);
+    if (projectSeedUrl) {
+      const parsedUrl = new URL(projectSeedUrl);
+      command.push(`rad ${radAction} --seed ${parsedUrl.host}`);
     } else {
       command.push(`rad ${radAction}`);
     }
