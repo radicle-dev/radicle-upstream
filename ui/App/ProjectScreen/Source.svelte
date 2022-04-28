@@ -209,7 +209,8 @@
           <Button
             variant="transparent"
             icon={RevisionIcon}
-            on:click={toggleDropdown}>New patch</Button>
+            on:click={toggleDropdown}
+            dataCy="patch-modal-toggle">New patch</Button>
         </CommandModal>
       {:else if isContributor}
         <CommandModal
