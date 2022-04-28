@@ -1,0 +1,240 @@
+/**
+ * Copyright © 2021 The Radicle Upstream Contributors
+ *
+ * This file is part of radicle-upstream, distributed under the GPLv3
+ * with Radicle Linking Exception. For full terms see the included
+ * LICENSE file.
+ */
+/* headers */
+
+@font-face {
+  font-family: "Inter Bold";
+  src: url("fonts/Inter-Bold.otf");
+}
+
+@font-face {
+  font-family: "Inter SemiBold";
+  src: url("fonts/Inter-SemiBold.otf");
+}
+
+@font-face {
+  font-family: "Inter Regular";
+  src: url("fonts/Inter-Regular.otf");
+}
+
+@font-face {
+  font-family: "SourceCodePro Bold";
+  src: url("fonts/SourceCodePro-Bold.otf");
+}
+
+@font-face {
+  font-family: "SourceCodePro Regular";
+  src: url("fonts/SourceCodePro-Regular.otf");
+}
+
+:root {
+  --typeface-bold: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --typeface-medium: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --typeface-regular: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --typeface-mono-bold: SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --typeface-mono-regular: SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+[data-uifont="system"] {
+  --typeface-bold: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --typeface-medium: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --typeface-regular: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+}
+[data-codefont="system"] {
+  --typeface-mono-bold: SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --typeface-mono-regular: SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+[data-uifont="inter"] {
+  --typeface-bold: "Inter Bold";
+  --typeface-medium: "Inter SemiBold";
+  --typeface-regular: "Inter Regular";
+}
+
+[data-codefont="sourceCode"] {
+  --typeface-mono-bold: "SourceCodePro Bold";
+  --typeface-mono-regular: "SourceCodePro Regular";
+}
+
+h1,
+.typo-header-1 {
+  font-family: var(--typeface-bold);
+  font-weight: bold;
+  font-size: 36px;
+  line-height: 44px;
+}
+
+h2,
+.typo-header-2 {
+  font-family: var(--typeface-bold);
+  font-weight: bold;
+  font-size: 24px;
+  line-height: 30px;
+}
+
+h3,
+.typo-header-3 {
+  font-family: var(--typeface-bold);
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+h4,
+.typo-header-4 {
+  font-family: var(--typeface-bold);
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 22.5px;
+}
+
+h5,
+.typo-header-5 {
+  font-family: var(--typeface-medium);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+/* text */
+
+p,
+.typo-text {
+  font-family: var(--typeface-regular);
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.typo-text-bold {
+  font-family: var(--typeface-medium);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.typo-text-mono {
+  font-family: var(--typeface-mono-regular);
+  font-weight: normal;
+  font-size: 16px;
+}
+
+.typo-text-mono-bold {
+  font-family: var(--typeface-mono-bold);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.typo-text-small {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.typo-text-small-bold {
+  font-family: var(--typeface-medium);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.typo-text-small-mono {
+  font-family: var(--typeface-mono-bold);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Relative links */
+
+.typo-link {
+  color: var(--color-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+
+.typo-link:hover,
+.typo-link:focus {
+  opacity: 0.75;
+}
+
+.typo-link:active {
+  opacity: 0.5;
+}
+
+/* External links */
+.typo-link[href^="http://"]:after,
+.typo-link[href^="https://"]:after
+{
+  content: "↗";
+  margin-left: 0.1rem;
+  text-decoration: none;
+  /* disables text decoration from containing a element */
+  display: inline-block;
+  vertical-align: text-top;
+}
+
+/* Modifiers */
+
+.typo-regular {
+  font-family: var(--typeface-regular);
+  font-weight: 600;
+}
+
+.typo-semi-bold {
+  font-family: var(--typeface-medium);
+  font-weight: 600;
+}
+
+.typo-bold {
+  font-family: var(--typeface-bold);
+  font-weight: bold;
+}
+
+.typo-mono {
+  font-family: var(--typeface-mono-regular);
+  font-weight: normal;
+}
+
+.typo-mono-bold {
+  font-family: var(--typeface-mono-bold);
+  font-weight: bold;
+}
+
+.typo-overflow-ellipsis {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.typo-all-caps {
+  font-family: var(--typeface-medium);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05rem;
+}
+
+/* Enable contextual alternates */
+.typo-enable-calt {
+  font-feature-settings: "calt";
+}

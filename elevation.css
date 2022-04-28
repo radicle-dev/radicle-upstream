@@ -1,0 +1,69 @@
+/**
+ * Copyright © 2021 The Radicle Upstream Contributors
+ *
+ * This file is part of radicle-upstream, distributed under the GPLv3
+ * with Radicle Linking Exception. For full terms see the included
+ * LICENSE file.
+ */
+:root {
+  --elevation-low: 0px 6px 16px rgba(0, 0, 0, 0.05),
+    0px 2.77398px 7.39728px rgba(0, 0, 0, 0.0370838),
+    0px 1.58721px 4.23256px rgba(0, 0, 0, 0.031339),
+    0px 0.963424px 2.56913px rgba(0, 0, 0, 0.0269974),
+    0px 0.580506px 1.54802px rgba(0, 0, 0, 0.0230026),
+    0px 0.323263px 0.862035px rgba(0, 0, 0, 0.018661),
+    0px 0.139033px 0.370755px rgba(0, 0, 0, 0.0129162);
+
+  --elevation-medium: 0px 15px 31px rgba(0, 0, 0, 0.07),
+    0px 6.93495px 14.3322px rgba(0, 0, 0, 0.0519173),
+    0px 3.96802px 8.20058px rgba(0, 0, 0, 0.0438747),
+    0px 2.40856px 4.97769px rgba(0, 0, 0, 0.0377964),
+    0px 1.45126px 2.99928px rgba(0, 0, 0, 0.0322036),
+    0px 0.808158px 1.67019px rgba(0, 0, 0, 0.0261253),
+    0px 0.347583px 0.718338px rgba(0, 0, 0, 0.0180827);
+
+  --elevation-high: 0px 27px 58px rgba(0, 0, 0, 0.07),
+    0px 12.4829px 26.8152px rgba(0, 0, 0, 0.0519173),
+    0px 7.14244px 15.343px rgba(0, 0, 0, 0.0438747),
+    0px 4.33541px 9.3131px rgba(0, 0, 0, 0.0377964),
+    0px 2.61228px 5.61156px rgba(0, 0, 0, 0.0322036),
+    0px 1.45468px 3.12488px rgba(0, 0, 0, 0.0261253),
+    0px 0.62565px 1.34399px rgba(0, 0, 0, 0.0180827);
+}
+
+[data-theme="dark"] {
+  --elevation-low: 0px -1px 2px #5b5b5b, 0px 2px 2px rgba(0, 0, 0, 0.25),
+    -3px 3px 22.5px rgba(255, 0, 0, 0.2), 2px 1.75px 20px rgba(5, 0, 255, 0.4),
+    0px -2px 20px rgba(99, 64, 13, 0.1);
+  --elevation-medium: 0px -1px 2px #5b5b5b, 0px 2px 2px rgba(0, 0, 0, 0.25),
+    -6px 6px 45px rgba(255, 0, 0, 0.2), 4px 3.5px 40px rgba(5, 0, 255, 0.4),
+    0px -4px 40px rgba(99, 64, 13, 0.1);
+  --elevation-high: 0px -1px 2px #5b5b5b, 0px 4px 4px rgba(0, 0, 0, 0.25),
+    -12px 12.4829px 90.82px rgba(255, 0, 0, 0.2),
+    8px 7.14244px 79.34px rgba(5, 0, 255, 0.4),
+    0px -8px 81.31px rgba(99, 64, 13, 0.1);
+}
+
+[data-theme="h4x0r"] {
+  --elevation-low: 0px 6px 16px rgba(21, 255, 0, 0.05),
+    0px 2.77398px 7.39728px rgba(21, 255, 0, 0.0370838),
+    0px 1.58721px 4.23256px rgba(21, 255, 0, 0.031339),
+    0px 0.963424px 2.56913px rgba(21, 255, 0, 0.0269974),
+    0px 0.580506px 1.54802px rgba(21, 255, 0, 0.0230026),
+    0px 0.323263px 0.862035px rgba(21, 255, 0, 0.018661),
+    0px 0.139033px 0.370755px rgba(21, 255, 0, 0.0129162);
+  --elevation-medium: 0px 15px 31px rgba(21, 255, 0, 0.07),
+    0px 6.93495px 14.3322px rgba(21, 255, 0, 0.0519173),
+    0px 3.96802px 8.20058px rgba(21, 255, 0, 0.0438747),
+    0px 2.40856px 4.97769px rgba(21, 255, 0, 0.0377964),
+    0px 1.45126px 2.99928px rgba(21, 255, 0, 0.0322036),
+    0px 0.808158px 1.67019px rgba(21, 255, 0, 0.0261253),
+    0px 0.347583px 0.718338px rgba(21, 255, 0, 0.0180827);
+  --elevation-high: 0px 27px 58px rgba(21, 255, 0, 0.07),
+    0px 12.4829px 26.8152px rgba(21, 255, 0, 0.0519173),
+    0px 7.14244px 15.343px rgba(21, 255, 0, 0.0438747),
+    0px 4.33541px 9.3131px rgba(21, 255, 0, 0.0377964),
+    0px 2.61228px 5.61156px rgba(21, 255, 0, 0.0322036),
+    0px 1.45468px 3.12488px rgba(21, 255, 0, 0.0261253),
+    0px 0.62565px 1.34399px rgba(21, 255, 0, 0.0180827);
+}

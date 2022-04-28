@@ -1,0 +1,56 @@
+/**
+ * Copyright © 2021 The Radicle Upstream Contributors
+ *
+ * This file is part of radicle-upstream, distributed under the GPLv3
+ * with Radicle Linking Exception. For full terms see the included
+ * LICENSE file.
+ */
+html,
+body {
+  font-family: var(--typeface-regular);
+  font-size: 16px;
+  line-height: 24px;
+  display: flex;
+  height: 100%;
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: none;
+  font-feature-settings: "ss01", "ss02", "cv01", "calt" 0;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+  --sidebar-width: 4rem;
+  --topbar-height: 4rem;
+  --bigheader-height: 16.5rem;
+  --content-min-width: 30rem;
+  --content-padding: 2rem;
+  --content-max-width: 90rem;
+}
+
+.lock-screen > * {
+  pointer-events: none;
+}
+
+.lock-screen {
+  cursor: wait;
+}
+
+.button-transition {
+  transition: transform 0.2s ease-in-out;
+}
+
+.button-transition:active {
+  transform: scale(0.95);
+  transition-duration: 0.1s;
+}
+
+.button-transition-big:active {
+  transform: scale(0.9);
+  transition-duration: 0.1s;
+}

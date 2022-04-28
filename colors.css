@@ -1,0 +1,108 @@
+/**
+ * Copyright © 2021 The Radicle Upstream Contributors
+ *
+ * This file is part of radicle-upstream, distributed under the GPLv3
+ * with Radicle Linking Exception. For full terms see the included
+ * LICENSE file.
+ */
+:root {
+  --color-primary: rgba(85, 85, 255, 1);
+  --color-primary-level-1: rgba(85, 85, 255, 0.17);
+  --color-primary-level-2: rgba(85, 85, 255, 0.37);
+  --color-primary-level-6: rgba(85, 85, 255, 0.87);
+  --color-positive: #53db53;
+  --color-positive-level-1: #e3ffe3;
+  --color-positive-level-2: #b5ffb5;
+  --color-positive-level-6: #569656;
+  --color-caution: #ffc555;
+  --color-caution-level-1: #fff6e5;
+  --color-caution-level-2: #ffe5b2;
+  --color-caution-level-6: #b27805;
+  --color-negative: #ff5555;
+  --color-negative-level-1: #ffeded;
+  --color-negative-level-2: #ff8787;
+  --color-negative-level-6: #803d3d;
+  --color-foreground: #28333d;
+  --color-foreground-level-1: #f8f8f8;
+  --color-foreground-level-2: #ebeff3;
+  --color-foreground-level-3: #c5d1db;
+  --color-foreground-level-4: #a9b9c7;
+  --color-foreground-level-5: #90a0af;
+  --color-foreground-level-6: #546474;
+  --color-background: #ffffff;
+}
+
+[data-theme="dark"] {
+  --color-primary: rgba(85, 85, 255, 1);
+  --color-primary-level-1: rgba(85, 85, 255, 0.17);
+  --color-primary-level-2: rgba(85, 85, 255, 0.37);
+  --color-primary-level-6: rgba(85, 85, 255, 0.87);
+  --color-positive: #53db53;
+  --color-positive-level-1: #21402f;
+  --color-positive-level-2: #2c6837;
+  --color-positive-level-6: #e3ffe3;
+  --color-caution: #ffc555;
+  --color-caution-level-1: #2f312d;
+  --color-caution-level-2: #524a34;
+  --color-caution-level-6: #ffefcf;
+  --color-negative: #ff5555;
+  --color-negative-level-1: #38282f;
+  --color-negative-level-2: #623237;
+  --color-negative-level-6: #ffd4d4;
+  --color-foreground: #ffffff;
+  --color-foreground-level-1: #162029;
+  --color-foreground-level-2: #29343d;
+  --color-foreground-level-3: #333e47;
+  --color-foreground-level-4: #5e6d7a;
+  --color-foreground-level-5: #8594a1;
+  --color-foreground-level-6: #d3dee8;
+  --color-background: #0e171f;
+}
+
+[data-theme="h4x0r"] {
+  --color-primary: rgba(255, 123, 0, 1);
+  --color-primary-level-1: rgba(255, 123, 0, 0.17);
+  --color-primary-level-2: rgba(255, 123, 0, 0.37);
+  --color-primary-level-6: rgba(255, 123, 0, 0.87);
+  --color-positive: #53db53;
+  --color-positive-level-1: #224021;
+  --color-positive-level-2: #2e682c;
+  --color-positive-level-6: #e3ffe3;
+  --color-caution: #ffc555;
+  --color-caution-level-1: #2c1e00;
+  --color-caution-level-2: #644b19;
+  --color-caution-level-6: #ffe4af;
+  --color-negative: #ff0000;
+  --color-negative-level-1: #2e0000;
+  --color-negative-level-2: #570000;
+  --color-negative-level-6: #ffb3b3;
+  --color-foreground: #15ff00;
+  --color-foreground-level-1: #031e01;
+  --color-foreground-level-2: #0b3607;
+  --color-foreground-level-3: #0e7305;
+  --color-foreground-level-4: #0fb200;
+  --color-foreground-level-5: #81f976;
+  --color-foreground-level-6: #c0ffba;
+  --color-background: #021400;
+}
+
+[data-primary-color="blue"] {
+  --color-primary: rgba(85, 85, 255, 1);
+  --color-primary-level-1: rgba(85, 85, 255, 0.17);
+  --color-primary-level-2: rgba(85, 85, 255, 0.37);
+  --color-primary-level-6: rgba(85, 85, 255, 0.87);
+}
+
+[data-primary-color="pink"] {
+  --color-primary: rgba(255, 85, 255, 1);
+  --color-primary-level-1: rgba(255, 85, 255, 0.17);
+  --color-primary-level-2: rgba(255, 85, 255, 0.37);
+  --color-primary-level-6: rgba(255, 85, 255, 0.87);
+}
+
+[data-primary-color="orange"] {
+  --color-primary: rgba(255, 123, 0, 1);
+  --color-primary-level-1: rgba(255, 123, 0, 0.17);
+  --color-primary-level-2: rgba(255, 123, 0, 0.37);
+  --color-primary-level-6: rgba(255, 123, 0, 0.87);
+}
