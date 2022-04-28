@@ -10,7 +10,7 @@ source ci/env.sh
 
 log-group-start "install toolcahin"
 time rustup show active-toolchain
-log-group-start "install toolcahin"
+log-group-end
 
 log-group-start "yarn install"
 # Unsetting GITHUB_ACTIONS because yarn tries to add log groups in a buggy way.

@@ -32,7 +32,6 @@
     "lint": "eslint . --ignore-path .gitignore --ext .js,.svelte,.ts --max-warnings=0",
     "reset:state": "scripts/reset-state.sh",
     "ds:start": "webpack serve --open --config-name design-system",
-    "ds:deploy": "scripts/deploy-design-system.sh",
     "devnet": "scripts/devnet.ts",
     "_private:test:integration": "wait-on tcp:127.0.0.1:30000 && yarn run webpack build --config-name ui && yarn run cypress run",
     "_private:test:integration:debug": "wait-on ./public/bundle.js tcp:127.0.0.1:30000 && yarn run cypress open",

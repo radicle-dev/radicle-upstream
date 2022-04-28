@@ -1,0 +1,33 @@
+name: deploy-design-system
+on:
+  push:
+    branches:
+    - main
+permissions:
+  contents: write
+jobs:
+  deploy-design-system:
+    # Recommended if you make multiple deployments in quick succession.
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Load Yarn Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/cache/yarn
+            ~/cache/cypress
+          # Reuses cache from `build` workflow.
+          key: build-${{ runner.os }}-yarn-v5-${{ hashFiles('yarn.lock') }}
+
+      - name: Build
+        run: ci/build-design-system.sh
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        with:
+          branch: gh-pages
+          folder: design-system/build
