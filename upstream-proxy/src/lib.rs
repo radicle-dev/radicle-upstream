@@ -21,7 +21,6 @@ mod config;
 mod context;
 mod control;
 mod daemon;
-pub mod env;
 mod error;
 mod git_fetch;
 mod http_next;
