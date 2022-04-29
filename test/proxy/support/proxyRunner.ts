@@ -8,6 +8,7 @@ import * as Crypto from "node:crypto";
 import fetch from "node-fetch";
 import EventSource from "eventsource";
 import waitOn from "wait-on";
+import * as Jest from "@jest/globals";
 import * as ProxyClient from "proxy-client";
 import * as fs from "node:fs/promises";
 import * as path from "path";
@@ -33,6 +34,29 @@ interface RadicleProxyParams {
   name: string;
   gitSeeds?: string[];
   sshAuthSock?: string;
+}
+
+// Registers a test hook that ensures that `upstream-proxy` is built.
+// We skip this hook if the `CI` environment variable is "true".
+export function buildBeforeAll(): void {
+  if (process.env.CI === "true") {
+    return;
+  }
+
+  Jest.beforeAll(async () => {
+    // Because we’re using `--quiet` to build the proxy we want to show
+    // some progress to the user. But only after some initial delay so
+    // that we don’t show it when we don’t need to rebuild or the rebuild
+    // is quick.
+    const notifyTimeout = setTimeout(() => {
+      // We’re not using `console.log()` because it is patched by Jest
+      process.stdout.write("Building upstream-proxy...");
+    }, 3000);
+    await execa("cargo", ["build", "--bin", "upstream-proxy", "--quiet"], {
+      stdio: "inherit",
+    });
+    clearTimeout(notifyTimeout);
+  }, 10 * 60 * 1000);
 }
 
 export class RadicleProxy {

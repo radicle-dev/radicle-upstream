@@ -12,6 +12,8 @@ import { retryOnError } from "ui/src/retryOnError";
 import * as ProxyRunner from "./support/proxyRunner";
 import * as Support from "./support";
 
+ProxyRunner.buildBeforeAll();
+
 beforeAll(async () => {
   await Support.assertRadInstalled();
   await Support.assertGitServerRunning();
