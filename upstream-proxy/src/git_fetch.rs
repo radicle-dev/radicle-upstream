@@ -290,12 +290,14 @@ async fn fetch_project_from_seed(
 ) -> anyhow::Result<FetchResult> {
     let this_peer_id = peer.librad_peer().peer_id();
     let monorepo_path = peer.paths().git_dir().to_owned();
-    let urn = link_identities::Urn::new(project_id);
-    let id = urn.encode_id();
-    let proj_seed_url = seed_url.join(&id).expect("invalid Project URN");
+    let project_urn = link_identities::Urn::new(project_id);
+    let project_id = project_urn.encode_id();
+    let project_seed_url = seed_url.join(&project_id).expect("invalid Project URN");
+
     peer.librad_peer()
         .using_storage(move |storage| {
-            match rad_common::seed::fetch_identity(&monorepo_path, &proj_seed_url, &urn) {
+            match rad_common::seed::fetch_identity(&monorepo_path, &project_seed_url, &project_urn)
+            {
                 Ok(_) => {},
                 Err(err) => {
                     if err.root_cause().to_string()
@@ -308,10 +310,11 @@ async fn fetch_project_from_seed(
                 },
             };
 
-            let proj = rad_common::project::get(storage, &urn)?.context("failed to get project")?;
+            let project = rad_common::project::get(storage, &project_urn)?
+                .context("failed to get project")?;
 
-            for delegate in &proj.delegates {
-                rad_common::seed::fetch_identity(&monorepo_path, &proj_seed_url, delegate)
+            for delegate in &project.delegates {
+                rad_common::seed::fetch_identity(&monorepo_path, &project_seed_url, delegate)
                     .context(format!(
                         "failed to fetch identity for delegate {}",
                         delegate
@@ -319,13 +322,13 @@ async fn fetch_project_from_seed(
             }
 
             let tracking_config = Default::default();
-            let tracking_actions = proj
+            let tracking_actions = project
                 .remotes
                 .iter()
                 .filter(|remote_peer_id| **remote_peer_id != this_peer_id)
                 .map({
                     |remote_peer_id| librad::git::tracking::Action::Track {
-                        urn: (&urn).into(),
+                        urn: (&project_urn).into(),
                         peer: Some(*remote_peer_id),
                         config: &tracking_config,
                         policy: librad::git::tracking::policy::Track::Any,
@@ -334,7 +337,7 @@ async fn fetch_project_from_seed(
             librad::git::tracking::batch(storage, tracking_actions)
                 .context("failed to track remotes")?;
 
-            let tracked_remotes = librad::git::tracking::tracked_peers(storage, Some(&urn))
+            let tracked_remotes = librad::git::tracking::tracked_peers(storage, Some(&project_urn))
                 .context("failed to get tracked peers")?
                 .filter(|re| match re {
                     Ok(id) => *id != this_peer_id,
@@ -345,11 +348,65 @@ async fn fetch_project_from_seed(
 
             let output = rad_common::seed::fetch_remotes(
                 &monorepo_path,
-                &proj_seed_url,
-                &urn,
-                tracked_remotes,
+                &project_seed_url,
+                &project_urn,
+                tracked_remotes.clone(),
             )
             .context("failed to fetch remotes")?;
+
+            // Fetch the Person identities of all the project remotes. If a Person identity isn't
+            // replicated on the seed, but we have its data locally, then initialise a Person
+            // identity from the local data so we can show it in the UI.
+            for remote in tracked_remotes {
+                if let Some(person) =
+                    lnk_identities::rad_refs::rad_self(&storage, &project_urn.clone(), remote)
+                        .context("could not get rad_self")?
+                {
+                    let fetch_identity_result = rad_common::seed::fetch_identity(
+                        &monorepo_path,
+                        &project_seed_url,
+                        &person.urn(),
+                    );
+                    let person_id = person.urn().encode_id();
+
+                    if let Err(err) = fetch_identity_result {
+                        if err
+                            .to_string()
+                            .contains("couldn't find remote ref refs/rad/id")
+                        {
+                            let repo = git2::Repository::open_bare(storage.path())
+                                .context("failed to open repository")?;
+
+                            let init_person_result = repo.reference(
+                                &format!("refs/namespaces/{person_id}/refs/rad/id"),
+                                person.content_id.into(),
+                                false,
+                                &format!("Initialise rad/id for {person_id}"),
+                            );
+
+                            // In most cases the identity will already exist, we ignore those and
+                            // surface any other errors.
+                            if let Err(err) = init_person_result {
+                                if err.code() != git2::ErrorCode::Exists {
+                                    tracing::warn!(
+                                        ?err,
+                                        ?project_seed_url,
+                                        ?person_id,
+                                        "failed to create person identity"
+                                    );
+                                }
+                            };
+                        } else {
+                            tracing::warn!(
+                                ?err,
+                                ?project_seed_url,
+                                ?person_id,
+                                "failed to fetch person identity"
+                            );
+                        }
+                    }
+                };
+            }
 
             if output.contains("POST git-upload-pack") {
                 Ok(FetchResult::Updated)

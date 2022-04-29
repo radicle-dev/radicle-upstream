@@ -119,5 +119,12 @@ test("contributor patch replication", async () => {
     expect(patches[0]?.id).toBe("my-patch");
     expect(patches[0]?.peer.peerId).toBe(contributor.peerId);
     expect(patches[0]?.peer.type).toBe("remote");
+
+    // Make sure the contributor identity is available on the maintainer node.
+    const contributorSession = await contributor.proxyClient.sessionGet();
+    const peer = await maintainer.proxyClient.personGet(
+      contributorSession.identity.urn
+    );
+    expect(peer).not.toBeNull();
   });
 }, 10_000);
