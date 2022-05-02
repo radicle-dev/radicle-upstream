@@ -8,7 +8,6 @@ import * as Path from "node:path";
 import { afterEach, beforeAll, test } from "@jest/globals";
 
 import * as ProxyEvents from "proxy-client/events";
-import { retryOnError } from "ui/src/retryOnError";
 import * as ProxyRunner from "./support/proxyRunner";
 import * as Support from "./support";
 
@@ -114,18 +113,11 @@ test("contributor patch replication", async () => {
     projectUrn,
     contributor.peerId
   );
-  await retryOnError(
-    async () => {
-      const patches = await maintainer.proxyClient.project.patchList(
-        projectUrn
-      );
-      expect(patches.length).toBe(1);
-      expect(patches[0]?.id).toBe("my-patch");
-      expect(patches[0]?.peer.peerId).toBe(contributor.peerId);
-      expect(patches[0]?.peer.type).toBe("remote");
-    },
-    () => true,
-    10,
-    200
-  );
+  await Support.retry(async () => {
+    const patches = await maintainer.proxyClient.project.patchList(projectUrn);
+    expect(patches.length).toBe(1);
+    expect(patches[0]?.id).toBe("my-patch");
+    expect(patches[0]?.peer.peerId).toBe(contributor.peerId);
+    expect(patches[0]?.peer.type).toBe("remote");
+  });
 }, 10_000);

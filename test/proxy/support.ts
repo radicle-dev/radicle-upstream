@@ -13,6 +13,7 @@ import Semver from "semver";
 
 import * as ProxyRunner from "./support/proxyRunner";
 import * as Process from "./support/process";
+import { retryOnError } from "ui/src/retryOnError";
 
 // Assert that the docker container with the test git-server is
 // running. If it is not running, throw an error that explains how to
@@ -78,6 +79,12 @@ export async function startSshAgent(): Promise<string> {
   });
   await waitOn({ resources: [sshAuthSock], timeout: 5000 });
   return sshAuthSock;
+}
+
+// Call `fn` until it does not throw an error and return the result. Re-throws
+// the error raised by `fn()` if it still fails after two seconds.
+export function retry<T>(fn: () => Promise<T>): Promise<T> {
+  return retryOnError(fn, () => true, 100, 20);
 }
 
 export async function createProject(
