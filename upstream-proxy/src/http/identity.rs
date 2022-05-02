@@ -50,12 +50,13 @@ fn get_remote_filter(
         .and(path::param::<Urn>())
         .and(warp::path::end())
         .and(warp::get())
-        .and(http::with_context(ctx))
+        .and(http::with_context_unsealed(ctx))
         .and_then(handler::get_remote)
 }
 
 /// Identity handlers for conversion between core domain and http request fullfilment.
 mod handler {
+    use anyhow::Context;
     use warp::{http::StatusCode, reply, Rejection, Reply};
 
     use link_identities::git::Urn;
@@ -94,10 +95,20 @@ mod handler {
     }
 
     /// Get the [`identity::Person`] for the given `id`.
-    pub async fn get_remote(id: Urn, ctx: context::Context) -> Result<impl Reply, Rejection> {
-        let storage = ctx.read_only_storage()?;
-        let user =
-            lnk_identities::person::get(&storage, &id).map_err(http::error::Response::from)?;
+    pub async fn get_remote(id: Urn, ctx: context::Unsealed) -> Result<impl Reply, Rejection> {
+        let user = ctx
+            .peer
+            .librad_peer()
+            .using_storage({
+                let id = id.clone();
+                move |storage| lnk_identities::person::get(&storage, &id)
+            })
+            .await
+            .context("failed to get librad storage")
+            .map_err(crate::error::Error::from)?
+            .context(format!("failed to get person {id}"))
+            .map_err(crate::error::Error::from)?;
+
         match user {
             Some(user) => Ok(reply::json(&identity::Person::from(user))),
             None => Err(http::error::Response {

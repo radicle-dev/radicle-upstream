@@ -39,15 +39,6 @@ impl Context {
         }
     }
 
-    pub fn read_only_storage(&self) -> Result<librad::git::storage::ReadOnly, crate::error::Error> {
-        let paths = match self {
-            Self::Sealed(sealed) => &sealed.paths,
-            Self::Unsealed(unsealed) => &unsealed.rest.paths,
-        };
-        let storage = librad::git::storage::ReadOnly::open(paths)?;
-        Ok(storage)
-    }
-
     /// Unseal the key store and restart the coco service with the obtained key.
     ///
     /// # Errors
