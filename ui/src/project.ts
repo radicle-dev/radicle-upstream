@@ -114,7 +114,7 @@ export const userList = (peers: Peer[]): User[] => {
 
 // Checks if the provided user is part of the delegate list of the project.
 export const isDelegate = (userUrn: string, project: Project): boolean => {
-  return project.metadata.delegates.includes(userUrn);
+  return project.metadata.delegates[userUrn] !== undefined;
 };
 
 // Checks if any of the contributors in the list is the current user.

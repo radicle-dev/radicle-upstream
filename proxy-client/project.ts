@@ -12,14 +12,14 @@ export interface Metadata {
   name: string;
   defaultBranch: string;
   description: string | null;
-  delegates: string[];
+  delegates: { [urn: string]: string[] };
 }
 
 const metadataSchema: zod.Schema<Metadata> = zod.object({
   name: zod.string(),
   defaultBranch: zod.string(),
   description: zod.string().nullable(),
-  delegates: zod.array(zod.string()),
+  delegates: zod.record(zod.array(zod.string())),
 });
 
 export interface CreateParams {

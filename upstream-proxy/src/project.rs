@@ -7,9 +7,10 @@
 //! Combine the domain `CoCo` domain specific understanding of a Project into a single
 //! abstraction.
 
-use std::{collections::HashSet, convert::TryFrom, ops::Deref};
+use std::{collections::HashMap, convert::TryFrom, ops::Deref};
 
 use anyhow::Context;
+use librad::PeerId;
 use serde::{Deserialize, Serialize};
 
 use link_identities::{git::Urn, Person, Project as LinkProject};
@@ -28,7 +29,7 @@ pub struct Metadata {
     /// Default branch for checkouts, often used as mainline as well.
     pub default_branch: String,
     /// List of delegates.
-    pub delegates: HashSet<Urn>,
+    pub delegates: HashMap<Urn, Vec<PeerId>>,
 }
 
 impl TryFrom<LinkProject> for Metadata {
@@ -42,8 +43,17 @@ impl TryFrom<LinkProject> for Metadata {
             .delegations()
             .iter()
             .indirect()
-            .map(|indirect| indirect.urn())
+            .map(|indirect| {
+                let delegation_iter = indirect
+                    .delegations()
+                    .iter()
+                    .map(|pk| PeerId::from(*pk))
+                    .collect();
+
+                (indirect.urn(), delegation_iter)
+            })
             .collect();
+
         let default_branch = subject
             .default_branch
             .clone()

@@ -7,7 +7,7 @@
 import type { Project } from "ui/src/project";
 import * as source from "ui/src/source";
 import * as proxy from "ui/src/proxy";
-import type * as proxyProject from "proxy-client/project";
+import * as proxyProject from "proxy-client/project";
 import type { Identity } from "proxy-client/identity";
 
 export interface Patch {

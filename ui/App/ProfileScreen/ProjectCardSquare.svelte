@@ -86,7 +86,7 @@
       commits={project.stats.commits}
       contributors={project.stats.contributors} />
     <UserIdentity
-      urn={project.metadata.delegates[0]}
+      urn={Object.keys(project.metadata.delegates)[0]}
       modalStyle="top: -16rem; left: -17rem;" />
   </div>
 </div>
