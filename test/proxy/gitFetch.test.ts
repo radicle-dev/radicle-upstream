@@ -23,8 +23,6 @@ afterEach(async () => {
   ProxyRunner.killAllProcesses();
 });
 
-const seedUrl = "http://localhost:8778";
-
 test("contributor follows", async () => {
   const stateDir = await Support.prepareStateDir();
   const sshAuthSock = await Support.startSshAgent();
@@ -41,7 +39,6 @@ test("contributor follows", async () => {
   const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: "contributor",
-    gitSeeds: [seedUrl],
     sshAuthSock,
   });
 
@@ -73,7 +70,6 @@ test("contributor patch replication", async () => {
   const maintainer = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: "maintainer",
-    gitSeeds: [seedUrl],
     sshAuthSock,
   });
   await maintainer.start();
@@ -82,7 +78,6 @@ test("contributor patch replication", async () => {
   const contributor = await ProxyRunner.RadicleProxy.create({
     dataPath: stateDir,
     name: "contributor",
-    gitSeeds: [seedUrl],
     sshAuthSock,
   });
 

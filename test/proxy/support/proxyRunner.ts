@@ -25,6 +25,8 @@ const CARGO_TARGET_DIR =
 const BIN_PATH = path.join(CARGO_TARGET_DIR, "debug");
 const PATH = [BIN_PATH, process.env.PATH].join(path.delimiter);
 
+export const SEED_URL = "http://127.0.0.1:8778";
+
 interface RadicleProxyParams {
   dataPath: string;
   // Name to quickly identify this peer.
@@ -32,7 +34,6 @@ interface RadicleProxyParams {
   // Used as a prefix for directories, as a prefix for the user
   // handle, and as a prefix for the console logs.
   name: string;
-  gitSeeds?: string[];
   sshAuthSock?: string;
 }
 
@@ -67,14 +68,12 @@ export class RadicleProxy {
   #name: string;
   #lnkHome: string;
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
-  #gitSeeds: string[];
   #httpSocketAddr: string;
   #sshAuthSock: string;
 
   public static async create({
     dataPath,
     name,
-    gitSeeds,
     sshAuthSock = "/dev/null",
   }: RadicleProxyParams): Promise<RadicleProxy> {
     const httpPort = await getPort();
@@ -109,7 +108,6 @@ export class RadicleProxy {
       proxyClient,
       name,
       lnkHome,
-      gitSeeds,
       httpSocketAddr,
       sshAuthSock,
     });
@@ -122,7 +120,6 @@ export class RadicleProxy {
 
     name: string;
     lnkHome: string;
-    gitSeeds: string[] | undefined;
     httpSocketAddr: string;
     sshAuthSock: string;
   }) {
@@ -132,7 +129,6 @@ export class RadicleProxy {
 
     this.#name = props.name;
     this.#lnkHome = props.lnkHome;
-    this.#gitSeeds = props.gitSeeds ?? [];
     this.#httpSocketAddr = props.httpSocketAddr;
     this.#sshAuthSock = props.sshAuthSock;
   }
@@ -149,11 +145,9 @@ export class RadicleProxy {
       "--unsafe-fast-keystore",
       "--dev-log",
       "--git-fetch-interval=1",
+      "--git-seed",
+      SEED_URL,
     ];
-
-    for (const gitSeed of this.#gitSeeds || []) {
-      args.push("--git-seed", gitSeed);
-    }
 
     const env = {
       LNK_HOME: this.#lnkHome,

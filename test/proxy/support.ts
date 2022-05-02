@@ -11,7 +11,7 @@ import execa from "execa";
 import waitOn from "wait-on";
 import Semver from "semver";
 
-import type * as ProxyRunner from "./support/proxyRunner";
+import * as ProxyRunner from "./support/proxyRunner";
 import * as Process from "./support/process";
 
 // Assert that the docker container with the test git-server is
@@ -108,7 +108,7 @@ export async function createProject(
 
   await proxy.spawn(
     "git",
-    ["config", "--add", "rad.seed", "http://localhost:8778"],
+    ["config", "--add", "rad.seed", ProxyRunner.SEED_URL],
     {
       cwd: maintainerProjectPath,
     }
