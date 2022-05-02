@@ -15,14 +15,22 @@
   import * as mutexExecutor from "ui/src/mutexExecutor";
   import * as notification from "ui/src/notification";
   import * as patch from "ui/src/project/patch";
+  import * as source from "ui/src/source";
 
   import PatchLoaded from "./PatchLoaded.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
 
   export let id: string;
   export let peerId: string;
   export let project: Project;
 
-  let patchDetails: patch.PatchDetails | undefined = undefined;
+  let patchStatus:
+    | { type: "loading" }
+    | {
+        type: "ok";
+        patch: patch.Patch;
+        commits: source.GroupedCommitsHistory;
+      } = { type: "loading" };
 
   const fetchExecutor = mutexExecutor.create();
   async function fetch(
@@ -35,8 +43,10 @@
         return await patch.getDetails(project, peerId, id);
       });
 
-      if (result) {
-        patchDetails = result;
+      if (!result) {
+        patchStatus = { type: "loading" };
+      } else {
+        patchStatus = { type: "ok", ...result };
       }
     } catch (err: unknown) {
       notification.showException(
@@ -62,9 +72,13 @@
   $: fetch(project, peerId, id);
 </script>
 
-{#if patchDetails !== undefined}
+{#if patchStatus.type === "loading"}
+  <EmptyState
+    emoji="👀"
+    text="This patch either doesn't exist or hasn't been found yet. Once it's found, it will show up here automatically." />
+{:else if patchStatus.type === "ok"}
   <PatchLoaded
     {project}
-    patch={patchDetails.patch}
-    commits={patchDetails.commits} />
+    patch={patchStatus.patch}
+    commits={patchStatus.commits} />
 {/if}
