@@ -145,26 +145,7 @@
     notification.showException($store.error);
   }
 
-  function checkoutWorkingCopyCommand(
-    radAction: "push" | "sync",
-    projectUrn: string,
-    projectName: string,
-    projectSeedUrl: string | null
-  ): string {
-    const command = [
-      `rad checkout ${projectUrn} && \\`,
-      `cd "${projectName}" && \\`,
-    ];
-
-    if (projectSeedUrl) {
-      const parsedUrl = new URL(projectSeedUrl);
-      command.push(`rad ${radAction} --seed ${parsedUrl.host}`);
-    } else {
-      command.push(`rad ${radAction}`);
-    }
-
-    return command.join("\n");
-  }
+  $: seedArg = project.seed ? `--seed ${new URL(project.seed).host}` : "";
 </script>
 
 <style>
@@ -215,12 +196,11 @@
       {:else if isContributor}
         <CommandModal
           let:prop={toggleDropdown}
-          command={checkoutWorkingCopyCommand(
-            "sync",
-            project.urn,
-            project.metadata.name,
-            project.seed
-          )}
+          command={[
+            `rad checkout ${project.urn} && \\`,
+            `cd "${project.metadata.name}" && \\`,
+            `rad sync ${seedArg}`,
+          ].join("\n")}
           description="To checkout a working copy of this project, run the following command in your terminal:">
           <Button
             variant="transparent"
@@ -230,12 +210,12 @@
       {:else}
         <CommandModal
           let:prop={toggleDropdown}
-          command={checkoutWorkingCopyCommand(
-            "push",
-            project.urn,
-            project.metadata.name,
-            project.seed
-          )}
+          command={[
+            `rad checkout ${project.urn} && \\`,
+            `cd "${project.metadata.name}" && \\`,
+            `rad push ${seedArg} && \\`,
+            `rad sync --self ${seedArg}`,
+          ].join("\n")}
           description="To fork this project and checkout a working copy, run the following command in your terminal:">
           <Button
             variant="transparent"
