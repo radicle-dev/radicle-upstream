@@ -105,9 +105,6 @@ test("contributor patch replication", async () => {
       cwd: contributorProjectPath,
     }
   );
-  await contributor.spawn("rad", ["sync"], {
-    cwd: contributorProjectPath,
-  });
 
   await maintainer.proxyClient.project.peerTrack(
     projectUrn,
