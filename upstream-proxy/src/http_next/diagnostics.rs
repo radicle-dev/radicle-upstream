@@ -10,7 +10,7 @@ pub fn router() -> axum::Router {
 }
 
 async fn get(
-    super::ExtractUnsealedContext(mut ctx): super::ExtractUnsealedContext,
+    super::extract::UnsealedContext(mut ctx): super::extract::UnsealedContext,
 ) -> Result<impl axum::response::IntoResponse, super::Error> {
     let listen_addrs = ctx.peer.daemon_control().listen_addrs().await;
     let protocol_config = ctx.peer.librad_peer().protocol_config();

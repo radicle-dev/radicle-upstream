@@ -101,7 +101,7 @@ fn make_router(ctx: crate::context::Context) -> axum::Router {
 /// the response object. [`Error::Internal`] wraps [`anyhow::Error`] and results in a response with
 /// a 500 status code, "INTERNAL_SERVER_ERROR" in the `variant` field, the error message in the
 /// `message` field and the chain of causes and the backtrace in the `details` field.
-enum Error {
+pub enum Error {
     Internal(anyhow::Error),
     Custom {
         status_code: http::StatusCode,
@@ -155,34 +155,85 @@ impl From<anyhow::Error> for Error {
     }
 }
 
-/// Extract an unsealed context. If the context is sealed the request responds with an apropriate
-/// error.
-///
-/// Panics if there is no extension for [`crate::context::Context`]
-struct ExtractUnsealedContext(crate::context::Unsealed);
+mod extract {
+    /// Extract an unsealed context. If the context is sealed the request responds with an
+    /// apropriate error.
+    ///
+    /// Panics if there is no extension for [`crate::context::Context`]
+    pub struct UnsealedContext(pub crate::context::Unsealed);
 
-#[axum::async_trait]
-impl axum::extract::FromRequest<axum::body::Body> for ExtractUnsealedContext {
-    type Rejection = Error;
+    #[axum::async_trait]
+    impl axum::extract::FromRequest<axum::body::Body> for UnsealedContext {
+        type Rejection = super::Error;
 
-    async fn from_request(
-        req: &mut axum::extract::RequestParts<axum::body::Body>,
-    ) -> Result<Self, Self::Rejection> {
-        let ctx = req
-            .extensions()
-            .get::<crate::context::Context>()
-            .expect("context request extension not set");
+        async fn from_request(
+            req: &mut axum::extract::RequestParts<axum::body::Body>,
+        ) -> Result<Self, Self::Rejection> {
+            let ctx = req
+                .extensions()
+                .get::<crate::context::Context>()
+                .expect("context request extension not set");
 
-        match ctx {
-            crate::context::Context::Sealed(_) => Err(Error::Custom {
-                status_code: http::StatusCode::FORBIDDEN,
-                variant: "FORBIDDEN",
-                message: "keystore is sealed".to_string(),
-                details: None,
-            }),
-            crate::context::Context::Unsealed(unsealed) => {
-                Ok(ExtractUnsealedContext(unsealed.clone()))
-            },
+            match ctx {
+                crate::context::Context::Sealed(_) => Err(super::Error::Custom {
+                    status_code: http::StatusCode::FORBIDDEN,
+                    variant: "FORBIDDEN",
+                    message: "keystore is sealed".to_string(),
+                    details: None,
+                }),
+                crate::context::Context::Unsealed(unsealed) => {
+                    Ok(UnsealedContext(unsealed.clone()))
+                },
+            }
+        }
+    }
+    /// Wrapper around [`librad::git::Urn`] that can be used in a [`axum::extract::Path`] extractor.
+    ///
+    /// This is necessary until <https://github.com/tokio-rs/axum/pull/990> is merged and released.
+    pub struct Urn(pub librad::git::Urn);
+
+    impl<'de> serde::Deserialize<'de> for Urn {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            {
+                let s = <String as serde::Deserialize>::deserialize(deserializer)?;
+                match s.parse::<librad::git::Urn>() {
+                    Ok(urn) => Ok(Urn(urn)),
+                    Err(err) => Err(serde::de::Error::custom(err)),
+                }
+            }
+        }
+    }
+
+    /// Extractor that replaces [`axum::extract::Path`] and responds with [`super::Error`] if
+    /// extraction fails.
+    pub struct Path<T>(pub T);
+
+    #[axum::async_trait]
+    impl<T> axum::extract::FromRequest<axum::body::Body> for Path<T>
+    where
+        T: serde::de::DeserializeOwned + Send,
+    {
+        type Rejection = super::Error;
+
+        async fn from_request(
+            req: &mut axum::extract::RequestParts<axum::body::Body>,
+        ) -> Result<Self, Self::Rejection> {
+            let result = axum::extract::Path::<T>::from_request(req).await;
+            match result {
+                Ok(path_wrapper) => Ok(Path(path_wrapper.0)),
+                Err(err) => {
+                    dbg!(&err);
+                    Err(super::Error::Custom {
+                        status_code: http::StatusCode::BAD_REQUEST,
+                        variant: "INVALID_PATH_PARAMETER",
+                        message: err.to_string(),
+                        details: None,
+                    })
+                },
+            }
         }
     }
 }
