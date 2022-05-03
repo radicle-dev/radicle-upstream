@@ -15,7 +15,6 @@ use crate::context;
 
 mod control;
 pub mod error;
-mod identity;
 mod notification;
 mod project;
 mod source;
@@ -54,14 +53,12 @@ pub fn api(
         })
         .untuple_one()
         .and(control::filters(ctx.clone()));
-    let identity_filter = path("identities").and(identity::filters(ctx.clone()));
     let notification_filter = path("notifications").and(notification::filters(ctx.clone()));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let source_filter = path("source").and(source::filters(ctx));
 
     let api = path("v1").and(combine!(
         control_filter,
-        identity_filter,
         notification_filter,
         project_filter,
         source_filter

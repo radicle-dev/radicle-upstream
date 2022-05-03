@@ -7,6 +7,7 @@
 use futures::prelude::*;
 
 mod diagnostics;
+mod identity;
 mod keystore;
 mod session;
 
@@ -69,6 +70,7 @@ fn make_router(ctx: crate::context::Context) -> axum::Router {
     let handlers = axum::Router::new()
         .merge(keystore::router())
         .merge(diagnostics::router())
+        .merge(identity::router())
         .merge(session::router())
         .layer(axum::Extension(ctx));
 
@@ -189,7 +191,7 @@ mod extract {
     }
     /// Wrapper around [`librad::git::Urn`] that can be used in a [`axum::extract::Path`] extractor.
     ///
-    /// This is necessary until <https://github.com/tokio-rs/axum/pull/990> is merged and released.
+    /// This is necessary until <https://github.com/tokio-rs/axum/pull/990> is released.
     pub struct Urn(pub librad::git::Urn);
 
     impl<'de> serde::Deserialize<'de> for Urn {
