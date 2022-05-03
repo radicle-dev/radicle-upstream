@@ -119,8 +119,12 @@ impl Runner {
         while let Some(identity) = identity_rx.next().await {
             match fetch_project(&peer, &seeds, identity, &project_seed_store).await {
                 Ok(true) => {
-                    if let Err(err) = update_tx.try_broadcast(identity) {
-                        tracing::warn!(?err, "failed to broadcast Git fetch result")
+                    let result = update_tx.try_broadcast(identity);
+                    match result {
+                        Err(err) if !err.is_disconnected() => {
+                            tracing::warn!(?err, "failed to broadcast Git fetch result")
+                        },
+                        _ => {},
                     };
                 },
                 Ok(false) => {},

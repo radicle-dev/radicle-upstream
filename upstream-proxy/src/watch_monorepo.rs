@@ -63,8 +63,12 @@ impl Runner {
             let deduped_updates = updates.map(|(urn, _)| urn).collect::<HashSet<_>>();
 
             for urn in deduped_updates {
-                if let Err(err) = update_tx.try_broadcast(urn.clone()) {
-                    tracing::warn!(?err, "failed to broadcast")
+                let result = update_tx.try_broadcast(urn.clone());
+                match result {
+                    Err(err) if !err.is_disconnected() => {
+                        tracing::warn!(?err, "failed to broadcast")
+                    },
+                    _ => {},
                 };
             }
 
