@@ -14,7 +14,7 @@ import {
   Event,
   ProjectUpdated,
   RequestEvent,
-  Status,
+  type Status,
   StatusType,
   WaitingRoomTransition,
 } from "proxy-client/events";
@@ -27,7 +27,7 @@ import * as error from "./error";
 import * as bacon from "./bacon";
 import * as Proxy from "./proxy";
 
-export { Status, StatusType };
+export { type Status, StatusType };
 
 let events: bacon.EventStream<Event> | null = null;
 

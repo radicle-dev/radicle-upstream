@@ -11,8 +11,13 @@ import * as identity from "./identity";
 import * as control from "./control";
 import * as project from "./project";
 import * as source from "./source";
-import { events, Event, EventSourceConstructor } from "./events";
-import { Fetcher, BaseFetch, ResponseError, RequestOptions } from "./fetcher";
+import { events, type Event, EventSourceConstructor } from "./events";
+import {
+  Fetcher,
+  BaseFetch,
+  ResponseError,
+  type RequestOptions,
+} from "./fetcher";
 
 export { RequestOptions, ResponseError, Event };
 

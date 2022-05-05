@@ -23,19 +23,23 @@ interface Argv {
   mode?: "production" | "development";
 }
 
-const tsRule = {
-  test: /\.ts$/,
-  exclude: /node_modules/,
-  use: {
-    loader: "ts-loader",
-    options: {
-      compilerOptions: {
-        noEmit: false,
-        module: "es6",
+function tsRule(isProduction: boolean): webpack.RuleSetRule {
+  const transpileOnly = !isProduction;
+  return {
+    test: /\.ts$/,
+    exclude: /node_modules/,
+    use: {
+      loader: "ts-loader",
+      options: {
+        transpileOnly,
+        compilerOptions: {
+          noEmit: false,
+          module: "es6",
+        },
       },
     },
-  },
-};
+  };
+}
 
 function electronMain(_env: unknown, argv: Argv): webpack.Configuration {
   const mode = argv.mode || "development";
@@ -52,7 +56,7 @@ function electronMain(_env: unknown, argv: Argv): webpack.Configuration {
     target: "electron-main",
     externalsPresets: { electronMain: true, node: true },
     module: {
-      rules: [tsRule],
+      rules: [tsRule(mode === "production")],
     },
     resolve: {
       extensions: [".ts", ".js"],
@@ -275,7 +279,7 @@ function webRules(isProduction: boolean): webpack.RuleSetRule[] {
         },
       },
     },
-    tsRule,
+    tsRule(isProduction),
   ];
 }
 
