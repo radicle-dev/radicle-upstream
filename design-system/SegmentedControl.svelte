@@ -9,11 +9,12 @@
   export interface SegmentedControlOption {
     title: string;
     value: string;
+    icon?: typeof SvelteComponent;
   }
 </script>
 
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, SvelteComponent } from "svelte";
 
   export let style: string | undefined = undefined;
 
@@ -43,12 +44,14 @@
 
   button {
     cursor: pointer;
-    padding: 0 0.75rem;
     max-height: 1.875rem;
     border-radius: 0.25rem;
     margin: 0.25rem;
     background-color: var(--color-background);
     color: var(--color-foreground-level-6);
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   button:focus {
@@ -73,7 +76,13 @@
       class:active={option.value === currentlyActive}
       data-cy="segmented-control-option"
       value={option.value}
+      style:padding={option.icon ? "0 0.75rem 0 0.5rem" : "0 0.75rem"}
       on:click={() => onClick(option)}>
+      <svelte:component
+        this={option.icon}
+        style={option.value === currentlyActive
+          ? "fill: var(--color-primary)"
+          : "fill: var(--color-foreground-level-6)"} />
       {option.title}
     </button>
   {/each}
