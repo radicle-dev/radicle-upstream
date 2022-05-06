@@ -8,10 +8,12 @@
 * [`cargo-watch`](https://github.com/watchexec/cargo-watch#install)
 * [`cmake`](https://cmake.org/download/)
 * Dependencies of [Cypress](https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements)
+* Latest version of [`rad` CLI][rc]
 
-## Running Upstream from source
+## Running Upstream in development
 
-To start Upstream run `yarn start`.
+To start Upstream for development run `yarn start`. For more advanced use cases
+see the section below on running multiple Upstream instances simultaneously.
 
 Running Upstream with `yarn start` will use `<repo_root>/sandbox/lnk_home` as
 the default `LNK_HOME` value to isolate your development state. To reset the
@@ -49,45 +51,41 @@ source ./scripts/env
 Now, you can run `rad auth` and follow the instructions, after which upstream
 will recognize your identity and proceed to the profile route.
 
-## Run and connect multiple instances
+## Running multiple Upstream instances
 
-We provide the `scripts/devnet.ts` tool for running, connecting and managing
-multiple Upstream instances and a seed peer on a local machine. Run `yarn run
-devent --help` for a list of all commands.
+We provide the `scripts/devnet.ts` tool for orchestrating multiple Radicle
+peers. This allows you to run Upstream instances or CLI commands for different
+peers and have the peers interact. Run `yarn run devnet --help` for a list of
+all commands.
 
-The devnet tool uses numbers from 1 to 100 to identify and reference Upstream
-instances.
+The peers share data through a local Radicle Git server. To start the server run
+`./scripts/git-server-test.sh`. The test server uses ephemeral storage: if you
+stop the server all data will be deleted.
+
+The devnet tool uses numbers from 1 to 100 to identify and reference peers. For
+example, the following command will start Upstream for peer 1.
 
 ```bash
 yarn run devnet upstream 1
 ```
 
-This command will start an Upstream instance. The instance will be fully
-initialized with user name `1`. The `LNK_HOME` for the instance is
-`./sandbox/devnet/1`. The Peer ID is derived from the instance ID. The default
-passphrase for all devnet Upstream instances is `asdf`.
+The peer will be initialized and given the user name `1`. The `LNK_HOME` for the
+peer is `./sandbox/devnet/1`. The default passphrase for all devnet Upstream
+instances is `asdf`.
 
-To connect a second instance to the first one run:
+To use CLI commands like `rad` and `upstream` for a peer in your shell run
 
 ```bash
-yarn run devnet upstream 2 --bootstrap 1
+eval $(yarn run devnet shell 1)
 ```
 
-Make sure you rebuild the project before running instances:
+Make sure you rebuild the UI before running instances:
 
 ```bash
-cargo build
 yarn run webpack --config-name ui
 ```
 
-You can also run a seed peer that tracks a certain project.
-
-```bash
-yarn run devnet seed --project <urn>
-```
-
-By default, all Upstream instances include the seed address as a bootstrap peer.
-You can find the seed peer data in `./sandbox/devnet/seed`.
+The Upstream Proxy is rebuilt automatically.
 
 ## Merging changes into the `main` branch
 

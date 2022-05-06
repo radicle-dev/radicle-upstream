@@ -42,7 +42,6 @@ const upstreamCommand: yargs.CommandModule<
   unknown,
   {
     PEER_NO: number;
-    bootstrap?: number;
   }
 > = {
   command: "upstream PEER_NO",
