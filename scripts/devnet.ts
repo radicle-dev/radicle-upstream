@@ -10,6 +10,7 @@ import * as yargs from "yargs";
 import execa from "execa";
 import * as Path from "path";
 import * as Fs from "fs/promises";
+import { existsSync } from "fs";
 import * as Crypto from "crypto";
 import multibase from "multibase";
 import assert from "assert";
@@ -63,6 +64,26 @@ const upstreamCommand: yargs.CommandModule<
       }),
   handler: async opts => {
     const peerConfig = makePeerConfig(opts.PEER_NO);
+
+    if (!existsSync(Path.join(peerConfig.lnkHome, "active_profile"))) {
+      await execa(
+        "cargo",
+        [
+          "run",
+          "--bin",
+          "upstream-proxy-dev",
+          "--",
+          "init",
+          peerConfig.userHandle,
+        ],
+        {
+          stdio: "inherit",
+          env: {
+            LNK_HOME: peerConfig.lnkHome,
+          },
+        }
+      );
+    }
 
     if (opts.headless) {
       await exec(
