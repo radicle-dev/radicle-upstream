@@ -85,6 +85,7 @@ export class UpstreamPeer {
   public checkoutPath: string;
   public peerId: string;
   public proxyClient: ProxyClient.ProxyClient;
+  public userHandle: string;
 
   #childProcess: execa.ExecaChildProcess | undefined = undefined;
   #httpSocketAddr: string;
@@ -141,6 +142,7 @@ export class UpstreamPeer {
       lnkHome,
       httpSocketAddr,
       sshAuthSock,
+      userHandle,
     });
   }
 
@@ -153,10 +155,12 @@ export class UpstreamPeer {
     lnkHome: string;
     name: string;
     sshAuthSock: string;
+    userHandle: string;
   }) {
     this.checkoutPath = props.checkoutPath;
     this.peerId = props.peerId;
     this.proxyClient = props.proxyClient;
+    this.userHandle = props.userHandle;
 
     this.#httpSocketAddr = props.httpSocketAddr;
     this.#lnkHome = props.lnkHome;
