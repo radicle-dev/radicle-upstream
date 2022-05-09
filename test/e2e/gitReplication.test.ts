@@ -36,7 +36,7 @@ test("contributor follows", async ({ page }, testInfo) => {
     .locator('[placeholder="Enter a Project ID here…"]')
     .fill(projectUrn);
   await page.locator('[placeholder="Enter a Project ID here…"]').press("Enter");
-  await expect(page.locator("[data-cy=project-list]")).toHaveText("foo");
+  await expect(page.locator("[data-cy=project-list]")).toContainText("foo");
 
   // Contributor checks out project and pushes a new commit
   {
