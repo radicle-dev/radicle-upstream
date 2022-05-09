@@ -31,10 +31,9 @@
   import ForkIcon from "design-system/icons/Fork.svelte";
   import RevisionIcon from "design-system/icons/Revision.svelte";
 
-  import Loading from "design-system/Loading.svelte";
-
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
+  import Loading from "ui/App/SharedComponents/Loading.svelte";
   import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
   import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
 
@@ -149,13 +148,6 @@
 </script>
 
 <style>
-  .loading-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100vh - var(--bigheader-height));
-  }
-
   .commits-page {
     margin: 0 auto 6rem;
     max-width: var(--content-max-width);
@@ -257,7 +249,5 @@
     {unreachable(activeView)}
   {/if}
 {:else if $store.status === remote.Status.Loading}
-  <div class="loading-container">
-    <Loading />
-  </div>
+  <Loading style="height: calc(100vh - var(--bigheader-height));" />
 {/if}

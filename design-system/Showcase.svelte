@@ -19,7 +19,7 @@
   import Dropdown from "./Dropdown.svelte";
   import TrackToggle from "./TrackToggle.svelte";
   import IdentifierLink from "./IdentifierLink.svelte";
-  import Loading from "./Loading.svelte";
+  import LoadingAnimation from "./LoadingAnimation.svelte";
   import SegmentedControl from "./SegmentedControl.svelte";
   import SupportButton from "./SupportButton.svelte";
   import TextInput from "./TextInput.svelte";
@@ -706,7 +706,7 @@
         </div>
 
         <div class="swatch">
-          <Loading />
+          <LoadingAnimation />
         </div>
       </Section>
 

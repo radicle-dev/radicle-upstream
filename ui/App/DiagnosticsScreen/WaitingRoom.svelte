@@ -10,7 +10,7 @@
   import lodash from "lodash";
 
   import { waitingRoomEventLog, waitingRoomState } from "ui/src/localPeer";
-  import Loading from "design-system/Loading.svelte";
+  import Loading from "ui/App/SharedComponents/Loading.svelte";
   import Json from "./Json.svelte";
 </script>
 
@@ -34,16 +34,6 @@
   .states {
     display: flex;
     gap: 1rem;
-  }
-
-  .loading {
-    align-items: center;
-    color: var(--color-foreground-level-6);
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    height: 60vh;
-    justify-content: center;
   }
 </style>
 
@@ -80,9 +70,10 @@
       </div>
     </div>
   {:else}
-    <div class="loading">
-      <Loading />
-      Waiting for an event…
-    </div>
+    <Loading
+      style="height: calc(100vh - var(--bigheader-height) - var(--topbar-height));"
+      ><p style:color="var(--color-foreground-level-6)">
+        Waiting for an event…
+      </p></Loading>
   {/if}
 </div>

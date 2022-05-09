@@ -30,8 +30,8 @@
   import DesignSystemShowcaseModal from "design-system/Showcase.svelte";
   import Tooltip from "design-system/Tooltip.svelte";
 
+  import Loading from "ui/App/SharedComponents/Loading.svelte";
   import SharedComponentShowcase from "ui/App/SharedComponents/SharedComponentShowcase.svelte";
-
   import CodeFontSetting from "ui/App/SharedComponents/CodeFontSetting.svelte";
   import PrimaryColorSetting from "ui/App/SharedComponents/PrimaryColorSetting.svelte";
   import ThemeSetting from "ui/App/SharedComponents/ThemeSetting.svelte";
@@ -39,7 +39,6 @@
 
   import OnboardingModal from "ui/App/OnboardingModal.svelte";
 
-  import LoadingScreen from "ui/App/LoadingScreen.svelte";
   import LockScreen from "ui/App/LockScreen.svelte";
   import DiagnosticsScreen from "ui/App/DiagnosticsScreen.svelte";
   import PushPullNetworkScreen from "ui/App/PushPullNetworkScreen.svelte";
@@ -222,10 +221,10 @@
   {:else if $activeRouteStore.type === "wallet"}
     <WalletScreen activeTab={$activeRouteStore.activeTab} />
   {:else if $activeRouteStore.type === "boot"}
-    <LoadingScreen />
+    <Loading style="width: 100vw; height: 100vh;" />
   {:else}
     {unreachable($activeRouteStore)}
   {/if}
 {:else}
-  <LoadingScreen />
+  <Loading style="width: 100vw; height: 100vh;" />
 {/if}

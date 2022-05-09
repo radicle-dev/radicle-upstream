@@ -24,10 +24,10 @@
 
   import Avatar from "design-system/Avatar.svelte";
   import Badge from "design-system/Badge.svelte";
-  import Loading from "design-system/Loading.svelte";
 
   import CopyableIdentifier from "ui/App/SharedComponents/CopyableIdentifier.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import Loading from "ui/App/SharedComponents/Loading.svelte";
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
 
   let resolvedOrgs: ResolvedOrg[] = [];
@@ -143,21 +143,12 @@
   .row:not(:first-child) {
     margin-top: 0.5rem;
   }
-
-  .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 80vh;
-  }
 </style>
 
 <ScreenLayout>
   <h1 style="padding: 2rem 0.75rem 0;">Explore orgs</h1>
   {#if state === "loading"}
-    <div class="loading">
-      <Loading />
-    </div>
+    <Loading style="height: 80vh;" />
   {:else if state === "loaded"}
     <div class="grid">
       {#each resolvedOrgs as { org, owner }}

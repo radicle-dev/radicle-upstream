@@ -17,7 +17,7 @@
   import * as mutexExecutor from "ui/src/mutexExecutor";
 
   import BranchIcon from "design-system/icons/Branch.svelte";
-  import Loading from "design-system/Loading.svelte";
+  import Loading from "ui/App/SharedComponents/Loading.svelte";
 
   import AnchorCard from "./AnchorCard.svelte";
   import BackButton from "../BackButton.svelte";
@@ -113,20 +113,12 @@
     border-top: 1px solid var(--color-foreground-level-3);
     margin: 1rem 0 1.5rem 0;
   }
-
-  .loading-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: calc(100vh - var(--bigheader-height) - var(--topbar-height));
-  }
 </style>
 
 <div class="commit-page" data-cy="commit-page">
   {#if commitResult.type === "loading"}
-    <div class="loading-container">
-      <Loading />
-    </div>
+    <Loading
+      style="height: calc(100vh - var(--bigheader-height) - var(--topbar-height));" />
   {:else if commitResult.type === "ok"}
     <BackButton
       style="padding: 1rem; z-index: 0;"

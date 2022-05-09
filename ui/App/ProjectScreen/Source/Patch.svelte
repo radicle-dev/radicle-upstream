@@ -17,8 +17,9 @@
   import * as patch from "ui/src/project/patch";
   import * as source from "ui/src/source";
 
-  import PatchLoaded from "./PatchLoaded.svelte";
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import Loading from "ui/App/SharedComponents/Loading.svelte";
+  import PatchLoaded from "./PatchLoaded.svelte";
 
   export let id: string;
   export let peerId: string;
@@ -26,6 +27,7 @@
 
   let patchStatus:
     | { type: "loading" }
+    | { type: "notReplicated" }
     | {
         type: "ok";
         patch: patch.Patch;
@@ -44,7 +46,7 @@
       });
 
       if (!result) {
-        patchStatus = { type: "loading" };
+        patchStatus = { type: "notReplicated" };
       } else {
         patchStatus = { type: "ok", ...result };
       }
@@ -73,12 +75,15 @@
 </script>
 
 {#if patchStatus.type === "loading"}
-  <EmptyState
-    emoji="👀"
-    text="This patch either doesn't exist or hasn't been found yet. Once it's found, it will show up here automatically." />
+  <Loading
+    style="height: calc(100vh - var(--bigheader-height) - var(--topbar-height));" />
 {:else if patchStatus.type === "ok"}
   <PatchLoaded
     {project}
     patch={patchStatus.patch}
     commits={patchStatus.commits} />
+{:else if patchStatus.type === "notReplicated"}
+  <EmptyState
+    emoji="👀"
+    text="This patch either doesn't exist or hasn't been found yet. Once it's found, it will show up here automatically." />
 {/if}
