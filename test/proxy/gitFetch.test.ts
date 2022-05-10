@@ -38,7 +38,7 @@ test("contributor follows", async () => {
   });
   await maintainer.startProxy();
 
-  const projectUrn = await Support.createProject(maintainer, "foo");
+  const projectUrn = await Support.createAndPublishProject(maintainer, "foo");
 
   const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
@@ -81,7 +81,7 @@ test("contributor patch replication", async () => {
   });
   await maintainer.startProxy();
 
-  const projectUrn = await Support.createProject(maintainer, "foo");
+  const projectUrn = await Support.createAndPublishProject(maintainer, "foo");
   const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
     name: "contributor",

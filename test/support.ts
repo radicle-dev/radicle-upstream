@@ -86,56 +86,60 @@ export function retry<T>(fn: () => Promise<T>): Promise<T> {
   return retryOnError(fn, () => true, 100, 20);
 }
 
-// Create a project using the rad CLI and wait until the proxy
-// registers the seed for the project.
+// Create a project using the rad CLI.
 export async function createProject(
   proxy: PeerRunner.UpstreamPeer,
   name: string
-): Promise<string> {
-  const maintainerProjectPath = Path.join(proxy.checkoutPath, name);
-  await proxy.spawn("git", [
-    "init",
-    maintainerProjectPath,
-    "--initial-branch",
-    "main",
-  ]);
+): Promise<{ urn: string; checkoutPath: string }> {
+  const checkoutPath = Path.join(proxy.checkoutPath, name);
+  await proxy.spawn("git", ["init", checkoutPath, "--initial-branch", "main"]);
   await proxy.spawn(
     "git",
     ["commit", "--allow-empty", "--message", "initial commit"],
     {
-      cwd: maintainerProjectPath,
+      cwd: checkoutPath,
     }
   );
   await proxy.spawn(
     "rad",
     ["init", "--name", name, "--default-branch", "main", "--description", ""],
     {
-      cwd: maintainerProjectPath,
+      cwd: checkoutPath,
     }
   );
 
+  const { stdout: urn } = await proxy.spawn("rad", ["inspect"], {
+    cwd: checkoutPath,
+  });
+
+  return { urn, checkoutPath };
+}
+
+// Create and publish a project using the rad CLI and return the project’s URN.
+// Wait until the proxy registers the seed for the project.
+export async function createAndPublishProject(
+  proxy: PeerRunner.UpstreamPeer,
+  name: string
+): Promise<string> {
+  const { urn, checkoutPath } = await createProject(proxy, name);
   await proxy.spawn(
     "git",
     ["config", "--add", "rad.seed", PeerRunner.SEED_URL],
     {
-      cwd: maintainerProjectPath,
+      cwd: checkoutPath,
     }
   );
 
   await proxy.spawn("rad", ["push"], {
-    cwd: maintainerProjectPath,
-  });
-
-  const { stdout: projectUrn } = await proxy.spawn("rad", ["inspect"], {
-    cwd: maintainerProjectPath,
+    cwd: checkoutPath,
   });
 
   await retry(async () => {
-    const project = await proxy.proxyClient.project.get(projectUrn);
+    const project = await proxy.proxyClient.project.get(urn);
     if (project.seed === null) {
       throw new Error("Proxy hasn't set the project seed yet.");
     }
   });
 
-  return projectUrn;
+  return urn;
 }

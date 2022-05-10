@@ -20,7 +20,7 @@ test("contributor follows", async ({ page }, testInfo) => {
     sshAuthSock,
   });
   await maintainer.start();
-  const projectUrn = await Support.createProject(maintainer, "foo");
+  const projectUrn = await Support.createAndPublishProject(maintainer, "foo");
 
   const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
