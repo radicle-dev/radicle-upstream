@@ -112,6 +112,14 @@ export async function createProject(
     cwd: checkoutPath,
   });
 
+  await proxy.spawn(
+    "git",
+    ["config", "--add", "rad.seed", PeerRunner.SEED_URL],
+    {
+      cwd: checkoutPath,
+    }
+  );
+
   return { urn, checkoutPath };
 }
 
@@ -122,13 +130,6 @@ export async function createAndPublishProject(
   name: string
 ): Promise<string> {
   const { urn, checkoutPath } = await createProject(proxy, name);
-  await proxy.spawn(
-    "git",
-    ["config", "--add", "rad.seed", PeerRunner.SEED_URL],
-    {
-      cwd: checkoutPath,
-    }
-  );
 
   await proxy.spawn("rad", ["push"], {
     cwd: checkoutPath,
