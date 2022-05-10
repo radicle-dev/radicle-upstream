@@ -17,6 +17,14 @@ export class Hotkeys {
     await this.#page.locator("body").press(`${modifierKey()}+p`);
   }
 
+  public async openHotkeysModal(): Promise<void> {
+    await this.#page.locator("body").press(`${modifierKey()}+?`);
+  }
+
+  public async openSettingsScreen(): Promise<void> {
+    await this.#page.locator("body").press(`${modifierKey()}+,`);
+  }
+
   public async closeModal(): Promise<void> {
     await this.#page.locator("body").press("Escape");
   }
