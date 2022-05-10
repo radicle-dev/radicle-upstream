@@ -8,9 +8,8 @@ import * as Path from "node:path";
 import { test, expect } from "test/support/playwright/fixtures";
 import * as Support from "test/support";
 import * as PeerRunner from "test/support/peerRunner";
-import * as Helpers from "test/support/playwright/helpers";
 
-test("contributor follows", async ({ page }, testInfo) => {
+test("contributor follows", async ({ page, hotkeys }, testInfo) => {
   const stateDir = await Support.prepareStateDir(testInfo.file, testInfo.title);
   const sshAuthSock = await Support.startSshAgent();
 
@@ -31,7 +30,7 @@ test("contributor follows", async ({ page }, testInfo) => {
   await contributor.start();
   await page.goto(contributor.uiUrl);
 
-  await page.locator("body").press(`${Helpers.modifierKey()}+p`);
+  await hotkeys.openSearchModal();
   await page
     .locator('[placeholder="Enter a Project ID here…"]')
     .fill(projectUrn);
@@ -76,7 +75,7 @@ test("contributor follows", async ({ page }, testInfo) => {
     await page
       .locator('[data-cy=remotes-modal] button:has-text("Add")')
       .click();
-    await page.locator("body").press("Escape");
+    await hotkeys.closeModal();
     await page.locator("[data-cy=peer-selector]").click();
     await page
       .locator(

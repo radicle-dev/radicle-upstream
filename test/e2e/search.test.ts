@@ -8,7 +8,6 @@ import { test, expect } from "test/support/playwright/fixtures";
 
 import * as PeerRunner from "test/support/peerRunner";
 import * as Support from "test/support";
-import * as Helpers from "test/support/playwright/helpers";
 
 let peer: PeerRunner.UpstreamPeer;
 
@@ -25,8 +24,8 @@ test.beforeEach(async ({ page }, testInfo) => {
   await page.goto(peer.uiUrl);
 });
 
-test("search modal input validation", async ({ page }) => {
-  await page.locator("body").press(`${Helpers.modifierKey()}+p`);
+test("search modal input validation", async ({ page, hotkeys }) => {
+  await hotkeys.openSearchModal();
 
   // Paste a Peer ID instead of Project ID
   await page
@@ -57,8 +56,11 @@ test("search modal input validation", async ({ page }) => {
   );
 });
 
-test("search for a project that is not yet tracked", async ({ page }) => {
-  await page.locator("body").press(`${Helpers.modifierKey()}+p`);
+test("search for a project that is not yet tracked", async ({
+  page,
+  hotkeys,
+}) => {
+  await hotkeys.openSearchModal();
 
   await page
     .locator('[placeholder="Enter a Project ID here…"]')
@@ -86,17 +88,17 @@ test("search for a project that is not yet tracked", async ({ page }) => {
   ).not.toBeVisible();
 
   // Test that the search input is cleared after each search.
-  await page.locator("body").press(`${Helpers.modifierKey()}+p`);
+  await hotkeys.openSearchModal();
   await expect(page.locator('[data-cy="search-modal"]')).toContainText("");
 });
 
-test("search for an already tracked project", async ({ page }) => {
+test("search for an already tracked project", async ({ page, hotkeys }) => {
   const { urn } = await Support.createProject(peer, "foo");
   await expect(
     page.locator("[data-cy=project-list] >> text=foo")
   ).toBeVisible();
 
-  await page.locator("body").press(`${Helpers.modifierKey()}+p`);
+  await hotkeys.openSearchModal();
   await page.locator('[placeholder="Enter a Project ID here…"]').fill(urn);
 
   // FIXME: If the Enter key is pressed before the track button is shown,

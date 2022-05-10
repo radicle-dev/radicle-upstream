@@ -8,9 +8,11 @@ import * as path from "path";
 import { test as base } from "@playwright/test";
 
 import * as PeerRunner from "test/support/peerRunner";
+import { Hotkeys } from "./fixtures/hotkeys";
 
 export const test = base.extend<{
   forAllTests: void;
+  hotkeys: Hotkeys;
 }>({
   forAllTests: [
     async ({ context }, use) => {
@@ -24,6 +26,9 @@ export const test = base.extend<{
     },
     { scope: "test", auto: true },
   ],
+  hotkeys: async ({ page }, use) => {
+    await use(new Hotkeys(page));
+  },
 });
 
 export { expect } from "@playwright/test";
