@@ -24,23 +24,20 @@ test.beforeEach(async ({ page }, testInfo) => {
   await page.goto(peer.uiUrl);
 });
 
-test("only one modal can be opened at a time", async ({ page, hotkeys }) => {
-  await hotkeys.openHotkeysModal();
+test("only one modal can be opened at a time", async ({ page, app }) => {
+  await app.hotkeys.openHotkeysModal();
   await expect(page.locator('[data-cy="hotkey-modal"]')).toBeVisible();
 
-  await hotkeys.openSearchModal();
+  await app.hotkeys.openSearchModal();
   await expect(page.locator('[data-cy="hotkey-modal"]')).not.toBeVisible();
   await expect(page.locator('[data-cy="search-modal"]')).toBeVisible();
 });
 
-test("navigating to a screen closes any open modals", async ({
-  page,
-  hotkeys,
-}) => {
-  await hotkeys.openHotkeysModal();
+test("navigating to a screen closes any open modals", async ({ page, app }) => {
+  await app.hotkeys.openHotkeysModal();
   await expect(page.locator('[data-cy="hotkey-modal"]')).toBeVisible();
 
-  await hotkeys.openSettingsScreen();
+  await app.hotkeys.goToSettingsScreen();
   await expect(page.locator('[data-cy="hotkey-modal"]')).not.toBeVisible();
   await expect(page.locator("h1")).toContainText("Settings");
 });

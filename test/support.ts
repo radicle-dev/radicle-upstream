@@ -123,7 +123,7 @@ export async function createProject(
   return { urn, checkoutPath };
 }
 
-// Create and publish a project using the rad CLI and return the project’s URN.
+// Create and publish a project using the rad CLI and return the Project ID.
 // Wait until the proxy registers the seed for the project.
 export async function createAndPublishProject(
   proxy: PeerRunner.UpstreamPeer,
@@ -143,4 +143,90 @@ export async function createAndPublishProject(
   });
 
   return urn;
+}
+
+// Fork a project by running the same commands as provided by the Fork button
+// in the UI.
+//
+// Return the project checkout path.
+export async function forkProject(
+  projectId: string,
+  projectName: string,
+  peer: PeerRunner.UpstreamPeer
+): Promise<string> {
+  const projectCheckoutPath = Path.join(peer.checkoutPath, projectName);
+
+  await peer.spawn("rad", ["checkout", projectId], {
+    cwd: peer.checkoutPath,
+  });
+  // Publish the peer's default branch.
+  // See <https://github.com/radicle-dev/radicle-upstream/issues/2795>.
+  await peer.spawn("rad", ["push", "--seed", "127.0.0.1:8778"], {
+    cwd: projectCheckoutPath,
+  });
+  await peer.spawn("rad", ["sync", "--self", "--seed", "127.0.0.1:8778"], {
+    cwd: projectCheckoutPath,
+  });
+
+  return projectCheckoutPath;
+}
+
+// If no branch name is supplied, create patch using the upstream CLI.
+// If a branch name is supplied, update an existing patch.
+// Return the patch branch name.
+export async function createOrUpdatePatch(
+  title: string,
+  description: string,
+  peer: PeerRunner.UpstreamPeer,
+  projectCheckoutPath: string,
+  commitMessage: string = "changes",
+  branchName?: string
+): Promise<string> {
+  const branchName_ = branchName || `patch-branch-${PeerRunner.randomTag()}`;
+  const checkoutArgs = branchName ? [branchName_] : ["-b", branchName_];
+
+  // Starting from the main branch allows us to create multiple
+  // independent patches by running this function multiple times.
+  await peer.spawn("git", ["checkout", "main"], {
+    cwd: projectCheckoutPath,
+  });
+
+  await peer.spawn("git", ["checkout", ...checkoutArgs], {
+    cwd: projectCheckoutPath,
+  });
+  await peer.spawn(
+    "git",
+    ["commit", "--allow-empty", "--message", commitMessage],
+    {
+      cwd: projectCheckoutPath,
+    }
+  );
+
+  const action = branchName ? "update" : "create";
+  await peer.spawn(
+    "upstream",
+    ["patch", action, "-m", `${title}\n\n${description}`],
+    {
+      cwd: projectCheckoutPath,
+    }
+  );
+
+  return branchName_;
+}
+
+export async function mergeOwnPatch(
+  peer: PeerRunner.UpstreamPeer,
+  projectCheckoutPath: string,
+  branchName: string
+): Promise<void> {
+  await peer.spawn("git", ["checkout", "main"], {
+    cwd: projectCheckoutPath,
+  });
+  await peer.spawn("git", ["merge", "--ff-only", branchName], {
+    cwd: projectCheckoutPath,
+  });
+
+  await peer.spawn("rad", ["push", "--seed", "127.0.0.1:8778"], {
+    cwd: projectCheckoutPath,
+  });
 }

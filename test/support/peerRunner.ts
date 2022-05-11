@@ -146,6 +146,17 @@ export class UpstreamPeer {
     });
   }
 
+  public static async createAndStart({
+    dataPath,
+    name,
+    sshAuthSock,
+  }: UpstreamPeerParams): Promise<UpstreamPeer> {
+    const peer = await this.create({ dataPath, name, sshAuthSock });
+    await peer.start();
+
+    return peer;
+  }
+
   private constructor(props: {
     checkoutPath: string;
     peerId: string;
@@ -304,6 +315,6 @@ export class UpstreamPeer {
 }
 
 // Generate string of 12 random characters with 8 bits of entropy.
-function randomTag(): string {
+export function randomTag(): string {
   return Crypto.randomBytes(8).toString("hex");
 }

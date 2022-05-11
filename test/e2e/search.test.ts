@@ -24,8 +24,8 @@ test.beforeEach(async ({ page }, testInfo) => {
   await page.goto(peer.uiUrl);
 });
 
-test("search modal input validation", async ({ page, hotkeys }) => {
-  await hotkeys.openSearchModal();
+test("search modal input validation", async ({ page, app }) => {
+  await app.hotkeys.openSearchModal();
 
   // Paste a Peer ID instead of Project ID
   await page
@@ -56,11 +56,8 @@ test("search modal input validation", async ({ page, hotkeys }) => {
   );
 });
 
-test("search for a project that is not yet tracked", async ({
-  page,
-  hotkeys,
-}) => {
-  await hotkeys.openSearchModal();
+test("search for a project that is not yet tracked", async ({ app, page }) => {
+  await app.hotkeys.openSearchModal();
 
   await page
     .locator('[placeholder="Enter a Project ID here…"]')
@@ -88,17 +85,17 @@ test("search for a project that is not yet tracked", async ({
   ).not.toBeVisible();
 
   // Test that the search input is cleared after each search.
-  await hotkeys.openSearchModal();
+  await app.hotkeys.openSearchModal();
   await expect(page.locator('[data-cy="search-modal"]')).toContainText("");
 });
 
-test("search for an already tracked project", async ({ page, hotkeys }) => {
+test("search for an already tracked project", async ({ app, page }) => {
   const { urn } = await Support.createProject(peer, "foo");
   await expect(
     page.locator("[data-cy=project-list] >> text=foo")
   ).toBeVisible();
 
-  await hotkeys.openSearchModal();
+  await app.hotkeys.openSearchModal();
   await page.locator('[placeholder="Enter a Project ID here…"]').fill(urn);
 
   // FIXME: If the Enter key is pressed before the track button is shown,

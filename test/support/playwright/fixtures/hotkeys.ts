@@ -21,7 +21,7 @@ export class Hotkeys {
     await this.#page.locator("body").press(`${modifierKey()}+?`);
   }
 
-  public async openSettingsScreen(): Promise<void> {
+  public async goToSettingsScreen(): Promise<void> {
     await this.#page.locator("body").press(`${modifierKey()}+,`);
   }
 
