@@ -93,8 +93,8 @@ if [[ "${RUNNER_OS:-}" != "macOS" ]]; then
   ./scripts/git-server-test.sh --detach
   log-group-end
 
-  log-group-start "yarn playwright install"
-  time yarn playwright install
+  log-group-start "yarn playwright install chromium"
+  time yarn playwright install chromium
   log-group-end
 
   log-group-start "yarn webpack --config-name ui"
