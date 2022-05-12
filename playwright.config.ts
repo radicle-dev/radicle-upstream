@@ -9,8 +9,7 @@ import { PlaywrightTestConfig, devices } from "@playwright/test";
 const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // We can't parallelize because the tests use a single test seed node.
-  workers: 1,
+  workers: process.env.CI ? 2 : 1,
   use: {
     trace: "on-first-retry",
     actionTimeout: 5000,
