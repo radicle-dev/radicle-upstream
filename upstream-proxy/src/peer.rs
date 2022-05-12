@@ -33,6 +33,27 @@ impl Peer {
     pub fn events(&self) -> async_broadcast::Receiver<crate::daemon::PeerEvent> {
         self.events.activate_cloned()
     }
+
+    /// Run a blocking function that requires access to the monorepo.
+    ///
+    /// Panics if the async task cannot be spawned.
+    pub async fn monorepo_unblock<T: Send + 'static>(
+        &self,
+        f: impl FnOnce(git2::Repository) -> anyhow::Result<T> + Send + 'static,
+    ) -> anyhow::Result<T> {
+        let monorepo_path = self
+            .librad_peer
+            .protocol_config()
+            .paths
+            .git_dir()
+            .to_owned();
+        tokio::task::spawn_blocking(move || {
+            let repo = git2::Repository::open(monorepo_path).context("failed to open monorepo")?;
+            f(repo)
+        })
+        .await
+        .expect("failed to spawn task")
+    }
 }
 
 pub struct Config {
