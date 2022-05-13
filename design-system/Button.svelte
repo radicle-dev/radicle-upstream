@@ -35,14 +35,14 @@
 <style>
   .button {
     white-space: nowrap;
-    background-color: var(--color-foreground-level-3);
+    background-color: var(--color-foreground-level-2);
     border-radius: 0.5rem;
-    border: 1px solid var(--color-foreground-level-3);
+    border: 1px solid var(--color-foreground-level-2);
     color: var(--color-foreground-level-6);
     cursor: pointer;
     display: flex;
     align-items: center;
-    min-height: 40px;
+    height: 2.5rem;
     outline-style: none;
     padding: 0 12px;
     user-select: none;
@@ -68,7 +68,7 @@
   }
 
   .vanilla:hover {
-    border-color: var(--color-foreground-level-3);
+    border-color: var(--color-foreground-level-2);
   }
 
   .vanilla.disabled {

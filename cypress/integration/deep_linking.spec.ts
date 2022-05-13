@@ -53,7 +53,8 @@ context("deep linking", () => {
             commands.pick("sidebar", "profile").click();
             commands.pick("project-list-entry-new-project").click();
             commands.pick("patches-tab").click();
-            commands.pick("shareable-patch-link").click();
+            commands.pick("patch-list").trigger("mouseenter");
+            commands.pick("patch-list", "copy-url").click();
 
             // Navigate away from the patch screen.
             commands.pick("sidebar", "settings").click();

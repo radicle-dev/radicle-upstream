@@ -9,13 +9,9 @@
   import * as Patch from "ui/src/project/patch";
 
   import RevisionIcon from "design-system/icons/Revision.svelte";
-
-  import CompareBranches from "./CompareBranches.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   export let patch: Patch.Patch;
-  export let defaultBranch: string;
-  export let patchUrl: string;
 
   $: iconColor = patch.merged
     ? "var(--color-negative)"
@@ -28,6 +24,7 @@
     max-height: 3.2rem;
     justify-content: space-between;
     width: 100%;
+    align-items: center;
   }
 
   .left {
@@ -84,8 +81,5 @@
       </div>
     </div>
   </div>
-  <CompareBranches
-    {patchUrl}
-    baseBranch={defaultBranch}
-    compareBranch={{ id: patch.id, peerId: patch.peerId }} />
+  <slot />
 </div>

@@ -9,9 +9,14 @@
   import type { Project } from "ui/src/project";
   import type { Patch } from "ui/src/project/patch";
 
-  import { unreachable } from "ui/src/unreachable";
+  import * as ipc from "ui/src/ipc";
+  import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
+  import { unreachable } from "ui/src/unreachable";
 
+  import Button from "design-system/Button.svelte";
+  import Hoverable from "design-system/Hoverable.svelte";
+  import LinkIcon from "design-system/icons/Link.svelte";
   import List from "design-system/List.svelte";
   import SegmentedControl from "design-system/SegmentedControl.svelte";
 
@@ -21,8 +26,6 @@
   export let patches: Patch[];
   export let project: Project;
   export let filter: "open" | "closed" | "all";
-
-  const defaultBranch = project.metadata.defaultBranch;
 
   const selectPatch = ({ detail: patch }: { detail: Patch }): void => {
     router.push({
@@ -70,6 +73,26 @@
         break;
     }
   }
+
+  function copyPatchUrlToClipboard(patch: Patch): void {
+    const patchUrl = router.routeToUri({
+      type: "project",
+      params: {
+        urn: project.urn,
+        activeView: {
+          type: "patch",
+          peerId: patch.peerId,
+          id: patch.id,
+        },
+      },
+    });
+
+    ipc.copyToClipboard(patchUrl);
+    notification.show({
+      type: "info",
+      message: "Shareable link copied to your clipboard",
+    });
+  }
 </script>
 
 <style>
@@ -114,22 +137,21 @@
       on:select={selectPatch}
       let:item={patch}
       style="margin: 2rem; overflow: visible;">
-      <div class="list-item">
-        <PatchCard
-          {defaultBranch}
-          {patch}
-          patchUrl={router.routeToUri({
-            type: "project",
-            params: {
-              urn: project.urn,
-              activeView: {
-                type: "patch",
-                peerId: patch.peerId,
-                id: patch.id,
-              },
-            },
-          })} />
-      </div>
+      <Hoverable let:hovering={hover} style="flex: 1;">
+        <div class="list-item">
+          <PatchCard {patch}>
+            {#if hover}
+              <Button
+                dataCy="copy-url"
+                variant="vanilla"
+                icon={LinkIcon}
+                on:click={() => {
+                  copyPatchUrlToClipboard(patch);
+                }}>Copy link</Button>
+            {/if}
+          </PatchCard>
+        </div>
+      </Hoverable>
     </List>
   {:else}
     <EmptyState
