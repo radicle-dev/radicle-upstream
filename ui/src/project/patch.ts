@@ -4,11 +4,15 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type { Identity } from "proxy-client/identity";
 import type { Project } from "ui/src/project";
-import * as source from "ui/src/source";
+
+import * as ipc from "ui/src/ipc";
+import * as notification from "ui/src/notification";
 import * as proxy from "ui/src/proxy";
 import * as proxyProject from "proxy-client/project";
-import type { Identity } from "proxy-client/identity";
+import * as router from "ui/src/router";
+import * as source from "ui/src/source";
 
 export interface Patch {
   id: string;
@@ -131,3 +135,23 @@ const getCommits = async (
     return source.groupCommitHistory(patchCommits);
   }
 };
+
+export function copyPatchUrlToClipboard(projectId: string, patch: Patch): void {
+  const patchUrl = router.routeToUri({
+    type: "project",
+    params: {
+      urn: projectId,
+      activeView: {
+        type: "patch",
+        peerId: patch.peerId,
+        id: patch.id,
+      },
+    },
+  });
+
+  ipc.copyToClipboard(patchUrl);
+  notification.show({
+    type: "info",
+    message: "Shareable link copied to your clipboard",
+  });
+}

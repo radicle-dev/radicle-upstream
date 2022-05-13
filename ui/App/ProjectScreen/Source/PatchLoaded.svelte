@@ -16,6 +16,7 @@
 
   import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
   import Button from "design-system/Button.svelte";
+  import LinkIcon from "design-system/icons/Link.svelte";
   import Markdown from "design-system/Markdown.svelte";
   import MergeIcon from "design-system/icons/Merge.svelte";
   import RevisionIcon from "design-system/icons/Revision.svelte";
@@ -24,7 +25,6 @@
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   import BackButton from "../BackButton.svelte";
-  import CompareBranches from "./CompareBranches.svelte";
   import History from "./SourceBrowser/History.svelte";
 
   export let project: Project;
@@ -67,7 +67,7 @@
   .action-box {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: right;
     width: 100%;
     background: var(--color-foreground-level-1);
     border-radius: 0.5rem;
@@ -78,6 +78,14 @@
   .action-box .buttons {
     display: flex;
     gap: 1rem;
+  }
+
+  .copyable-link {
+    cursor: pointer;
+    display: flex;
+  }
+  .copyable-link :global(svg):hover {
+    fill: var(--color-foreground-level-4);
   }
 </style>
 
@@ -92,6 +100,15 @@
           <h2>
             {#if patch.title}{patch.title}{:else}{patch.id}{/if}
           </h2>
+          <div
+            role="button"
+            title="Copy patch URL to clipboard"
+            class="copyable-link button-transition">
+            <LinkIcon
+              on:click={() => {
+                Patch.copyPatchUrlToClipboard(project.urn, patch);
+              }} />
+          </div>
         {/if}
       </div>
     </div>
@@ -113,20 +130,6 @@
     </div>
   {/if}
   <div class="action-box">
-    <CompareBranches
-      baseBranch={project.metadata.defaultBranch}
-      patchUrl={router.routeToUri({
-        type: "project",
-        params: {
-          urn: project.urn,
-          activeView: {
-            type: "patch",
-            peerId: patch.peerId,
-            id: patch.id,
-          },
-        },
-      })}
-      compareBranch={{ id: patch.id, peerId: patch.peerId }} />
     <div class="buttons">
       <CommandModal
         dataCy="checkout-patch-modal-toggle"

@@ -7,11 +7,9 @@
 -->
 <script lang="ts">
   import type { Project } from "ui/src/project";
-  import type { Patch } from "ui/src/project/patch";
 
-  import * as ipc from "ui/src/ipc";
-  import * as notification from "ui/src/notification";
   import * as router from "ui/src/router";
+  import * as Patch from "ui/src/project/patch";
   import { unreachable } from "ui/src/unreachable";
 
   import Button from "design-system/Button.svelte";
@@ -23,11 +21,11 @@
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
   import PatchCard from "./PatchCard.svelte";
 
-  export let patches: Patch[];
+  export let patches: Patch.Patch[];
   export let project: Project;
   export let filter: "open" | "closed" | "all";
 
-  const selectPatch = ({ detail: patch }: { detail: Patch }): void => {
+  const selectPatch = ({ detail: patch }: { detail: Patch.Patch }): void => {
     router.push({
       type: "project",
       params: {
@@ -56,7 +54,7 @@
     },
   ];
 
-  let filteredPatches: Patch[];
+  let filteredPatches: Patch.Patch[];
   $: {
     switch (filter) {
       case "open":
@@ -72,26 +70,6 @@
         unreachable(filter);
         break;
     }
-  }
-
-  function copyPatchUrlToClipboard(patch: Patch): void {
-    const patchUrl = router.routeToUri({
-      type: "project",
-      params: {
-        urn: project.urn,
-        activeView: {
-          type: "patch",
-          peerId: patch.peerId,
-          id: patch.id,
-        },
-      },
-    });
-
-    ipc.copyToClipboard(patchUrl);
-    notification.show({
-      type: "info",
-      message: "Shareable link copied to your clipboard",
-    });
   }
 </script>
 
@@ -146,7 +124,7 @@
                 variant="vanilla"
                 icon={LinkIcon}
                 on:click={() => {
-                  copyPatchUrlToClipboard(patch);
+                  Patch.copyPatchUrlToClipboard(project.urn, patch);
                 }}>Copy link</Button>
             {/if}
           </PatchCard>
