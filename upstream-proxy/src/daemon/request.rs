@@ -11,7 +11,7 @@
 // We need to allow this because there's a bug and clippy doesn't realise that the type parameter
 // is changing during state transitions.
 // See https://github.com/rust-lang/rust-clippy/issues/4859 for more information.
-#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::module_name_repetitions, clippy::type_repetition_in_bounds)]
 
 use std::{collections::HashMap, ops::Deref};
 

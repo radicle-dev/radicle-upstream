@@ -267,8 +267,9 @@ async fn handle_monorepo_events(
     events: impl Stream<Item = link_identities::Urn<link_identities::Revision>>,
     git_fetch_handle: crate::git_fetch::Handle,
 ) {
+    let git_fetch_handle = &git_fetch_handle;
     events
-        .for_each(|event| async {
+        .for_each(|event| async move {
             if let Some(path) = event.path {
                 if path == librad::reflike!("refs/rad/id") {
                     git_fetch_handle.add(event.id).await;

@@ -3757,7 +3757,7 @@ dependencies = [
 [[package]]
 name = "rad-common"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-cli.git?branch=master#bff13b4d36cd5dc5c7c761d5fe37a18b584020c3"
+source = "git+https://github.com/radicle-dev/radicle-cli.git?rev=bff13b4d36cd5dc5c7c761d5fe37a18b584020c3#bff13b4d36cd5dc5c7c761d5fe37a18b584020c3"
 dependencies = [
  "anyhow",
  "base64",
@@ -3784,7 +3784,7 @@ dependencies = [
 [[package]]
 name = "rad-terminal"
 version = "0.1.0"
-source = "git+https://github.com/radicle-dev/radicle-cli.git?branch=master#bff13b4d36cd5dc5c7c761d5fe37a18b584020c3"
+source = "git+https://github.com/radicle-dev/radicle-cli.git?rev=bff13b4d36cd5dc5c7c761d5fe37a18b584020c3#bff13b4d36cd5dc5c7c761d5fe37a18b584020c3"
 dependencies = [
  "anyhow",
  "console",
