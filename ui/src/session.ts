@@ -161,9 +161,6 @@ export const fetch = async (): Promise<void> => {
   await fetchSession();
 };
 
-export const VALID_SEED_MATCH = /^[\w\d]{54}@([\w\d-]+\.)*[\w\d-]+:[\d]{1,5}$/;
-
 export const __test__ = {
   sessionStore,
-  VALID_SEED_MATCH,
 };
