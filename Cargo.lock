@@ -190,12 +190,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "async-shutdown"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a0530589772e3689f22201f7afc108c252c887a40914fb89285b8f2f22923ff"
-
-[[package]]
 name = "async-std"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5115,28 +5109,6 @@ dependencies = [
  "url",
  "walkdir",
  "warp",
-]
-
-[[package]]
-name = "upstream-seed"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-shutdown",
- "clap",
- "either",
- "futures 0.3.21",
- "git2",
- "librad",
- "link-identities",
- "lnk-identities",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tokio-stream",
- "tracing",
- "tracing-subscriber",
 ]
 
 [[package]]

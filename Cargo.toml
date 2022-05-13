@@ -2,7 +2,6 @@
 resolver = "2"
 members = [
   "upstream-proxy",
-  "upstream-seed",
   "upstream-cli",
 ]
 
