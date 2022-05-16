@@ -39,18 +39,24 @@
     });
   };
 
-  const filterOptions = [
+  $: openPatches = patches.filter(patch => !patch.merged);
+  $: closedPatches = patches.filter(patch => patch.merged);
+
+  $: filterOptions = [
     {
       title: "Open",
       value: "open",
+      counter: openPatches.length,
     },
     {
       title: "Closed",
       value: "closed",
+      counter: closedPatches.length,
     },
     {
       title: "All",
       value: "all",
+      counter: patches.length,
     },
   ];
 
@@ -58,10 +64,10 @@
   $: {
     switch (filter) {
       case "open":
-        filteredPatches = patches.filter(patch => !patch.merged);
+        filteredPatches = openPatches;
         break;
       case "closed":
-        filteredPatches = patches.filter(patch => patch.merged);
+        filteredPatches = closedPatches;
         break;
       case "all":
         filteredPatches = patches;
@@ -115,7 +121,7 @@
       on:select={selectPatch}
       let:item={patch}
       style="margin: 2rem; overflow: visible;">
-      <Hoverable let:hovering={hover} style="flex: 1;">
+      <Hoverable let:hovering={hover} style="display: flex; flex: 1;">
         <div class="list-item">
           <PatchCard {patch}>
             {#if hover}
