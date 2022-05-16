@@ -18,10 +18,14 @@
     selectRevision,
     store,
   } from "ui/src/screen/project/source";
+  import { isDelegate } from "ui/src/project";
+  import * as Patch from "ui/src/project/patch";
+  import * as Session from "ui/src/session";
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
   import * as wallet from "ui/src/wallet";
+  import { patchStatusStore } from "ui/App/ProjectScreen/Source/Patch.svelte";
 
   import AnchorIcon from "design-system/icons/Anchor.svelte";
   import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
@@ -29,6 +33,7 @@
   import CommitIcon from "design-system/icons/Commit.svelte";
   import FileIcon from "design-system/icons/File.svelte";
   import ForkIcon from "design-system/icons/Fork.svelte";
+  import MergeIcon from "design-system/icons/Merge.svelte";
   import RevisionIcon from "design-system/icons/Revision.svelte";
 
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
@@ -39,11 +44,11 @@
 
   import History from "./Source/SourceBrowser/History.svelte";
 
-  import Anchors from "./Source/Anchors.svelte";
+  import AnchorsTab from "./Source/Anchors.svelte";
   import CommitTab from "./Source/Commit.svelte";
   import FilesTab from "./Source/Code.svelte";
-  import Patch from "./Source/Patch.svelte";
-  import PatchList from "./Source/PatchList.svelte";
+  import PatchListTab from "./Source/PatchList.svelte";
+  import PatchTab from "./Source/Patch.svelte";
 
   export let project: Project;
   export let selectedPeer: User;
@@ -51,6 +56,8 @@
   export let anchors: ConfirmedAnchor[];
 
   export let activeView: projectRoute.ProjectView;
+
+  const session = Session.unsealed();
 
   const tabs = (active: projectRoute.ProjectView, screen: Screen): Tab[] => {
     const items = [
@@ -128,8 +135,6 @@
     }
   };
 
-  $: patchesTabSelected = activeView.type === "patches";
-
   const onSelectRevision = ({
     detail: revision,
   }: {
@@ -160,7 +165,7 @@
   <ActionBar>
     <div slot="left">
       <div style="display: flex">
-        {#if !patchesTabSelected}
+        {#if activeView.type === "files" || activeView.type === "commits"}
           <RevisionSelector
             style="width: 18rem; margin-right: 2rem;"
             loading={$store.data.selectedRevision.request !== null}
@@ -174,7 +179,7 @@
       </div>
     </div>
     <div slot="right">
-      {#if patchesTabSelected}
+      {#if activeView.type === "patches"}
         <CommandModal
           let:prop={toggleDropdown}
           command={"upstream patch create"}
@@ -183,39 +188,83 @@
             variant="transparent"
             icon={RevisionIcon}
             on:click={toggleDropdown}
-            dataCy="patch-modal-toggle">New patch</Button>
+            dataCy="patch-modal-toggle">Create patch</Button>
         </CommandModal>
-      {:else if isContributor}
-        <CommandModal
-          let:prop={toggleDropdown}
-          command={[
-            `rad checkout ${project.urn} && \\`,
-            `cd "${project.metadata.name}" && \\`,
-            `rad sync ${seedArg}`,
-          ].join("\n")}
-          description="To checkout a working copy of this project, run the following command in your terminal:">
-          <Button
-            variant="transparent"
-            icon={ArrowBoxUpRightIcon}
-            on:click={toggleDropdown}>Checkout</Button>
-        </CommandModal>
+      {:else if activeView.type === "patch"}
+        {#if $patchStatusStore.type === "ok"}
+          <div style="display: flex; gap: 1rem;">
+            <CommandModal
+              dataCy="checkout-patch-modal-toggle"
+              let:prop={toggleDropdown}
+              command={[
+                `upstream patch fetch ${Patch.handle($patchStatusStore.patch)}`,
+                `git checkout ${Patch.TAG_PREFIX}${Patch.handle(
+                  $patchStatusStore.patch
+                )}`,
+              ].join("\n")}
+              description="To fetch and check out this patch in your working copy, run the following commands:">
+              <Button
+                variant="transparent"
+                icon={ArrowBoxUpRightIcon}
+                on:click={toggleDropdown}>Checkout patch</Button>
+            </CommandModal>
+            {#if isDelegate(session.identity.urn, project) && !$patchStatusStore.patch.merged}
+              <CommandModal
+                dataCy="merge-patch-modal-toggle"
+                let:prop={toggleDropdown}
+                command={[
+                  `upstream patch fetch ${Patch.handle(
+                    $patchStatusStore.patch
+                  )}`,
+                  `git merge ${Patch.TAG_PREFIX}${Patch.handle(
+                    $patchStatusStore.patch
+                  )}`,
+                  `rad push`,
+                ].join("\n")}
+                description="To merge this patch and publish the changes, run these commands in your working copy:">
+                <Button
+                  variant="transparent"
+                  icon={MergeIcon}
+                  on:click={toggleDropdown}>Merge patch</Button>
+              </CommandModal>
+            {/if}
+          </div>
+        {/if}
+      {:else if activeView.type === "files" || activeView.type === "commits" || activeView.type === "commit" || activeView.type === "anchors"}
+        {#if isContributor}
+          <CommandModal
+            let:prop={toggleDropdown}
+            command={[
+              `rad checkout ${project.urn} && \\`,
+              `cd "${project.metadata.name}" && \\`,
+              `rad sync ${seedArg}`,
+            ].join("\n")}
+            description="To checkout a working copy of this project, run the following command in your terminal:">
+            <Button
+              variant="transparent"
+              icon={ArrowBoxUpRightIcon}
+              on:click={toggleDropdown}>Checkout project</Button>
+          </CommandModal>
+        {:else}
+          <CommandModal
+            let:prop={toggleDropdown}
+            command={[
+              `rad checkout ${project.urn} && \\`,
+              `cd "${project.metadata.name}" && \\`,
+              `rad push ${seedArg} && \\`,
+              `rad sync --self ${seedArg}`,
+            ].join("\n")}
+            description="To fork this project and checkout a working copy, run the following command in your terminal:">
+            <Button
+              variant="transparent"
+              icon={ForkIcon}
+              on:click={toggleDropdown}>
+              Fork
+            </Button>
+          </CommandModal>
+        {/if}
       {:else}
-        <CommandModal
-          let:prop={toggleDropdown}
-          command={[
-            `rad checkout ${project.urn} && \\`,
-            `cd "${project.metadata.name}" && \\`,
-            `rad push ${seedArg} && \\`,
-            `rad sync --self ${seedArg}`,
-          ].join("\n")}
-          description="To fork this project and checkout a working copy, run the following command in your terminal:">
-          <Button
-            variant="transparent"
-            icon={ForkIcon}
-            on:click={toggleDropdown}>
-            Fork
-          </Button>
-        </CommandModal>
+        {unreachable(activeView)}
       {/if}
     </div>
   </ActionBar>
@@ -237,14 +286,14 @@
         );
       })} />
   {:else if activeView.type === "patches"}
-    <PatchList
+    <PatchListTab
       project={$store.data.project}
       patches={$store.data.patches}
       filter={activeView.filter} />
   {:else if activeView.type === "patch"}
-    <Patch {project} id={activeView.id} peerId={activeView.peerId} />
+    <PatchTab {project} id={activeView.id} peerId={activeView.peerId} />
   {:else if activeView.type === "anchors"}
-    <Anchors {anchors} />
+    <AnchorsTab {anchors} />
   {:else}
     {unreachable(activeView)}
   {/if}

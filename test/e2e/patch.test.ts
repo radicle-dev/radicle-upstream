@@ -72,10 +72,10 @@ test("annotated patches", async ({ app, page, sshAuthSock, stateDir }) => {
       `Opened by ${peer.userHandle}`
     );
     await expect(
-      app.projectScreen.patchPage.locator('button:has-text("Checkout patch")')
+      app.projectScreen.actionBar.locator('button:has-text("Checkout patch")')
     ).toBeVisible();
     await expect(
-      app.projectScreen.patchPage.locator('button:has-text("Merge")')
+      app.projectScreen.actionBar.locator('button:has-text("Merge patch")')
     ).toBeVisible();
     // There's only one commit.
     await expect(
@@ -297,7 +297,7 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
     await app.projectScreen.goToPatchByTitle(patchTitle);
 
     await expect(
-      app.projectScreen.patchPage.locator('button:has-text("Checkout patch")')
+      app.projectScreen.actionBar.locator('button:has-text("Checkout patch")')
     ).toBeVisible();
   }
 
@@ -311,7 +311,7 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
     await app.projectScreen.goToPatchByTitle(patchTitle);
 
     await expect(
-      app.projectScreen.patchPage.locator('button:has-text("Checkout patch")')
+      app.projectScreen.actionBar.locator('button:has-text("Checkout patch")')
     ).toBeVisible();
   }
 
@@ -325,10 +325,10 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
     await app.projectScreen.goToPatchByTitle(patchTitle);
 
     await expect(
-      app.projectScreen.patchPage.locator('button:has-text("Checkout patch")')
+      app.projectScreen.actionBar.locator('button:has-text("Checkout patch")')
     ).toBeVisible();
     await expect(
-      app.projectScreen.patchPage.locator('button:has-text("Merge")')
+      app.projectScreen.actionBar.locator('button:has-text("Merge patch")')
     ).toBeVisible();
   }
 });

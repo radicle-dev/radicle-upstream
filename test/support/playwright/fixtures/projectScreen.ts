@@ -8,10 +8,11 @@ import { Page, Locator } from "@playwright/test";
 import { Hotkeys } from "./hotkeys";
 
 export class ProjectScreen {
-  public patchList: Locator;
-  public patchPage: Locator;
+  public actionBar: Locator;
   public commitPage: Locator;
   public patchCounter: Locator;
+  public patchList: Locator;
+  public patchPage: Locator;
 
   #page: Page;
   #hotkeys: Hotkeys;
@@ -20,6 +21,7 @@ export class ProjectScreen {
     this.#page = page;
     this.#hotkeys = new Hotkeys(page);
 
+    this.actionBar = this.#page.locator("[data-cy=action-bar]");
     this.patchList = this.#page.locator("[data-cy=patch-list]");
     this.patchPage = this.#page.locator("[data-cy=patch-page]");
     this.commitPage = this.#page.locator("[data-cy=commit-page]");

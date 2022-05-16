@@ -9,19 +9,13 @@
   import type { Project } from "ui/src/project";
   import type { GroupedCommitsHistory } from "ui/src/source";
 
-  import { isDelegate } from "ui/src/project";
   import * as Patch from "ui/src/project/patch";
-  import * as Session from "ui/src/session";
   import * as router from "ui/src/router";
 
-  import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
-  import Button from "design-system/Button.svelte";
   import LinkIcon from "design-system/icons/Link.svelte";
   import Markdown from "design-system/Markdown.svelte";
-  import MergeIcon from "design-system/icons/Merge.svelte";
   import RevisionIcon from "design-system/icons/Revision.svelte";
 
-  import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   import BackButton from "../BackButton.svelte";
@@ -30,8 +24,6 @@
   export let project: Project;
   export let patch: Patch.Patch;
   export let commits: GroupedCommitsHistory;
-
-  const session = Session.unsealed();
 
   $: iconColor = patch.merged
     ? "var(--color-negative);"
@@ -62,22 +54,6 @@
   .desc {
     border-top: 1px solid var(--color-foreground-level-3);
     padding: 1.5rem;
-  }
-
-  .action-box {
-    display: flex;
-    align-items: center;
-    justify-content: right;
-    width: 100%;
-    background: var(--color-foreground-level-1);
-    border-radius: 0.5rem;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .action-box .buttons {
-    display: flex;
-    gap: 1rem;
   }
 
   .copyable-link {
@@ -129,35 +105,5 @@
       <Markdown content={patch.description} />
     </div>
   {/if}
-  <div class="action-box">
-    <div class="buttons">
-      <CommandModal
-        dataCy="checkout-patch-modal-toggle"
-        let:prop={toggleDropdown}
-        command={[
-          `upstream patch fetch ${Patch.handle(patch)}`,
-          `git checkout ${Patch.TAG_PREFIX}${Patch.handle(patch)}`,
-        ].join("\n")}
-        description="To fetch and check out this patch in your working copy, run the following commands:">
-        <Button
-          variant="transparent"
-          icon={ArrowBoxUpRightIcon}
-          on:click={toggleDropdown}>Checkout patch</Button>
-      </CommandModal>
-      {#if isDelegate(session.identity.urn, project) && !patch.merged}
-        <CommandModal
-          dataCy="merge-patch-modal-toggle"
-          let:prop={toggleDropdown}
-          command={[
-            `upstream patch fetch ${Patch.handle(patch)}`,
-            `git merge ${Patch.TAG_PREFIX}${Patch.handle(patch)}`,
-            `rad push`,
-          ].join("\n")}
-          description="To merge this patch and publish the changes, run these commands in your working copy:">
-          <Button icon={MergeIcon} on:click={toggleDropdown}>Merge</Button>
-        </CommandModal>
-      {/if}
-    </div>
-  </div>
   <History projectUrn={project.urn} history={commits} />
 </div>

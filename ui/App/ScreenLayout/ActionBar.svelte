@@ -47,7 +47,7 @@
   bind:this={wrapper}
   class="action-bar-wrapper"
   class:elevation={scrollY > scrollHeight}>
-  <div class="action-bar" {style}>
+  <div data-cy="action-bar" class="action-bar" {style}>
     <slot name="left" />
     <slot name="right" />
   </div>
