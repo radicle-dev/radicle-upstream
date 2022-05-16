@@ -202,6 +202,7 @@ test("patch reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
   await app.goToProjectByName(projectName);
   await app.projectScreen.goToPatchesTab();
 
+  // Patch updates originating locally.
   {
     const patchTitle = "Patch title";
     const patchDescription = "Patch description";
@@ -236,9 +237,7 @@ test("patch reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
       newPatchDescription
     );
     await expect(
-      app.projectScreen.patchPage.locator(
-        `[data-cy="history"] >> [data-cy="commit-group"] >> [data-cy="commit"]`
-      )
+      app.projectScreen.patchPage.locator(`[data-cy="commit"]`)
     ).toHaveCount(2);
 
     // Merge patch.
@@ -255,20 +254,20 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
   });
 
   const projectName = "foo";
-  const projectUrn = await Support.createAndPublishProject(
+  const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,
     projectName
   );
 
-  const observer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "observer",
-    sshAuthSock: sshAuthSock,
-  });
-
   const contributor = await PeerRunner.UpstreamPeer.createAndStart({
     dataPath: stateDir,
     name: "contributor",
+    sshAuthSock: sshAuthSock,
+  });
+
+  const observer = await PeerRunner.UpstreamPeer.createAndStart({
+    dataPath: stateDir,
+    name: "observer",
     sshAuthSock: sshAuthSock,
   });
 
@@ -315,7 +314,7 @@ test("patch replication", async ({ app, page, sshAuthSock, stateDir }) => {
     ).toBeVisible();
   }
 
-  // Maintainer tracks contributor and sees a patch
+  // Maintainer tracks contributor and sees the patch.
   {
     await page.goto(maintainer.uiUrl);
     await app.goToProjectByName(projectName);

@@ -83,7 +83,7 @@ export async function startSshAgent(): Promise<string> {
 // Call `fn` until it does not throw an error and return the result. Re-throws
 // the error raised by `fn()` if it still fails after two seconds.
 export function retry<T>(fn: () => Promise<T>): Promise<T> {
-  return retryOnError(fn, () => true, 100, 20);
+  return retryOnError(fn, () => true, 100, 30);
 }
 
 // Create a project using the rad CLI.
@@ -128,7 +128,7 @@ export async function createProject(
 export async function createAndPublishProject(
   proxy: PeerRunner.UpstreamPeer,
   name: string
-): Promise<string> {
+): Promise<{ urn: string; checkoutPath: string }> {
   const { urn, checkoutPath } = await createProject(proxy, name);
 
   await proxy.spawn("rad", ["push"], {
@@ -142,7 +142,7 @@ export async function createAndPublishProject(
     }
   });
 
-  return urn;
+  return { urn, checkoutPath };
 }
 
 // Fork a project by running the same commands as provided by the Fork button
@@ -223,6 +223,9 @@ export async function mergeOwnPatch(
     cwd: projectCheckoutPath,
   });
   await peer.spawn("git", ["merge", "--ff-only", branchName], {
+    cwd: projectCheckoutPath,
+  });
+  await peer.spawn("rad", ["push", "--seed", "127.0.0.1:8778"], {
     cwd: projectCheckoutPath,
   });
 

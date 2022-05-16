@@ -38,7 +38,10 @@ test("contributor follows", async () => {
   });
   await maintainer.startProxy();
 
-  const projectUrn = await Support.createAndPublishProject(maintainer, "foo");
+  const { urn: projectUrn } = await Support.createAndPublishProject(
+    maintainer,
+    "foo"
+  );
 
   const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
@@ -65,7 +68,7 @@ test("contributor follows", async () => {
   );
   expect(contributorProject.urn).toEqual(projectUrn);
   expect(contributorProject.metadata.defaultBranch).toEqual("main");
-}, 10_000);
+}, 20_000);
 
 test("contributor patch replication", async () => {
   const stateDir = await Support.prepareStateDir(
@@ -81,7 +84,10 @@ test("contributor patch replication", async () => {
   });
   await maintainer.startProxy();
 
-  const projectUrn = await Support.createAndPublishProject(maintainer, "foo");
+  const { urn: projectUrn } = await Support.createAndPublishProject(
+    maintainer,
+    "foo"
+  );
   const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
     name: "contributor",
@@ -132,4 +138,4 @@ test("contributor patch replication", async () => {
     );
     expect(peer).not.toBeNull();
   });
-}, 10_000);
+}, 20_000);

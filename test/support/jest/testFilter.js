@@ -17,7 +17,7 @@ function isTestEnabled(path) {
     // Disable git fetch test on macOS because Docker is unavailable
     process.env.CI === "true" &&
     process.env.RUNNER_OS === "macOS" &&
-    path.endsWith("/gitFetch.test.ts")
+    path.includes("/test/proxy/")
   ) {
     return false;
   }
