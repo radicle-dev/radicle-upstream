@@ -11327,7 +11327,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radicle-avatar@github:radicle-dev/radicle-avatar, radicle-avatar@github:radicle-dev/radicle-avatar#commit=55640c89666c25fa95390c58a73f0e55d83e2e61":
+"radicle-avatar@file:.yarn/vendor/radicle-avatar-v0.1.0-g55640c8.tgz::locator=radicle-upstream%40workspace%3A.":
+  version: 0.1.0
+  resolution: "radicle-avatar@file:.yarn/vendor/radicle-avatar-v0.1.0-g55640c8.tgz::locator=radicle-upstream%40workspace%3A."
+  dependencies:
+    rimraf: ^3.0.2
+  checksum: 766698bcc6ab9381eb0f9d62b52d010d1e302c1d98afe4b4dec63eed5116371ff502d0ea9a153984fd8e31093525d55a061f1fc3945445fe974c43a1fa588e15
+  languageName: node
+  linkType: hard
+
+"radicle-avatar@github:radicle-dev/radicle-avatar":
   version: 0.1.0
   resolution: "radicle-avatar@https://github.com/radicle-dev/radicle-avatar.git#commit=55640c89666c25fa95390c58a73f0e55d83e2e61"
   dependencies:
@@ -11336,15 +11345,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"radicle-contracts@github:radicle-dev/radicle-contracts#commit=157a5b59df94704702623765198deb4ba70ace84":
+"radicle-contracts@file:.yarn/vendor/radicle-contracts-v0.1.0-g157a5b5.tgz::locator=radicle-upstream%40workspace%3A.":
   version: 0.1.0
-  resolution: "radicle-contracts@https://github.com/radicle-dev/radicle-contracts.git#commit=157a5b59df94704702623765198deb4ba70ace84"
+  resolution: "radicle-contracts@file:.yarn/vendor/radicle-contracts-v0.1.0-g157a5b5.tgz::locator=radicle-upstream%40workspace%3A."
   dependencies:
     "@ethersproject/abi": ^5.1.2
     "@ethersproject/bytes": ^5.1.0
     "@ethersproject/providers": ^5.1.2
     ethers: ^5.1.4
-  checksum: 7e7156073d4958e26b7624924c021ac3ad9d668788e0bc1d3cee7ecb434f3aa57d7f5c9005352c39abcf929e9495b683c07f7a475633f43a7e4d77a4ebd102ae
+  checksum: aa87088fa18d4bdee6dbe344ee823fdb1156c13c2d7d0d3ec43ce2630c1c3109e9bc8a446bd33d3e68d738209a355f3e83f59bec16a5e1b105d49fa95ba20397
   languageName: node
   linkType: hard
 
@@ -11439,8 +11448,8 @@ __metadata:
     prompts: ^2.4.2
     pure-svg-code: ^1.0.6
     qs: ^6.10.3
-    radicle-avatar: "github:radicle-dev/radicle-avatar#commit=55640c89666c25fa95390c58a73f0e55d83e2e61"
-    radicle-contracts: "github:radicle-dev/radicle-contracts#commit=157a5b59df94704702623765198deb4ba70ace84"
+    radicle-avatar: "file:.yarn/vendor/radicle-avatar-v0.1.0-g55640c8.tgz"
+    radicle-contracts: "file:.yarn/vendor/radicle-contracts-v0.1.0-g157a5b5.tgz"
     sanitize-html: ^2.7.0
     semver: ^7.3.5
     sinon: ^13.0.1

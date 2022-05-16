@@ -20,5 +20,6 @@ sandbox
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
+!.yarn/vendor
 .pnp.*
 .vagrant
