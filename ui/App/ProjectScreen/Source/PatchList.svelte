@@ -12,9 +12,6 @@
   import * as Patch from "ui/src/project/patch";
   import { unreachable } from "ui/src/unreachable";
 
-  import Button from "design-system/Button.svelte";
-  import Hoverable from "design-system/Hoverable.svelte";
-  import LinkIcon from "design-system/icons/Link.svelte";
   import List from "design-system/List.svelte";
   import SegmentedControl from "design-system/SegmentedControl.svelte";
 
@@ -85,14 +82,6 @@
     margin: 0 auto;
     min-width: var(--content-min-width);
   }
-  .list-item {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    padding: 1.375rem 1.5rem;
-    align-items: center;
-    min-width: 0;
-  }
   .filters {
     margin: 0.5rem 0 1.5rem;
     padding: 0 var(--content-padding);
@@ -121,21 +110,7 @@
       on:select={selectPatch}
       let:item={patch}
       style="margin: 2rem; overflow: visible;">
-      <Hoverable let:hovering={hover} style="display: flex; flex: 1;">
-        <div class="list-item">
-          <PatchCard {patch}>
-            {#if hover}
-              <Button
-                dataCy="copy-url"
-                variant="vanilla"
-                icon={LinkIcon}
-                on:click={() => {
-                  Patch.copyPatchUrlToClipboard(project.urn, patch);
-                }}>Copy link</Button>
-            {/if}
-          </PatchCard>
-        </div>
-      </Hoverable>
+      <PatchCard {patch} projectId={project.urn} />
     </List>
   {:else}
     <EmptyState
