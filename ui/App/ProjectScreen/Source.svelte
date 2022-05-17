@@ -230,7 +230,7 @@
             {/if}
           </div>
         {/if}
-      {:else if activeView.type === "files" || activeView.type === "commits" || activeView.type === "commit" || activeView.type === "anchors"}
+      {:else if activeView.type === "files"}
         {#if isContributor}
           <CommandModal
             let:prop={toggleDropdown}
@@ -263,6 +263,8 @@
             </Button>
           </CommandModal>
         {/if}
+      {:else if activeView.type === "commits" || activeView.type === "commit" || activeView.type === "anchors"}
+        <!-- Don't show any actions. -->
       {:else}
         {unreachable(activeView)}
       {/if}
