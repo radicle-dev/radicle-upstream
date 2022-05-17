@@ -31,7 +31,7 @@ curl -sSL "https://github.com/twitter/twemoji/archive/refs/tags/v${version}.tar.
   | tar -x -z -C public/twemoji/ --strip-components=3 "twemoji-${version}/assets/svg"
 ```
 
-- `scripts/install-twemoji-assets.sh`
+- `scripts/install-design-system-static-assets.sh`
 ```
 #!/bin/bash
 # Install design system assets.
