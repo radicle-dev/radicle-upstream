@@ -22,9 +22,12 @@
   export let tree: Readable<Tree>;
 
   const dispatch = createEventDispatcher();
-  const onSelectCommit = ({ detail: sha1 }: { detail: string }): void =>
+  const onSelectCommit = ({ detail: sha1 }: { detail: string }): void => {
     dispatch("commit", sha1);
-  const onSelectRoot = (): void => dispatch("root");
+  };
+  const onSelectRoot = (): void => {
+    dispatch("root");
+  };
 
   let view: View;
   $: view = $code.view;

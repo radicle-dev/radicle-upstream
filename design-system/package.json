@@ -13,10 +13,10 @@
     "url": "https://github.com/radicle-dev/radicle-upstream.git"
   },
   "dependencies": {
-    "marked": "^4.0.12",
+    "marked": "^4.0.16",
     "radicle-avatar": "github:radicle-dev/radicle-avatar",
     "sanitize-html": "^2.7.0",
-    "svelte": "^3.46.6",
+    "svelte": "^3.48.0",
     "twemoji": "14.0.2"
   },
   "packageManager": "yarn@3.2.0",
