@@ -13,78 +13,68 @@ interface Option<T> {
   title: string;
 }
 
-export enum Theme {
-  Dark = "dark",
-  Light = "light",
-  H4x0r = "h4x0r",
-}
+type Theme = "dark" | "light" | "h4x0r";
 
 export const theme = browserStore.create<Theme>(
   "radicle.appearance.theme",
-  Theme.Dark,
-  zod.enum([Theme.Dark, Theme.Light, Theme.H4x0r])
+  "dark",
+  zod.enum(["dark", "light", "h4x0r"])
 );
 
-export const themeOptions: Option<string>[] = [
+export const themeOptions: Option<Theme>[] = [
   {
     title: "Light",
-    value: Theme.Light,
+    value: "light",
   },
   {
     title: "Dark",
-    value: Theme.Dark,
+    value: "dark",
   },
   {
     title: "H4x0r",
-    value: Theme.H4x0r,
+    value: "h4x0r",
   },
 ];
 
-export enum UiFont {
-  Inter = "inter",
-  System = "system",
-}
+type UiFont = "inter" | "system";
 
 export const uiFont = browserStore.create<UiFont>(
   "radicle.appearance.uiFont",
-  UiFont.Inter,
-  zod.enum([UiFont.Inter, UiFont.System])
+  "inter",
+  zod.enum(["inter", "system"])
 );
 
 export const uiFontOptions: Option<UiFont>[] = [
   {
     title: "Inter",
-    value: UiFont.Inter,
+    value: "inter",
   },
   {
     title: "System",
-    value: UiFont.System,
+    value: "system",
   },
 ];
 
-export enum CodeFont {
-  SourceCode = "sourceCode",
-  System = "system",
-}
+type CodeFont = "sourceCode" | "system";
 
 export const codeFont = browserStore.create<CodeFont>(
   "radicle.appearance.codeFont",
-  CodeFont.SourceCode,
-  zod.enum([CodeFont.SourceCode, CodeFont.System])
+  "sourceCode",
+  zod.enum(["sourceCode", "system"])
 );
 
-export const codeFontOptions: Option<string>[] = [
+export const codeFontOptions: Option<CodeFont>[] = [
   {
     title: "Source Code",
-    value: CodeFont.SourceCode,
+    value: "sourceCode",
   },
   {
     title: "System",
-    value: CodeFont.System,
+    value: "system",
   },
 ];
 
-export type PrimaryColor = "blue" | "pink" | "orange" | "custom";
+type PrimaryColor = "blue" | "pink" | "orange" | "custom";
 
 export const primaryColor = browserStore.create<PrimaryColor>(
   "radicle.appearance.primaryColor",
