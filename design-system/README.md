@@ -45,6 +45,18 @@ cp ./node_modules/radicle-design-system/static/fonts/*.otf ./public/fonts
 Adjust the paths of the assets according to the requirements of your project
 and import all of the CSS files in your project root `index.html`.
 
+**💡 Tip:** when using Svelte Kit, you don't need to copy the `*.css` assets to
+your project's `/static` directory, just import them directly in your
+`src/app.css` file, like this:
+
+```scss
+@import 'radicle-design-system/static/reset.css';
+@import 'radicle-design-system/static/global.css';
+@import 'radicle-design-system/static/colors.css';
+@import 'radicle-design-system/static/elevation.css';
+@import 'radicle-design-system/static/typography.css';
+```
+
 Finally, run `yarn install`. Now you can start using the components and
 utility functions provided by the design system like this:
 
