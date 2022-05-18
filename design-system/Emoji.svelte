@@ -6,14 +6,21 @@
  LICENSE file.
 -->
 <script lang="ts">
+  type EmojiSize = "small" | "regular" | "large" | "huge";
+
   import twemoji from "twemoji";
 
   export let emoji: string;
-
-  type EmojiSize = "small" | "regular" | "large" | "huge";
   export let size: EmojiSize = "regular";
-
   export let style: string | undefined = undefined;
+
+  // Set the static asset path prefix to be relative when running this in
+  // Upstream and absolute when its run in any other environment. This allows
+  // us to use this component in the workstreams web app.
+  const assetPathPrefix =
+    typeof window !== "undefined" && typeof window.electron === "object"
+      ? ""
+      : "/";
 </script>
 
 <style>
@@ -47,7 +54,7 @@
 <div {style} class="container">
   {@html twemoji.parse(emoji, {
     className: `emoji ${size}`,
-    base: "",
+    base: assetPathPrefix,
     folder: "twemoji",
     ext: ".svg",
   })}
