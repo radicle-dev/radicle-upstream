@@ -6,18 +6,19 @@
  LICENSE file.
 -->
 <script lang="ts">
+  import { SvelteComponent } from "svelte";
+
+  import ArrowUpIcon from "./icons/ArrowUp.svelte";
   import CheckIcon from "./icons/Check.svelte";
   import CrossIcon from "./icons/Cross.svelte";
   import ForkIcon from "./icons/Fork.svelte";
   import MinusIcon from "./icons/Minus.svelte";
   import PlusIcon from "./icons/Plus.svelte";
-  import ArrowUpIcon from "./icons/ArrowUp.svelte";
 
   import Avatar from "./Avatar.svelte";
   import Button from "./Button.svelte";
   import Checkbox from "./Checkbox.svelte";
   import Dropdown from "./Dropdown.svelte";
-  import TrackToggle from "./TrackToggle.svelte";
   import IdentifierLink from "./IdentifierLink.svelte";
   import LoadingAnimation from "./LoadingAnimation.svelte";
   import SegmentedControl from "./SegmentedControl.svelte";
@@ -25,6 +26,7 @@
   import TextInput from "./TextInput.svelte";
   import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
   import Tooltip from "./Tooltip.svelte";
+  import TrackToggle from "./TrackToggle.svelte";
 
   import ColorSwatch from "./Showcase/ColorSwatch.svelte";
   import ElevationSwatch from "./Showcase/ElevationSwatch.svelte";
@@ -88,6 +90,105 @@
   ];
 
   const elevations = extractCssVariables("--elevation");
+
+  const icons = [
+    "Anchor",
+    "AnchorSmall",
+    "ArrowBoxUpRight",
+    "ArrowCollapse",
+    "ArrowDown",
+    "ArrowExpand",
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "At",
+    "Blocky",
+    "Box",
+    "Branch",
+    "Chat",
+    "Check",
+    "CheckBox",
+    "CheckCircle",
+    "CheckSmall",
+    "ChevronDown",
+    "ChevronLeft",
+    "ChevronLeftRight",
+    "ChevronRight",
+    "ChevronUp",
+    "ChevronUpDown",
+    "Circle",
+    "Commit",
+    "Computer",
+    "Copy",
+    "CopySmall",
+    "Cross",
+    "CrossCircle",
+    "CrossSmall",
+    "CurrencyDAI",
+    "CurrencyUSD",
+    "Ellipsis",
+    "EllipsisSmall",
+    "Envelope",
+    "Ethereum",
+    "Exclamation",
+    "ExclamationCircle",
+    "EyeClosed",
+    "EyeOpen",
+    "File",
+    "Folder",
+    "Fork",
+    "Github",
+    "Globe",
+    "Gnosis",
+    "Heart",
+    "HeartFaceSmall",
+    "House",
+    "Info",
+    "InfoCircle",
+    "Key",
+    "Label",
+    "Ledger",
+    "Link",
+    "Lock",
+    "LockSmall",
+    "MagnifyingGlass",
+    "Merge",
+    "Minus",
+    "Network",
+    "Orgs",
+    "Pause",
+    "Pen",
+    "Plus",
+    "PlusSmall",
+    "Proposals",
+    "Registered",
+    "RegisteredSmall",
+    "Review",
+    "Revision",
+    "Road",
+    "Server",
+    "Settings",
+    "ThumbsDown",
+    "ThumbsUp",
+    "TokenStreams",
+    "Topup",
+    "Transactions",
+    "Trash",
+    "Twitter",
+    "User",
+    "Wallet",
+    "Withdraw",
+  ];
+
+  async function importIconComponents(
+    iconNames: string[]
+  ): Promise<SvelteComponent[]> {
+    return await Promise.all(
+      iconNames.map(async iconName => {
+        return (await import(`./icons/${iconName}.svelte`)).default;
+      })
+    );
+  }
 
   function onKeydown(event: KeyboardEvent) {
     if (
@@ -248,6 +349,19 @@
         <TypographySwatch title={`<p class="typo-enable-calt">`}>
           <p class="typo-enable-calt">100x20</p>
         </TypographySwatch>
+      </Section>
+
+      <Section title="Icons" subTitle="24px icons">
+        <div
+          style="display: grid; gap: 1.5rem; grid-template-columns: repeat(10, 1.5rem); grid-auto-rows: 1.5rem;">
+          {#await importIconComponents(icons) then icons}
+            {#each icons as icon}
+              <Tooltip value={`${icon["name"]}.svelte`} position="top">
+                <svelte:component this={icon} />
+              </Tooltip>
+            {/each}
+          {/await}
+        </div>
       </Section>
 
       <Section
