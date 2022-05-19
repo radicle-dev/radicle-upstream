@@ -5,11 +5,38 @@
  with Radicle Linking Exception. For full terms see the included
  LICENSE file.
 -->
+<script lang="ts" context="module">
+  import * as ipc from "ui/src/ipc";
+
+  export const REQUIRED_GIT_VERSION = "2.35.1";
+  export const INSTALL_GIT_URL = "https://git-scm.com/download/";
+
+  export async function checkGit(): Promise<{
+    passed: boolean;
+    version?: string;
+  }> {
+    const gitCheck = await ipc.checkGitVersion();
+    if (gitCheck === undefined) {
+      return { passed: false, version: undefined };
+    }
+
+    const verString = clean(gitCheck.replace("git version", ""));
+
+    if (!verString) {
+      return { passed: false, version: undefined };
+    }
+
+    return {
+      passed: satisfies(verString, `>=${REQUIRED_GIT_VERSION}`),
+      version: verString,
+    };
+  }
+</script>
+
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import { clean, satisfies } from "semver";
 
-  import * as ipc from "ui/src/ipc";
   import * as proxy from "ui/src/proxy";
   import * as router from "ui/src/router";
   import * as session from "ui/src/session";
@@ -42,7 +69,7 @@
 
   let radCliVersion: string;
   let identityName: string;
-  let gitVersion: string;
+  let gitVersion: string | undefined = undefined;
 
   const stepSequence: Step[] = [
     Step.installRadCli,
@@ -105,23 +132,9 @@
         }
       }
       case Step.setUpGit: {
-        const gitCheck = await ipc.checkGitVersion();
-
-        if (gitCheck) {
-          const verString = clean(gitCheck.replace("git version", ""));
-
-          if (!verString) {
-            return { step: forStep, passed: false };
-          }
-
-          gitVersion = verString;
-
-          if (satisfies(verString, ">=2.35.1")) {
-            return { step: forStep, passed: true, version: verString };
-          }
-        }
-
-        break;
+        const result = await checkGit();
+        gitVersion = result.version;
+        return { step: forStep, ...result };
       }
     }
 
@@ -311,7 +324,7 @@
           </p>
           <p>
             You can download the latest version from the <a
-              href="https://git-scm.com/download/"
+              href={INSTALL_GIT_URL}
               class="typo-link">official website</a
             >.
           </p>

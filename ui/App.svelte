@@ -12,6 +12,7 @@
   import * as error from "ui/src/error";
   import * as ethereum from "ui/src/ethereum";
   import * as hotkeys from "ui/src/hotkeys";
+  import * as ipc from "ui/src/ipc";
   import * as notification from "ui/src/notification";
   import * as org from "./src/org";
   import * as remote from "ui/src/remote";
@@ -38,6 +39,11 @@
   import UiFontSetting from "ui/App/SharedComponents/UiFontSetting.svelte";
 
   import OnboardingModal from "ui/App/OnboardingModal.svelte";
+  import {
+    INSTALL_GIT_URL,
+    REQUIRED_GIT_VERSION,
+    checkGit,
+  } from "ui/App/OnboardingModal.svelte";
 
   import LockScreen from "ui/App/LockScreen.svelte";
   import DiagnosticsScreen from "ui/App/DiagnosticsScreen.svelte";
@@ -84,6 +90,47 @@
   const sessionStore = Session.session;
   const walletStore = walletModule.store;
 
+  async function notifyMissingGit(): Promise<void> {
+    const result = await checkGit();
+    if (!result.passed) {
+      const message = `Required git version ${REQUIRED_GIT_VERSION} could not be found`;
+      notification.show({
+        type: "error",
+        message,
+        persist: true,
+        actions: [
+          {
+            label: "Install git",
+            handler: () => {
+              ipc.openUrl(INSTALL_GIT_URL);
+            },
+          },
+          {
+            label: "Copy error",
+            handler: () => {
+              ipc.copyToClipboard(
+                JSON.stringify(
+                  {
+                    message,
+                    detectedGitVersion: result.version,
+                    requiredGitVersion: REQUIRED_GIT_VERSION,
+                    searchPath: config.config.path,
+                  },
+                  null,
+                  2
+                )
+              );
+            },
+          },
+          {
+            label: "Dismiss",
+            handler: () => {},
+          },
+        ],
+      });
+    }
+  }
+
   sessionStore.subscribe(session => {
     // We’re not using a reactive statement here to prevent this code from
     // running when `activeRouteStore` is updated.
@@ -107,6 +154,7 @@
             $activeRouteStore.type === "boot"
           ) {
             router.replace({ type: "profile" });
+            notifyMissingGit();
           }
         } else if (session.data.status === Session.Status.ProxyDown) {
           router.replace({ type: "onboarding" });

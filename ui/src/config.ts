@@ -20,12 +20,15 @@ export interface Config {
   // is derived.
   testWalletMnemonic?: string;
   isDev: boolean;
+  // PATH env variable used when shelling out.
+  path?: string;
 }
 
 const partialConfigSchema: zod.Schema<Partial<Config>> = zod.object({
   proxyAddress: zod.string().optional(),
   testWalletMnemonic: zod.string().optional(),
   isDev: zod.boolean().optional(),
+  path: zod.string().optional(),
 });
 
 // `true` if we are running unit tests with Jest.

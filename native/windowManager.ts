@@ -128,5 +128,6 @@ function buildUiConfig(config: Config): Partial<UiConfig> {
   if (config.testWalletMnemonic) {
     uiConfig.testWalletMnemonic = config.testWalletMnemonic;
   }
+  uiConfig.path = config.path;
   return uiConfig;
 }
