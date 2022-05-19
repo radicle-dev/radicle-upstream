@@ -149,9 +149,7 @@
   </div>
 
   <ActionBar>
-    <div slot="left">
-      <TabBar tabs={tabs(activeTab)} />
-    </div>
+    <TabBar tabs={tabs(activeTab)} />
   </ActionBar>
 
   <div class="container">

@@ -163,112 +163,107 @@
 
 {#if $store.status === remote.Status.Success}
   <ActionBar>
-    <div slot="left">
-      <div style="display: flex">
-        {#if activeView.type === "files" || activeView.type === "commits"}
-          <RevisionSelector
-            style="width: 18rem; margin-right: 2rem;"
-            loading={$store.data.selectedRevision.request !== null}
-            on:select={onSelectRevision}
-            selected={$store.data.selectedRevision.selected}
-            defaultBranch={project.metadata.defaultBranch}
-            revisions={$store.data.revisions} />
-        {/if}
+    {#if activeView.type === "files" || activeView.type === "commits"}
+      <RevisionSelector
+        style="width: 18rem; margin-right: 2rem;"
+        loading={$store.data.selectedRevision.request !== null}
+        on:select={onSelectRevision}
+        selected={$store.data.selectedRevision.selected}
+        defaultBranch={project.metadata.defaultBranch}
+        revisions={$store.data.revisions} />
+    {/if}
 
-        <TabBar tabs={tabs(activeView, $store.data)} />
-      </div>
-    </div>
-    <div slot="right">
-      {#if activeView.type === "patches"}
-        <CommandModal
-          let:prop={toggleDropdown}
-          command={"upstream patch create"}
-          description="To create a patch in your working copy, check out the branch that contains the changes and run the following command:">
-          <Button
-            variant="transparent"
-            icon={RevisionIcon}
-            on:click={toggleDropdown}
-            dataCy="patch-modal-toggle">Create patch</Button>
-        </CommandModal>
-      {:else if activeView.type === "patch"}
-        {#if $patchStatusStore.type === "ok"}
-          <div style="display: flex; gap: 1rem;">
-            <CommandModal
-              dataCy="checkout-patch-modal-toggle"
-              let:prop={toggleDropdown}
-              command={[
-                `upstream patch fetch ${Patch.handle($patchStatusStore.patch)}`,
-                `git checkout ${Patch.TAG_PREFIX}${Patch.handle(
-                  $patchStatusStore.patch
-                )}`,
-              ].join("\n")}
-              description="To fetch and check out this patch in your working copy, run the following commands:">
-              <Button
-                variant="transparent"
-                icon={ArrowBoxUpRightIcon}
-                on:click={toggleDropdown}>Checkout patch</Button>
-            </CommandModal>
-            {#if isDelegate(session.identity.urn, project) && !$patchStatusStore.patch.merged}
-              <CommandModal
-                dataCy="merge-patch-modal-toggle"
-                let:prop={toggleDropdown}
-                command={[
-                  `upstream patch fetch ${Patch.handle(
-                    $patchStatusStore.patch
-                  )}`,
-                  `git merge ${Patch.TAG_PREFIX}${Patch.handle(
-                    $patchStatusStore.patch
-                  )}`,
-                  `rad push`,
-                ].join("\n")}
-                description="To merge this patch and publish the changes, run these commands in your working copy:">
-                <Button
-                  variant="transparent"
-                  icon={MergeIcon}
-                  on:click={toggleDropdown}>Merge patch</Button>
-              </CommandModal>
-            {/if}
-          </div>
-        {/if}
-      {:else if activeView.type === "files"}
-        {#if isContributor}
+    <TabBar tabs={tabs(activeView, $store.data)} />
+
+    <div style="margin-left: auto" />
+
+    {#if activeView.type === "patches"}
+      <CommandModal
+        let:prop={toggleDropdown}
+        command={"upstream patch create"}
+        description="To create a patch in your working copy, check out the branch that contains the changes and run the following command:">
+        <Button
+          variant="transparent"
+          icon={RevisionIcon}
+          on:click={toggleDropdown}
+          dataCy="patch-modal-toggle">Create patch</Button>
+      </CommandModal>
+    {:else if activeView.type === "patch"}
+      {#if $patchStatusStore.type === "ok"}
+        <div style="display: flex; gap: 1rem;">
           <CommandModal
+            dataCy="checkout-patch-modal-toggle"
             let:prop={toggleDropdown}
             command={[
-              `rad checkout ${project.urn} && \\`,
-              `cd "${project.metadata.name}" && \\`,
-              `rad sync ${seedArg}`,
+              `upstream patch fetch ${Patch.handle($patchStatusStore.patch)}`,
+              `git checkout ${Patch.TAG_PREFIX}${Patch.handle(
+                $patchStatusStore.patch
+              )}`,
             ].join("\n")}
-            description="To checkout a working copy of this project, run the following command in your terminal:">
+            description="To fetch and check out this patch in your working copy, run the following commands:">
             <Button
               variant="transparent"
               icon={ArrowBoxUpRightIcon}
-              on:click={toggleDropdown}>Checkout project</Button>
+              on:click={toggleDropdown}>Checkout patch</Button>
           </CommandModal>
-        {:else}
-          <CommandModal
-            let:prop={toggleDropdown}
-            command={[
-              `rad checkout ${project.urn} && \\`,
-              `cd "${project.metadata.name}" && \\`,
-              `rad push ${seedArg} && \\`,
-              `rad sync --self ${seedArg}`,
-            ].join("\n")}
-            description="To fork this project and checkout a working copy, run the following command in your terminal:">
-            <Button
-              variant="transparent"
-              icon={ForkIcon}
-              on:click={toggleDropdown}>
-              Fork
-            </Button>
-          </CommandModal>
-        {/if}
-      {:else if activeView.type === "commits" || activeView.type === "commit" || activeView.type === "anchors"}
-        <!-- Don't show any actions. -->
-      {:else}
-        {unreachable(activeView)}
+          {#if isDelegate(session.identity.urn, project) && !$patchStatusStore.patch.merged}
+            <CommandModal
+              dataCy="merge-patch-modal-toggle"
+              let:prop={toggleDropdown}
+              command={[
+                `upstream patch fetch ${Patch.handle($patchStatusStore.patch)}`,
+                `git merge ${Patch.TAG_PREFIX}${Patch.handle(
+                  $patchStatusStore.patch
+                )}`,
+                `rad push`,
+              ].join("\n")}
+              description="To merge this patch and publish the changes, run these commands in your working copy:">
+              <Button
+                variant="transparent"
+                icon={MergeIcon}
+                on:click={toggleDropdown}>Merge patch</Button>
+            </CommandModal>
+          {/if}
+        </div>
       {/if}
-    </div>
+    {:else if activeView.type === "files"}
+      {#if isContributor}
+        <CommandModal
+          let:prop={toggleDropdown}
+          command={[
+            `rad checkout ${project.urn} && \\`,
+            `cd "${project.metadata.name}" && \\`,
+            `rad sync ${seedArg}`,
+          ].join("\n")}
+          description="To checkout a working copy of this project, run the following command in your terminal:">
+          <Button
+            variant="transparent"
+            icon={ArrowBoxUpRightIcon}
+            on:click={toggleDropdown}>Checkout project</Button>
+        </CommandModal>
+      {:else}
+        <CommandModal
+          let:prop={toggleDropdown}
+          command={[
+            `rad checkout ${project.urn} && \\`,
+            `cd "${project.metadata.name}" && \\`,
+            `rad push ${seedArg} && \\`,
+            `rad sync --self ${seedArg}`,
+          ].join("\n")}
+          description="To fork this project and checkout a working copy, run the following command in your terminal:">
+          <Button
+            variant="transparent"
+            icon={ForkIcon}
+            on:click={toggleDropdown}>
+            Fork
+          </Button>
+        </CommandModal>
+      {/if}
+    {:else if activeView.type === "commits" || activeView.type === "commit" || activeView.type === "anchors"}
+      <!-- Don't show any actions. -->
+    {:else}
+      {unreachable(activeView)}
+    {/if}
   </ActionBar>
 
   {#if activeView.type === "files"}

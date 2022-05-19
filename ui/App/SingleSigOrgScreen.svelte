@@ -106,20 +106,17 @@
   <div class="sidebar-layout" class:single-column={!showSidebar}>
     <main>
       <ActionBar style="padding: 0; margin-top: 1rem;">
-        <div slot="left">
-          <TabBar {tabs} />
-        </div>
-        <div slot="right">
-          {#if showWriteActions}
-            <ProjectsMenu
-              isMultiSig={false}
-              orgAddress={address}
-              gnosisSafeAddress={owner}
-              availableProjectCount={projectCount}
-              hasPendingAnchors={anchors.pendingResolved.length !== 0 ||
-                anchors.pendingUnresolved.length !== 0} />
-          {/if}
-        </div>
+        <TabBar {tabs} />
+        <div style="margin-left: auto" />
+        {#if showWriteActions}
+          <ProjectsMenu
+            isMultiSig={false}
+            orgAddress={address}
+            gnosisSafeAddress={owner}
+            availableProjectCount={projectCount}
+            hasPendingAnchors={anchors.pendingResolved.length !== 0 ||
+              anchors.pendingUnresolved.length !== 0} />
+        {/if}
       </ActionBar>
 
       <ProjectsTab

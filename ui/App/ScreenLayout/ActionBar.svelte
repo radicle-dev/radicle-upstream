@@ -27,7 +27,6 @@
 
   .action-bar {
     display: flex;
-    justify-content: space-between;
     height: var(--topbar-height);
     width: 100%;
     max-width: var(--content-max-width);
@@ -48,7 +47,6 @@
   class="action-bar-wrapper"
   class:elevation={scrollY > scrollHeight}>
   <div data-cy="action-bar" class="action-bar" {style}>
-    <slot name="left" />
-    <slot name="right" />
+    <slot />
   </div>
 </div>

@@ -125,26 +125,23 @@
   <div class="sidebar-layout">
     <main>
       <ActionBar style="padding: 0; margin-top: 1rem;">
-        <div slot="left">
-          <TabBar tabs={tabs(address, activeTab)} />
-        </div>
-        <div slot="right">
-          {#if showWriteActions}
-            {#if activeTab.type === "projects"}
-              <ProjectsMenu
-                isMultiSig={true}
-                orgAddress={address}
-                {gnosisSafeAddress}
-                availableProjectCount={activeTab.projectCount}
-                hasPendingAnchors={activeTab.anchors.pendingResolved.length !==
-                  0 || activeTab.anchors.pendingUnresolved.length !== 0} />
-            {:else if activeTab.type === "members"}
-              <MembersMenu {gnosisSafeAddress} />
-            {:else}
-              {unreachable(activeTab)}
-            {/if}
+        <TabBar tabs={tabs(address, activeTab)} />
+        <div style="margin-left: auto" />
+        {#if showWriteActions}
+          {#if activeTab.type === "projects"}
+            <ProjectsMenu
+              isMultiSig={true}
+              orgAddress={address}
+              {gnosisSafeAddress}
+              availableProjectCount={activeTab.projectCount}
+              hasPendingAnchors={activeTab.anchors.pendingResolved.length !==
+                0 || activeTab.anchors.pendingUnresolved.length !== 0} />
+          {:else if activeTab.type === "members"}
+            <MembersMenu {gnosisSafeAddress} />
+          {:else}
+            {unreachable(activeTab)}
           {/if}
-        </div>
+        {/if}
       </ActionBar>
 
       {#if activeTab.type === "projects"}
