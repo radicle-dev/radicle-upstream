@@ -223,6 +223,7 @@ function proxyProcessOptions(config: Config): ProxyProcessOptions {
     env: {
       LNK_HOME: config.lnkHome,
       RADICLE_PROXY_GIT_SEEDS: config.proxyGitSeeds,
+      PATH: config.path,
     },
   };
 }
@@ -245,7 +246,9 @@ function createMainProcessIpcHandlers(): MainProcess {
       if (config.environment === "development") {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         const version = require("../package.json")["version"];
-        const { stdout, stderr } = await execa("git", ["rev-parse", "HEAD"]);
+        const { stdout, stderr } = await execa("git", ["rev-parse", "HEAD"], {
+          env: { PATH: config.path },
+        });
 
         if (!version || stderr) {
           return "0.0.0";
@@ -264,12 +267,13 @@ function createMainProcessIpcHandlers(): MainProcess {
     },
     async getGitGlobalDefaultBranch(): Promise<string | undefined> {
       try {
-        const { stdout, stderr } = await execa("git", [
-          "config",
-          "--global",
-          "--get",
-          "init.defaultBranch",
-        ]);
+        const { stdout, stderr } = await execa(
+          "git",
+          ["config", "--global", "--get", "init.defaultBranch"],
+          {
+            env: { PATH: config.path },
+          }
+        );
         return stderr ? undefined : stdout.trim();
       } catch (error: unknown) {
         return undefined;
@@ -290,6 +294,7 @@ async function checkShellForCommand(
   try {
     const { stdout, stderr } = await execa(command, ["--version"], {
       shell: process.env.SHELL || true,
+      env: { PATH: config.path },
     });
 
     return stderr ? undefined : stdout;

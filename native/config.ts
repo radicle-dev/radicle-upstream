@@ -9,6 +9,7 @@ import path from "path";
 type Environment = "development" | "production";
 
 export interface Config {
+  path?: string;
   environment: Environment;
   httpAddr: string;
   lnkHome?: string;
@@ -28,6 +29,7 @@ interface ProcessEnv {
   // Port on 127.0.0.1 to bind HTTP API to
   RADICLE_UPSTREAM_HTTP_PORT?: string;
   RADICLE_PROXY_GIT_SEEDS?: string;
+  PATH?: string;
 }
 
 export const config = buildConfig(process.env as ProcessEnv);
@@ -71,7 +73,22 @@ function buildConfig(processEnv: ProcessEnv): Config {
     proxyGitSeeds = processEnv.RADICLE_PROXY_GIT_SEEDS;
   }
 
+  const arm64HomebrewPath = "/opt/homebrew/bin";
+  const x86_64HomebrewPath = "/usr/local/bin";
+  const macPortsPath = "/opt/local/bin";
+
+  let globalPath: string | undefined = undefined;
+
+  if (processEnv.PATH !== undefined) {
+    if (process.platform === "darwin") {
+      globalPath = `${arm64HomebrewPath}:${x86_64HomebrewPath}:${macPortsPath}:${processEnv.PATH}`;
+    } else {
+      globalPath = processEnv.PATH;
+    }
+  }
+
   return {
+    path: globalPath,
     environment,
     lnkHome,
     httpAddr: `127.0.0.1:${httpPort.toString()}`,
