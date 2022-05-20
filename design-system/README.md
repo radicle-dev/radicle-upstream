@@ -16,7 +16,14 @@ Add this to your `package.json`:
 }
 ```
 
-Then create the following scripts and make sure they're executable:
+Next, set yarn to use the `node-modules` linker to ensure that assets are
+stored in your project's `node_modules` by running:
+
+```
+yarn config set nodeLinker node-modules
+```
+
+Then, create the following scripts and make sure they're executable:
 
 - `scripts/install-twemoji-assets.sh`
 ```
@@ -45,17 +52,25 @@ cp ./node_modules/radicle-design-system/static/fonts/*.otf ./public/fonts
 Adjust the paths of the assets according to the requirements of your project
 and import all of the CSS files in your project root `index.html`.
 
-**💡 Tip:** when using Svelte Kit, you don't need to copy the `*.css` assets to
-your project's `/static` directory, just import them directly in your
-`src/app.css` file, like this:
+Note: Instead of serving the files and importing them client-side, you may also
+require the css files directly from `node_modules` if your bundler is set up to
+import `.css` files. To do so, just `import` the css files directly from the
+`radicle-design-system` package:
 
-```scss
-@import 'radicle-design-system/static/reset.css';
-@import 'radicle-design-system/static/global.css';
-@import 'radicle-design-system/static/colors.css';
-@import 'radicle-design-system/static/elevation.css';
-@import 'radicle-design-system/static/typography.css';
 ```
+import 'radicle-design-system/static/reset.css';
+import 'radicle-design-system/static/global.css';
+import 'radicle-design-system/static/colors.css';
+import 'radicle-design-system/static/elevation.css';
+import 'radicle-design-system/static/typography.css';
+```
+
+This will work out of the box on `sveltekit`. If you import the css files
+directly from the package, you can remove the following line:
+```
+cp ./node_modules/radicle-design-system/static/*.css ./public/styles
+```
+from the `install-design-system-static-assets.sh` script described above.
 
 Finally, run `yarn install`. Now you can start using the components and
 utility functions provided by the design system like this:
