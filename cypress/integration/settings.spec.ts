@@ -16,30 +16,6 @@ context("settings", () => {
     commands.pick("sidebar", "settings").click();
   });
 
-  context("theme", () => {
-    it("is set to the default", () => {
-      cy.get("[data-theme='dark']").should("exist");
-    });
-
-    it("can be switched to light", () => {
-      cy.get("button[value='light']").click();
-      cy.get("[data-theme='light']").should("exist");
-    });
-
-    it("can be switched to h4x0r", () => {
-      cy.get("button[value='h4x0r']").click();
-      cy.get("[data-theme='h4x0r']").should("exist");
-    });
-
-    it("is persisted across app start", () => {
-      cy.get("button[value='light']").click();
-      cy.get("[data-theme='light']").should("exist");
-      commands.restartAndUnlock();
-      commands.pick("sidebar", "settings").click();
-      cy.get("[data-theme='light']").should("exist");
-    });
-  });
-
   context("app version", () => {
     // Set `ui/src/updateChecker` for these constants.
     const VERSION_CHECK_INTERVAL = 1000;

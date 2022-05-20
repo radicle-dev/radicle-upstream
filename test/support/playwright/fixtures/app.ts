@@ -37,4 +37,11 @@ export class App {
       .locator('[placeholder="Enter a Project ID here…"]')
       .press("Enter");
   }
+
+  public async goToSetting(): Promise<void> {
+    await this.#page
+      .locator('role=navigation[name="main"]')
+      .locator('role=button[name="Settings"]')
+      .click();
+  }
 }

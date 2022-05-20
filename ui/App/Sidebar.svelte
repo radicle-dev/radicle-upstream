@@ -67,7 +67,7 @@
   }
 </style>
 
-<div class="wrapper" data-cy="sidebar">
+<nav aria-label="main" class="wrapper" data-cy="sidebar">
   <div class="top">
     <Tooltip value={session.identity.metadata.handle}>
       <SidebarItem
@@ -88,6 +88,7 @@
     <Tooltip value="Navigate to a project">
       <SidebarItem
         dataCy="search"
+        ariaLabel="Navigate to a project"
         indicator
         onClick={() => modal.toggle(SearchModal)}>
         <MagnifyingGlassIcon />
@@ -96,6 +97,7 @@
     <Tooltip value="Network">
       <SidebarItem
         dataCy="network"
+        ariaLabel="Network"
         indicator
         active={$activeRouteStore.type === "network"}
         onClick={() => push({ type: "network" })}>
@@ -105,6 +107,7 @@
     <Tooltip value="Settings">
       <SidebarItem
         dataCy="settings"
+        ariaLabel="Settings"
         indicator
         active={$activeRouteStore.type === "settings"}
         onClick={() => push({ type: "settings" })}>
@@ -112,4 +115,4 @@
       </SidebarItem>
     </Tooltip>
   </div>
-</div>
+</nav>
