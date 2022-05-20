@@ -8,11 +8,17 @@ import * as Path from "node:path";
 import { afterEach, beforeAll, test } from "@jest/globals";
 
 import * as ProxyEvents from "proxy-client/events";
-import * as PeerRunner from "../support/peerRunner";
+import {
+  createPeerManager,
+  PeerManager,
+  buildProxy,
+} from "../support/peerManager";
 import * as Support from "../support";
 
+let peerManager: PeerManager;
+
 beforeAll(async () => {
-  await PeerRunner.buildProxy();
+  await buildProxy();
 }, 10 * 60 * 1000);
 
 beforeAll(async () => {
@@ -20,36 +26,31 @@ beforeAll(async () => {
   await Support.assertGitServerRunning();
 });
 
-afterEach(async () => {
-  PeerRunner.killAllProcesses();
-});
-
-test("contributor follows", async () => {
+beforeEach(async () => {
   const stateDir = await Support.prepareStateDir(
     expect.getState().testPath,
     expect.getState().currentTestName
   );
-  const sshAuthSock = await Support.startSshAgent();
+  peerManager = await createPeerManager({ dataPath: stateDir });
+});
 
-  const maintainer = await PeerRunner.UpstreamPeer.create({
-    dataPath: stateDir,
+afterEach(async () => {
+  await peerManager.teardown();
+});
+
+test("contributor follows", async () => {
+  const maintainer = await peerManager.startPeer({
     name: "maintainer",
-    sshAuthSock,
   });
-  await maintainer.start();
 
   const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,
     "foo"
   );
 
-  const contributor = await PeerRunner.UpstreamPeer.create({
-    dataPath: stateDir,
+  const contributor = await peerManager.startPeer({
     name: "contributor",
-    sshAuthSock,
   });
-
-  await contributor.start();
 
   const projectUpdated = contributor.proxyClient
     .events()
@@ -71,30 +72,17 @@ test("contributor follows", async () => {
 }, 20_000);
 
 test("contributor patch replication", async () => {
-  const stateDir = await Support.prepareStateDir(
-    expect.getState().testPath,
-    expect.getState().currentTestName
-  );
-  const sshAuthSock = await Support.startSshAgent();
-
-  const maintainer = await PeerRunner.UpstreamPeer.create({
-    dataPath: stateDir,
+  const maintainer = await peerManager.startPeer({
     name: "maintainer",
-    sshAuthSock,
   });
-  await maintainer.start();
 
   const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,
     "foo"
   );
-  const contributor = await PeerRunner.UpstreamPeer.create({
-    dataPath: stateDir,
+  const contributor = await peerManager.startPeer({
     name: "contributor",
-    sshAuthSock,
   });
-
-  await contributor.start();
 
   const contributorProjectPath = Path.join(contributor.checkoutPath, "foo");
   await contributor.spawn(

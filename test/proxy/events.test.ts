@@ -7,12 +7,18 @@
 import { afterEach, beforeAll, test } from "@jest/globals";
 
 import { EventEnvelope } from "proxy-client/project";
-import * as PeerRunner from "../support/peerRunner";
 import * as Support from "../support";
+import {
+  createPeerManager,
+  PeerManager,
+  buildProxy,
+} from "../support/peerManager";
 import { sleep } from "ui/src/sleep";
 
+let peerManager: PeerManager;
+
 beforeAll(async () => {
-  await PeerRunner.buildProxy();
+  await buildProxy();
 }, 10 * 60 * 1000);
 
 beforeAll(async () => {
@@ -20,30 +26,26 @@ beforeAll(async () => {
   await Support.assertGitServerRunning();
 });
 
-afterEach(async () => {
-  PeerRunner.killAllProcesses();
-});
-
-test("event log replication", async () => {
+beforeEach(async () => {
   const stateDir = await Support.prepareStateDir(
     expect.getState().testPath,
     expect.getState().currentTestName
   );
-  const sshAuthSock = await Support.startSshAgent();
+  peerManager = await createPeerManager({ dataPath: stateDir });
+});
 
-  const maintainer = await PeerRunner.UpstreamPeer.create({
-    dataPath: stateDir,
+afterEach(async () => {
+  await peerManager.teardown();
+});
+
+test("event log replication", async () => {
+  const maintainer = await peerManager.startPeer({
     name: "maintainer",
-    sshAuthSock,
   });
-  await maintainer.start();
 
-  const contributor = await PeerRunner.UpstreamPeer.create({
-    dataPath: stateDir,
+  const contributor = await peerManager.startPeer({
     name: "contributor",
-    sshAuthSock,
   });
-  await contributor.start();
 
   const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,

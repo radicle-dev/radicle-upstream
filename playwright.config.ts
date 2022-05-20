@@ -5,7 +5,7 @@
 // LICENSE file.
 
 import { PlaywrightTestConfig, devices } from "@playwright/test";
-import { UI_PORT } from "./test/support/peerRunner";
+import { UI_PORT } from "./test/support/peerManager";
 
 const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,

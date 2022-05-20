@@ -7,15 +7,15 @@
 import * as path from "path";
 import { test as base } from "@playwright/test";
 
-import * as PeerRunner from "test/support/peerRunner";
+import * as Process from "test/support/process";
 import * as Support from "test/support";
 import { App } from "./fixtures/app";
+import { createPeerManager, PeerManager } from "../peerManager";
 
 export const test = base.extend<{
   forAllTests: void;
-  stateDir: string;
-  sshAuthSock: string;
   app: App;
+  peerManager: PeerManager;
 }>({
   forAllTests: [
     async ({ context }, use) => {
@@ -24,23 +24,19 @@ export const test = base.extend<{
       });
 
       await use();
-
-      PeerRunner.killAllProcesses();
+      Process.killAllProcesses();
     },
     { scope: "test", auto: true },
   ],
   // eslint-disable-next-line no-empty-pattern
-  stateDir: async ({}, use, testInfo) => {
+  peerManager: async ({}, use, testInfo) => {
     const stateDir = await Support.prepareStateDir(
       testInfo.file,
       testInfo.title
     );
-    await use(stateDir);
-  },
-  // eslint-disable-next-line no-empty-pattern
-  sshAuthSock: async ({}, use) => {
-    const sshAuthSock = await Support.startSshAgent();
-    await use(sshAuthSock);
+    const peerManager = await createPeerManager({ dataPath: stateDir });
+    await use(peerManager);
+    await peerManager.teardown();
   },
   app: async ({ page }, use) => {
     await use(new App(page));

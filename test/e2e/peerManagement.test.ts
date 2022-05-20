@@ -6,15 +6,10 @@
 
 import { test, expect } from "test/support/playwright/fixtures";
 import * as Support from "test/support";
-import * as PeerRunner from "test/support/peerRunner";
 import { Page } from "@playwright/test";
 
-test("show our own peer", async ({ app, page, sshAuthSock, stateDir }) => {
-  const peer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "maintainer",
-    sshAuthSock: sshAuthSock,
-  });
+test("show our own peer", async ({ app, page, peerManager }) => {
+  const peer = await peerManager.startPeer({ name: "peer" });
   const projectName = "foo";
   await Support.createProject(peer, projectName);
 
@@ -29,25 +24,16 @@ test("show our own peer", async ({ app, page, sshAuthSock, stateDir }) => {
 test("add a new peer and peer input validation", async ({
   app,
   page,
-  sshAuthSock,
-  stateDir,
+  peerManager,
 }) => {
-  const maintainer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "maintainer",
-    sshAuthSock: sshAuthSock,
-  });
+  const maintainer = await peerManager.startPeer({ name: "maintainer" });
   const projectName = "foo";
   const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,
     projectName
   );
 
-  const contributor = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "contributor",
-    sshAuthSock: sshAuthSock,
-  });
+  const contributor = await peerManager.startPeer({ name: "contributor" });
 
   await Support.cloneProject(contributor, projectUrn, projectName);
 

@@ -6,21 +6,13 @@
 
 import { test, expect } from "test/support/playwright/fixtures";
 
-import * as PeerRunner from "test/support/peerRunner";
 import * as Support from "test/support";
+import { UpstreamPeer } from "test/support/peerManager";
 
-let peer: PeerRunner.UpstreamPeer;
+let peer: UpstreamPeer;
 
-test.beforeEach(async ({ page }, testInfo) => {
-  const stateDir = await Support.prepareStateDir(testInfo.file, testInfo.title);
-  const sshAuthSock = await Support.startSshAgent();
-
-  peer = await PeerRunner.UpstreamPeer.create({
-    dataPath: stateDir,
-    name: "peer",
-    sshAuthSock,
-  });
-  await peer.start();
+test.beforeEach(async ({ page, peerManager }) => {
+  peer = await peerManager.startPeer({ name: "peer" });
   await page.goto(peer.uiUrl);
 });
 

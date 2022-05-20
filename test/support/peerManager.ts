@@ -1,4 +1,4 @@
-// Copyright © 2021 The Radicle Upstream Contributors
+// Copyright © 2022 The Radicle Upstream Contributors
 //
 // This file is part of radicle-upstream, distributed under the GPLv3
 // with Radicle Linking Exception. For full terms see the included
@@ -6,10 +6,9 @@
 
 import type { Config } from "ui/src/config";
 
-import * as Crypto from "node:crypto";
-import * as ProxyClient from "proxy-client";
-import * as fs from "node:fs/promises";
-import * as path from "path";
+import * as Fs from "node:fs/promises";
+import * as Os from "node:os";
+import * as Path from "node:path";
 import EventSource from "eventsource";
 import execa from "execa";
 import fetch from "node-fetch";
@@ -17,27 +16,68 @@ import getPort from "get-port";
 import qs from "qs";
 import waitOn from "wait-on";
 
+import * as ProxyClient from "proxy-client";
+
 import * as Process from "./process";
+import { randomTag } from "../support";
 
-export { killAllProcesses } from "./process";
-
-const ROOT_PATH = path.join(__dirname, "..", "..");
+const ROOT_PATH = Path.join(__dirname, "..", "..");
 const CARGO_TARGET_DIR =
-  process.env.CARGO_TARGET_DIR ?? path.join(ROOT_PATH, "target");
-const BIN_PATH = path.join(CARGO_TARGET_DIR, "debug");
-const PATH = [BIN_PATH, process.env.PATH].join(path.delimiter);
+  process.env.CARGO_TARGET_DIR ?? Path.join(ROOT_PATH, "target");
+const BIN_PATH = Path.join(CARGO_TARGET_DIR, "debug");
+const PATH = [BIN_PATH, process.env.PATH].join(Path.delimiter);
 
 export const SEED_URL = "http://127.0.0.1:8778";
 export const UI_PORT = 30002;
 
-interface UpstreamPeerParams {
-  dataPath: string;
+interface StartPeerParams {
   // Name to quickly identify this peer.
   //
   // Used as a prefix for directories, as a prefix for the user
   // handle, and as a prefix for the console logs.
   name: string;
-  sshAuthSock?: string;
+  disableSshAgent?: boolean;
+}
+
+export interface PeerManager {
+  startPeer(params: StartPeerParams): Promise<UpstreamPeer>;
+  teardown(): Promise<void>;
+}
+
+export async function createPeerManager({
+  dataPath,
+}: {
+  dataPath: string;
+}): Promise<PeerManager> {
+  const { sshAuthSock, process: sshAgentProcess } = await startSshAgent();
+
+  const peers: UpstreamPeer[] = [];
+  return {
+    async startPeer(params: StartPeerParams): Promise<UpstreamPeer> {
+      const peer = await UpstreamPeer.create({
+        name: params.name,
+        dataPath,
+        sshAuthSock:
+          params.disableSshAgent === true ? "/dev/null" : sshAuthSock,
+      });
+      peers.push(peer);
+      await peer.start();
+      return peer;
+    },
+
+    async teardown(): Promise<void> {
+      for (const peer of peers) {
+        await peer.shutdown();
+      }
+      sshAgentProcess.kill("SIGKILL");
+    },
+  };
+}
+
+interface UpstreamPeerParams {
+  dataPath: string;
+  name: string;
+  sshAuthSock: string;
 }
 
 // Builds the `upstream-proxy` when this is run locally, we skip the build if
@@ -89,23 +129,23 @@ export class UpstreamPeer {
   public static async create({
     dataPath,
     name,
-    sshAuthSock = "/dev/null",
+    sshAuthSock,
   }: UpstreamPeerParams): Promise<UpstreamPeer> {
     const httpPort = await getPort();
     const httpSocketAddr = `127.0.0.1:${httpPort}`;
 
-    const checkoutPath = path.join(dataPath, `${name}-checkouts`);
-    await fs.mkdir(checkoutPath, { recursive: true });
+    const checkoutPath = Path.join(dataPath, `${name}-checkouts`);
+    await Fs.mkdir(checkoutPath, { recursive: true });
 
-    const lnkHome = path.join(dataPath, `${name}-lnk-home`);
-    await fs.mkdir(lnkHome, { recursive: true });
+    const lnkHome = Path.join(dataPath, `${name}-lnk-home`);
+    await Fs.mkdir(lnkHome, { recursive: true });
 
     // We need a random user handle so that the Radicle identity IDs
     // are different between runs
     const userHandle = `${name}-${randomTag()}`;
 
     const initResult = await execa(
-      path.join(BIN_PATH, "upstream-proxy-dev"),
+      Path.join(BIN_PATH, "upstream-proxy-dev"),
       ["--lnk-home", lnkHome, "init", userHandle, "--key-passphrase", "asdf"],
       { env: { SSH_AUTH_SOCK: sshAuthSock } }
     );
@@ -127,17 +167,6 @@ export class UpstreamPeer {
       sshAuthSock,
       userHandle,
     });
-  }
-
-  public static async createAndStart({
-    dataPath,
-    name,
-    sshAuthSock,
-  }: UpstreamPeerParams): Promise<UpstreamPeer> {
-    const peer = await this.create({ dataPath, name, sshAuthSock });
-    await peer.start();
-
-    return peer;
   }
 
   private constructor(props: {
@@ -167,7 +196,7 @@ export class UpstreamPeer {
       throw new Error("Tried to start a process that already was running.");
     }
 
-    const bin = path.join(BIN_PATH, "upstream-proxy");
+    const bin = Path.join(BIN_PATH, "upstream-proxy");
     const args = [
       "--http-listen",
       this.#httpSocketAddr,
@@ -190,16 +219,13 @@ export class UpstreamPeer {
     await waitOn({ resources: [`tcp:${this.#httpSocketAddr}`], timeout: 7000 });
   }
 
-  public async stop(): Promise<void> {
-    if (!this.#childProcess) {
-      throw new Error(
-        "Tried to run stopProxy() on a process that wasn't started."
-      );
+  public async shutdown(): Promise<void> {
+    if (this.#childProcess) {
+      // We send SIGKILL instead of SIGTERM so the proxy doest not do
+      // any cleanup and shuts down faster.
+      this.#childProcess.kill("SIGKILL");
+      this.#childProcess = undefined;
     }
-
-    this.#childProcess.kill("SIGTERM");
-    await this.#childProcess;
-    this.#childProcess = undefined;
   }
 
   // Spawn a process with an environment configured for this proxy
@@ -237,7 +263,17 @@ export class UpstreamPeer {
   }
 }
 
-// Generate string of 12 random characters with 8 bits of entropy.
-export function randomTag(): string {
-  return Crypto.randomBytes(8).toString("hex");
+async function startSshAgent(): Promise<{
+  sshAuthSock: string;
+  process: execa.ExecaChildProcess;
+}> {
+  // We’re not using the state directory because of the size limit on
+  // the socket path.
+  const dir = await Fs.mkdtemp(Path.join(Os.tmpdir(), "upstream-test"));
+  const sshAuthSock = Path.join(dir, "ssh-agent.sock");
+  const process = Process.spawn("ssh-agent", ["-D", "-a", sshAuthSock], {
+    stdio: "inherit",
+  });
+  await waitOn({ resources: [sshAuthSock], timeout: 5000 });
+  return { sshAuthSock, process };
 }

@@ -5,11 +5,11 @@
 // LICENSE file.
 
 import { FullConfig } from "@playwright/test";
-import * as PeerRunner from "test/support/peerRunner";
+import * as PeerManager from "test/support/peerManager";
 import * as Support from "test/support";
 
 export default async function globalSetup(_config: FullConfig): Promise<void> {
-  await PeerRunner.buildProxy();
+  await PeerManager.buildProxy();
   await Support.assertRadInstalled();
   await Support.assertGitServerRunning();
 }

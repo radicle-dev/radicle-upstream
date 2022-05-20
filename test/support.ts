@@ -4,15 +4,13 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as Os from "node:os";
+import * as Crypto from "node:crypto";
 import * as Fs from "node:fs/promises";
 import * as Path from "node:path";
 import execa from "execa";
-import waitOn from "wait-on";
 import Semver from "semver";
 
-import * as PeerRunner from "./support/peerRunner";
-import * as Process from "./support/process";
+import * as PeerManager from "./support/peerManager";
 import { retryOnError } from "ui/src/retryOnError";
 
 // Assert that the docker container with the test git-server is
@@ -68,18 +66,6 @@ export async function prepareStateDir(
   return stateDir;
 }
 
-export async function startSshAgent(): Promise<string> {
-  // We’re not using the state directory because of the size limit on
-  // the socket path.
-  const dir = await Fs.mkdtemp(Path.join(Os.tmpdir(), "upstream-test"));
-  const sshAuthSock = Path.join(dir, "ssh-agent.sock");
-  Process.spawn("ssh-agent", ["-D", "-a", sshAuthSock], {
-    stdio: "inherit",
-  });
-  await waitOn({ resources: [sshAuthSock], timeout: 5000 });
-  return sshAuthSock;
-}
-
 // Call `fn` until it does not throw an error and return the result. Re-throws
 // the error raised by `fn()` if it still fails after two seconds.
 export function retry<T>(fn: () => Promise<T>): Promise<T> {
@@ -88,7 +74,7 @@ export function retry<T>(fn: () => Promise<T>): Promise<T> {
 
 // Create a project using the rad CLI.
 export async function createProject(
-  proxy: PeerRunner.UpstreamPeer,
+  proxy: PeerManager.UpstreamPeer,
   name: string
 ): Promise<{ urn: string; checkoutPath: string }> {
   const checkoutPath = Path.join(proxy.checkoutPath, name);
@@ -114,7 +100,7 @@ export async function createProject(
 
   await proxy.spawn(
     "git",
-    ["config", "--add", "rad.seed", PeerRunner.SEED_URL],
+    ["config", "--add", "rad.seed", PeerManager.SEED_URL],
     {
       cwd: checkoutPath,
     }
@@ -126,7 +112,7 @@ export async function createProject(
 // Create and publish a project using the rad CLI and return the Project ID.
 // Wait until the proxy registers the seed for the project.
 export async function createAndPublishProject(
-  proxy: PeerRunner.UpstreamPeer,
+  proxy: PeerManager.UpstreamPeer,
   name: string
 ): Promise<{ urn: string; checkoutPath: string }> {
   const { urn, checkoutPath } = await createProject(proxy, name);
@@ -147,7 +133,7 @@ export async function createAndPublishProject(
 
 // Clone a project with the `rad` CLI and publish a branch
 export async function cloneProject(
-  peer: PeerRunner.UpstreamPeer,
+  peer: PeerManager.UpstreamPeer,
   projectId: string,
   projectName: string
 ): Promise<string> {
@@ -175,7 +161,7 @@ export async function cloneProject(
 export async function forkProject(
   projectId: string,
   projectName: string,
-  peer: PeerRunner.UpstreamPeer
+  peer: PeerManager.UpstreamPeer
 ): Promise<string> {
   const projectCheckoutPath = Path.join(peer.checkoutPath, projectName);
 
@@ -200,12 +186,12 @@ export async function forkProject(
 export async function createOrUpdatePatch(
   title: string,
   description: string,
-  peer: PeerRunner.UpstreamPeer,
+  peer: PeerManager.UpstreamPeer,
   projectCheckoutPath: string,
   commitMessage: string = "changes",
   branchName?: string
 ): Promise<string> {
-  const branchName_ = branchName || `patch-branch-${PeerRunner.randomTag()}`;
+  const branchName_ = branchName || `patch-branch-${randomTag()}`;
   const checkoutArgs = branchName ? [branchName_] : ["-b", branchName_];
 
   // Starting from the main branch allows us to create multiple
@@ -238,7 +224,7 @@ export async function createOrUpdatePatch(
 }
 
 export async function mergeOwnPatch(
-  peer: PeerRunner.UpstreamPeer,
+  peer: PeerManager.UpstreamPeer,
   projectCheckoutPath: string,
   branchName: string
 ): Promise<void> {
@@ -254,7 +240,7 @@ export async function mergeOwnPatch(
 }
 
 export async function mergePatch(
-  peer: PeerRunner.UpstreamPeer,
+  peer: PeerManager.UpstreamPeer,
   projectCheckoutPath: string,
   patchId: string
 ): Promise<void> {
@@ -270,4 +256,9 @@ export async function mergePatch(
   await peer.spawn("rad", ["push", "--seed", "127.0.0.1:8778"], {
     cwd: projectCheckoutPath,
   });
+}
+
+// Generate string of 12 random characters with 8 bits of entropy.
+export function randomTag(): string {
+  return Crypto.randomBytes(8).toString("hex");
 }

@@ -6,21 +6,15 @@
 
 import { test, expect } from "test/support/playwright/fixtures";
 import * as Support from "test/support";
-import * as PeerRunner from "test/support/peerRunner";
 import { App } from "test/support/playwright/fixtures/app";
 import { Locator } from "@playwright/test";
 
 test("show placeholder if there are no patches", async ({
   app,
   page,
-  sshAuthSock,
-  stateDir,
+  peerManager,
 }) => {
-  const peer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "maintainer",
-    sshAuthSock: sshAuthSock,
-  });
+  const peer = await peerManager.startPeer({ name: "maintainer" });
   const projectName = "foo";
   await Support.createProject(peer, projectName);
 
@@ -32,12 +26,8 @@ test("show placeholder if there are no patches", async ({
   );
 });
 
-test("annotated patches", async ({ app, page, sshAuthSock, stateDir }) => {
-  const peer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "maintainer",
-    sshAuthSock: sshAuthSock,
-  });
+test("annotated patches", async ({ app, page, peerManager }) => {
+  const peer = await peerManager.startPeer({ name: "maintainer" });
   const projectName = "foo";
   const { checkoutPath } = await Support.createProject(peer, projectName);
 
@@ -120,12 +110,8 @@ test("annotated patches", async ({ app, page, sshAuthSock, stateDir }) => {
   }
 });
 
-test("patch list reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
-  const peer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "maintainer",
-    sshAuthSock: sshAuthSock,
-  });
+test("patch list reactivity", async ({ app, page, peerManager }) => {
+  const peer = await peerManager.startPeer({ name: "maintainer" });
 
   await page.goto(peer.uiUrl);
 
@@ -189,12 +175,8 @@ test("patch list reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
   }
 });
 
-test("patch reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
-  const peer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "maintainer",
-    sshAuthSock: sshAuthSock,
-  });
+test("patch reactivity", async ({ app, page, peerManager }) => {
+  const peer = await peerManager.startPeer({ name: "maintainer" });
 
   await page.goto(peer.uiUrl);
 
@@ -248,31 +230,18 @@ test("patch reactivity", async ({ app, page, sshAuthSock, stateDir }) => {
   }
 });
 
-test("patch statuses", async ({ app, page, sshAuthSock, stateDir }) => {
+test("patch statuses", async ({ app, page, peerManager }) => {
   const patchActions = makePatchAction(app);
   test.setTimeout(60_000);
 
-  const maintainer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "maintainer",
-    sshAuthSock: sshAuthSock,
-  });
+  const maintainer = await peerManager.startPeer({ name: "maintainer" });
 
   const projectName = "foo";
   const { urn: projectUrn, checkoutPath } =
     await Support.createAndPublishProject(maintainer, projectName);
 
-  const contributor = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "contributor",
-    sshAuthSock: sshAuthSock,
-  });
-
-  const observer = await PeerRunner.UpstreamPeer.createAndStart({
-    dataPath: stateDir,
-    name: "observer",
-    sshAuthSock: sshAuthSock,
-  });
+  const contributor = await peerManager.startPeer({ name: "contributor" });
+  const observer = await peerManager.startPeer({ name: "observer" });
 
   const patchTitle = "Patch title";
 
