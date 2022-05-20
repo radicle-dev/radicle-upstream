@@ -11,7 +11,7 @@ const config: PlaywrightTestConfig = {
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : 1,
   use: {
-    trace: "on-first-retry",
+    trace: "retain-on-failure",
     actionTimeout: 5000,
   },
   globalSetup: require.resolve("test/support/playwright/globalSetup"),
