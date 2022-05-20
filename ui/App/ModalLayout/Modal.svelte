@@ -56,7 +56,7 @@
   }
 </style>
 
-<div class="container" data-cy={dataCy}>
+<div role="dialog" class="container" data-cy={dataCy} aria-label={title}>
   {#if emoji}
     <Emoji {emoji} size="huge" style="margin-bottom: 1rem;" />
   {/if}

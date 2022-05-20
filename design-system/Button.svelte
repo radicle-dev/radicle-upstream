@@ -23,6 +23,7 @@
   export let style: string | undefined = undefined;
   export let dataCy: string | undefined = undefined;
   export let title: string | undefined = undefined;
+  export let ariaLabel: string | undefined = undefined;
 
   $: buttonClass = [
     variant,
@@ -261,6 +262,7 @@
 
 <button
   data-cy={dataCy}
+  aria-label={ariaLabel}
   class="button typo-text-bold {buttonClass}"
   {title}
   {disabled}

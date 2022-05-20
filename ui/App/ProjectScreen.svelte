@@ -130,6 +130,7 @@
             on:select={onSelectPeer}
             selected={$store.data.selectedPeer} />
           <Button
+            ariaLabel="edit remote peers"
             dataCy="manage-remotes"
             icon={PenIcon}
             variant="outline"

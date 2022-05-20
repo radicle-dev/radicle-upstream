@@ -138,6 +138,8 @@
   on:hide={hide}
   style="position: relative; user-select: none;">
   <div
+    role="button"
+    aria-label="select peer"
     bind:clientWidth={dropdownWidth}
     class="peer-selector"
     class:button-transition={standalone}

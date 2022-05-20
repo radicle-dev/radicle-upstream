@@ -13,6 +13,8 @@ export class ProjectScreen {
   public patchCounter: Locator;
   public patchList: Locator;
   public patchPage: Locator;
+  public editRemotePeersButton: Locator;
+  public selectPeerButton: Locator;
 
   #page: Page;
   #hotkeys: Hotkeys;
@@ -27,6 +29,10 @@ export class ProjectScreen {
     this.commitPage = this.#page.locator("[data-cy=commit-page]");
     this.patchCounter = this.#page.locator(
       `[data-cy="patches-tab"] [data-cy="counter"]`
+    );
+    this.selectPeerButton = page.locator('role=button[name="select peer"]');
+    this.editRemotePeersButton = page.locator(
+      'role=button[name="edit remote peers"]'
     );
   }
 

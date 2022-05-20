@@ -21,7 +21,7 @@ interface Screen {
   selectedPeer: Project.User;
 }
 
-export const VALID_PEER_MATCH = /[1-9A-HJ-NP-Za-km-z]{54}/;
+export const VALID_PEER_MATCH = /^[1-9A-HJ-NP-Za-km-z]{54}$/;
 export const screenRemoteStore = remote.createStore<Screen>();
 export const store = screenRemoteStore.readable;
 

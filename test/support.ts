@@ -145,10 +145,33 @@ export async function createAndPublishProject(
   return { urn, checkoutPath };
 }
 
+// Clone a project with the `rad` CLI and publish a branch
+export async function cloneProject(
+  peer: PeerRunner.UpstreamPeer,
+  projectId: string,
+  projectName: string
+): Promise<string> {
+  const projectCheckoutPath = Path.join(peer.checkoutPath, projectName);
+
+  await peer.spawn("rad", ["clone", projectId, "--seed", "127.0.0.1:8778"], {
+    cwd: peer.checkoutPath,
+  });
+  // Publish the peer's default branch.
+  // See <https://github.com/radicle-dev/radicle-upstream/issues/2795>.
+  await peer.spawn("rad", ["push", "--seed", "127.0.0.1:8778"], {
+    cwd: projectCheckoutPath,
+  });
+  await peer.spawn("rad", ["sync", "--self", "--seed", "127.0.0.1:8778"], {
+    cwd: projectCheckoutPath,
+  });
+
+  return projectCheckoutPath;
+}
+
 // Fork a project by running the same commands as provided by the Fork button
 // in the UI.
 //
-// Return the project checkout path.
+// Requires the project to be replicated. Return the project checkout path.
 export async function forkProject(
   projectId: string,
   projectName: string,
