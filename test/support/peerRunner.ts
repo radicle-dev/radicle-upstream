@@ -11,14 +11,11 @@ import * as ProxyClient from "proxy-client";
 import * as fs from "node:fs/promises";
 import * as path from "path";
 import EventSource from "eventsource";
-import Polka from "polka";
-import Sirv from "sirv";
 import execa from "execa";
 import fetch from "node-fetch";
 import getPort from "get-port";
 import qs from "qs";
 import waitOn from "wait-on";
-import { Server } from "http";
 
 import * as Process from "./process";
 
@@ -31,6 +28,7 @@ const BIN_PATH = path.join(CARGO_TARGET_DIR, "debug");
 const PATH = [BIN_PATH, process.env.PATH].join(path.delimiter);
 
 export const SEED_URL = "http://127.0.0.1:8778";
+export const UI_PORT = 30002;
 
 interface UpstreamPeerParams {
   dataPath: string;
@@ -63,24 +61,6 @@ export async function buildProxy(): Promise<void> {
   clearTimeout(notifyTimeout);
 }
 
-export async function buildUi(): Promise<void> {
-  if (process.env.CI === "true") {
-    return;
-  }
-
-  // Because we’re using `--quiet` to build the proxy we want to show
-  // some progress to the user. But only after some initial delay so
-  // that we don’t show it when we don’t need to rebuild or the rebuild
-  // is quick.
-  const notifyTimeout = setTimeout(() => {
-    console.log("Building UI…");
-  }, 3000);
-  await execa("webpack", ["build", "--config-name", "ui", "--progress"], {
-    stdio: "inherit",
-  });
-  clearTimeout(notifyTimeout);
-}
-
 export class UpstreamPeer {
   public checkoutPath: string;
   public peerId: string;
@@ -92,15 +72,18 @@ export class UpstreamPeer {
   #lnkHome: string;
   #name: string;
   #sshAuthSock: string;
-  #uiServer?: Server;
-  #uiUrl?: string;
 
   public get uiUrl(): string {
-    if (this.#uiUrl) {
-      return this.#uiUrl;
-    } else {
-      throw new Error("Trying to access UI before it is started.");
-    }
+    const uiConfig: Config = {
+      proxyAddress: this.#httpSocketAddr,
+      isDev: true,
+    };
+
+    const query = qs.stringify({
+      config: JSON.stringify(uiConfig),
+    });
+
+    return `http://127.0.0.1:${UI_PORT}/?${query}`;
   }
 
   public static async create({
@@ -179,7 +162,7 @@ export class UpstreamPeer {
     this.#sshAuthSock = props.sshAuthSock;
   }
 
-  public async startProxy(): Promise<void> {
+  public async start(): Promise<void> {
     if (this.#childProcess) {
       throw new Error("Tried to start a process that already was running.");
     }
@@ -207,7 +190,7 @@ export class UpstreamPeer {
     await waitOn({ resources: [`tcp:${this.#httpSocketAddr}`], timeout: 7000 });
   }
 
-  public async stopProxy(): Promise<void> {
+  public async stop(): Promise<void> {
     if (!this.#childProcess) {
       throw new Error(
         "Tried to run stopProxy() on a process that wasn't started."
@@ -217,66 +200,6 @@ export class UpstreamPeer {
     this.#childProcess.kill("SIGTERM");
     await this.#childProcess;
     this.#childProcess = undefined;
-  }
-
-  private async startUi(): Promise<void> {
-    const uiPort = (await getPort()).toString();
-
-    const uiConfig: Config = {
-      proxyAddress: this.#httpSocketAddr,
-      isDev: true,
-    };
-
-    const query = qs.stringify({
-      config: JSON.stringify(uiConfig),
-    });
-
-    this.#uiUrl = `http://127.0.0.1:${uiPort}/?${query}`;
-
-    const polka = Polka().use(Sirv("public"));
-
-    await new Promise<void>((resolve, reject) => {
-      polka.listen(uiPort, (err: unknown) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-
-    console.log(`UI ready at ${this.#uiUrl}`);
-    this.#uiServer = polka.server;
-  }
-
-  private async stopUi(): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-      if (this.#uiServer) {
-        this.#uiServer.close(err => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      } else {
-        reject(
-          new Error("Tried to run stopUi() on a process that wasn't started.")
-        );
-      }
-    });
-
-    this.#uiServer = undefined;
-  }
-
-  public async start(): Promise<void> {
-    await this.startProxy();
-    await this.startUi();
-  }
-
-  public async stop(): Promise<void> {
-    await this.stopUi();
-    await this.stopProxy();
   }
 
   // Spawn a process with an environment configured for this proxy

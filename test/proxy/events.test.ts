@@ -36,14 +36,14 @@ test("event log replication", async () => {
     name: "maintainer",
     sshAuthSock,
   });
-  await maintainer.startProxy();
+  await maintainer.start();
 
   const contributor = await PeerRunner.UpstreamPeer.create({
     dataPath: stateDir,
     name: "contributor",
     sshAuthSock,
   });
-  await contributor.startProxy();
+  await contributor.start();
 
   const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,

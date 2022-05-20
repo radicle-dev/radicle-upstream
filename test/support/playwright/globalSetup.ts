@@ -8,11 +8,8 @@ import { FullConfig } from "@playwright/test";
 import * as PeerRunner from "test/support/peerRunner";
 import * as Support from "test/support";
 
-async function globalSetup(_config: FullConfig): Promise<void> {
+export default async function globalSetup(_config: FullConfig): Promise<void> {
   await PeerRunner.buildProxy();
-  await PeerRunner.buildUi();
   await Support.assertRadInstalled();
   await Support.assertGitServerRunning();
 }
-
-export default globalSetup;

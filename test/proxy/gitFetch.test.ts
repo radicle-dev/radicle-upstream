@@ -36,7 +36,7 @@ test("contributor follows", async () => {
     name: "maintainer",
     sshAuthSock,
   });
-  await maintainer.startProxy();
+  await maintainer.start();
 
   const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,
@@ -49,7 +49,7 @@ test("contributor follows", async () => {
     sshAuthSock,
   });
 
-  await contributor.startProxy();
+  await contributor.start();
 
   const projectUpdated = contributor.proxyClient
     .events()
@@ -82,7 +82,7 @@ test("contributor patch replication", async () => {
     name: "maintainer",
     sshAuthSock,
   });
-  await maintainer.startProxy();
+  await maintainer.start();
 
   const { urn: projectUrn } = await Support.createAndPublishProject(
     maintainer,
@@ -94,7 +94,7 @@ test("contributor patch replication", async () => {
     sshAuthSock,
   });
 
-  await contributor.startProxy();
+  await contributor.start();
 
   const contributorProjectPath = Path.join(contributor.checkoutPath, "foo");
   await contributor.spawn(

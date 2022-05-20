@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import { PlaywrightTestConfig, devices } from "@playwright/test";
+import { UI_PORT } from "./test/support/peerRunner";
 
 const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,
@@ -15,6 +16,10 @@ const config: PlaywrightTestConfig = {
     actionTimeout: 5000,
   },
   globalSetup: require.resolve("test/support/playwright/globalSetup"),
+  webServer: {
+    port: UI_PORT,
+    command: `webpack serve --open --config-name ui --no-live-reload --port ${UI_PORT} --no-open`,
+  },
   testDir: "test/e2e",
   projects: [
     {
