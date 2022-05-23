@@ -13,6 +13,7 @@ proxy/**/target
 proxy/**/*.rs.bk
 /target
 /test/**/*--state
+/test-results
 sandbox
 .yarn/*
 !.yarn/patches
