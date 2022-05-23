@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import { Page, Locator } from "@playwright/test";
+import * as IpcTypes from "native/ipc-types";
 
 import { Hotkeys } from "./hotkeys";
 import { ProjectScreen } from "./projectScreen";
@@ -43,5 +44,19 @@ export class App {
       .locator('role=navigation[name="main"]')
       .locator('role=button[name="Settings"]')
       .click();
+  }
+
+  public async openRadicleUrl(url: string): Promise<void> {
+    await this.#page.evaluate(
+      message => {
+        window.electronMainProcessStubs.sendMessage(message);
+      },
+      {
+        kind: IpcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+        data: {
+          url,
+        },
+      } as IpcTypes.MainMessage
+    );
   }
 }

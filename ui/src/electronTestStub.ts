@@ -4,14 +4,17 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { MainProcess } from "native/ipc-types";
+import type { MainProcess, MainMessage } from "native/ipc-types";
 import * as Sinon from "sinon";
+import * as Bacon from "baconjs";
 
 declare global {
   interface Window {
     electronMainProcessStubs: typeof mainProcessStubs;
   }
 }
+
+const messageBus = new Bacon.Bus<MainMessage>();
 
 const mainProcessStubs = {
   getVersion: () => Promise.resolve("v1.2.3"),
@@ -22,6 +25,9 @@ const mainProcessStubs = {
   checkRadCliVersion: () => Promise.resolve("0.4.0"),
   getGitGlobalDefaultBranch: () => Promise.resolve("trunk"),
   clipboardWriteText: Sinon.spy((_text: string) => Promise.resolve()),
+  sendMessage(message: MainMessage) {
+    messageBus.push(message);
+  },
 };
 
 // Ensure that we implement the `MainProcess` interface with type
@@ -37,6 +43,11 @@ window.electron = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (mainProcessStubs as any)[cmd](args);
     },
-    on: (_event, _handle) => {},
+    on: (event: string, handle) => {
+      if (event !== "message") {
+        throw new Error(`Invalid electron event ${event}`);
+      }
+      messageBus.onValue(message => handle(event, message));
+    },
   },
 };

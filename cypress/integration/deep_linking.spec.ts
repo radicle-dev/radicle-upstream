@@ -82,39 +82,4 @@ context("deep linking", () => {
       });
     });
   });
-
-  context("when passing in a valid project url", () => {
-    it("opens the search modal and pre-fills the input field with the Project ID", () => {
-      ipcStub.getStubs().then(stubs => {
-        stubs.sendMessage({
-          kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-          data: {
-            url: "radicle://link/v0/rad:git:hnrkjm5z3rwae9g3n6jhyo6kzh9eup5ku5odo",
-          },
-        });
-      });
-
-      commands
-        .pick("search-modal", "search-input")
-        .should("have.value", "rad:git:hnrkjm5z3rwae9g3n6jhyo6kzh9eup5ku5odo");
-      commands.pick("search-modal", "track-toggle").should("contain", "Track");
-    });
-  });
-
-  context("when passing in an invalid url", () => {
-    it("shows an error notification", () => {
-      ipcStub.getStubs().then(stubs => {
-        stubs.sendMessage({
-          kind: ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-          data: {
-            url: "radicle://THIS_IS_NOT_A_VALID_URN",
-          },
-        });
-      });
-
-      commands
-        .pick("notification")
-        .should("contain", "Could not parse the provided URL");
-    });
-  });
 });

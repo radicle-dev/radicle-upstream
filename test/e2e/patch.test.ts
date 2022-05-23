@@ -246,6 +246,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
   const patchTitle = "Patch title";
 
   let branchName: string;
+  let patchUrl: string;
   // Contributor tracks and forks the project, then creates a patch.
   {
     await page.goto(contributor.uiUrl);
@@ -267,6 +268,13 @@ test("patch statuses", async ({ app, page, peerManager }) => {
     await app.goToProjectByName(projectName);
     await app.projectScreen.goToPatchesTab();
     await app.projectScreen.goToPatchByTitle(patchTitle);
+
+    await page
+      .locator('role=button[name="Copy patch URL to clipboard"]')
+      .click();
+    patchUrl = await page.evaluate(() => {
+      return window.electronMainProcessStubs.clipboardWriteText.args[0][0];
+    });
 
     await expect(patchActions.mergeButton).toBeHidden();
     await expect(patchActions.closeButton).toBeVisible();
@@ -291,8 +299,8 @@ test("patch statuses", async ({ app, page, peerManager }) => {
     await app.goToProjectByName(projectName);
     await app.projectScreen.addRemotes([contributor.peerId]);
 
-    await app.projectScreen.goToPatchesTab();
-    await app.projectScreen.goToPatchByTitle(patchTitle);
+    await app.openRadicleUrl(patchUrl);
+    await page.pause();
 
     await expect(patchActions.mergeButton).toBeVisible();
     await expect(patchActions.closeButton).toBeVisible();

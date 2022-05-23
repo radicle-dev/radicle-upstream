@@ -173,7 +173,11 @@
   }
 </style>
 
-<div class="container" data-cy="search-modal">
+<div
+  role="dialog"
+  aria-label="Search for project"
+  class="container"
+  data-cy="search-modal">
   <div class="search-bar">
     <MagnifyingGlassIcon style="margin-left: 0.5rem;" />
     <TextInput
