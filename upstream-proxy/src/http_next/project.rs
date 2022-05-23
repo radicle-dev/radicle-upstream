@@ -8,13 +8,11 @@ use anyhow::Context as _;
 use axum::extract::Path;
 
 /// Provides the following endpoints:
-/// * `GET /projects-v2/:urn/patches/:patch_id/events`
-/// * `PUT /projects-v2/:urn/patches/:patch_id/events`
+/// * `GET /projects/:urn/patches/:patch_id/events`
+/// * `PUT /projects/:urn/patches/:patch_id/events`
 pub fn router() -> axum::Router {
     axum::Router::new().route(
-        // TODO change the prefix to just `/projects` once we figure out how to make this
-        // compatible with the old warp routes.
-        "/projects-v2/:urn/events/:topic",
+        "/projects/:urn/events/:topic",
         axum::routing::get(get_event).put(publish_event),
     )
 }

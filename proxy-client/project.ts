@@ -244,7 +244,7 @@ export class Client {
     return this.fetcher.fetchOk(
       {
         method: "GET",
-        path: `projects/requests/`,
+        path: `projects/requests`,
       },
       zod.array(requestSchema)
     );
@@ -322,7 +322,7 @@ export class Client {
   ): Promise<void> {
     return this.fetcher.fetchOkNoContent({
       method: "PUT",
-      path: `projects-v2/${projectUrn}/events/${encodeURIComponent(topic)}`,
+      path: `projects/${projectUrn}/events/${encodeURIComponent(topic)}`,
       body: event,
     });
   }
@@ -334,7 +334,7 @@ export class Client {
     return this.fetcher.fetchOk(
       {
         method: "GET",
-        path: `projects-v2/${projectUrn}/events/${encodeURIComponent(topic)}`,
+        path: `projects/${projectUrn}/events/${encodeURIComponent(topic)}`,
       },
       zod.array(eventEnvelopeSchema)
     );
