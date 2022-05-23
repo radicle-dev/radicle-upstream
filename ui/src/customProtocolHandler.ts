@@ -30,7 +30,7 @@ function showError(url: string) {
   );
 }
 
-const LINK_URI_PREFIX = "radicle://link/v0/";
+export const LINK_URI_PREFIX = "radicle://link/v0/";
 
 function handleMessage(message: ipc.CustomProtocolInvocation): void {
   const route = router.uriToRoute(message.url);

@@ -15,6 +15,7 @@
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
   import * as router from "ui/src/router";
+  import { LINK_URI_PREFIX } from "ui/src/customProtocolHandler";
 
   import { isContributor } from "ui/src/project";
   import {
@@ -25,8 +26,9 @@
   } from "ui/src/screen/project";
 
   import Button from "design-system/Button.svelte";
-  import PenIcon from "design-system/icons/Pen.svelte";
   import GlobeIcon from "design-system/icons/Globe.svelte";
+  import LinkIcon from "design-system/icons/Link.svelte";
+  import PenIcon from "design-system/icons/Pen.svelte";
   import ThreeDotsMenu, { MenuItem } from "design-system/ThreeDotsMenu.svelte";
 
   import ScreenLayout from "ui/App/ScreenLayout.svelte";
@@ -70,32 +72,44 @@
   let peerSelectorExpanded: boolean = false;
 
   function menuItems(project: Project): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        title: "Copy link",
+        icon: LinkIcon,
+        event: () => {
+          ipc.copyToClipboard(`${LINK_URI_PREFIX}${project.urn}`);
+          notification.show({
+            type: "info",
+            message: "Shareable link copied to your clipboard",
+          });
+        },
+      },
+    ];
+
     if (project.seed) {
       const seedUrl = new URL(project.seed);
-      return [
-        {
-          title: "View in browser",
-          icon: GlobeIcon,
-          disabled: false,
-          tooltip: undefined,
-          event: () => {
-            ipc.openUrl(
-              `https://app.radicle.network/seeds/${seedUrl.hostname}/${project.urn}`
-            );
-          },
+      items.push({
+        title: "View in browser",
+        icon: GlobeIcon,
+        disabled: false,
+        tooltip: undefined,
+        event: () => {
+          ipc.openUrl(
+            `https://app.radicle.network/seeds/${seedUrl.hostname}/${project.urn}`
+          );
         },
-      ];
+      });
     } else {
-      return [
-        {
-          title: "View in browser",
-          icon: GlobeIcon,
-          disabled: true,
-          tooltip: "This project isn’t on a seed yet",
-          event: () => {},
-        },
-      ];
+      items.push({
+        title: "View in browser",
+        icon: GlobeIcon,
+        disabled: true,
+        tooltip: "This project isn’t on a seed yet",
+        event: () => {},
+      });
     }
+
+    return items;
   }
 </script>
 
