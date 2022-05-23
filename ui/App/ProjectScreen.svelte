@@ -108,8 +108,6 @@
         urn={$store.data.project.urn}
         name={$store.data.project.metadata.name}
         description={$store.data.project.metadata.description}
-        stats={$store.data.project.stats}
-        latestAnchorTimestamp={anchors.slice(-1)[0]?.timestamp}
         onClick={() =>
           router.push({
             type: "project",
