@@ -1,8 +1,55 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See
-[standard-version](https://github.com/conventional-changelog/standard-version)
-for commit guidelines.
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## [0.3.1](https://github.com/radicle-dev/radicle-upstream/compare/v0.3.0...v0.3.1) (2022-05-24)
+
+### 💡 General Notes
+
+This release has been primarily focused on **improving the usefulness of our
+patches.** We know that the patches functionality is a core piece of how teams
+collaborate using the Radicle platform, and this release adds **patch
+statuses** to allow your team members to easily manage the various patches
+within your project.
+
+Be sure to check out our [new onboarding docs](https://docs.radicle.xyz/getting-started)
+that explain how to get set up using Radicle for your project!
+
+### 🎉 Notable Changes
+
+#### Patch statuses implementation
+
+Previously, the only way for you to close a patch is by merging it into your
+branch. Now obviously this results in a bunch of statuses that remain open if
+you don’t merge it for any reason (as we’ve painfully experienced ourselves).
+Now **both project delegates and patch creators will be able to manually close
+patches on their projects**. This means that project delegates can go into each
+patch and close them out. Patch creators can also view their own created patch
+and do the same. Time to finally clean out your open patches!
+
+#### UI/UX Improvements
+
+Along with the upgrade to patches mentioned above, we’ve made some **additional
+improvements to the UI**, allowing you to view the number of patches for each
+status (Open, Merged, Closed and All).  You’ll also notice that the actions you
+can take for patches (such as creating a patch, checking out, and merging a
+patch) only show when it makes sense within the context.
+
+Further, we’ve made some additional improvements to our design system, allowing
+our teams to deliver cohesive features for you faster.
+
+#### Onboarding bug fixes
+
+In our previous release, we built a helpful onboarding flow that helps check
+dependencies in your system to ensure that your environment is ready to go. In
+this release, we’ve fixed a few additional bugs in that flow, specifically
+around `git` detection. Our goal is to ensure that no one has any issues
+installing and using Upstream.
+
+If you come across any issues at all, please feel free to reach out to us in
+our [Discord support channel](https://discordapp.com/channels/841318878125490186/841342872082579466)
+and we’ll make sure we address them!
+
 
 ## [0.3.0](https://github.com/radicle-dev/radicle-upstream/compare/v0.2.14...v0.3.0) (2022-04-18)
 
