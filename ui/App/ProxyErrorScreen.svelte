@@ -98,7 +98,7 @@
 
 {#if $fatalError !== null}
   <div class="container">
-    <div class="content" data-cy="blue-screen-of-death">
+    <div class="content">
       <Emoji emoji="🧻" size="huge" style="margin-bottom: 1.5rem;" />
       <p style="width: 321px; text-align: center">
         {#if $fatalError.kind === "SESSION"}
@@ -115,11 +115,10 @@
       </Button>
       {#if $fatalError.kind === "PROXY_EXIT" && $fatalError.data.output}
         <div class="proxy-log-container">
-          <code data-cy="proxy-log" class="proxy-log typo-mono-bold">
+          <code class="proxy-log typo-mono-bold">
             {$fatalError.data.output}
           </code>
           <Button
-            dataCy="proxy-log-copy-clipboard"
             style="position: sticky; bottom: 0; margin-left: auto;"
             on:click={() => copyToClipboard($fatalError.data.output)}
             icon={copyIcon}>

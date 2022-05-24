@@ -54,7 +54,7 @@
   import ProjectScreen from "ui/App/ProjectScreen.svelte";
   import SettingsScreen from "ui/App/SettingsScreen.svelte";
   import SingleSigOrgScreen from "ui/App/SingleSigOrgScreen.svelte";
-  import UnrecoverableErrorScreen from "ui/App/UnrecoverableErrorScreen.svelte";
+  import ProxyErrorScreen from "ui/App/ProxyErrorScreen.svelte";
   import UserProfileScreen from "ui/App/UserProfileScreen.svelte";
   import WalletScreen from "ui/App/WalletScreen.svelte";
 
@@ -197,7 +197,7 @@
   }
 </style>
 
-<UnrecoverableErrorScreen />
+<ProxyErrorScreen />
 <Hotkeys />
 <ModalLayout />
 <Notifications />

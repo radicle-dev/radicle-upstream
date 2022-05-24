@@ -49,17 +49,20 @@ export class App {
       .click();
   }
 
+  public async sendElectronMessage(
+    message: IpcTypes.MainMessage
+  ): Promise<void> {
+    await this.#page.evaluate(message => {
+      window.electronMainProcessStubs.sendMessage(message);
+    }, message);
+  }
+
   public async openRadicleUrl(url: string): Promise<void> {
-    await this.#page.evaluate(
-      message => {
-        window.electronMainProcessStubs.sendMessage(message);
+    await this.sendElectronMessage({
+      kind: IpcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
+      data: {
+        url,
       },
-      {
-        kind: IpcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION,
-        data: {
-          url,
-        },
-      } as IpcTypes.MainMessage
-    );
+    });
   }
 }
