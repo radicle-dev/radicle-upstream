@@ -33,9 +33,20 @@ jobs:
             ./target/*/.fingerprint
           key: build-${{ runner.os }}-rust-v9-${{ hashFiles('Cargo.lock', 'rust-toolchain') }}
       - run: ci/build.sh
+      - name: Cleanup artifacts
+        if: always()
+        run: |
+          if [[ "${RUNNER_OS:-}" == "Linux" ]]; then
+              shopt -s globstar
+              # The git-platinum repository contains paths that
+              # contain a colon (:). These paths cannot be uploaded as
+              # artifacts
+              rm -rf test/e2e/**-state/**/*-checkouts/git-platinum
+          fi
       - uses: actions/upload-artifact@v2
         if: always()
         with:
           name: test-logs-${{ runner.os }}
           path: |
             test-results/**/*.zip
+            test/e2e/*--state/**

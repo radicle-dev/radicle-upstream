@@ -4,6 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import * as Stream from "node:stream";
 import execa from "execa";
 import chalk, { Color } from "chalk";
 import { StringDecoder } from "string_decoder";
@@ -49,21 +50,21 @@ export function spawn(
   return child;
 }
 
-// Forwards piped `stdout` and `stderr` of a child process to this
-// process’s `stdout` and prefixes it with the given label. The prefix
-// is colored.
+// Forwards piped `stdout` and `stderr` of a child process to `output`
+// and prefixes it with the given label. The prefix is colored.
 export function prefixOutput(
   childProcess: execa.ExecaChildProcess,
-  label: string
+  label: string,
+  output: Stream.Writable
 ): execa.ExecaChildProcess {
   const pref = makePrefix(label);
   if (childProcess.stdout) {
     const stdoutPrefix = new LinePrefix(pref);
-    childProcess.stdout.pipe(stdoutPrefix).pipe(process.stdout);
+    childProcess.stdout.pipe(stdoutPrefix).pipe(output, { end: false });
   }
   if (childProcess.stderr) {
     const stderrPrefix = new LinePrefix(pref);
-    childProcess.stderr.pipe(stderrPrefix).pipe(process.stderr);
+    childProcess.stderr.pipe(stderrPrefix).pipe(output, { end: false });
   }
 
   return childProcess;

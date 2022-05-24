@@ -4,6 +4,9 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import * as Fs from "node:fs/promises";
+import * as Path from "node:path";
+import * as Stream from "node:stream";
 import { test as base } from "@playwright/test";
 
 import * as Process from "test/support/process";
@@ -14,10 +17,12 @@ import { createPeerManager, PeerManager } from "../peerManager";
 export const test = base.extend<{
   forAllTests: void;
   app: App;
+  outputLog: Stream.Writable;
+  stateDir: string;
   peerManager: PeerManager;
 }>({
   forAllTests: [
-    async ({ page }, use) => {
+    async ({ page, outputLog }, use) => {
       page.on("console", msg => {
         if (
           // Ignore messages resulting from 404 responses
@@ -31,7 +36,11 @@ export const test = base.extend<{
 
         // The prefix is chosen so that it lines up with the prefix of
         // the stdout of the proxy processes.
-        console.log(prefixLines("browser      |  ", msg.text()));
+        const output = prefixLines("browser      |  ", msg.text());
+        outputLog.write(`${output}\n`);
+        if (!process.env.CI) {
+          console.log(output);
+        }
       });
 
       page.addInitScript(() => {
@@ -44,19 +53,34 @@ export const test = base.extend<{
       });
 
       await use();
-      Process.killAllProcesses();
     },
     { scope: "test", auto: true },
   ],
-  peerManager: async ({ page }, use, testInfo) => {
+  // eslint-disable-next-line no-empty-pattern
+  stateDir: async ({}, use, testInfo) => {
     const stateDir = await Support.prepareStateDir(
       testInfo.file,
       testInfo.title
     );
-    const peerManager = await createPeerManager({ dataPath: stateDir });
+    await use(stateDir);
+    if (process.env.CI && testInfo.status === "passed") {
+      await Fs.rm(stateDir, { recursive: true });
+    }
+  },
+  outputLog: async ({ stateDir }, use) => {
+    const logFile = await Fs.open(Path.join(stateDir, "test.log"), "a");
+    await use(logFile.createWriteStream());
+    await logFile.close();
+  },
+  peerManager: async ({ page, stateDir, outputLog }, use) => {
+    const peerManager = await createPeerManager({
+      dataPath: stateDir,
+      outputLog: outputLog,
+    });
     await use(peerManager);
     await page.close();
     await peerManager.teardown();
+    Process.killAllProcesses();
   },
   app: async ({ page }, use) => {
     await use(new App(page));

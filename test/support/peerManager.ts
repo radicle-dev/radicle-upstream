@@ -9,6 +9,7 @@ import type { Config } from "ui/src/config";
 import * as Fs from "node:fs/promises";
 import * as Os from "node:os";
 import * as Path from "node:path";
+import * as Stream from "node:stream";
 import EventSource from "eventsource";
 import execa from "execa";
 import fetch from "node-fetch";
@@ -44,19 +45,31 @@ export interface PeerManager {
   teardown(): Promise<void>;
 }
 
-export async function createPeerManager({
-  dataPath,
-}: {
+export async function createPeerManager(createParams: {
   dataPath: string;
+  outputLog?: Stream.Writable;
 }): Promise<PeerManager> {
   const { sshAuthSock, process: sshAgentProcess } = await startSshAgent();
+
+  let outputLog: Stream.Writable;
+  let outputLogFile: Fs.FileHandle;
+  if (createParams.outputLog) {
+    outputLog = createParams.outputLog;
+  } else {
+    outputLogFile = await Fs.open(
+      Path.join(createParams.dataPath, "peer-manager.log"),
+      "a"
+    );
+    outputLog = outputLogFile.createWriteStream();
+  }
 
   const peers: UpstreamPeer[] = [];
   return {
     async startPeer(params: StartPeerParams): Promise<UpstreamPeer> {
       const peer = await UpstreamPeer.create({
         name: params.name,
-        dataPath,
+        dataPath: createParams.dataPath,
+        outputLog,
         sshAuthSock:
           params.disableSshAgent === true ? "/dev/null" : sshAuthSock,
       });
@@ -70,6 +83,9 @@ export async function createPeerManager({
         await peer.shutdown();
       }
       sshAgentProcess.kill("SIGKILL");
+      if (outputLogFile) {
+        await outputLogFile.close();
+      }
     },
   };
 }
@@ -78,6 +94,7 @@ interface UpstreamPeerParams {
   dataPath: string;
   name: string;
   sshAuthSock: string;
+  outputLog: Stream.Writable;
 }
 
 // Builds the `upstream-proxy` when this is run locally, we skip the build if
@@ -112,6 +129,7 @@ export class UpstreamPeer {
   #lnkHome: string;
   #name: string;
   #sshAuthSock: string;
+  #outputLog: Stream.Writable;
 
   public uiUrl(config: { fakeClock?: boolean } = {}): string {
     const uiConfig: Partial<Config> = {
@@ -132,6 +150,7 @@ export class UpstreamPeer {
     dataPath,
     name,
     sshAuthSock,
+    outputLog: logFile,
   }: UpstreamPeerParams): Promise<UpstreamPeer> {
     const httpPort = await getPort();
     const httpSocketAddr = `127.0.0.1:${httpPort}`;
@@ -168,6 +187,7 @@ export class UpstreamPeer {
       httpSocketAddr,
       sshAuthSock,
       userHandle,
+      logFile,
     });
   }
 
@@ -181,6 +201,7 @@ export class UpstreamPeer {
     name: string;
     sshAuthSock: string;
     userHandle: string;
+    logFile: Stream.Writable;
   }) {
     this.checkoutPath = props.checkoutPath;
     this.peerId = props.peerId;
@@ -191,6 +212,7 @@ export class UpstreamPeer {
     this.#lnkHome = props.lnkHome;
     this.#name = props.name;
     this.#sshAuthSock = props.sshAuthSock;
+    this.#outputLog = props.logFile;
   }
 
   public async start(): Promise<void> {
@@ -216,7 +238,10 @@ export class UpstreamPeer {
 
     this.#childProcess = Process.spawn(bin, args, { env });
 
-    Process.prefixOutput(this.#childProcess, this.#name);
+    Process.prefixOutput(this.#childProcess, this.#name, this.#outputLog);
+    if (!process.env.CI) {
+      Process.prefixOutput(this.#childProcess, this.#name, process.stdout);
+    }
 
     await waitOn({ resources: [`tcp:${this.#httpSocketAddr}`], timeout: 7000 });
   }
@@ -258,10 +283,16 @@ export class UpstreamPeer {
         ...opts.env,
       },
     };
-    return Process.prefixOutput(
-      Process.spawn(cmd, args, opts),
-      `${this.#name}-shell`
-    );
+    const childProcess = Process.spawn(cmd, args, opts);
+
+    const prefix = `${this.#name}-shell`;
+
+    Process.prefixOutput(childProcess, prefix, this.#outputLog);
+    if (!process.env.CI) {
+      Process.prefixOutput(childProcess, prefix, process.stdout);
+    }
+
+    return childProcess;
   }
 }
 
