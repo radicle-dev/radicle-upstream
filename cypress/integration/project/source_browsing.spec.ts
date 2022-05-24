@@ -21,12 +21,6 @@ context("project source browsing", () => {
   context("repository stats", () => {
     it("shows the correct numbers", () => {
       commands
-        .pickWithContent(["header", "project-stats"], "2 Branches")
-        .should("exist");
-      commands
-        .pickWithContent(["header", "project-stats"], "4 Contributors")
-        .should("exist");
-      commands
         .pickWithContent(["tab-bar", "commits-tab", "counter"], "15")
         .should("exist");
     });
