@@ -13,6 +13,16 @@
 
   const timesShownStore = notification.timesShownStore;
   let actionClicked = false;
+
+  function role(): "alert" | "status" {
+    switch (notification.type) {
+      case "error":
+        return "alert";
+      case "info":
+      case "primary":
+        return "status";
+    }
+  }
 </script>
 
 <style>
@@ -72,6 +82,7 @@
 </style>
 
 <div
+  role={role()}
   on:mouseenter={() => {
     Notification.removeHideTimer(notification);
   }}

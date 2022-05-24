@@ -32,64 +32,6 @@ context("settings", () => {
       });
     });
 
-    it("checks for new version only if enabled", () => {
-      const request = cy.spy((req: CyHttpMessages.IncomingHttpRequest) => {
-        req.reply({
-          statusCode: 200,
-          body: JSON.stringify({
-            version: NEW_VERSION,
-            announcementUrl: "ANNOUNCEMENT_URL",
-          }),
-        });
-      });
-
-      cy.intercept("https://releases.radicle.xyz/latest.json", request).as(
-        "fetchVersion"
-      );
-
-      // Stops advancing the clock
-      cy.clock(Date.now(), ["setInterval", "Date"]);
-
-      cy.visit("public/index.html");
-
-      commands
-        .pickWithContent(
-          ["notification"],
-          "Want to check for new versions automatically?"
-        )
-        .contains(".action", "Go to settings")
-        .click();
-
-      commands.pick("version").find("button[value='on']").click();
-
-      cy.wait("@fetchVersion").then(() => {
-        cy.tick(VERSION_CHECK_INTERVAL + 100);
-      });
-      cy.wait("@fetchVersion").then(() => {
-        assert.equal(request.callCount, 2);
-      });
-
-      commands
-        .pickWithContent(
-          ["notification-action"],
-          `Check out Version ${NEW_VERSION}`
-        )
-        .click();
-
-      ipcStub.getStubs().then(stubs => {
-        assert.deepEqual(stubs.openUrl.args, [["ANNOUNCEMENT_URL"]]);
-      });
-
-      commands
-        .pick("version")
-        .find("button[value='off']")
-        .click()
-        .then(() => {
-          cy.tick(2 * VERSION_CHECK_INTERVAL);
-          assert.equal(request.callCount, 2);
-        });
-    });
-
     it("shows button if a new version becomes available", () => {
       const versionData = {
         version: "v1.2.3",
