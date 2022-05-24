@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import * as path from "path";
 import { test as base } from "@playwright/test";
 
 import * as Process from "test/support/process";
@@ -18,10 +17,7 @@ export const test = base.extend<{
   peerManager: PeerManager;
 }>({
   forAllTests: [
-    async ({ context, page }, use) => {
-      await context.addInitScript({
-        path: path.join(__dirname, "ipcStub.js"),
-      });
+    async ({ page }, use) => {
       page.on("console", msg => {
         if (
           // Ignore messages resulting from 404 responses

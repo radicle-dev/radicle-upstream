@@ -34,7 +34,6 @@ function tsRule(isProduction: boolean): webpack.RuleSetRule {
         transpileOnly,
         compilerOptions: {
           noEmit: false,
-          module: "es6",
         },
       },
     },
@@ -127,6 +126,9 @@ function ui(_env: unknown, argv: Argv): webpack.Configuration {
       }),
       copyDesignSystemAssets(),
     ],
+    experiments: {
+      topLevelAwait: true,
+    },
     optimization: optimization(isProduction),
   };
 }

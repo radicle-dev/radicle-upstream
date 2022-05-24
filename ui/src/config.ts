@@ -22,6 +22,9 @@ export interface Config {
   isDev: boolean;
   // PATH env variable used when shelling out.
   path?: string;
+  // If true, stub interactions with the Electron main process and
+  // expose the stubs.
+  stubElectron?: boolean;
 }
 
 const partialConfigSchema: zod.Schema<Partial<Config>> = zod.object({
@@ -29,6 +32,7 @@ const partialConfigSchema: zod.Schema<Partial<Config>> = zod.object({
   testWalletMnemonic: zod.string().optional(),
   isDev: zod.boolean().optional(),
   path: zod.string().optional(),
+  stubElectron: zod.boolean().optional(),
 });
 
 // `true` if we are running unit tests with Jest.
@@ -54,6 +58,7 @@ function getConfig(): Config {
     isDev: isNodeTestEnv || isCypressTestEnv,
     proxyAddress: isCypressTestEnv ? "127.0.0.1:30000" : "127.0.0.1:17246",
     ...config,
+    stubElectron: config.stubElectron ?? false,
   };
 }
 

@@ -116,6 +116,7 @@ export class UpstreamPeer {
   public get uiUrl(): string {
     const uiConfig: Config = {
       proxyAddress: this.#httpSocketAddr,
+      stubElectron: true,
       isDev: true,
     };
 

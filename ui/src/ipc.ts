@@ -5,13 +5,10 @@
 // LICENSE file.
 
 import type {} from "native/preload";
-export type {
-  ProxyError,
-  CustomProtocolInvocation,
-} from "../../native/ipc-types";
 
 import * as config from "ui/src/config";
-import * as ipcTypes from "../../native/ipc-types";
+import * as ipcTypes from "native/ipc-types";
+export type { ProxyError, CustomProtocolInvocation } from "native/ipc-types";
 
 function makeMainProcessClient(): ipcTypes.MainProcess {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

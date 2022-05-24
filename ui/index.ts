@@ -13,10 +13,14 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.extend(relativeTime);
 
-import App from "./App.svelte";
+import { config } from "ui/src/config";
 
-const app = new App({
+if (config.stubElectron) {
+  import("ui/src/electronTestStub");
+}
+
+const { default: App } = await import("./App.svelte");
+
+new App({
   target: document.body,
 });
-
-export default app;

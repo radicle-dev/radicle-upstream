@@ -16,6 +16,7 @@ module.exports = {
     "^proxy-client$": "<rootDir>/proxy-client/index",
     "^design-system/(.*)$": "<rootDir>/design-system/$1",
     "^design-system$": "<rootDir>/design-system/index",
+    "^native(.*)$": "<rootDir>/native/$1",
   },
   testEnvironment: "jsdom",
   testRegex: "((\\.|/)(test))\\.ts$",
