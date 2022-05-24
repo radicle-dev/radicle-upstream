@@ -18,7 +18,7 @@ const config: PlaywrightTestConfig = {
   globalSetup: require.resolve("test/support/playwright/globalSetup"),
   webServer: {
     port: UI_PORT,
-    command: `webpack serve --open --config-name ui --no-live-reload --port ${UI_PORT} --no-open`,
+    command: `webpack serve --open --config-name ui --no-live-reload --port ${UI_PORT} --no-open --no-hot`,
   },
   testDir: "test/e2e",
   projects: [
