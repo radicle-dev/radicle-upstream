@@ -10,7 +10,9 @@ import { UI_PORT } from "./test/support/peerManager";
 const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 1,
+  // he default for the number of workers is half the number of cores.
+  // We want to make use of all cores on Github CI.
+  workers: process.env.CI ? 2 : undefined,
   use: {
     trace: "retain-on-failure",
     actionTimeout: 5000,
