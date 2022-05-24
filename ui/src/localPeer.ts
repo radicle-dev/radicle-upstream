@@ -46,7 +46,8 @@ session.session.subscribe(sess => {
         } else if (event instanceof bacon.Error) {
           notification.showException(
             new error.Error({
-              message: "Received proxy peer event",
+              message: "Received proxy peer event error",
+              source: event.error,
             })
           );
         }
