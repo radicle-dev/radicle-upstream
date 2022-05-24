@@ -5,6 +5,7 @@
 // LICENSE file.
 
 import { FullConfig } from "@playwright/test";
+import fetch from "node-fetch";
 import * as PeerManager from "test/support/peerManager";
 import * as Support from "test/support";
 
@@ -12,4 +13,6 @@ export default async function globalSetup(_config: FullConfig): Promise<void> {
   await PeerManager.buildProxy();
   await Support.assertRadInstalled();
   await Support.assertGitServerRunning();
+  // Force webpack to build the UI for the first time
+  await fetch(`http://localhost:${PeerManager.UI_PORT}`);
 }
