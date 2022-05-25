@@ -131,7 +131,12 @@ const createQaIssues: yargs.CommandModule<unknown, unknown> = {
 
     await execa("hub", ["issue", "create", "--file", "-"], {
       stdio: ["pipe", "inherit", "inherit"],
-      input: `QA: v${version} MacOS\n\n${qaIssueBody}`,
+      input: `QA: v${version} MacOS x86_64\n\n${qaIssueBody}`,
+    });
+
+    await execa("hub", ["issue", "create", "--file", "-"], {
+      stdio: ["pipe", "inherit", "inherit"],
+      input: `QA: v${version} MacOS arm64\n\n${qaIssueBody}`,
     });
   },
 };
@@ -159,6 +164,9 @@ const publishRcBinaries: yargs.CommandModule<unknown, unknown> = {
     console.log(
       `  gsutil cp dist/radicle-upstream.dmg gs://${releaseBucket}/radicle-upstream-${version}-rc.dmg`
     );
+    console.log(
+      `  gsutil cp dist/radicle-upstream-arm64.dmg gs://${releaseBucket}/radicle-upstream-${version}-arm64-rc.dmg`
+    );
   },
 };
 
@@ -182,6 +190,13 @@ const publish: yargs.CommandModule<unknown, unknown> = {
       `gs://${releaseBucket}/radicle-upstream-${version}-rc.dmg`,
       `gs://${releaseBucket}/radicle-upstream-${version}.dmg`,
     ]);
+    await runVerbose("gsutil", [
+      "cp",
+      // don't overwrite existing files
+      "-n",
+      `gs://${releaseBucket}/radicle-upstream-${version}-arm64-rc.dmg`,
+      `gs://${releaseBucket}/radicle-upstream-${version}-arm64.dmg`,
+    ]);
 
     await runVerbose("git", ["tag", `v${version}`]);
     await runVerbose("git", ["push", "origin", "tag", `v${version}`]);
@@ -197,25 +212,28 @@ const announcements: yargs.CommandModule<unknown, unknown> = {
 
 >> highlight some of the changes here <<
 
-You can find the complete list of changes in our [changelog][1].
+If you come across any issues at all, please feel free to reach out to us in
+our [Discord support channel][up] and we’ll make sure we address them!
+You can also [open an issue][oi] on GitHub if you encounter a bug.
+
+You can find the complete list of changes [here][ch].
 
 Here are packages for all our supported platforms:
 
-- [macOS][2]
-- [Linux][3]
+- [macOS M1][ba]
+- [macOS][bi]
+- [Linux][bl]
 
-For more information on how to use Radicle, check out our [documentation][4].
+For more information on how to use Radicle, check out our [documentation][do].
 
-For support, you can reach us in the [#support channel][5] of our Matrix chat or in the #help category of this forum.
 
-If you encounter a bug, please [open an issue][6].
-
-[1]: https://github.com/radicle-dev/radicle-upstream/blob/v${version}/CHANGELOG.md
-[2]: https://releases.radicle.xyz/radicle-upstream-${version}.dmg
-[3]: https://releases.radicle.xyz/radicle-upstream-${version}.AppImage
-[4]: https://docs.radicle.xyz/docs/what-is-radicle.html
-[5]: https://matrix.radicle.community/#/room/#support:radicle.community
-[6]: https://github.com/radicle-dev/radicle-upstream/issues`;
+[ch]: https://github.com/radicle-dev/radicle-upstream/compare/v${currentVersion}...v${version}
+[ba]: https://releases.radicle.xyz/radicle-upstream-${version}-arm64.dmg
+[bi]: https://releases.radicle.xyz/radicle-upstream-${version}.dmg
+[bl]: https://releases.radicle.xyz/radicle-upstream-${version}.AppImage
+[do]: https://docs.radicle.xyz
+[up]: https://discord.com/channels/841318878125490186/843873418205331506
+[oi]: https://github.com/radicle-dev/radicle-upstream/issues`;
 
     console.log(chalk.cyan.bold("❱ Discourse"));
     console.log(

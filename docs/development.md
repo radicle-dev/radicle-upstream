@@ -326,7 +326,8 @@ All Github access tokens _must_ have the `public_repo` scope.
 
 2. Test the release
     1. Wait for the Linux release candidate build on CI to pass.
-    2. Build and notarize the macOS binary on your local machine:
+    2. Build and notarize the macOS x86_64 and arm64 binaries on your local
+       machine.
 
     ```bash
     CSC_NAME=… \
