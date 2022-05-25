@@ -22,31 +22,11 @@ patch.
 In case there's an issue with Upstream Patches, we are also accepting
 [Pull Requests through GitHub][pr] as a fallback option.
 
-## Commit hygene
-
-Commits have to adhere to the following guidelines to be accepted.
-
-### Conventional commit message
-
-Your commits should be formatted according to the [conventional commits
-specification][cc].
-
-Here are a couple of examples:
-
-```plain
-fix: fix clippy on CI (#430)
-refactor(ui): improve cypress spec reliability (#429)
-style(ui): icon refresh (#411)
-chore(release): 0.0.11 (#417)
-test(ui): add missing project creation specs (#404)
-feat(proxy): improve session (#380)
-```
-
 ### Certificate of Origin
 
-We require commits to be signed off to show your agreement to the [Developer
-Certificate of Origin (DCO)][do]. This means that the messages of all your
-commits must include the following line at the end.
+We require commits to be signed off to show your agreement to the
+[Developer Certificate of Origin (DCO)][do]. This means that the messages of
+all your commits must include the following line at the end.
 
     Signed-off-by: John Doe <john.doe@example.com>
 
@@ -56,7 +36,6 @@ The DCO was created by the Linux Kernel community and is a simple statement
 that you, as a contributor, have the legal right to make the contribution.
 
 
-[cc]: https://www.conventionalcommits.org/en/v1.0.0
 [dc]: https://discord.com/channels/841318878125490186/843873418205331506
 [dm]: development.md
 [do]: ../DCO

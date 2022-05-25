@@ -39,10 +39,9 @@ Make sure to source the script from the repository root.
 
 ## Creating a Radicle identity in development mode
 
-To create a Radicle identity during development, ensure you have the [Radicle CLI
-installed][rc]. Then,
-before running `rad auth`, configure your shell environment for development by
-running:
+To create a Radicle identity during development, ensure you have the
+[Radicle CLI installed][rc]. Then, before running `rad auth`, configure your
+shell environment for development by running:
 
 ```bash
 source ./scripts/env
@@ -93,16 +92,13 @@ Maintainers are responsible for adding contribution to the `main` branch on
 the command line. We avoid the Github UI for merging changes. See the [Licensing
 and DCO RFC][dr] for background on this.
 
-We require commits on `main` to be [signed with GPG][cm].
-
 After successful review, Github pull requests can be merged to `main` in two
 ways with a fast-forward merge being preferred.
 
 ### Fast-forward merge (preferred)
 
 1. Rebase the pull request branch onto `main` and push it. The pull request
-   branch must be only one commit ahead of main and the commit must be
-   GPG-signed.
+   branch must be only one commit ahead of `main`.
 2. Wait for CI to pass
 3. Check out main and merge the feature branch with
 
@@ -139,7 +135,7 @@ linting and formatting are enforced locally on a pre-commit basis with
 [husky][hu] and [lint-staged][ls].
 
 Additionally we run the same checks as separate build steps on our CI, just to
-make sure only properly formatted and lint-free code lands into main.
+make sure only properly formatted and lint-free code lands into `main`.
 
 ### Running tests
 
@@ -186,7 +182,7 @@ Microsoft.
 ### Building an Upstream package for your platform
 
 You can build and package Upstream with: `yarn dist`. The generated package
-will be in: `dist/` as `radicle-upstream-X.X.X.{dmg|AppImage|exe}`.
+will be in: `dist/` as `radicle-upstream-X.Y.Z.{dmg|AppImage|exe}`.
 
 #### Apple notarization
 
@@ -296,8 +292,8 @@ This section describes how to release a new version of Upstream.
 
 * [`gcloud`][gc] to upload artifacts. You need to ask for access to the
   `radicle-upstream-releases` storage bucket.
-* [`hub`][hb] version >= 2.14 to interact with GitHub’s API. See [its
-  documentation][hc] on how to configure access
+* [`hub`][hb] version >= 2.14 to interact with GitHub’s API.
+  See [its documentation][hc] on how to configure access.
 * [`brew`][br] to update the Uptream cask.
 
 All Github access tokens _must_ have the `public_repo` scope.
@@ -305,8 +301,9 @@ All Github access tokens _must_ have the `public_repo` scope.
 ### Process
 
 1. Create release candidate
-    1. Create a release candidate branch with  a commit that updates the version
-       and changelog and create a pull-request
+    1. Create a release candidate branch, bump the version, pre-fill the
+       CHANGELOG.md file with a release note placeholder and create a
+       pull-request.
 
        ```bash
        ./scripts/release.ts create-rc patch
@@ -353,48 +350,61 @@ All Github access tokens _must_ have the `public_repo` scope.
     5. Test the release by walking through the QA issues.
     6. (Optional) To fix bugs, create a PR with the fixes based on the release
        candidate branch. Once it has been approved, squash merge it into the
-       release candidate branch (see [“Merging Pull Requests"][mp]).
-       Then restart the “Test the release” step. (Skip creating a QA
+       release candidate branch (see ["Merging Pull Requests"][mp]).
+       Then restart the "Test the release" step. (Skip creating a QA
        issue in 2.3.)
     7. Close the QA issues.
 
 3. Publish and announce the release
-    1. Publish the release candidate binaries under
-       `https://releases.radicle.xyz` and create and publish a release tag.
+    1. Replace the release note placeholder in the CHANGELOG.md file with the
+       actual release notes, amend the release commit and force-push the
+       changes.
+
+       ```bash
+       vim CHANGELOG.md
+       git commit --amend
+       git push --force origin release-candidate/vX.Y.Z
+       ```
+
+    2. Publish the release candidate binaries on `https://releases.radicle.xyz`,
+       then create and publish a release tag.
 
        ```bash
        ./scripts/release.ts publish
        ```
 
-    2. Merge the pull request on `radicle.xyz`.
-    3. Announce the release on discord and `radicle.community`. The community
+    3. Merge the pull request on `radicle.xyz`.
+    4. Announce the release on discord and `radicle.community`. The community
        post should highlight the important changes in the release.
 
        ```bash
        ./scripts/release.ts announcements
        ```
 
-    4. Announce the release to the in-app update notification
+    5. Announce the release to the in-app update notification
 
        ```bash
        ./scripts/release.ts set-latest-release
        ```
 
-    5. Update the [Homebrew
-       cask](https://formulae.brew.sh/cask/radicle-upstream)
+    6. Update the [Homebrew cask](https://formulae.brew.sh/cask/radicle-upstream)
 
        ```bash
        brew tap homebrew/cask
        brew bump-cask-pr --version X.Y.Z radicle-upstream
        ```
 
-4. Finish the release by merging the release candidate branch into main.
+       Note: disable commit signing before running these commands on macOS
+             https://github.com/Homebrew/brew/issues/3544
+
+4. Finish the release by merging the release candidate branch into `main`.
 
     ```bash
     git checkout main
     git pull --ff-only
     git merge release-candidate/vX.Y.Z --signoff
-    git push
+    git push origin main
+    rad push
     ```
 
     Merging may produce a merge commit on `main` instead of fast-forwarding.
@@ -405,7 +415,6 @@ All Github access tokens _must_ have the `public_repo` scope.
 [ca]: https://developer.apple.com/account/resources/certificates/add
 [cb]: https://doc.rust-lang.org/cargo/
 [cl]: https://gist.github.com/Rich-Harris/0f910048478c2a6505d1c32185b61934
-[cm]: https://docs.github.com/en/github/authenticating-to-github/managing-commit-signature-verification/signing-commits
 [co]: https://github.com/rust-lang/cargo
 [dr]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
 [eb]: https://github.com/electron-userland/electron-builder

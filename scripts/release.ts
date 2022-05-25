@@ -11,7 +11,6 @@ import * as path from "path";
 import * as os from "os";
 import execa from "execa";
 import yargs from "yargs";
-import standardVersion from "standard-version";
 import prompts from "prompts";
 import chalk from "chalk";
 import * as semver from "semver";
@@ -94,16 +93,39 @@ const createRc: yargs.CommandModule<unknown, StartOptions> = {
       `release-candidate/v${newVersion}`,
       options.revision,
     ]);
-    await standardVersion({
-      infile: "./CHANGELOG.md",
-      silent: true,
-      skip: { tag: true },
-      sign: true,
-      releaseAs: options.type,
-    });
-    console.log(
-      `✔ standard-version --infile ./CHANGELOG.md --silent --sign --release-as ${options.type}`
-    );
+
+    const currentDate = new Date().toISOString().replace(/T.*$/, "");
+    const releaseNotePlaceholder = [
+      `## [${newVersion}](https://github.com/radicle-dev/radicle-upstream/compare/v${currentVersion}...v${newVersion}) (${currentDate})\n`,
+      "**Add relese notes for the current version here!**",
+    ];
+    const changelogPath = path.resolve(__dirname, "..", "CHANGELOG.md");
+    const oldChangelog = (await fs.readFile(changelogPath, "utf8")).split("\n");
+
+    let newChangelog: string[] | undefined = undefined;
+
+    if (oldChangelog[0] === "# Changelog") {
+      newChangelog = [
+        "# Changelog\n",
+        ...releaseNotePlaceholder,
+        ...oldChangelog.slice(1),
+      ];
+    } else {
+      console.warn(
+        "CHANGELOG.md has an unexpected format, addind release note placeholder to the top of the file."
+      );
+      newChangelog = [...releaseNotePlaceholder, ...oldChangelog];
+    }
+
+    await fs.writeFile(changelogPath, newChangelog.join("\n"), "utf8");
+
+    await runVerbose("git", ["add", changelogPath]);
+
+    await runVerbose("git", [
+      "commit",
+      "--message",
+      `chore(release): ${newVersion}`,
+    ]);
 
     await promptContinue("Create release pull request?");
     await runVerbose("hub", ["pull-request", "--push", "--draft", "--no-edit"]);
@@ -131,12 +153,12 @@ const createQaIssues: yargs.CommandModule<unknown, unknown> = {
 
     await execa("hub", ["issue", "create", "--file", "-"], {
       stdio: ["pipe", "inherit", "inherit"],
-      input: `QA: v${version} MacOS x86_64\n\n${qaIssueBody}`,
+      input: `QA: v${version} MacOS\n\n${qaIssueBody}`,
     });
 
     await execa("hub", ["issue", "create", "--file", "-"], {
       stdio: ["pipe", "inherit", "inherit"],
-      input: `QA: v${version} MacOS arm64\n\n${qaIssueBody}`,
+      input: `QA: v${version} MacOS M1\n\n${qaIssueBody}`,
     });
   },
 };
