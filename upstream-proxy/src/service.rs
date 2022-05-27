@@ -136,7 +136,6 @@ impl Manager {
             match message {
                 Message::Reset => self.environment = Environment::new(&self.environment_config)?,
                 Message::SetSecretKey(key) => self.environment.key = Some(key),
-                Message::Seal => self.environment.key = None,
                 Message::Shutdown => return Ok(None),
             }
         }
@@ -177,8 +176,6 @@ enum Message {
     Reset,
     /// Unseal the key store with the given secret key
     SetSecretKey(link_crypto::SecretKey),
-    /// Seal the key store and reload the services
-    Seal,
     /// Shutdown the service and exit the process
     Shutdown,
 }
@@ -201,11 +198,6 @@ impl Handle {
     /// Unseal the key store with the given secret key
     pub fn set_secret_key(&mut self, key: link_crypto::SecretKey) {
         self.send_message(Message::SetSecretKey(key))
-    }
-
-    /// Seal the key store and reload the services
-    pub fn seal(&mut self) {
-        self.send_message(Message::Seal)
     }
 
     /// Shutdown the service and exit the process

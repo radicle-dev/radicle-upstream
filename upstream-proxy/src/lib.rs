@@ -19,7 +19,6 @@ mod browser;
 mod cli;
 mod config;
 mod context;
-mod control;
 mod daemon;
 mod error;
 mod events;

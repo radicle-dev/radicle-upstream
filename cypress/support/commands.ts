@@ -20,20 +20,6 @@ export const resetProxyState = (): void => {
   });
 };
 
-export const sealKeystore = (): void => {
-  cy.then(async () => {
-    await proxyClient.control.seal();
-    await waitSealed();
-  });
-};
-
-export const restartAndUnlock = (): void => {
-  sealKeystore();
-  cy.visit("./public/index.html");
-  pick("passphrase-input").type("radicle-upstream");
-  pick("unlock-button").click();
-};
-
 export const pick = (...ids: string[]): Cypress.Chainable<JQuery> => {
   const selectorString = ids.map(id => `[data-cy="${id}"]`).join(" ");
   return cy.get(selectorString);
@@ -82,20 +68,6 @@ export const pasteInto = (ids: string[], value: string): void => {
   pick(...ids)
     .invoke("val", value)
     .trigger("input");
-};
-
-export const createProjectWithFixture = (
-  name = "platinum",
-  description = "Best project ever.",
-  defaultBranch = "master"
-): void => {
-  cy.then(async () => {
-    await proxyClient.control.projectCreate({
-      name,
-      description,
-      defaultBranch,
-    });
-  });
 };
 
 export function createEmptyProject(
