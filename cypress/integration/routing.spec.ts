@@ -15,23 +15,6 @@ context("routing", () => {
   });
 
   context("session persistancy", () => {
-    it("retains the navigation history after a browser refresh", () => {
-      commands.onboardUser();
-      commands.createProjectWithFixture();
-      cy.visit("./public/index.html");
-      commands.pick("project-list-entry-platinum").click();
-      commands.pick("commits-tab").click();
-      commands
-        .pickWithContent(
-          ["commit-teaser"],
-          "Add files with special characters in their filenames (#5)"
-        )
-        .click();
-      cy.reload();
-      commands.pick("back-button").click();
-      commands.pick("commits-page").should("exist");
-    });
-
     context("first time app start with no stored session data", () => {
       it("opens on the identity creation wizard", () => {
         commands.pick("onboarding-checklist").should("exist");

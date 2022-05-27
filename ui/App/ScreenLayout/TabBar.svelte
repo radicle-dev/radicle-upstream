@@ -70,6 +70,8 @@
 <ul data-cy="tab-bar" class="tab-bar" {style}>
   {#each tabs as tab}
     <li
+      role="button"
+      aria-label={`${tab.title.toLowerCase()} tab`}
       class="tab"
       data-cy={`${tab.title.toLowerCase()}-tab`}
       on:click={tab.onClick}>

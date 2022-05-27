@@ -6,10 +6,9 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-
   import type { Branch, Tag } from "ui/src/source";
-  import * as config from "ui/src/config";
+
+  import { createEventDispatcher } from "svelte";
 
   import ChevronUpDownIcon from "design-system/icons/ChevronUpDown.svelte";
   import Overlay from "design-system/Overlay.svelte";
@@ -32,9 +31,7 @@
       } else if (rev.type === "tag") {
         // Tags behave differently in radicle-link than people are used to in
         // normal git workflows, hence we're not showing them in the UI.
-        // Because some old integration test cases still depend on tags, we
-        // only show them when run in Cypress.
-        return config.isCypressTestEnv;
+        return false;
       } else {
         return true;
       }
@@ -120,6 +117,8 @@
     <div
       class="revision-selector button-transition"
       data-cy="revision-selector"
+      role="button"
+      aria-label="select branch"
       data-revision={selected.name}
       hidden={expanded}
       on:click={toggle}>

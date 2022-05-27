@@ -139,16 +139,6 @@ make sure only properly formatted and lint-free code lands into `main`.
 
 ### Running tests
 
-Before running tests you'll need to check out the latest test fixtures which
-are included in this repository as a git submodule:
-
-```sh
-./scripts/test-setup.sh
-```
-
-💡 *You'll have to run that command every time there are any updates to the
-test fixture repository.*
-
 ~~We use [Cypress](https://www.cypress.io/) for integration tests.~~
 We're deprecating Cypress in favour of [Playwright](https://playwright.dev/).
 For every other type of test we use [Jest](https://jestjs.io/).
@@ -232,13 +222,6 @@ application package by [electron-builder][eb].
 
 The proxy and UI share the same test fixtures, if you haven't done it already,
 set up the test fixtures like so:
-
-```sh
-./scripts/test-setup.sh
-```
-
-💡 *You'll have to run the command every time there are any updates to the test
-fixture repository.*
 
 Then run tests as usual: `cargo test --all-features --all-targets`.
 

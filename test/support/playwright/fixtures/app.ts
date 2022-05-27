@@ -26,6 +26,9 @@ export class App {
   }
 
   public async goToProjectByName(name: string): Promise<void> {
+    await this.#page
+      .locator('[data-cy="sidebar"] >> [data-cy="profile"]')
+      .click();
     await this.projectList.locator(`text=${name}`).click();
   }
 

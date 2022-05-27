@@ -39,7 +39,6 @@ env -u GITHUB_ACTIONS yarn dedupe --check
 log-group-end
 
 log-group-start "Test setup"
-./scripts/test-setup.sh
 cp ci/gitconfig "$HOME/.gitconfig"
 log-group-end
 

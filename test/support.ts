@@ -76,9 +76,16 @@ export function retry<T>(fn: () => Promise<T>): Promise<T> {
 export async function createProject(
   proxy: PeerManager.UpstreamPeer,
   name: string
-): Promise<{ urn: string; checkoutPath: string }> {
+): Promise<{ urn: string; checkoutPath: string; defaultBranch: string }> {
+  const defaultBranch = "main";
   const checkoutPath = Path.join(proxy.checkoutPath, name);
-  await proxy.spawn("git", ["init", checkoutPath, "--initial-branch", "main"]);
+
+  await proxy.spawn("git", [
+    "init",
+    checkoutPath,
+    "--initial-branch",
+    defaultBranch,
+  ]);
   await proxy.spawn(
     "git",
     ["commit", "--allow-empty", "--message", "initial commit"],
@@ -88,7 +95,15 @@ export async function createProject(
   );
   await proxy.spawn(
     "rad",
-    ["init", "--name", name, "--default-branch", "main", "--description", ""],
+    [
+      "init",
+      "--name",
+      name,
+      "--default-branch",
+      defaultBranch,
+      "--description",
+      "",
+    ],
     {
       cwd: checkoutPath,
     }
@@ -106,17 +121,16 @@ export async function createProject(
     }
   );
 
-  return { urn, checkoutPath };
+  return { urn, checkoutPath, defaultBranch };
 }
 
-// Create and publish a project using the rad CLI and return the Project ID.
-// Wait until the proxy registers the seed for the project.
-export async function createAndPublishProject(
+// Publish a project using the rad CLI and wait until the proxy registers the
+// seed for the project.
+export async function publishProject(
   proxy: PeerManager.UpstreamPeer,
-  name: string
-): Promise<{ urn: string; checkoutPath: string }> {
-  const { urn, checkoutPath } = await createProject(proxy, name);
-
+  urn: string,
+  checkoutPath: string
+): Promise<void> {
   await proxy.spawn("rad", ["push"], {
     cwd: checkoutPath,
   });
@@ -127,8 +141,78 @@ export async function createAndPublishProject(
       throw new Error("Proxy hasn't set the project seed yet.");
     }
   });
+}
+
+// Create and publish a project using the rad CLI and return the Project ID.
+// Wait until the proxy registers the seed for the project.
+export async function createAndPublishProject(
+  proxy: PeerManager.UpstreamPeer,
+  name: string
+): Promise<{ urn: string; checkoutPath: string }> {
+  const { urn, checkoutPath } = await createProject(proxy, name);
+  await publishProject(proxy, urn, checkoutPath);
 
   return { urn, checkoutPath };
+}
+
+// Create a project from the platinum fixture using the rad CLI.
+export async function createProjectFromPlatinumFixture(
+  proxy: PeerManager.UpstreamPeer
+): Promise<{
+  urn: string;
+  name: string;
+  description: string;
+  defaultBranch: string;
+  checkoutPath: string;
+}> {
+  const name = "git-platinum";
+  const description = "Platinum files for testing radicle-upstream";
+  const checkoutPath = Path.join(proxy.checkoutPath, name);
+  const defaultBranch = "main";
+
+  await proxy.spawn("git", [
+    "clone",
+    Path.join(__dirname, "fixtures", name),
+    checkoutPath,
+  ]);
+
+  await proxy.spawn("git", ["checkout", "dev"], {
+    cwd: checkoutPath,
+  });
+
+  await proxy.spawn("git", ["checkout", "main"], {
+    cwd: checkoutPath,
+  });
+
+  await proxy.spawn(
+    "rad",
+    [
+      "init",
+      "--name",
+      name,
+      "--default-branch",
+      defaultBranch,
+      "--description",
+      description,
+    ],
+    {
+      cwd: checkoutPath,
+    }
+  );
+
+  const { stdout: urn } = await proxy.spawn("rad", ["inspect"], {
+    cwd: checkoutPath,
+  });
+
+  await proxy.spawn(
+    "git",
+    ["config", "--add", "rad.seed", PeerManager.SEED_URL],
+    {
+      cwd: checkoutPath,
+    }
+  );
+
+  return { urn, name, description, defaultBranch, checkoutPath };
 }
 
 // Clone a project with the `rad` CLI and publish a branch
