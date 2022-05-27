@@ -44,6 +44,7 @@ test("add a new peer and peer input validation", async ({
   const editRemotesDialog = makeEditRemoteDialog(page);
   await editRemotesDialog.peerInput.fill(contributor.peerId);
   await editRemotesDialog.addPeerButton.click();
+  await expect(editRemotesDialog.self).toContainText(contributor.userHandle);
 
   // Add peer ID a second time
   {
