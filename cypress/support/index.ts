@@ -4,7 +4,6 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import "./assertions";
 import * as ipcStub from "./ipc-stub";
 import * as commands from "./commands";
 

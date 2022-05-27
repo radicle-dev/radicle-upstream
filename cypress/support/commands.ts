@@ -98,10 +98,6 @@ export const onboardUser = (
   });
 };
 
-export const metaKey = (): string => {
-  return navigator.platform.includes("Mac") ? "meta" : "ctrl";
-};
-
 export const ethereumDevNode = createPlugin<ethereumDevNodeApi.Plugin>(
   "ethereumDevNode",
   ethereumDevNodeApi.methods
