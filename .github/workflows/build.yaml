@@ -42,3 +42,4 @@ jobs:
             cypress/screenshots/**/*.png
             cypress/workspace/test-tmp/*/node-*/*.log
             cypress/workspace/test-tmp/*/combined-node.log
+            test-results/**/*.zip
