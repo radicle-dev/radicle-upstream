@@ -300,7 +300,6 @@ test("patch statuses", async ({ app, page, peerManager }) => {
     await app.projectScreen.addRemotes([contributor.peerId]);
 
     await app.openRadicleUrl(patchUrl);
-    await page.pause();
 
     await expect(patchActions.mergeButton).toBeVisible();
     await expect(patchActions.closeButton).toBeVisible();

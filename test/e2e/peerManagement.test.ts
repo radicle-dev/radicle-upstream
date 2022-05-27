@@ -73,8 +73,6 @@ test("add a new peer and peer input validation", async ({
     await peerItem.locator('role=button[name="Tracking"]').click();
     await expect(peerItem).not.toBeVisible();
   }
-
-  await page.pause();
 });
 
 function makeEditRemoteDialog(page: Page) {
