@@ -111,6 +111,8 @@ test("annotated patches", async ({ app, page, peerManager }) => {
 });
 
 test("patch list reactivity", async ({ app, page, peerManager }) => {
+  test.setTimeout(60_000);
+
   const peer = await peerManager.startPeer({ name: "maintainer" });
 
   await page.goto(peer.uiUrl);

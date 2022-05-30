@@ -15,9 +15,9 @@ const config: PlaywrightTestConfig = {
   workers: process.env.CI ? 2 : undefined,
   use: {
     trace: "retain-on-failure",
-    actionTimeout: process.env.CI ? 20000 : 5000,
+    actionTimeout: process.env.CI ? 30000 : 5000,
   },
-  expect: { timeout: process.env.CI ? 20000 : 10000 },
+  expect: { timeout: process.env.CI ? 30000 : 10000 },
   globalSetup: require.resolve("test/support/playwright/globalSetup"),
   webServer: {
     port: UI_PORT,

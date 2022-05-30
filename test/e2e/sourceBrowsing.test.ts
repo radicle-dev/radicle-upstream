@@ -169,6 +169,8 @@ test.describe("source browsing with a single peer", () => {
   });
 
   test("source tree", async ({ app }) => {
+    test.setTimeout(60_000);
+
     // Shows the top-level source tree.
     {
       // Directories
@@ -458,6 +460,9 @@ test("view project from another peer's perspective", async ({
     });
 
     await Support.publishProject(contributor, urn, projectWorkingCopyPath);
+
+    // FIXME: this test is flaky here.
+    await app.goToProjectByName(name);
 
     await app.projectScreen.selectBranch(branchName);
 
