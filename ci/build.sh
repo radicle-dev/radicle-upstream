@@ -38,10 +38,6 @@ env -u GITHUB_ACTIONS yarn install --immutable
 env -u GITHUB_ACTIONS yarn dedupe --check
 log-group-end
 
-log-group-start "Test setup"
-cp ci/gitconfig "$HOME/.gitconfig"
-log-group-end
-
 log-group-start "License compliance"
 time node -r ts-node/register/transpile-only ./scripts/license-header.ts check
 time cargo deny check
@@ -83,21 +79,13 @@ log-group-start "Check TypeScript"
 time yarn typescript:check
 log-group-end
 
-log-group-start "Bundle electron main files"
-time yarn run webpack --config-name main
-log-group-end
-
-if [[ "${RUNNER_OS:-}" != "macOS" ]]; then
+if [[ "${RUNNER_OS:-}" == "Linux" ]]; then
   log-group-start "Starting test seed node"
   ./scripts/git-server-test.sh --detach
   log-group-end
 
   log-group-start "yarn playwright install chromium"
   time yarn playwright install chromium
-  log-group-end
-
-  log-group-start "yarn webpack --config-name ui"
-  time yarn webpack --config-name ui
   log-group-end
 
   log-group-start "yarn playwright test"
