@@ -232,7 +232,7 @@ test("patch reactivity", async ({ app, page, peerManager }) => {
 
 test("patch statuses", async ({ app, page, peerManager }) => {
   const patchActions = makePatchAction(app);
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
 
   const maintainer = await peerManager.startPeer({ name: "maintainer" });
 
