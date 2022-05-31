@@ -65,11 +65,7 @@
 
   // If we’re not in any kind of test environment we show unhandled
   // errors to the user.
-  if (
-    !config.isCypressTestEnv &&
-    !config.isCypressTestRunner &&
-    !config.isNodeTestEnv
-  ) {
+  if (!config.isNodeTestEnv) {
     window.addEventListener("unhandledrejection", ev => {
       ev.preventDefault();
       notification.showException(

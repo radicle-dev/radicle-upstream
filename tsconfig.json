@@ -81,7 +81,6 @@
     "paths": {
       "ui/*": ["ui/*"],
       "native/*": ["native/*"],
-      "cypress/*": ["cypress/*"],
       "test/*": ["test/*"],
       "proxy-client/*": ["proxy-client/*"],
       "proxy-client": ["proxy-client/index.ts"],

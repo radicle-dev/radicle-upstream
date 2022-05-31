@@ -8,7 +8,7 @@ import * as zod from "zod";
 import Big from "big.js";
 import * as ethers from "ethers";
 import * as browserStore from "ui/src/browserStore";
-import { config, isCypressTestEnv } from "ui/src/config";
+import { config } from "ui/src/config";
 import * as error from "ui/src/error";
 
 import { Environment, Network, supportedNetwork } from "./environment";
@@ -26,7 +26,7 @@ export const selectedEnvironment = browserStore.create<Environment>(
   ])
 );
 
-if (isCypressTestEnv) {
+if (config.e2eTest) {
   selectedEnvironment.set(Environment.Local);
 }
 

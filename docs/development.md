@@ -7,7 +7,6 @@
 * [Rustup](https://github.com/rust-lang/rustup)
 * [`cargo-watch`](https://github.com/watchexec/cargo-watch#install)
 * [`cmake`](https://cmake.org/download/)
-* Dependencies of [Cypress](https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements)
 * Latest version of [`rad` CLI][rc]
 
 ## Running Upstream in development
@@ -139,9 +138,9 @@ make sure only properly formatted and lint-free code lands into `main`.
 
 ### Running tests
 
-~~We use [Cypress](https://www.cypress.io/) for integration tests.~~
-We're deprecating Cypress in favour of [Playwright](https://playwright.dev/).
-For every other type of test we use [Jest](https://jestjs.io/).
+We're using [Playwright](https://playwright.dev/) for end-to-end tests, for
+unit tests and tests that don't require a browser for rendering, we use
+[Jest](https://jestjs.io/).
 
   - run Jest tests with:
     `yarn jest`
@@ -151,12 +150,6 @@ For every other type of test we use [Jest](https://jestjs.io/).
 
   - run Playwright tests in debug mode with:
     `PWDEBUG=console yarn playwright test`
-
-  - run legacy Cypress tests with:
-    `yarn test:integration`
-
-  - run legacy Cypress tests in debug mode with:
-    `yarn test:integration:debug`
 
 
 ### Running on Windows (experimental)
@@ -413,7 +406,6 @@ All Github access tokens _must_ have the `public_repo` scope.
 [ls]: https://github.com/okonet/lint-staged
 [ma]: https://appleid.apple.com/account/manage
 [mp]: https://github.com/radicle-dev/radicle-decisions/blob/master/proposals/0003.md#merging-pull-requests
-[on]: https://docs.cypress.io/guides/core-concepts/writing-and-organizing-tests.html#Excluding-and-Including-Tests
 [pr]: https://prettier.io
 [rt]: https://doc.rust-lang.org/book/ch11-01-writing-tests.html
 [se]: https://svelte.dev

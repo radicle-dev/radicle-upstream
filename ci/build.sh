@@ -84,23 +84,17 @@ if [[ "${RUNNER_OS:-}" == "Linux" ]]; then
   ./scripts/git-server-test.sh --detach
   log-group-end
 
-  log-group-start "yarn playwright install chromium"
+  log-group-start "Installing Playwright browsers"
   time yarn playwright install chromium
   log-group-end
 
-  log-group-start "yarn playwright test"
+  log-group-start "Running Playwright e2e tests"
   time yarn playwright test
   log-group-end
 fi
 
-log-group-start "Runing app tests"
-# We modify the output of the tests to add log groups to the cypress
-# tests.
-time FORCE_COLOR=1 ELECTRON_ENABLE_LOGGING=1 yarn test |
-  sed "
-    s/^\\s*Running:/$(log-group-end)\n$(log-group-start)Running:/
-    s/^.*Run Finished.*/$(log-group-end)\n$(log-group-start)Run Finished/
-  "
+log-group-start "Running Jest unit tests"
+time yarn jest --filter ./test/support/jest/testFilter.js
 log-group-end
 
 clean-cargo-build-artifacts

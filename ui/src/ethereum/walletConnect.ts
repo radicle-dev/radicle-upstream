@@ -16,11 +16,7 @@ import * as browserStore from "ui/src/browserStore";
 import * as zod from "zod";
 
 import * as Error from "ui/src/error";
-import {
-  config,
-  isCypressTestEnv,
-  INFURA_API_KEY_RINKEBY,
-} from "ui/src/config";
+import { config, INFURA_API_KEY_RINKEBY } from "ui/src/config";
 import * as bacon from "ui/src/bacon";
 
 // Data provided by a connected wallet
@@ -69,9 +65,9 @@ export interface WalletConnect {
 }
 
 // Create a `WalletConnect` instance. Creates a test instance when
-// running in Cypress.
+// running in end-to-end tests.
 export function createWalletConnect(): WalletConnect {
-  if (isCypressTestEnv) {
+  if (config.e2eTest) {
     return new TestClient(
       "image napkin cruise dentist name plunge crisp muscle nest floor vessel blush",
       1

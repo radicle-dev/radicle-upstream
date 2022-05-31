@@ -19,7 +19,6 @@ jobs:
         with:
           path: |
             ~/cache/yarn
-            ~/cache/cypress
           # Reuses cache from `build` workflow.
           key: build-${{ runner.os }}-yarn-v5-${{ hashFiles('yarn.lock') }}
 

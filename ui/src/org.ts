@@ -15,7 +15,7 @@ import * as Safe from "./org/safe";
 import * as Contract from "./org/contract";
 
 import { claimsAddress, ClaimsContract } from "./attestation/contract";
-import { isCypressTestEnv } from "ui/src/config";
+import { config } from "ui/src/config";
 import { memoizeLru } from "ui/src/memoizeLru";
 import { sleep } from "ui/src/sleep";
 import { unreachable } from "ui/src/unreachable";
@@ -104,7 +104,7 @@ const pollOrgListForever = async (
 // Start a background task that continously updates the org data for
 // the sidebar.
 export function initialize(): void {
-  if (!isCypressTestEnv) {
+  if (!config.e2eTest) {
     pollOrgListForever();
     const walletStore = svelteStore.get(wallet.store);
     walletStore.subscribe(state => {

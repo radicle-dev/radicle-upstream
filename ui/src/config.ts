@@ -42,14 +42,6 @@ export const isNodeTestEnv = Boolean(
   globalThis.process && globalThis.process.env["NODE_ENV"] === "test"
 );
 
-// `true` if Upstream is tested with cypress.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isCypressTestEnv = (globalThis as any).isCypressTestEnv === true;
-
-// `true` if this code is run by the Cypress test driver.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isCypressTestRunner = Boolean((globalThis as any).cy);
-
 export const config = getConfig();
 
 // Load the partial configuration from the query string parameters and
@@ -57,8 +49,8 @@ export const config = getConfig();
 function getConfig(): Config {
   const config = loadPartialConfig();
   return {
-    isDev: isNodeTestEnv || isCypressTestEnv,
-    proxyAddress: isCypressTestEnv ? "127.0.0.1:30000" : "127.0.0.1:17246",
+    isDev: isNodeTestEnv,
+    proxyAddress: "127.0.0.1:17246",
     ...config,
     e2eTest: config.e2eTest ?? false,
     fakeClock: config.fakeClock ?? false,
