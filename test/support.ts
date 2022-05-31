@@ -127,16 +127,16 @@ export async function createProject(
 // Publish a project using the rad CLI and wait until the proxy registers the
 // seed for the project.
 export async function publishProject(
-  proxy: PeerManager.UpstreamPeer,
+  peer: PeerManager.UpstreamPeer,
   urn: string,
   checkoutPath: string
 ): Promise<void> {
-  await proxy.spawn("rad", ["push"], {
+  await peer.spawn("rad", ["push"], {
     cwd: checkoutPath,
   });
 
   await retry(async () => {
-    const project = await proxy.proxyClient.project.get(urn);
+    const project = await peer.proxyClient.project.get(urn);
     if (project.seed === null) {
       throw new Error("Proxy hasn't set the project seed yet.");
     }
@@ -146,18 +146,18 @@ export async function publishProject(
 // Create and publish a project using the rad CLI and return the Project ID.
 // Wait until the proxy registers the seed for the project.
 export async function createAndPublishProject(
-  proxy: PeerManager.UpstreamPeer,
+  peer: PeerManager.UpstreamPeer,
   name: string
 ): Promise<{ urn: string; checkoutPath: string }> {
-  const { urn, checkoutPath } = await createProject(proxy, name);
-  await publishProject(proxy, urn, checkoutPath);
+  const { urn, checkoutPath } = await createProject(peer, name);
+  await publishProject(peer, urn, checkoutPath);
 
   return { urn, checkoutPath };
 }
 
 // Create a project from the platinum fixture using the rad CLI.
 export async function createProjectFromPlatinumFixture(
-  proxy: PeerManager.UpstreamPeer
+  peer: PeerManager.UpstreamPeer
 ): Promise<{
   urn: string;
   name: string;
@@ -167,24 +167,24 @@ export async function createProjectFromPlatinumFixture(
 }> {
   const name = "git-platinum";
   const description = "Platinum files for testing radicle-upstream";
-  const checkoutPath = Path.join(proxy.checkoutPath, name);
+  const checkoutPath = Path.join(peer.checkoutPath, name);
   const defaultBranch = "main";
 
-  await proxy.spawn("git", [
+  await peer.spawn("git", [
     "clone",
     Path.join(__dirname, "fixtures", name),
     checkoutPath,
   ]);
 
-  await proxy.spawn("git", ["checkout", "dev"], {
+  await peer.spawn("git", ["checkout", "dev"], {
     cwd: checkoutPath,
   });
 
-  await proxy.spawn("git", ["checkout", "main"], {
+  await peer.spawn("git", ["checkout", "main"], {
     cwd: checkoutPath,
   });
 
-  await proxy.spawn(
+  await peer.spawn(
     "rad",
     [
       "init",
@@ -200,11 +200,11 @@ export async function createProjectFromPlatinumFixture(
     }
   );
 
-  const { stdout: urn } = await proxy.spawn("rad", ["inspect"], {
+  const { stdout: urn } = await peer.spawn("rad", ["inspect"], {
     cwd: checkoutPath,
   });
 
-  await proxy.spawn(
+  await peer.spawn(
     "git",
     ["config", "--add", "rad.seed", PeerManager.SEED_URL],
     {
@@ -243,9 +243,9 @@ export async function cloneProject(
 //
 // Requires the project to be replicated. Return the project checkout path.
 export async function forkProject(
+  peer: PeerManager.UpstreamPeer,
   projectId: string,
-  projectName: string,
-  peer: PeerManager.UpstreamPeer
+  projectName: string
 ): Promise<string> {
   const projectCheckoutPath = Path.join(peer.checkoutPath, projectName);
 

@@ -431,9 +431,9 @@ test("view project from another peer's perspective", async ({
     );
 
     const projectWorkingCopyPath = await Support.forkProject(
+      contributor,
       urn,
-      name,
-      contributor
+      name
     );
 
     // After the project is forked, the contributor peer is selected and has

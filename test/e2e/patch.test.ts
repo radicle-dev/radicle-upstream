@@ -256,9 +256,9 @@ test("patch statuses", async ({ app, page, peerManager }) => {
     await expect(app.projectList).toContainText(projectName);
 
     const projectWorkingCopyPath = await Support.forkProject(
+      contributor,
       projectUrn,
-      projectName,
-      contributor
+      projectName
     );
     branchName = await Support.createOrUpdatePatch(
       patchTitle,
