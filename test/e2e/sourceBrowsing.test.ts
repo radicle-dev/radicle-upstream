@@ -4,29 +4,30 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import type { UpstreamPeer } from "test/support/peerManager";
+import * as Path from "node:path";
 
+import { UpstreamPeer, SEED_URL } from "test/support/peerManager";
 import { test, expect } from "test/support/playwright/fixtures";
 import * as Support from "test/support";
 
+const projectName = "git-platinum";
+const projectDescription = "Platinum files for testing radicle-upstream";
+const defaultBranch = "main";
+
 test.describe("source browsing with a single peer", () => {
   let urn: string;
-  let name: string;
-  let description: string;
-  let defaultBranch: string;
   let peer: UpstreamPeer;
 
   test.beforeEach(async ({ app, page, peerManager }) => {
     peer = await peerManager.startPeer({ name: "peer" });
-    ({ urn, name, defaultBranch, description } =
-      await Support.createProjectFromPlatinumFixture(peer));
+    ({ urn } = await createProjectFromPlatinumFixture(peer));
     await page.goto(peer.uiUrl);
-    await app.goToProjectByName(name);
+    await app.goToProjectByName(projectName);
   });
 
   test("project header", async ({ app }) => {
-    await expect(app.projectScreen.header).toContainText(name);
-    await expect(app.projectScreen.header).toContainText(description);
+    await expect(app.projectScreen.header).toContainText(projectName);
+    await expect(app.projectScreen.header).toContainText(projectDescription);
     // Project ID.
     await expect(app.projectScreen.header).toContainText(
       `${urn.replace("rad:git:", "").substring(0, 8)}…${urn.slice(-8)}`
@@ -54,7 +55,7 @@ test.describe("source browsing with a single peer", () => {
         /active/
       );
 
-      await app.projectScreen.header.locator(`text=${name}`).click();
+      await app.projectScreen.header.locator(`text=${projectName}`).click();
       await expect(app.projectScreen.filesTabButton.locator("p")).toHaveClass(
         /active/
       );
@@ -194,7 +195,7 @@ test.describe("source browsing with a single peer", () => {
 
     // Highlights the selected file in the source tree.
     {
-      await app.goToProjectByName(name);
+      await app.goToProjectByName(projectName);
 
       await app.projectScreen.sourceTree.locator("text=bin").click();
       await app.projectScreen.sourceTree.locator("text=cat").click();
@@ -205,7 +206,7 @@ test.describe("source browsing with a single peer", () => {
 
     // Source tree stays expanded while navigating between files or branches.
     {
-      await app.goToProjectByName(name);
+      await app.goToProjectByName(projectName);
 
       await app.projectScreen.sourceTree.locator("text=bin").click();
       await app.projectScreen.sourceTree.locator("text=src").click();
@@ -228,7 +229,7 @@ test.describe("source browsing with a single peer", () => {
 
     // Source tree gets collapsed when navigating away from the Files tab.
     {
-      await app.goToProjectByName(name);
+      await app.goToProjectByName(projectName);
 
       await app.projectScreen.sourceTree.locator("text=bin").click();
       await app.projectScreen.sourceTree.locator("text=src").click();
@@ -245,7 +246,7 @@ test.describe("source browsing with a single peer", () => {
 
     // Can navigate deeply nested directories.
     {
-      await app.goToProjectByName(name);
+      await app.goToProjectByName(projectName);
 
       await app.projectScreen.sourceTree.locator("text=this").click();
       await app.projectScreen.sourceTree.locator("text=/^is$/").click();
@@ -279,7 +280,7 @@ test.describe("source browsing with a single peer", () => {
 
     // Code syntax is highlighted.
     {
-      await app.goToProjectByName(name);
+      await app.goToProjectByName(projectName);
 
       await app.projectScreen.sourceTree.locator("text=src").click();
       await app.projectScreen.sourceTree.locator("text=memory.rs").click();
@@ -295,7 +296,7 @@ test.describe("source browsing with a single peer", () => {
 
     // Shows a placeholder for binary files.
     {
-      await app.goToProjectByName(name);
+      await app.goToProjectByName(projectName);
 
       await app.projectScreen.sourceTree.locator("text=bin").click();
       await app.projectScreen.sourceTree.locator("text=cat").click();
@@ -305,7 +306,7 @@ test.describe("source browsing with a single peer", () => {
 
     // Clicking the Files tab navigates to the project-root, i.e the README.
     {
-      await app.goToProjectByName(name);
+      await app.goToProjectByName(projectName);
 
       await app.projectScreen.sourceTree.locator("text=text").click();
       await app.projectScreen.sourceTree.locator("text=arrows.txt").click();
@@ -411,8 +412,9 @@ test("view project from another peer's perspective", async ({
   const maintainer = await peerManager.startPeer({ name: "maintainer" });
   const contributor = await peerManager.startPeer({ name: "contributor" });
 
-  const { urn, name, checkoutPath, defaultBranch } =
-    await Support.createProjectFromPlatinumFixture(maintainer);
+  const { urn, checkoutPath } = await createProjectFromPlatinumFixture(
+    maintainer
+  );
   await Support.publishProject(maintainer, urn, checkoutPath);
 
   const branchName = "contributor-branch";
@@ -423,7 +425,7 @@ test("view project from another peer's perspective", async ({
   {
     await page.goto(contributor.uiUrl);
     await app.trackProject(urn);
-    await app.goToProjectByName(name);
+    await app.goToProjectByName(projectName);
 
     // The maintainer is pre-selected, and has a "maintainer" badge.
     await expect(app.projectScreen.selectPeerButton).toContainText(
@@ -433,7 +435,7 @@ test("view project from another peer's perspective", async ({
     const projectWorkingCopyPath = await Support.forkProject(
       contributor,
       urn,
-      name
+      projectName
     );
 
     // After the project is forked, the contributor peer is selected and has
@@ -462,7 +464,7 @@ test("view project from another peer's perspective", async ({
     await Support.publishProject(contributor, urn, projectWorkingCopyPath);
 
     // FIXME: this test is flaky here.
-    await app.goToProjectByName(name);
+    await app.goToProjectByName(projectName);
 
     await app.projectScreen.selectBranch(branchName);
 
@@ -474,7 +476,7 @@ test("view project from another peer's perspective", async ({
   // Maintainer views the project source from the contributor's perspective.
   {
     await page.goto(maintainer.uiUrl);
-    await app.goToProjectByName(name);
+    await app.goToProjectByName(projectName);
     await app.projectScreen.addRemotes([contributor.peerId]);
     await app.projectScreen.selectPeer(contributor.userHandle);
 
@@ -504,3 +506,56 @@ test("view project from another peer's perspective", async ({
     await expect(app.projectScreen.sourceTree).toContainText(fileName);
   }
 });
+
+// Create a project from the platinum fixture using the rad CLI.
+export async function createProjectFromPlatinumFixture(
+  peer: UpstreamPeer
+): Promise<{
+  urn: string;
+  checkoutPath: string;
+}> {
+  const checkoutPath = Path.join(peer.checkoutPath, projectName);
+
+  await peer.spawn("git", [
+    "clone",
+    Path.join(__dirname, "..", "fixtures", projectName),
+    checkoutPath,
+  ]);
+
+  await peer.spawn("git", ["checkout", "dev"], {
+    cwd: checkoutPath,
+  });
+
+  await peer.spawn("git", ["checkout", defaultBranch], {
+    cwd: checkoutPath,
+  });
+
+  await peer.spawn(
+    "rad",
+    [
+      "init",
+      "--name",
+      projectName,
+      "--default-branch",
+      defaultBranch,
+      "--description",
+      projectDescription,
+    ],
+    {
+      cwd: checkoutPath,
+    }
+  );
+
+  const { stdout: urn } = await peer.spawn("rad", ["inspect"], {
+    cwd: checkoutPath,
+  });
+
+  await peer.spawn("git", ["config", "--add", "rad.seed", SEED_URL], {
+    cwd: checkoutPath,
+  });
+
+  return {
+    urn,
+    checkoutPath,
+  };
+}

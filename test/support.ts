@@ -155,66 +155,6 @@ export async function createAndPublishProject(
   return { urn, checkoutPath };
 }
 
-// Create a project from the platinum fixture using the rad CLI.
-export async function createProjectFromPlatinumFixture(
-  peer: PeerManager.UpstreamPeer
-): Promise<{
-  urn: string;
-  name: string;
-  description: string;
-  defaultBranch: string;
-  checkoutPath: string;
-}> {
-  const name = "git-platinum";
-  const description = "Platinum files for testing radicle-upstream";
-  const checkoutPath = Path.join(peer.checkoutPath, name);
-  const defaultBranch = "main";
-
-  await peer.spawn("git", [
-    "clone",
-    Path.join(__dirname, "fixtures", name),
-    checkoutPath,
-  ]);
-
-  await peer.spawn("git", ["checkout", "dev"], {
-    cwd: checkoutPath,
-  });
-
-  await peer.spawn("git", ["checkout", "main"], {
-    cwd: checkoutPath,
-  });
-
-  await peer.spawn(
-    "rad",
-    [
-      "init",
-      "--name",
-      name,
-      "--default-branch",
-      defaultBranch,
-      "--description",
-      description,
-    ],
-    {
-      cwd: checkoutPath,
-    }
-  );
-
-  const { stdout: urn } = await peer.spawn("rad", ["inspect"], {
-    cwd: checkoutPath,
-  });
-
-  await peer.spawn(
-    "git",
-    ["config", "--add", "rad.seed", PeerManager.SEED_URL],
-    {
-      cwd: checkoutPath,
-    }
-  );
-
-  return { urn, name, description, defaultBranch, checkoutPath };
-}
-
 // Clone a project with the `rad` CLI and publish a branch
 export async function cloneProject(
   peer: PeerManager.UpstreamPeer,
