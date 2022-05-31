@@ -11,7 +11,7 @@ test.beforeEach(async ({ page, peerManager }) => {
     name: "peer",
     disableSshAgent: true,
   });
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
 });
 
 test("show LockScreen when an identity exists", async ({ page }) => {

@@ -8,7 +8,7 @@ import { test, expect } from "test/support/playwright/fixtures";
 
 test.beforeEach(async ({ page, peerManager }) => {
   const peer = await peerManager.startPeer({ name: "maintainer" });
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
 });
 
 test("only one modal can be opened at a time", async ({ page, app }) => {

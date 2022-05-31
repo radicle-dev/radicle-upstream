@@ -15,8 +15,8 @@ dayjs.extend(relativeTime);
 
 import { config } from "ui/src/config";
 
-if (config.stubElectron) {
-  import("ui/src/electronTestStub");
+if (config.e2eTest) {
+  import("ui/src/e2eTestStubs");
 }
 
 const { default: App } = await import("./App.svelte");

@@ -113,11 +113,12 @@ export class UpstreamPeer {
   #name: string;
   #sshAuthSock: string;
 
-  public get uiUrl(): string {
-    const uiConfig: Config = {
+  public uiUrl(config: { fakeClock?: boolean } = {}): string {
+    const uiConfig: Partial<Config> = {
+      ...config,
       proxyAddress: this.#httpSocketAddr,
-      stubElectron: true,
       isDev: true,
+      e2eTest: true,
     };
 
     const query = qs.stringify({

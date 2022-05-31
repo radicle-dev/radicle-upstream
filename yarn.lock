@@ -2107,7 +2107,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/sinonjs__fake-timers@npm:*":
+"@types/sinonjs__fake-timers@npm:*, @types/sinonjs__fake-timers@npm:^8.1.2":
   version: 8.1.2
   resolution: "@types/sinonjs__fake-timers@npm:8.1.2"
   checksum: bbc73a5ab6c0ec974929392f3d6e1e8db4ebad97ec506d785301e1c3d8a4f98a35b1aa95b97035daef02886fd8efd7788a2fa3ced2ec7105988bfd8dce61eedd
@@ -10385,6 +10385,7 @@ __metadata:
     "@gnosis.pm/safe-service-client": ^0.1.1
     "@jest/globals": ^28.1.0
     "@playwright/test": ^1.22.1
+    "@sinonjs/fake-timers": ^9.1.2
     "@types/big.js": ^6.1.3
     "@types/eventsource": ^1.1.8
     "@types/jest": ^27.5.1
@@ -10399,6 +10400,7 @@ __metadata:
     "@types/sanitize-html": ^2.6.2
     "@types/semver": ^7.3.9
     "@types/sinon": ^10.0.11
+    "@types/sinonjs__fake-timers": ^8.1.2
     "@types/twemoji": ^13.1.2
     "@types/uuid": ^8.3.4
     "@types/wait-on": ^5.3.1

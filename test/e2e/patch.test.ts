@@ -18,7 +18,7 @@ test("show placeholder if there are no patches", async ({
   const projectName = "foo";
   await Support.createProject(peer, projectName);
 
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
   await app.goToProjectByName(projectName);
   await app.projectScreen.goToPatchesTab();
   await expect(page.locator("[data-cy=empty-state]")).toContainText(
@@ -31,7 +31,7 @@ test("annotated patches", async ({ app, page, peerManager }) => {
   const projectName = "foo";
   const { checkoutPath } = await Support.createProject(peer, projectName);
 
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
   await app.goToProjectByName(projectName);
   await app.projectScreen.goToPatchesTab();
 
@@ -115,7 +115,7 @@ test("patch list reactivity", async ({ app, page, peerManager }) => {
 
   const peer = await peerManager.startPeer({ name: "maintainer" });
 
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
 
   const projectName = "foo";
   const { checkoutPath } = await Support.createProject(peer, projectName);
@@ -180,7 +180,7 @@ test("patch list reactivity", async ({ app, page, peerManager }) => {
 test("patch reactivity", async ({ app, page, peerManager }) => {
   const peer = await peerManager.startPeer({ name: "maintainer" });
 
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
 
   const projectName = "foo";
   const { checkoutPath } = await Support.createProject(peer, projectName);
@@ -251,7 +251,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
   let patchUrl: string;
   // Contributor tracks and forks the project, then creates a patch.
   {
-    await page.goto(contributor.uiUrl);
+    await page.goto(contributor.uiUrl());
     await app.trackProject(projectUrn);
     await expect(app.projectList).toContainText(projectName);
 
@@ -284,7 +284,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Observer tracks the project and contributor and sees the patch.
   {
-    await page.goto(observer.uiUrl);
+    await page.goto(observer.uiUrl());
     await app.trackProject(projectUrn);
     await app.goToProjectByName(projectName);
     await app.projectScreen.addRemotes([contributor.peerId]);
@@ -297,7 +297,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Maintainer tracks contributor and sees the patch.
   {
-    await page.goto(maintainer.uiUrl);
+    await page.goto(maintainer.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.addRemotes([contributor.peerId]);
 
@@ -327,7 +327,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Observer sees that the patch is closed.
   {
-    await page.goto(observer.uiUrl);
+    await page.goto(observer.uiUrl());
     await app.goToProjectByName(projectName);
 
     // Patch only shows up in the Closed patches list.
@@ -345,7 +345,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Contributor sees that the patch is closed.
   {
-    await page.goto(contributor.uiUrl);
+    await page.goto(contributor.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.goToPatchesTab();
 
@@ -374,7 +374,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Maintainer sees the patch open again.
   {
-    await page.goto(maintainer.uiUrl);
+    await page.goto(maintainer.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.goToPatchesTab();
     await app.projectScreen.goToPatchByTitle(patchTitle);
@@ -385,7 +385,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Observer sees the patch open again.
   {
-    await page.goto(observer.uiUrl);
+    await page.goto(observer.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.goToPatchesTab();
     await app.projectScreen.goToPatchByTitle(patchTitle);
@@ -396,7 +396,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Contributor closes the patch.
   {
-    await page.goto(contributor.uiUrl);
+    await page.goto(contributor.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.goToPatchesTab();
     await app.projectScreen.goToPatchByTitle(patchTitle);
@@ -415,7 +415,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Observer sees the patch closed again.
   {
-    await page.goto(observer.uiUrl);
+    await page.goto(observer.uiUrl());
     await app.goToProjectByName(projectName);
 
     // Patch only shows up in the Closed patches list.
@@ -429,7 +429,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Maintainer reopens and merges the patch.
   {
-    await page.goto(maintainer.uiUrl);
+    await page.goto(maintainer.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.goToPatchesTab();
     await page.locator('button:has-text("Closed")').click();
@@ -466,7 +466,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Observer sees the patch as merged.
   {
-    await page.goto(observer.uiUrl);
+    await page.goto(observer.uiUrl());
     await app.goToProjectByName(projectName);
 
     // Patch only shows up in the Closed patches list.
@@ -485,7 +485,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
   // Contributor sees that the patch is merged.
   {
-    await page.goto(contributor.uiUrl);
+    await page.goto(contributor.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.goToPatchesTab();
 

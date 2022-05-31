@@ -13,7 +13,7 @@ let peer: UpstreamPeer;
 
 test.beforeEach(async ({ page, peerManager }) => {
   peer = await peerManager.startPeer({ name: "peer" });
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
 });
 
 test("search modal input validation", async ({ page, app }) => {

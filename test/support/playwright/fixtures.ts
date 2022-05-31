@@ -34,6 +34,15 @@ export const test = base.extend<{
         console.log(prefixLines("browser      |  ", msg.text()));
       });
 
+      page.addInitScript(() => {
+        // Prevent the app from showing the update checker
+        // notification.
+        window.localStorage.setItem(
+          "radicle.settings.updateChecker.isEnabled",
+          "false"
+        );
+      });
+
       await use();
       Process.killAllProcesses();
     },

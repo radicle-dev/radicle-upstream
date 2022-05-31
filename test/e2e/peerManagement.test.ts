@@ -13,7 +13,7 @@ test("show our own peer", async ({ app, page, peerManager }) => {
   const projectName = "foo";
   await Support.createProject(peer, projectName);
 
-  await page.goto(peer.uiUrl);
+  await page.goto(peer.uiUrl());
   await app.goToProjectByName(projectName);
   await app.projectScreen.goToPatchesTab();
   await expect(app.projectScreen.selectPeerButton).toContainText(
@@ -37,7 +37,7 @@ test("add a new peer and peer input validation", async ({
 
   await Support.cloneProject(contributor, projectUrn, projectName);
 
-  await page.goto(maintainer.uiUrl);
+  await page.goto(maintainer.uiUrl());
   await app.goToProjectByName(projectName);
   await app.projectScreen.editRemotePeersButton.click();
 

@@ -21,7 +21,7 @@ test.describe("source browsing with a single peer", () => {
   test.beforeEach(async ({ app, page, peerManager }) => {
     peer = await peerManager.startPeer({ name: "peer" });
     ({ urn } = await createProjectFromPlatinumFixture(peer));
-    await page.goto(peer.uiUrl);
+    await page.goto(peer.uiUrl());
     await app.goToProjectByName(projectName);
   });
 
@@ -423,7 +423,7 @@ test("view project from another peer's perspective", async ({
 
   // Contributor creates and publishes a branch with a commit adding a new file.
   {
-    await page.goto(contributor.uiUrl);
+    await page.goto(contributor.uiUrl());
     await app.trackProject(urn);
     await app.goToProjectByName(projectName);
 
@@ -475,7 +475,7 @@ test("view project from another peer's perspective", async ({
 
   // Maintainer views the project source from the contributor's perspective.
   {
-    await page.goto(maintainer.uiUrl);
+    await page.goto(maintainer.uiUrl());
     await app.goToProjectByName(projectName);
     await app.projectScreen.addRemotes([contributor.peerId]);
     await app.projectScreen.selectPeer(contributor.userHandle);

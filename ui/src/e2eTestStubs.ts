@@ -7,10 +7,14 @@
 import type { MainProcess, MainMessage } from "native/ipc-types";
 import * as Sinon from "sinon";
 import * as Bacon from "baconjs";
+import * as FakeTimers from "@sinonjs/fake-timers";
+
+import { config } from "ui/src/config";
 
 declare global {
   interface Window {
     electronMainProcessStubs: typeof mainProcessStubs;
+    fakeClock: FakeTimers.InstalledClock;
   }
 }
 
@@ -51,3 +55,7 @@ window.electron = {
     },
   },
 };
+
+if (config.fakeClock) {
+  window.fakeClock = FakeTimers.install({ shouldClearNativeTimers: true });
+}
