@@ -17,6 +17,8 @@ export interface Params {
   activeView: ProjectView;
 }
 
+export type PatchView = "commits" | "discussion";
+
 export interface LoadedRoute {
   type: "project";
   urn: string;
@@ -29,7 +31,12 @@ export type ProjectView =
   | { type: "commits" }
   | { type: "commit"; commitHash: string }
   | { type: "patches"; filter: "open" | "closed" | "all" }
-  | { type: "patch"; id: string; peerId: string }
+  | {
+      type: "patch";
+      id: string;
+      peerId: string;
+      view: PatchView;
+    }
   | { type: "anchors" };
 
 export async function load(params: Params): Promise<LoadedRoute> {

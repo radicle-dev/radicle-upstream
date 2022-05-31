@@ -34,6 +34,7 @@
           type: "patch",
           peerId: patch.peerId,
           id: patch.id,
+          view: "commits",
         },
       },
     });

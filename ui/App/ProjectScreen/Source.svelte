@@ -53,7 +53,7 @@
 
   export let activeView: projectRoute.ProjectView;
 
-  const tabs = (active: projectRoute.ProjectView, screen: Screen): Tab[] => {
+  function tabs(active: projectRoute.ProjectView, screen: Screen): Tab[] {
     const items = [
       {
         title: "Files",
@@ -128,7 +128,7 @@
     } else {
       return items;
     }
-  };
+  }
 
   const onSelectRevision = ({
     detail: revision,
@@ -249,7 +249,11 @@
       patches={$store.data.patches}
       filter={activeView.filter} />
   {:else if activeView.type === "patch"}
-    <PatchTab {project} id={activeView.id} peerId={activeView.peerId} />
+    <PatchTab
+      {project}
+      id={activeView.id}
+      peerId={activeView.peerId}
+      view={activeView.view} />
   {:else if activeView.type === "anchors"}
     <AnchorsTab {anchors} />
   {:else}

@@ -24,7 +24,8 @@ export function routeToPath(route: Route): string {
     subRoute = `/${route.params.urn}`;
   } else if (route.type === "project") {
     if (route.params.activeView.type === "patch") {
-      subRoute = `/${route.params.urn}/${route.params.activeView.type}/${route.params.activeView.peerId}/${route.params.activeView.id}`;
+      const encodedPatchId = encodeURIComponent(route.params.activeView.id);
+      subRoute = `/${route.params.urn}/${route.params.activeView.type}/${route.params.activeView.peerId}/${encodedPatchId}`;
     } else {
       subRoute = `/${route.params.urn}/${route.params.activeView.type}`;
     }
@@ -51,13 +52,24 @@ function pathToRoute(path: string): Route | undefined {
       const resource = segments.shift();
       if (urn && resource === "patch") {
         const peerId = segments.shift();
-        const patchId = segments.join("/");
-        if (peerId && patchId) {
+        const encodedPatchId = segments.shift();
+        const view = segments.shift() ?? "commits";
+        if (
+          peerId &&
+          encodedPatchId &&
+          (view === "commits" || view === "discussion")
+        ) {
+          const patchId = decodeURIComponent(encodedPatchId);
           return {
             type: "project",
             params: {
               urn,
-              activeView: { type: "patch", id: patchId, peerId },
+              activeView: {
+                type: "patch",
+                id: patchId,
+                peerId,
+                view,
+              },
             },
           };
         } else {

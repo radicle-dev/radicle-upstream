@@ -6,17 +6,22 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { Project } from "ui/src/project";
   import type { GroupedCommitsHistory } from "ui/src/source";
+  import type { PatchView } from "../route";
 
   import * as Patch from "ui/src/project/patch";
   import * as router from "ui/src/router";
+  import { Project } from "ui/src/project";
+  import { unreachable } from "ui/src/unreachable";
 
   import LinkIcon from "design-system/icons/Link.svelte";
   import Markdown from "design-system/Markdown.svelte";
   import PatchIcon from "./PatchIcon.svelte";
+  import CommitIcon from "design-system/icons/Commit.svelte";
+  import ChatIcon from "design-system/icons/Chat.svelte";
 
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
+  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
 
   import BackButton from "../BackButton.svelte";
   import History from "./SourceBrowser/History.svelte";
@@ -24,6 +29,50 @@
   export let project: Project;
   export let patch: Patch.Patch;
   export let commits: GroupedCommitsHistory;
+  export let view: PatchView;
+
+  function tabs(view: PatchView) {
+    return [
+      {
+        title: "Commits",
+        active: view === "commits",
+        icon: CommitIcon,
+        onClick: () => {
+          router.push({
+            type: "project",
+            params: {
+              urn: project.urn,
+              activeView: {
+                type: "patch",
+                peerId: patch.peerId,
+                id: patch.id,
+                view: "commits",
+              },
+            },
+          });
+        },
+      },
+      {
+        title: "Discussion",
+        active: view === "discussion",
+        icon: ChatIcon,
+        onClick: () => {
+          router.push({
+            type: "project",
+            params: {
+              urn: project.urn,
+              activeView: {
+                type: "patch",
+                peerId: patch.peerId,
+                id: patch.id,
+                view: "discussion",
+              },
+            },
+          });
+        },
+      },
+    ];
+  }
 </script>
 
 <style>
@@ -48,8 +97,14 @@
   }
 
   .desc {
-    border-top: 1px solid var(--color-foreground-level-3);
-    padding: 1.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .divider {
+    border-bottom: 1px solid var(--color-foreground-level-3);
+    height: 1px;
+    margin: 0.75rem 0 2rem 0;
   }
 
   .copyable-link {
@@ -63,7 +118,7 @@
 
 <div class="patch-page" data-cy="patch-page">
   <BackButton
-    style="padding: 1rem; z-index: 0;"
+    style="padding: 1rem 1rem 1.5rem 1rem; z-index: 0;"
     on:arrowClick={() => router.pop()}>
     <div>
       <div class="title" data-cy="patch-title">
@@ -101,5 +156,13 @@
       <Markdown content={patch.description} />
     </div>
   {/if}
-  <History projectUrn={project.urn} history={commits} />
+  <TabBar style="margin-top: 1.5rem" tabs={tabs(view)} />
+  <div class="divider" />
+  {#if view === "commits"}
+    <History projectUrn={project.urn} history={commits} />
+  {:else if view === "discussion"}
+    <!-- Discussions go here. -->
+  {:else}
+    {unreachable(view)}
+  {/if}
 </div>

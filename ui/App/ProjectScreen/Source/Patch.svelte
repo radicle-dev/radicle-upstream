@@ -58,6 +58,8 @@
 </script>
 
 <script lang="ts">
+  import type { PatchView } from "../route";
+
   import { onDestroy } from "svelte";
 
   import * as localPeer from "ui/src/localPeer";
@@ -69,6 +71,7 @@
   export let id: string;
   export let peerId: string;
   export let project: Project;
+  export let view: PatchView;
 
   function watchPatchUpdates(): () => void {
     return localPeer.projectEvents.onValue(event => {
@@ -90,6 +93,7 @@
 {:else if $patchStatus.type === "ok"}
   <PatchLoaded
     {project}
+    {view}
     patch={$patchStatus.patch}
     commits={$patchStatus.commits} />
 {:else if $patchStatus.type === "notReplicated"}
