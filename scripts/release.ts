@@ -97,12 +97,12 @@ const createRc: yargs.CommandModule<unknown, StartOptions> = {
     const currentDate = new Date().toISOString().replace(/T.*$/, "");
     const releaseNotePlaceholder = [
       `## [${newVersion}](https://github.com/radicle-dev/radicle-upstream/compare/v${currentVersion}...v${newVersion}) (${currentDate})\n`,
-      "**Add relese notes for the current version here!**",
+      "**Add release notes for the current version here!**",
     ];
     const changelogPath = path.resolve(__dirname, "..", "CHANGELOG.md");
     const oldChangelog = (await fs.readFile(changelogPath, "utf8")).split("\n");
 
-    let newChangelog: string[] | undefined = undefined;
+    let newChangelog: string[];
 
     if (oldChangelog[0] === "# Changelog") {
       newChangelog = [

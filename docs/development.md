@@ -309,13 +309,13 @@ All Github access tokens _must_ have the `public_repo` scope.
     2. Build and notarize the macOS x86_64 and arm64 binaries on your local
        machine.
 
-    ```bash
-    CSC_NAME=… \
-    APPLE_ID=… \
-    APPLE_ID_PASSWORD=… \
-    NOTARIZE=true \
-    yarn dist
-    ```
+       ```bash
+       CSC_NAME=… \
+       APPLE_ID=… \
+       APPLE_ID_PASSWORD=… \
+       NOTARIZE=true \
+       yarn dist
+       ```
 
     3. Publish the CI artifacts as release candidate binaries.
 
@@ -377,8 +377,8 @@ All Github access tokens _must_ have the `public_repo` scope.
        brew bump-cask-pr --version X.Y.Z radicle-upstream
        ```
 
-       Note: disable commit signing before running these commands on macOS
-             https://github.com/Homebrew/brew/issues/3544
+       Note: disable commit signing before running these commands on macOS (see
+       <https://github.com/Homebrew/brew/issues/3544>)
 
 4. Finish the release by merging the release candidate branch into `main`.
 
