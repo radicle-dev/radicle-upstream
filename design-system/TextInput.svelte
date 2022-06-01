@@ -14,8 +14,14 @@
   import KeyHint from "./KeyHint.svelte";
   import Spinner from "./Spinner.svelte";
 
+  export let variant:
+    | { type: "text" }
+    | { type: "password" }
+    | { type: "number"; min: number } = {
+    type: "text",
+  };
+
   export let autofocus: boolean = false;
-  export let concealed: boolean = false;
   export let disabled: boolean = false;
   export let readonly: boolean = false;
   export let showSuccessCheck: boolean = false;
@@ -24,7 +30,7 @@
   export let inputStyle: string | undefined = undefined;
   export let style: string | undefined = undefined;
 
-  export let value: string | undefined = undefined;
+  export let value: string | number | undefined = undefined;
   export let placeholder: string | undefined = undefined;
 
   export let hint: string | undefined = undefined;
@@ -50,7 +56,7 @@
   // We do it this way to work around the svelte-check error: 'type' attribute
   // cannot be dynamic if input uses two-way binding (svelte).
   $: if (inputElement) {
-    inputElement.type = concealed ? "password" : "text";
+    inputElement.type = variant.type;
   }
 
   let rightContainerWidth: number;
@@ -142,7 +148,8 @@
       rightContainerWidth ? `${rightContainerWidth}px` : "auto"
     };`}
     class:invalid={validationState.type === "invalid"}
-    class:concealed
+    class:concealed={variant.type === "password"}
+    min={variant.type === "number" ? variant.min : undefined}
     data-cy={dataCy}
     {placeholder}
     {disabled}

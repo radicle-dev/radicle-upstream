@@ -109,7 +109,7 @@
 
   <div class="form">
     <TextInput
-      concealed={isPassphraseConcealed}
+      variant={isPassphraseConcealed ? { type: "password" } : { type: "text" }}
       bind:this={input}
       autofocus
       placeholder="Enter your passphrase"

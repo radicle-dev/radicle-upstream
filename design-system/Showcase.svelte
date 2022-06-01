@@ -534,20 +534,20 @@
         <div class="swatch">
           <TextInput
             style="width: 100%;"
-            concealed={true}
+            variant={{ type: "password" }}
             placeholder="Please enter a password" />
         </div>
 
         <div class="swatch">
           <TextInput
-            concealed={true}
+            variant={{ type: "password" }}
             style="width: 100%;"
             value="my super long password" />
         </div>
 
         <div class="swatch">
           <TextInput
-            concealed={true}
+            variant={{ type: "password" }}
             style="width: 100%;"
             value="too short"
             validationState={{
