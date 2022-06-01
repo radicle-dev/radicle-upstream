@@ -24,6 +24,7 @@
   import SegmentedControl from "./SegmentedControl.svelte";
   import SupportButton from "./SupportButton.svelte";
   import TextInput from "./TextInput.svelte";
+  import TextArea from "./TextArea.svelte";
   import ThreeDotsMenu from "./ThreeDotsMenu.svelte";
   import Tooltip from "./Tooltip.svelte";
   import TrackToggle from "./TrackToggle.svelte";
@@ -540,6 +541,19 @@
             validationState={{
               type: "invalid",
               message: "Password too short.",
+            }} />
+        </div>
+
+        <div class="swatch">
+          <TextArea placeholder="I'm a textarea" caption="Markdown supported" />
+        </div>
+
+        <div class="swatch">
+          <TextArea
+            placeholder="I'm an invalid textarea"
+            validationState={{
+              type: "invalid",
+              message: "Something is not valid.",
             }} />
         </div>
 
