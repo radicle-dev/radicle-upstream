@@ -182,7 +182,6 @@
     <MagnifyingGlassIcon style="margin-left: 0.5rem;" />
     <TextInput
       dataCy="search-input"
-      style="flex: 1;"
       inputStyle="border: 0; background: transparent;"
       autofocus
       bind:value={searchQuery}

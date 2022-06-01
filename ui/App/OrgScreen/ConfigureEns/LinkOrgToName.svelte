@@ -124,10 +124,13 @@
   </svelte:fragment>
 
   <div class="label typo-text-bold">Org address</div>
-  <TextInput disabled style="margin-bottom: 24px" value={orgAddress} />
+  <TextInput
+    disabled
+    style="width: auto; margin-bottom: 24px"
+    value={orgAddress} />
 
   <div class="label typo-text-bold">Name</div>
-  <TextInput disabled style="margin-bottom: 24px" value={domain} />
+  <TextInput disabled style="width: auto; margin-bottom: 24px" value={domain} />
 
   <p
     style="color: var(--color-foreground-level-5; margin: 16px 0;"

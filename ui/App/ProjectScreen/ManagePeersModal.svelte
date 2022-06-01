@@ -114,7 +114,7 @@
           bind:value={newPeer}
           placeholder="Enter a Peer ID here"
           validationState={peerValidation}
-          style="width: 100%; margin-right: .5rem;" />
+          style="margin-right: .5rem;" />
         <Button
           dataCy="track-button"
           style="display: flex; align-self: flex-start;"

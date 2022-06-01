@@ -471,44 +471,36 @@
         title="Form elements"
         subTitle="Inputs, text areas, dropdowns, etc.">
         <div class="swatch">
-          <TextInput placeholder="Hey, I'm an input." />
+          <TextInput placeholder="Hey, I'm an input." style="width: auto;" />
         </div>
 
         <div class="swatch">
-          <TextInput
-            placeholder="Hey, I'm a full-width input."
-            style="flex: 1" />
+          <TextInput placeholder="Hey, I'm a full-width input." />
         </div>
 
         <div class="swatch">
           <TextInput
             placeholder="Hey, I'm a full-width input with a hint"
-            hint="↵"
-            style="flex: 1" />
+            hint="↵" />
         </div>
 
         <div class="swatch">
           <TextInput
-            style="flex: 1;"
             disabled
             placeholder="Hey, I'm a disabled input with a placeholder." />
         </div>
 
         <div class="swatch">
-          <TextInput
-            style="flex: 1;"
-            disabled
-            value="I'm a disabled input with a value." />
+          <TextInput disabled value="I'm a disabled input with a value." />
         </div>
 
         <div class="swatch">
-          <TextInput style="flex: 1;" value="I have a..." suffix="suffix" />
+          <TextInput value="I have a..." suffix="suffix" />
         </div>
 
         <div class="swatch">
           <TextInput
             placeholder="I'm an input with a validation error."
-            style="flex: 1"
             validationState={{
               type: "invalid",
               message: "That doesn't look good!",
@@ -518,7 +510,6 @@
         <div class="swatch">
           <TextInput
             placeholder="Enter user name"
-            style="width: 100%"
             showSuccessCheck
             validationState={{ type: "valid" }} />
         </div>
@@ -526,14 +517,12 @@
         <div class="swatch">
           <TextInput
             placeholder="Enter user name"
-            style="width: 100%"
             validationState={{ type: "pending" }}
             value="user123" />
         </div>
 
         <div class="swatch">
           <TextInput
-            style="width: 100%;"
             variant={{ type: "password" }}
             placeholder="Please enter a password" />
         </div>
@@ -541,14 +530,12 @@
         <div class="swatch">
           <TextInput
             variant={{ type: "password" }}
-            style="width: 100%;"
             value="my super long password" />
         </div>
 
         <div class="swatch">
           <TextInput
             variant={{ type: "password" }}
-            style="width: 100%;"
             value="too short"
             validationState={{
               type: "invalid",
