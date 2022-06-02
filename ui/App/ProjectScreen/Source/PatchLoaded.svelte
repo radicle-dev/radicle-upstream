@@ -14,29 +14,31 @@
   import { Project } from "ui/src/project";
   import { unreachable } from "ui/src/unreachable";
 
+  import ChatIcon from "design-system/icons/Chat.svelte";
+  import CommitIcon from "design-system/icons/Commit.svelte";
   import LinkIcon from "design-system/icons/Link.svelte";
   import Markdown from "design-system/Markdown.svelte";
-  import PatchIcon from "./PatchIcon.svelte";
-  import CommitIcon from "design-system/icons/Commit.svelte";
-  import ChatIcon from "design-system/icons/Chat.svelte";
 
-  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
+  import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 
   import BackButton from "../BackButton.svelte";
   import History from "./SourceBrowser/History.svelte";
+  import PatchIcon from "./PatchIcon.svelte";
+  import PatchDiscussion from "./PatchDiscussion.svelte";
 
   export let project: Project;
   export let patch: Patch.Patch;
   export let commits: GroupedCommitsHistory;
   export let view: PatchView;
 
-  function tabs(view: PatchView) {
+  function tabs(view: PatchView, project: Project, patch: Patch.Patch) {
     return [
       {
         title: "Commits",
         active: view === "commits",
         icon: CommitIcon,
+        counter: commits.stats.commits,
         onClick: () => {
           router.push({
             type: "project",
@@ -56,6 +58,7 @@
         title: "Discussion",
         active: view === "discussion",
         icon: ChatIcon,
+        counter: patch.comments.length,
         onClick: () => {
           router.push({
             type: "project",
@@ -118,8 +121,16 @@
 
 <div class="patch-page" data-cy="patch-page">
   <BackButton
-    style="padding: 1rem 1rem 1.5rem 1rem; z-index: 0;"
-    on:arrowClick={() => router.pop()}>
+    style="padding: 1rem 1rem 1.5rem 1rem;"
+    on:arrowClick={() => {
+      router.push({
+        type: "project",
+        params: {
+          urn: project.urn,
+          activeView: { type: "patches", filter: "open" },
+        },
+      });
+    }}>
     <div>
       <div class="title" data-cy="patch-title">
         <PatchIcon status={patch.status.current} />
@@ -156,12 +167,12 @@
       <Markdown content={patch.description} />
     </div>
   {/if}
-  <TabBar style="margin-top: 1.5rem" tabs={tabs(view)} />
+  <TabBar style="margin-top: 1.5rem" tabs={tabs(view, project, patch)} />
   <div class="divider" />
   {#if view === "commits"}
     <History projectUrn={project.urn} history={commits} />
   {:else if view === "discussion"}
-    <!-- Discussions go here. -->
+    <PatchDiscussion projectUrn={project.urn} {patch} />
   {:else}
     {unreachable(view)}
   {/if}

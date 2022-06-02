@@ -28,9 +28,9 @@
   const onKeydown = (event: KeyboardEvent) => {
     const modifierKey = hotkeys.isMac ? event.metaKey : event.ctrlKey;
     const hasInputTarget =
-      !modifierKey &&
       event.target &&
-      (event.target as HTMLInputElement).type === "text";
+      ((event.target as HTMLInputElement).type === "text" ||
+        (event.target as HTMLTextAreaElement).type === "textarea");
 
     if (
       !hotkeys.areEnabled() ||

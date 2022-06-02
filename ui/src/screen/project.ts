@@ -4,6 +4,8 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
+import type { Identity } from "proxy-client/identity";
+
 import { get } from "svelte/store";
 import lodash from "lodash";
 
@@ -13,6 +15,7 @@ import * as localPeer from "ui/src/localPeer";
 import * as mutexExecutor from "ui/src/mutexExecutor";
 import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
+import * as session from "ui/src/session";
 
 interface Screen {
   peers: Project.Peer[];
@@ -139,5 +142,22 @@ function throwUnlessPeersPresent(
 ): void {
   if (peers.length === 0) {
     throw new Error(`Project ${projectId} is missing peers`);
+  }
+}
+
+export function getUserForPeerId(peerId: string): Identity | undefined {
+  const result = get(store);
+  if (result.status !== remote.Status.Success) {
+    return undefined;
+  }
+
+  const user = result.data.peerSelection.find(p => p.peerId === peerId);
+  if (user) {
+    return user.identity;
+  } else {
+    const ownIdentity = session.unsealed().identity;
+    if (ownIdentity.peerId === peerId) {
+      return ownIdentity;
+    }
   }
 }

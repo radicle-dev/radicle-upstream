@@ -8,53 +8,39 @@
 <script lang="ts">
   import type { TextInputValidationState } from "./TextInput";
 
-  import CheckCircleIcon from "./icons/CheckCircle.svelte";
-  import ExclamationCircleIcon from "./icons/ExclamationCircle.svelte";
+  export let resizable: boolean = false;
 
-  import KeyHint from "./KeyHint.svelte";
-  import Spinner from "./Spinner.svelte";
-
-  export let autofocus: boolean = false;
-  export let disabled: boolean = false;
-  export let readonly: boolean = false;
-  export let showSuccessCheck: boolean = false;
-
-  export let dataCy: string | undefined = undefined;
-  export let inputStyle: string | undefined = undefined;
-  export let style: string | undefined = undefined;
   export let caption: string | undefined = undefined;
+  export let textareaStyle: string | undefined = undefined;
 
   export let value: string | number | undefined = undefined;
   export let placeholder: string | undefined = undefined;
-
-  export let hint: string | undefined = undefined;
-  export let suffix: string | undefined = undefined;
 
   export let validationState: TextInputValidationState = {
     type: "unvalidated",
   };
 
-  export const focus = (): void => {
-    textareaElement && textareaElement.focus();
-  };
-
   let textareaElement: HTMLTextAreaElement | undefined = undefined;
 
-  // Can't use normal `autofocus` attribute on the `textareaElement`: "Autofocus
-  // processing was blocked because a document's URL has a fragment".
-  // preventScroll is necessary for onboarding animations to work.
-  $: if (autofocus) {
-    textareaElement && textareaElement.focus({ preventScroll: true });
-  }
+  // We either auto-grow the text area, or allow the user to resize it. These
+  // options are mutually exclusive because a user resized textarea would
+  // automatically shrink upon text input otherwise.
+  $: if (textareaElement && !resizable) {
+    // React to changes to the textarea content.
+    value;
 
-  let rightContainerWidth: number;
+    // Reset height to 0px on every value change so that the textarea
+    // immediately shrinks when all text is deleted.
+    textareaElement.style.height = `0px`;
+
+    textareaElement.style.height = `${textareaElement.scrollHeight}px`;
+  }
 </script>
 
 <style>
-  .wrapper {
+  .container {
     display: flex;
     flex-direction: column;
-    position: relative;
     width: 100%;
   }
 
@@ -65,27 +51,27 @@
     height: 2.5rem;
     padding: 0.5rem 0.75rem;
     width: 100%;
+    min-height: 2.5rem;
+    resize: none;
+  }
 
+  .resizable {
     resize: vertical;
-    min-height: 80px;
   }
 
-  textarea[disabled] {
-    background-color: var(--color-foreground-level-1);
-    color: var(--color-foreground-level-4);
-    cursor: not-allowed;
+  textarea::-webkit-scrollbar {
+    display: initial;
   }
 
-  textarea[disabled]::placeholder {
-    color: var(--color-foreground-level-4);
+  textarea::-webkit-scrollbar-corner {
+    background-color: transparent;
   }
 
-  textarea[disabled]:hover {
-    background-color: var(--color-foreground-level-1);
-  }
-
-  textarea[readonly]:hover {
-    cursor: pointer;
+  textarea::-webkit-resizer {
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAMAAAAolt3jAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAD9QTFRFAAAAZWZmZmZmZmVmZWVmwsLBwsLCZ2ZmwsPCZmdlZWZnwcLBZmZkYGJjw8LDwsPBZmZnZWZkZ2ZkwMDBWFtcNbXb2AAAABV0Uk5TAP///////////////////////1H/YDRrSAAAAFBJREFUeJxVjUESgCAMA2mqAoqK6P/f6kzjIXIos5NumpI8g5LbpJnNQvDl52mWUYTquqnXwstshpHaTi+o+hHXccoKmHVW9yvIxv218ntivmOYAWpLfqaRAAAAAElFTkSuQmCC);
+    background-size: 7px;
+    background-repeat: no-repeat;
+    background-position: bottom 1px right 1px;
   }
 
   textarea::placeholder {
@@ -128,59 +114,24 @@
     margin-top: 0.75rem;
     text-align: left;
   }
-
-  .right-container {
-    align-items: center;
-    display: flex;
-    height: 2.5rem;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
 </style>
 
-<div {style} class="wrapper">
+<div class="container">
   <textarea
-    style={`${inputStyle}; padding-right: ${
-      rightContainerWidth ? `${rightContainerWidth}px` : "auto"
-    };`}
-    class:invalid={validationState.type === "invalid"}
-    data-cy={dataCy}
-    {placeholder}
-    {disabled}
-    {readonly}
-    spellcheck={false}
-    bind:value
+    style={textareaStyle}
     bind:this={textareaElement}
+    bind:value
+    class:invalid={validationState.type === "invalid"}
+    class="wrap"
+    class:resizable
+    {placeholder}
     on:change
     on:click
     on:input
     on:keydown
     on:keypress />
 
-  <div class="right-container" bind:clientWidth={rightContainerWidth}>
-    {#if hint && (validationState.type === "unvalidated" || validationState.type === "valid")}
-      <KeyHint style="margin: 0 0.5rem;">{hint}</KeyHint>
-    {/if}
-
-    {#if suffix}
-      <span style="color: var(--color-foreground-level-5); margin: 0 0.5rem;">
-        {suffix}
-      </span>
-    {/if}
-
-    {#if validationState.type === "pending"}
-      <Spinner style="margin: 0 0.5rem;" />
-    {:else if showSuccessCheck && validationState.type === "valid"}
-      <CheckCircleIcon style="fill: var(--color-positive); margin: 0 0.5rem;" />
-    {:else if validationState.type === "invalid"}
-      <ExclamationCircleIcon
-        dataCy="validation-error-icon"
-        style="fill: var(--color-negative); margin: 0 0.5rem;" />
-    {/if}
-  </div>
-
-  {#if caption}
+  {#if caption && validationState.type !== "invalid"}
     <div class="caption typo-text-small">
       {caption}
     </div>

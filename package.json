@@ -69,7 +69,6 @@
     "stream-browserify": "^3.0.0",
     "strip-ansi": "^6.0.1",
     "svelte-persistent-store": "^0.1.6",
-    "timeago.js": "^4.0.2",
     "twemoji": "14.0.2",
     "uuid": "^8.3.2",
     "zod": "^3.16.0"

@@ -65,4 +65,10 @@ export class App {
       },
     });
   }
+
+  public async getClipboardContents(): Promise<string> {
+    return await this.#page.evaluate(() => {
+      return window.electronMainProcessStubs.clipboardWriteText.args[0][0];
+    });
+  }
 }

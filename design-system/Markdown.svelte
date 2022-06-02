@@ -10,8 +10,9 @@
   import sanitizeHtml from "sanitize-html";
 
   export let content: string;
+  export let markedOptions: marked.MarkedOptions = {};
 
-  $: sanitizedHtml = sanitizeHtml(marked.parse(content), {
+  $: sanitizedHtml = sanitizeHtml(marked.parse(content, markedOptions), {
     allowedTags: sanitizeHtml.defaults.allowedTags.concat([
       "img",
       "audio",
@@ -118,6 +119,11 @@
   .markdown :global(p) {
     margin-top: 0;
     margin-bottom: 0.625rem;
+  }
+
+  /* Don't add extra margin to one-line patch comments*/
+  .markdown :global(p:last-child) {
+    margin-bottom: 0;
   }
 
   .markdown :global(strong) {
@@ -231,6 +237,12 @@
     /* disables text decoration from containing a element */
     display: inline-block;
     vertical-align: text-top;
+  }
+  .markdown :global(blockquote) {
+    color: var(--color-foreground-level-6);
+    border-left: 0.3rem solid var(--color-foreground-level-3);
+    padding-left: 1rem;
+    margin-bottom: 0.625rem;
   }
 </style>
 

@@ -26,6 +26,8 @@
   export let modalStyle: string = "top: -2rem; left: -17rem;";
   export let triggerStyle: string | undefined = undefined;
   export let boldHandle: boolean = false;
+  export let size: "small" | "regular" = "small";
+  export let style: string | undefined = undefined;
 
   let user: proxyIdentity.RemoteIdentity | undefined = undefined;
 
@@ -116,7 +118,8 @@
     <div class="user" data-peer-handle={handle} style={triggerStyle}>
       <Avatar
         kind={{ type: "userEmoji", uniqueIdentifier: urn }}
-        size="small" />
+        {size}
+        {style} />
       {#if handle}
         <div
           class:typo-text-bold={boldHandle}

@@ -274,9 +274,7 @@ test("patch statuses", async ({ app, page, peerManager }) => {
     await page
       .locator('role=button[name="Copy patch URL to clipboard"]')
       .click();
-    patchUrl = await page.evaluate(() => {
-      return window.electronMainProcessStubs.clipboardWriteText.args[0][0];
-    });
+    patchUrl = await app.getClipboardContents();
 
     await expect(patchActions.mergeButton).toBeHidden();
     await expect(patchActions.closeButton).toBeVisible();
@@ -445,7 +443,6 @@ test("patch statuses", async ({ app, page, peerManager }) => {
     await Support.mergePatch(
       maintainer,
       checkoutPath,
-      // TODO: get the Patch ID by copying it to the clipboard, requires IPC mocks.
       `${contributor.peerId}/${branchName}`
     );
 
@@ -502,6 +499,112 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 
     await expect(patchActions.mergeButton).toBeHidden();
     await expect(patchActions.closeButton).toBeHidden();
+  }
+});
+
+test("patch discussions", async ({ app, page, peerManager }) => {
+  const maintainer = await peerManager.startPeer({ name: "maintainer" });
+
+  const projectName = "foo";
+  const { urn: projectUrn } = await Support.createAndPublishProject(
+    maintainer,
+    projectName
+  );
+
+  const contributor = await peerManager.startPeer({ name: "contributor" });
+
+  let patchUrl: string;
+  const patchTitle = "My Patch";
+
+  // Contributor creates a patch.
+  {
+    await page.goto(contributor.uiUrl());
+    await app.trackProject(projectUrn);
+    await expect(app.projectList).toContainText(projectName);
+
+    const projectWorkingCopyPath = await Support.forkProject(
+      contributor,
+      projectUrn,
+      projectName
+    );
+    await Support.createOrUpdatePatch(
+      patchTitle,
+      "Patch description",
+      contributor,
+      projectWorkingCopyPath
+    );
+
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.goToPatchesTab();
+    await app.projectScreen.goToPatchByTitle(patchTitle);
+    await app.projectScreen.goToPatchDiscussionTab();
+
+    await page
+      .locator('role=button[name="Copy patch URL to clipboard"]')
+      .click();
+    patchUrl = await app.getClipboardContents();
+  }
+
+  const contributorComment = "Hi from contributor!";
+
+  // Contributor creates a comment.
+  {
+    await expect(app.projectScreen.commentCounter).toBeHidden();
+
+    await expect(page.locator('role=button[name="Preview"]')).toBeDisabled();
+    await expect(page.locator('role=button[name="Comment"]')).toBeDisabled();
+
+    await page
+      .locator('[placeholder="Leave a comment"]')
+      .fill(contributorComment);
+
+    await page.locator('role=button[name="Preview"]').click();
+    await expect(
+      page.locator(`text=${contributor.userHandle} preview`)
+    ).toBeVisible();
+    await expect(page.locator(`text=${contributorComment}`)).toBeVisible();
+
+    await page.locator('role=button[name="Comment"]').click();
+
+    await expect(app.projectScreen.commentCounter).toContainText("1");
+    await expect(page.locator('[placeholder="Leave a comment"]')).toBeEmpty();
+    await expect(
+      page.locator(`text=${contributor.userHandle} commented a few seconds ago`)
+    ).toBeVisible();
+    await expect(page.locator(`text=${contributorComment}`)).toBeVisible();
+  }
+
+  const maintainerComment = "Hi from maintainer!";
+
+  // Maintainer tracks contributor, sees the contributor patch, comment and
+  // replies with own comment.
+  {
+    await page.goto(maintainer.uiUrl());
+    await app.goToProjectByName(projectName);
+    await app.projectScreen.addRemotes([contributor.peerId]);
+
+    await app.openRadicleUrl(patchUrl);
+    await app.projectScreen.goToPatchDiscussionTab();
+    await expect(app.projectScreen.commentCounter).toContainText("1");
+    await expect(page.locator(`text=${contributorComment}`)).toBeVisible();
+
+    await page
+      .locator('[placeholder="Leave a comment"]')
+      .fill(maintainerComment);
+    await page.locator('role=button[name="Comment"]').click();
+    await expect(page.locator('[placeholder="Leave a comment"]')).toBeEmpty();
+    await expect(page.locator(`text=${maintainerComment}`)).toBeVisible();
+    await expect(app.projectScreen.commentCounter).toContainText("2");
+  }
+
+  // Contributor sees the maintainer's reply.
+  {
+    await page.goto(contributor.uiUrl());
+    await app.openRadicleUrl(patchUrl);
+    await app.projectScreen.goToPatchDiscussionTab();
+
+    await expect(app.projectScreen.commentCounter).toContainText("2");
+    await expect(page.locator(`text=${maintainerComment}`)).toBeVisible();
   }
 });
 

@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
   import * as Patch from "ui/src/project/patch";
-  import { store } from "ui/src/screen/project";
+  import * as projectScreen from "ui/src/screen/project";
 
   import Button from "design-system/Button.svelte";
   import Hoverable from "design-system/Hoverable.svelte";
@@ -15,22 +15,13 @@
   import PatchIcon from "./PatchIcon.svelte";
 
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
-  import { Status } from "ui/src/remote";
-  import { User } from "ui/src/project";
 
   export let patch: Patch.Patch;
   export let projectId: string;
 
-  function getUserForPeerId(peerId: string): User | undefined {
-    if ($store.status !== Status.Success) {
-      return undefined;
-    }
-
-    return $store.data.peerSelection.find(p => p.peerId === peerId);
-  }
-
   $: lastUpdateBy =
-    patch.status.byPeerId && getUserForPeerId(patch.status.byPeerId);
+    patch.status.byPeerId &&
+    projectScreen.getUserForPeerId(patch.status.byPeerId);
 </script>
 
 <style>
@@ -134,8 +125,8 @@
                     <p style="margin-right: 0.5rem;">• Closed by</p>
                     <UserIdentity
                       modalStyle="top: 0.5rem; left: 3rem;"
-                      urn={lastUpdateBy.identity.urn}
-                      handle={lastUpdateBy.identity.metadata.handle} />
+                      urn={lastUpdateBy.urn}
+                      handle={lastUpdateBy.metadata.handle} />
                   </div>
                 {/if}
               {/if}

@@ -7,15 +7,23 @@
 import type { Identity } from "proxy-client/identity";
 import type { Project } from "ui/src/project";
 
+import * as zod from "zod";
+import { flatten } from "lodash";
+
 import * as ipc from "ui/src/ipc";
 import * as notification from "ui/src/notification";
 import * as proxy from "ui/src/proxy";
 import * as proxyProject from "proxy-client/project";
 import * as router from "ui/src/router";
 import * as source from "ui/src/source";
+import * as projectScreen from "ui/src/screen/project";
 
-import * as zod from "zod";
-import { flatten } from "lodash";
+interface Comment {
+  comment: string;
+  peerId: string;
+  timestamp: number;
+  user?: Identity;
+}
 
 export interface Patch {
   id: string;
@@ -26,6 +34,7 @@ export interface Patch {
   commit: string;
   mergeBase: string | null;
   merged: boolean;
+  comments: Comment[];
   status: {
     current: "open" | "merged" | "closed";
     byPeerId?: string;
@@ -88,6 +97,28 @@ function inferStatus(
   }
 }
 
+function getComments(
+  events: proxyProject.EventEnvelope<PatchEventOrUnknown>[]
+): Comment[] {
+  const comments = events
+    .map(event => {
+      if (event.event.type === "addComment") {
+        const comment: Comment = {
+          user: projectScreen.getUserForPeerId(event.peer_id),
+          peerId: event.peer_id,
+          comment: event.event.data.comment,
+          timestamp: event.event.data.timestamp,
+        };
+
+        return comment;
+      }
+    })
+    .filter((item): item is Comment => !!item)
+    .reverse();
+
+  return comments;
+}
+
 function makePatch(
   proxyPatch: proxyProject.Patch,
   project: Project,
@@ -111,6 +142,8 @@ function makePatch(
     flatten(Object.values(project.metadata.delegates))
   );
 
+  const comments = getComments(patchEvents);
+
   return {
     id: proxyPatch.id,
     peerId: proxyPatch.peer.peerId,
@@ -118,6 +151,7 @@ function makePatch(
     title,
     description,
     commit: proxyPatch.commit,
+    comments,
     mergeBase: proxyPatch.mergeBase,
     status: {
       current: status,
@@ -180,10 +214,15 @@ function eventTopic(patchId: PatchId) {
   return ["patch", patchId.peerId, patchId.name].join("/");
 }
 
-export type PatchEvent = {
-  type: "setStatus";
-  data: { status: "open" | "closed" };
-};
+export type PatchEvent =
+  | {
+      type: "setStatus";
+      data: { status: "open" | "closed" };
+    }
+  | {
+      type: "addComment";
+      data: { comment: string; timestamp: number };
+    };
 
 export type PatchEventOrUnknown =
   | PatchEvent
@@ -196,6 +235,13 @@ const patchEventOrUnknownSchema = zod.union([
     type: zod.literal("setStatus"),
     data: zod.object({
       status: zod.enum(["open", "closed"]),
+    }),
+  }),
+  zod.object({
+    type: zod.literal("addComment"),
+    data: zod.object({
+      comment: zod.string(),
+      timestamp: zod.number(),
     }),
   }),
   zod

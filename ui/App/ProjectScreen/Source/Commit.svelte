@@ -120,9 +120,7 @@
     <Loading
       style="height: calc(100vh - var(--bigheader-height) - var(--topbar-height));" />
   {:else if commitResult.type === "ok"}
-    <BackButton
-      style="padding: 1rem; z-index: 0;"
-      on:arrowClick={() => router.pop()}>
+    <BackButton style="padding: 1rem;" on:arrowClick={() => router.pop()}>
       <h3 style="margin-bottom: .75rem">
         {commitResult.commit.header.summary}
       </h3>

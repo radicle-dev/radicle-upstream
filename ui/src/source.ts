@@ -4,7 +4,7 @@
 // with Radicle Linking Exception. For full terms see the included
 // LICENSE file.
 
-import { format } from "timeago.js";
+import dayjs from "dayjs";
 
 import * as error from "./error";
 import * as proxy from "./proxy";
@@ -193,7 +193,7 @@ export const isMarkdown = (path: string): boolean => {
 };
 
 export const formatCommitTime = (t: number): string => {
-  return format(t * 1000);
+  return dayjs().to(dayjs(t * 1000));
 };
 
 const formatGroupTime = (t: number): string => {
