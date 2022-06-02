@@ -196,7 +196,7 @@ export const setFatal = (fatalError: FatalError): void => {
   fatalErrorWritable.set(fatalError);
 };
 
-ipc.listenProxyError(proxyError => {
+ipc.proxyError.onValue(proxyError => {
   log(
     new Error({
       code: Code.BackendTerminated,

@@ -7,6 +7,7 @@
 import type {} from "native/preload";
 
 import * as config from "ui/src/config";
+import * as Bacon from "ui/src/bacon";
 import * as ipcTypes from "native/ipc-types";
 export type { ProxyError, CustomProtocolInvocation } from "native/ipc-types";
 
@@ -38,40 +39,32 @@ export const checkRadCliVersion = mainProcess.checkRadCliVersion;
 
 export const getGitGlobalDefaultBranch = mainProcess.getGitGlobalDefaultBranch;
 
-// Register a listener for the `ipcTypes.ProxyError` message.
-export function listenProxyError(
-  f: (proxyError: ipcTypes.ProxyError) => void
-): void {
+const mainMessages = ((): Bacon.EventStream<ipcTypes.MainMessage> => {
   if (config.isNodeTestEnv) {
-    return;
+    return Bacon.never();
+  } else {
+    return Bacon.fromEvent(
+      window.electron.ipcRenderer,
+      "message",
+      (_event, message) => message
+    );
   }
+})();
 
-  window.electron.ipcRenderer.on(
-    "message",
-    (_event: unknown, message: ipcTypes.MainMessage) => {
-      if (message.kind === ipcTypes.MainMessageKind.PROXY_ERROR) {
-        f(message.data);
-      }
+export const proxyError: Bacon.EventStream<ipcTypes.ProxyError> =
+  Bacon.filterMap(mainMessages, message => {
+    if (message.kind === ipcTypes.MainMessageKind.PROXY_ERROR) {
+      return message.data;
+    } else {
+      return undefined;
     }
-  );
-}
+  });
 
-// Register a listener for the `ipcTypes.CustomProtocolInvocation` message.
-export function listenCustomProtocolInvocation(
-  f: (customProtocolInvocation: ipcTypes.CustomProtocolInvocation) => void
-): void {
-  if (config.isNodeTestEnv) {
-    return;
-  }
-
-  window.electron.ipcRenderer.on(
-    "message",
-    (_event: unknown, message: ipcTypes.MainMessage) => {
-      if (
-        message.kind === ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION
-      ) {
-        f(message.data);
-      }
+export const customProtocolInvocation: Bacon.EventStream<ipcTypes.CustomProtocolInvocation> =
+  Bacon.filterMap(mainMessages, message => {
+    if (message.kind === ipcTypes.MainMessageKind.CUSTOM_PROTOCOL_INVOCATION) {
+      return message.data;
+    } else {
+      return undefined;
     }
-  );
-}
+  });

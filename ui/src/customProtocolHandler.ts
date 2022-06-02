@@ -14,7 +14,7 @@ import * as session from "./session";
 import SearchModal from "ui/App/SearchModal.svelte";
 
 export function register(): void {
-  ipc.listenCustomProtocolInvocation(async message => {
+  ipc.customProtocolInvocation.onValue(async message => {
     await session.waitUnsealed();
     handleMessage(message);
   });
