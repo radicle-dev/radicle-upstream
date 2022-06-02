@@ -134,7 +134,6 @@ async fn run_session(
 
     let sealed = context::Sealed {
         store: store.clone(),
-        test: environment.test_mode,
         service_handle,
         keystore: environment.keystore.clone(),
         paths: paths.clone(),

@@ -7,13 +7,12 @@
 //! HTTP API delivering JSON over `RESTish` endpoints.
 
 use serde::Deserialize;
-use warp::{filters::BoxedFilter, path, reject, Filter, Rejection, Reply};
+use warp::{filters::BoxedFilter, path, Filter, Rejection, Reply};
 
 use link_crypto::PeerId;
 
 use crate::context;
 
-mod control;
 pub mod error;
 mod notification;
 mod project;
@@ -40,29 +39,11 @@ macro_rules! combine {
 pub fn api(
     ctx: context::Context,
 ) -> impl Filter<Extract = impl Reply, Error = std::convert::Infallible> + Clone {
-    let test = ctx.test();
-
-    let control_filter = path("control")
-        .map(move || test)
-        .and_then(|enable| async move {
-            if enable {
-                Ok(())
-            } else {
-                Err(reject::not_found())
-            }
-        })
-        .untuple_one()
-        .and(control::filters(ctx.clone()));
     let notification_filter = path("notifications").and(notification::filters(ctx.clone()));
     let project_filter = path("projects").and(project::filters(ctx.clone()));
     let source_filter = path("source").and(source::filters(ctx));
 
-    let api = path("v1").and(combine!(
-        control_filter,
-        notification_filter,
-        project_filter,
-        source_filter
-    ));
+    let api = path("v1").and(combine!(notification_filter, project_filter, source_filter));
 
     api.recover(error::recover)
 }
