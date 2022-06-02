@@ -19,7 +19,7 @@ use crate::{cli::Args, config, context, service};
 pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     setup_logging(&args);
 
-    if !args.skip_identity_check && !args.test {
+    if !args.skip_identity_check {
         loop {
             match lnk_profile::get(None, None) {
                 Ok(Some(_)) => break,
@@ -31,7 +31,6 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
     }
 
     let mut service_manager = service::Manager::new(service::EnvironmentConfig {
-        test_mode: args.test,
         unsafe_fast_keystore: args.unsafe_fast_keystore,
         identity_key: args.identity_key.clone(),
     })?;
@@ -118,16 +117,12 @@ async fn run_session(
     restart_signal: impl Future<Output = ()> + Send + Sync + 'static,
     args: Args,
 ) -> Result<(), anyhow::Error> {
-    let store_path = if let Some(temp_dir) = &environment.temp_dir {
-        temp_dir.path().join("store")
-    } else {
-        config::store_dir(
-            environment.coco_profile.id(),
-            std::env::var_os("LNK_HOME")
-                .as_ref()
-                .map(std::path::Path::new),
-        )
-    };
+    let store_path = config::store_dir(
+        environment.coco_profile.id(),
+        std::env::var_os("LNK_HOME")
+            .as_ref()
+            .map(std::path::Path::new),
+    );
 
     let store = kv::Store::new(kv::Config::new(store_path).flush_every_ms(100))?;
     let paths = environment.coco_profile.paths();

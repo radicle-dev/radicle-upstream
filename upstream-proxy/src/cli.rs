@@ -7,10 +7,6 @@
 #[derive(Debug, Clone, clap::Parser)]
 #[clap(disable_version_flag = true)]
 pub struct Args {
-    /// Put proxy in test mode to use certain fixtures
-    #[clap(long)]
-    pub test: bool,
-
     /// Don't wait for identity creation on proxy startup.
     #[clap(long)]
     pub skip_identity_check: bool,

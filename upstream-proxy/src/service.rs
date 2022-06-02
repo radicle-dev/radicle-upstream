@@ -19,23 +19,15 @@ pub struct Environment {
     ///
     /// If this is `None` coco is not started.
     pub key: Option<link_crypto::SecretKey>,
-    /// If set, we use a temporary directory for on-disk persistence.
-    pub temp_dir: Option<tempfile::TempDir>,
     /// Paths & profile id for on-disk persistence.
     pub coco_profile: librad::profile::Profile,
     /// A reference to the key store.
     pub keystore: Arc<dyn crate::keystore::Keystore + Send + Sync>,
-    /// If true, we are running the service in test mode.
-    pub test_mode: bool,
 }
 
 /// Configuration for initializing [`Environment`].
 #[derive(Debug, Clone)]
 pub struct EnvironmentConfig {
-    /// If `true`, then [`Environment::temp_dir`] is set for temporary on-disk persistence and
-    /// [`Environment::test_mode`] is set to `true`.
-    pub test_mode: bool,
-
     /// If `true`, then fast but unsafe encryption parameters are used for the keystore.
     pub unsafe_fast_keystore: bool,
 
@@ -60,14 +52,7 @@ pub enum Error {
 impl Environment {
     /// Create a new initial environment.
     fn new(config: &EnvironmentConfig) -> Result<Self, Error> {
-        let (temp_dir, coco_profile) = if config.test_mode {
-            let temp_dir = tempfile::tempdir()?;
-            let coco_profile = librad::profile::Profile::from_root(temp_dir.path(), None)?;
-            (Some(temp_dir), coco_profile)
-        } else {
-            let coco_profile = librad::profile::Profile::load()?;
-            (None, coco_profile)
-        };
+        let coco_profile = librad::profile::Profile::load()?;
 
         let key_file = if let Some(identity_key) = config.identity_key.clone() {
             identity_key
@@ -83,10 +68,8 @@ impl Environment {
 
         Ok(Self {
             key: None,
-            temp_dir,
             coco_profile,
             keystore,
-            test_mode: config.test_mode,
         })
     }
 }
