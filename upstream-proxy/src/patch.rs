@@ -6,12 +6,11 @@
 
 //! [`list`] all the [`Patch`]es for project.
 
+use anyhow::Context as _;
 use either::Either;
 use radicle_git_ext::Oid;
-use radicle_source::surf::git::RefScope;
 use serde::Serialize;
 
-use link_crypto::PeerId;
 use link_identities::git::Urn;
 
 use crate::project;
@@ -43,17 +42,19 @@ pub struct Patch {
 /// # Errors
 /// * Cannot access the monorepo
 /// * Cannot find references within the monorepo
-pub async fn list(
-    peer: &crate::peer::Peer,
-    project_urn: Urn,
-) -> Result<Vec<Patch>, crate::error::Error> {
-    let mut patches = Vec::new();
-
+pub async fn list(peer: &crate::peer::Peer, project_urn: Urn) -> anyhow::Result<Vec<Patch>> {
     let default_branch_head_commit_id = {
-        let project = crate::daemon::state::get_project(peer.librad_peer(), project_urn.clone())
-            .await?
-            .ok_or_else(|| crate::daemon::state::Error::ProjectNotFound(project_urn.clone()))?;
-        let delegate = project
+        let project = peer
+            .librad_peer()
+            .using_storage({
+                let project_urn = project_urn.clone();
+                move |store| librad::git::identities::project::get(store, &project_urn)
+            })
+            .await
+            .context("failed to access storage")?
+            .context("failed to get project")?
+            .ok_or_else(|| anyhow::anyhow!("project {project_urn} not found"))?;
+        let first_delegate = project
             .delegations()
             .iter()
             .flat_map(|either| match either {
@@ -61,88 +62,97 @@ pub async fn list(
                 Either::Right(indirect) => Either::Right(indirect.delegations().iter()),
             })
             .next()
-            .expect("missing delegation");
-        let default_branch = crate::daemon::state::get_branch(
-            peer.librad_peer(),
-            project_urn.clone(),
-            Some(PeerId::from(*delegate)),
-            None,
-        )
-        .await?;
-        crate::browser::using(peer, default_branch, move |browser| {
-            Ok(browser.get().first().clone())
-        })?
-        .id
+            .context("project does not have any delegations")?;
+        let first_delegate = librad::PeerId::from(*first_delegate);
+        let remote = if first_delegate == peer.librad_peer().peer_id() {
+            None
+        } else {
+            Some(first_delegate)
+        };
+
+        let default_branch_ref_name =
+            if let Some(ref default_branch_name) = project.subject().default_branch {
+                default_branch_name
+                    .parse::<radicle_git_ext::RefLike>()
+                    .context("invalid default branch name")?
+            } else {
+                librad::reflike!("main")
+            };
+
+        let reference = librad::git::types::Reference::head(
+            librad::git::types::Namespace::from(project_urn.clone()),
+            remote,
+            default_branch_ref_name,
+        );
+        peer.monorepo_unblock(move |repo| Ok(reference.oid(&repo)?))
+            .await
+            .context("failed to resolve git reference")?
     };
+
+    let mut patches = Vec::new();
 
     for project_peer in
         crate::daemon::state::list_project_peers(peer.librad_peer(), project_urn.clone()).await?
     {
-        let remote = match &project_peer {
-            crate::daemon::project::Peer::Local { .. } => None,
-            crate::daemon::project::Peer::Remote { peer_id, .. } => Some(*peer_id),
-        };
-
-        let ref_scope = match remote {
-            Some(remote) => RefScope::Remote {
-                name: Some(remote.to_string()),
+        let namespace = project_urn.encode_id();
+        let ref_glob = match &project_peer {
+            crate::daemon::project::Peer::Local { .. } => {
+                format!("refs/namespaces/{namespace}/refs/tags/{TAG_PREFIX}*")
             },
-            None => RefScope::Local,
-        };
-
-        let branch = match crate::daemon::state::get_branch(
-            peer.librad_peer(),
-            project_urn.clone(),
-            remote,
-            None,
-        )
-        .await
-        {
-            Ok(branch) => branch,
-            Err(crate::daemon::state::Error::MissingRef { .. }) => {
-                // The peer hasn’t published any branches yet.
-                continue;
+            crate::daemon::project::Peer::Remote { peer_id, .. } => {
+                format!("refs/namespaces/{namespace}/refs/remotes/{peer_id}/tags/{TAG_PREFIX}*")
             },
-            Err(e) => return Err(e.into()),
         };
 
-        crate::browser::using(peer, branch, {
-            let patches = &mut patches;
-            move |browser| {
-                let tags = browser.list_tags(ref_scope)?;
-                for tag in tags {
-                    match tag {
-                        radicle_source::surf::git::Tag::Light { .. } => {
-                            continue;
-                        },
-                        radicle_source::surf::git::Tag::Annotated {
-                            target_id,
-                            name,
-                            message,
-                            ..
-                        } => {
-                            let id = match name.to_string().strip_prefix(TAG_PREFIX) {
-                                Some(id) => id.to_string(),
-                                None => continue,
+        let patch = peer
+            .monorepo_unblock({
+                move |repo| {
+                    let mut patches = vec![];
+                    for ref_result in repo
+                        .references_glob(&ref_glob)
+                        .context("failed to get references from glob")?
+                    {
+                        let reference = ref_result.context("failed to resolve reference")?;
+                        let tag = reference
+                            .peel_to_tag()
+                            .context("failed to peel reference to tag")?;
+
+                        let id = tag
+                            .name()
+                            .ok_or_else(|| anyhow::anyhow!("tag name is not valid UTF-8"))?
+                            .strip_prefix(TAG_PREFIX)
+                            .expect("tag name must have prefix")
+                            .to_string();
+                        let commit_id = tag.target_id();
+                        let merge_base =
+                            match repo.merge_base(commit_id, default_branch_head_commit_id) {
+                                Ok(base) => Some(Oid::from(base)),
+                                Err(err) if err.code() == git2::ErrorCode::NotFound => None,
+                                Err(err) => {
+                                    return Err(err)
+                                        .context("failed to determine merge base for commits")
+                                },
                             };
-
-                            let merge_base = browser
-                                .merge_base(target_id, default_branch_head_commit_id)?
-                                .map(Oid::from);
-                            patches.push(Patch {
-                                id,
-                                peer: project_peer.clone().into(),
-                                message,
-                                commit: Oid::from(target_id),
-                                merge_base,
-                            });
-                        },
+                        patches.push(Patch {
+                            id,
+                            peer: project_peer.clone().into(),
+                            message: Some(
+                                tag.message()
+                                    .ok_or_else(|| {
+                                        anyhow::anyhow!("tag message is not valid UTF-8")
+                                    })?
+                                    .to_string(),
+                            ),
+                            commit: Oid::from(commit_id),
+                            merge_base,
+                        })
                     }
+                    Ok(patches)
                 }
+            })
+            .await?;
 
-                Ok(())
-            }
-        })?;
+        patches.extend(patch)
     }
 
     Ok(patches)
