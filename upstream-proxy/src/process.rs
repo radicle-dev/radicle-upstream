@@ -282,19 +282,6 @@ async fn handle_monorepo_events(
 /// process is exited immediately.
 fn install_signal_handlers(service_manager: &service::Manager) -> Result<(), anyhow::Error> {
     use tokio::signal::unix::{signal, SignalKind};
-    let mut sighup = signal(SignalKind::hangup())?;
-
-    let mut handle = service_manager.handle();
-    tokio::spawn(async move {
-        loop {
-            if sighup.recv().await.is_some() {
-                tracing::info!("SIGHUP received, reloading...");
-                handle.reset();
-            } else {
-                break;
-            }
-        }
-    });
 
     let mut sigterm = signal(SignalKind::terminate())?;
     let mut sigint = signal(SignalKind::interrupt())?;

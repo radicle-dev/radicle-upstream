@@ -64,7 +64,6 @@ pub struct Manager {
     message_receiver: mpsc::Receiver<Message>,
     /// The current environemtn of the services
     environment: Environment,
-    environment_config: EnvironmentConfig,
 }
 
 impl Manager {
@@ -81,7 +80,6 @@ impl Manager {
             message_sender,
             message_receiver,
             environment,
-            environment_config,
         })
     }
 
@@ -98,7 +96,6 @@ impl Manager {
     pub fn environment(&mut self) -> anyhow::Result<Option<&Environment>> {
         while let Some(Some(message)) = self.message_receiver.recv().now_or_never() {
             match message {
-                Message::Reset => self.environment = Environment::new(&self.environment_config)?,
                 Message::SetSecretKey(key) => self.environment.key = Some(key),
                 Message::Shutdown => return Ok(None),
             }
@@ -136,8 +133,6 @@ impl Manager {
 /// Messages that are sent from [`Handle`] to [`Manager`] to change the service environment.
 #[allow(clippy::large_enum_variant)]
 enum Message {
-    /// Reset the service to the initial environment and delete all persisted state
-    Reset,
     /// Unseal the key store with the given secret key
     SetSecretKey(link_crypto::SecretKey),
     /// Shutdown the service and exit the process
@@ -154,11 +149,6 @@ pub struct Handle {
 }
 
 impl Handle {
-    /// Reset the service to the initial configuration and delete all persisted state
-    pub fn reset(&mut self) {
-        self.send_message(Message::Reset)
-    }
-
     /// Unseal the key store with the given secret key
     pub fn set_secret_key(&mut self, key: link_crypto::SecretKey) {
         self.send_message(Message::SetSecretKey(key))
