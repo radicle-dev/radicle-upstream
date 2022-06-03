@@ -23,10 +23,6 @@ pub struct Args {
     #[clap(long, env = "RADICLE_PROXY_PEER_LISTEN", default_value = "0.0.0.0:0")]
     pub peer_listen: std::net::SocketAddr,
 
-    /// Path to the secret key for the identity. Uses `LNK_HOME` if not provided.
-    #[clap(long)]
-    pub identity_key: Option<std::path::PathBuf>,
-
     /// Passphrase to unlock the keystore. If not provided the keystore must be unlocked via the
     /// HTTP API.
     #[clap(long, env = "RADICLE_PROXY_KEY_PASSPHRASE")]

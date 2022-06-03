@@ -30,9 +30,6 @@ pub struct Environment {
 pub struct EnvironmentConfig {
     /// If `true`, then fast but unsafe encryption parameters are used for the keystore.
     pub unsafe_fast_keystore: bool,
-
-    /// Path to the secret key for the identity. Uses `LNK_HOME` if not provided.
-    pub identity_key: Option<std::path::PathBuf>,
 }
 
 /// Error returned when creating a new [`Environment`].
@@ -54,11 +51,7 @@ impl Environment {
     fn new(config: &EnvironmentConfig) -> Result<Self, Error> {
         let coco_profile = librad::profile::Profile::load()?;
 
-        let key_file = if let Some(identity_key) = config.identity_key.clone() {
-            identity_key
-        } else {
-            coco_profile.paths().keys_dir().join("librad.key")
-        };
+        let key_file = coco_profile.paths().keys_dir().join("librad.key");
 
         let keystore: Arc<dyn keystore::Keystore + Send + Sync> = if config.unsafe_fast_keystore {
             Arc::new(keystore::unsafe_fast_file(key_file))

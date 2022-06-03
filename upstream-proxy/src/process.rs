@@ -32,7 +32,6 @@ pub async fn run(args: Args) -> Result<(), anyhow::Error> {
 
     let mut service_manager = service::Manager::new(service::EnvironmentConfig {
         unsafe_fast_keystore: args.unsafe_fast_keystore,
-        identity_key: args.identity_key.clone(),
     })?;
 
     if let Some(passphrase) = &args.key_passphrase {
