@@ -32,24 +32,11 @@ pub struct EnvironmentConfig {
     pub unsafe_fast_keystore: bool,
 }
 
-/// Error returned when creating a new [`Environment`].
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    /// Failed to create temporary directory
-    #[error("failed to create temporary directory")]
-    TempDir(
-        #[source]
-        #[from]
-        std::io::Error,
-    ),
-    #[error(transparent)]
-    Profile(#[from] librad::profile::Error),
-}
-
 impl Environment {
     /// Create a new initial environment.
-    fn new(config: &EnvironmentConfig) -> Result<Self, Error> {
-        let coco_profile = librad::profile::Profile::load()?;
+    fn new(config: &EnvironmentConfig) -> anyhow::Result<Self> {
+        let coco_profile =
+            librad::profile::Profile::load().context("failed to load librad profile")?;
 
         let key_file = coco_profile.paths().keys_dir().join("librad.key");
 
@@ -85,8 +72,9 @@ impl Manager {
     ///
     /// If `test_mode` is `true` then `Environment::temp_dir` is set for temporary on-disk
     /// persistence.
-    pub fn new(environment_config: EnvironmentConfig) -> Result<Self, Error> {
-        let environment = Environment::new(&environment_config)?;
+    pub fn new(environment_config: EnvironmentConfig) -> anyhow::Result<Self> {
+        let environment = Environment::new(&environment_config)
+            .context("failed to create process environment")?;
         let (message_sender, message_receiver) = mpsc::channel(10);
         Ok(Self {
             reload_notify: Arc::new(Notify::new()),
@@ -107,7 +95,7 @@ impl Manager {
 
     /// Get the current environment. If `None` is returned this indicates that the service was
     /// asked to shut down.
-    pub fn environment(&mut self) -> Result<Option<&Environment>, Error> {
+    pub fn environment(&mut self) -> anyhow::Result<Option<&Environment>> {
         while let Some(Some(message)) = self.message_receiver.recv().now_or_never() {
             match message {
                 Message::Reset => self.environment = Environment::new(&self.environment_config)?,
