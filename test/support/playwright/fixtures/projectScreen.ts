@@ -9,8 +9,6 @@ import { Hotkeys } from "./hotkeys";
 
 export class ProjectScreen {
   public actionBar: Locator;
-  public commentCounter: Locator;
-  public commitCounter: Locator;
   public commitList: Locator;
   public commitPage: Locator;
   public commitTeaser: Locator;
@@ -19,7 +17,6 @@ export class ProjectScreen {
   public fileView: Locator;
   public filesTabButton: Locator;
   public header: Locator;
-  public patchCounter: Locator;
   public patchDiscussionTabButton: Locator;
   public patchList: Locator;
   public patchPage: Locator;
@@ -36,12 +33,6 @@ export class ProjectScreen {
     this.#hotkeys = new Hotkeys(page);
 
     this.actionBar = page.locator("[data-cy=action-bar]");
-    this.commentCounter = page.locator(
-      `[data-cy="discussion-tab"] [data-cy="counter"]`
-    );
-    this.commitCounter = page.locator(
-      `[data-cy="commits-tab"] [data-cy="counter"]`
-    );
     this.commitList = page.locator('[data-cy="history"]');
     this.commitPage = page.locator("[data-cy=commit-page]");
     this.commitTeaser = page.locator("[data-cy=commit-teaser]");
@@ -52,9 +43,6 @@ export class ProjectScreen {
     this.fileView = page.locator("[data-cy=file-view]");
     this.filesTabButton = page.locator('role=button[name="files tab"]');
     this.header = page.locator("[data-cy=header]");
-    this.patchCounter = page.locator(
-      `[data-cy="patches-tab"] [data-cy="counter"]`
-    );
     this.patchDiscussionTabButton = page.locator(
       '[data-cy=patch-page] >> role=button[name="discussion tab"]'
     );

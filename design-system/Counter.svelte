@@ -21,5 +21,5 @@
 </style>
 
 {#if count}
-  <span {style} class="counter typo-mono-bold" data-cy="counter">{count}</span>
+  <span {style} class="counter typo-mono-bold">{count}</span>
 {/if}

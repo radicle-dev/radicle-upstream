@@ -49,7 +49,7 @@ test("annotated patches", async ({ app, page, peerManager }) => {
   // Check patch list contents.
   {
     await expect(app.projectScreen.patchList).toContainText(patchTitle);
-    await expect(app.projectScreen.patchCounter).toContainText("1");
+    await expect(app.projectScreen.patchesTabButton).toContainText("1");
     await expect(app.projectScreen.patchList).toContainText(
       `Opened by ${peer.userHandle}`
     );
@@ -137,7 +137,7 @@ test("patch list reactivity", async ({ app, page, peerManager }) => {
     );
 
     await expect(app.projectScreen.patchList).toContainText(patchTitle);
-    await expect(app.projectScreen.patchCounter).toContainText("1");
+    await expect(app.projectScreen.patchesTabButton).toContainText("1");
   }
 
   // Create second patch.
@@ -154,7 +154,7 @@ test("patch list reactivity", async ({ app, page, peerManager }) => {
     );
 
     await expect(app.projectScreen.patchList).toContainText(patchTitle);
-    await expect(app.projectScreen.patchCounter).toContainText("2");
+    await expect(app.projectScreen.patchesTabButton).toContainText("2");
 
     const newPatchTitle = "This is a new patch title";
     await Support.createOrUpdatePatch(
@@ -169,7 +169,7 @@ test("patch list reactivity", async ({ app, page, peerManager }) => {
 
     // Merge second patch.
     await Support.mergeOwnPatch(peer, checkoutPath, branchName);
-    await expect(app.projectScreen.patchCounter).toContainText("1");
+    await expect(app.projectScreen.patchesTabButton).toContainText("1");
     await expect(app.projectScreen.patchList).not.toContainText(newPatchTitle);
 
     await page.locator('button:has-text("Merged")').click();
@@ -228,7 +228,8 @@ test("patch reactivity", async ({ app, page, peerManager }) => {
 
     // Merge patch.
     await Support.mergeOwnPatch(peer, checkoutPath, branchName);
-    await expect(app.projectScreen.patchCounter).toBeHidden();
+    // Assert that we don’t show the number of patches which is zero
+    await expect(app.projectScreen.patchesTabButton).toHaveText("Patches");
   }
 });
 
@@ -551,7 +552,10 @@ test("patch discussions", async ({ app, page, peerManager }) => {
 
   // Contributor creates a comment.
   {
-    await expect(app.projectScreen.commentCounter).toBeHidden();
+    // Assert that we don’t show the number of comments which is zero
+    await expect(app.projectScreen.patchDiscussionTabButton).toHaveText(
+      "Discussion"
+    );
 
     await expect(page.locator('role=button[name="Preview"]')).toBeDisabled();
     await expect(page.locator('role=button[name="Comment"]')).toBeDisabled();
@@ -568,7 +572,7 @@ test("patch discussions", async ({ app, page, peerManager }) => {
 
     await page.locator('role=button[name="Comment"]').click();
 
-    await expect(app.projectScreen.commentCounter).toContainText("1");
+    await expect(app.projectScreen.patchDiscussionTabButton).toContainText("1");
     await expect(page.locator('[placeholder="Leave a comment"]')).toBeEmpty();
     await expect(
       page.locator(`text=${contributor.userHandle} commented a few seconds ago`)
@@ -587,7 +591,7 @@ test("patch discussions", async ({ app, page, peerManager }) => {
 
     await app.openRadicleUrl(patchUrl);
     await app.projectScreen.goToPatchDiscussionTab();
-    await expect(app.projectScreen.commentCounter).toContainText("1");
+    await expect(app.projectScreen.patchDiscussionTabButton).toContainText("1");
     await expect(page.locator(`text=${contributorComment}`)).toBeVisible();
 
     await page
@@ -596,7 +600,7 @@ test("patch discussions", async ({ app, page, peerManager }) => {
     await page.locator('role=button[name="Comment"]').click();
     await expect(page.locator('[placeholder="Leave a comment"]')).toBeEmpty();
     await expect(page.locator(`text=${maintainerComment}`)).toBeVisible();
-    await expect(app.projectScreen.commentCounter).toContainText("2");
+    await expect(app.projectScreen.patchDiscussionTabButton).toContainText("2");
   }
 
   // Contributor sees the maintainer's reply.
@@ -605,7 +609,7 @@ test("patch discussions", async ({ app, page, peerManager }) => {
     await app.openRadicleUrl(patchUrl);
     await app.projectScreen.goToPatchDiscussionTab();
 
-    await expect(app.projectScreen.commentCounter).toContainText("2");
+    await expect(app.projectScreen.patchDiscussionTabButton).toContainText("2");
     await expect(page.locator(`text=${maintainerComment}`)).toBeVisible();
   }
 });

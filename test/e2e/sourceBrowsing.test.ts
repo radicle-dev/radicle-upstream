@@ -139,7 +139,7 @@ test.describe("source browsing with a single peer", () => {
       await expect(app.projectScreen.selectBranchButton).toContainText(
         `${defaultBranch} default`
       );
-      await expect(app.projectScreen.commitCounter).toContainText("15");
+      await expect(app.projectScreen.commitsTabButton).toContainText("15");
       await expect(
         app.projectScreen.commitList.locator(`[data-cy="commit"]`)
       ).toHaveCount(15);
@@ -156,7 +156,7 @@ test.describe("source browsing with a single peer", () => {
     // Switch to "dev" branch.
     {
       await app.projectScreen.selectBranch("dev");
-      await expect(app.projectScreen.commitCounter).toContainText("8");
+      await expect(app.projectScreen.commitsTabButton).toContainText("8");
       await expect(
         app.projectScreen.commitList.locator(`[data-cy="commit"]`)
       ).toHaveCount(8);
@@ -443,7 +443,7 @@ test("view project from another peer's perspective", async ({
     await expect(app.projectScreen.selectPeerButton).toContainText(
       `${contributor.userHandle} you`
     );
-    await expect(app.projectScreen.commitCounter).toContainText("15");
+    await expect(app.projectScreen.commitsTabButton).toContainText("15");
 
     await contributor.spawn("git", ["checkout", "-b", branchName], {
       cwd: projectWorkingCopyPath,
@@ -470,7 +470,7 @@ test("view project from another peer's perspective", async ({
 
     await expect(app.projectScreen.commitTeaser).toContainText(commitMessage);
     await expect(app.projectScreen.sourceTree).toContainText(fileName);
-    await expect(app.projectScreen.commitCounter).toContainText("16");
+    await expect(app.projectScreen.commitsTabButton).toContainText("16");
   }
 
   // Maintainer views the project source from the contributor's perspective.
@@ -493,7 +493,7 @@ test("view project from another peer's perspective", async ({
     await expect(app.projectScreen.selectBranchButton).toContainText(
       `${defaultBranch} default`
     );
-    await expect(app.projectScreen.commitCounter).toContainText("15");
+    await expect(app.projectScreen.commitsTabButton).toContainText("15");
     await expect(app.projectScreen.commitTeaser).toContainText(
       "Add files with special characters in their filenames (#5)"
     );
@@ -501,7 +501,7 @@ test("view project from another peer's perspective", async ({
 
     // Switch to the branch that the contributor created.
     await app.projectScreen.selectBranch(branchName);
-    await expect(app.projectScreen.commitCounter).toContainText("16");
+    await expect(app.projectScreen.commitsTabButton).toContainText("16");
     await expect(app.projectScreen.commitTeaser).toContainText(commitMessage);
     await expect(app.projectScreen.sourceTree).toContainText(fileName);
   }
