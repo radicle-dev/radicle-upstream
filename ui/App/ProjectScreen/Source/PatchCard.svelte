@@ -12,7 +12,7 @@
   import Button from "design-system/Button.svelte";
   import Hoverable from "design-system/Hoverable.svelte";
   import LinkIcon from "design-system/icons/Link.svelte";
-  import PatchIcon from "./PatchIcon.svelte";
+  import PatchIcon from "../PatchIcon.svelte";
 
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
 

@@ -30,13 +30,10 @@
   import { makeTabs } from "./tabs";
 
   import History from "./Source/SourceBrowser/History.svelte";
-
   import AnchorsTab from "./Source/Anchors.svelte";
   import CommitTab from "./Source/Commit.svelte";
   import FilesTab from "./Source/Code.svelte";
   import PatchListTab from "./Source/PatchList.svelte";
-  import PatchTab, { patchStatusStore } from "./Source/Patch.svelte";
-  import PatchActions from "./Source/PatchActions.svelte";
 
   export let project: Project;
   export let selectedPeer: User;
@@ -71,7 +68,9 @@
   }
 </style>
 
-{#if $store.status === remote.Status.Success}
+{#if activeView.type === "patch"}
+  <!-- this is rendered in `ProjectScreen` -->
+{:else if $store.status === remote.Status.Success}
   <ActionBar>
     {#if activeView.type === "files" || activeView.type === "commits"}
       <RevisionSelector
@@ -105,10 +104,6 @@
           on:click={toggleDropdown}
           dataCy="patch-modal-toggle">Create patch</Button>
       </CommandModal>
-    {:else if activeView.type === "patch"}
-      {#if $patchStatusStore.type === "ok"}
-        <PatchActions {project} patch={$patchStatusStore.patch} />
-      {/if}
     {:else if activeView.type === "files"}
       {#if isContributor}
         <CommandModal
@@ -170,12 +165,6 @@
       project={$store.data.project}
       {patches}
       filter={activeView.filter} />
-  {:else if activeView.type === "patch"}
-    <PatchTab
-      {project}
-      id={activeView.id}
-      peerId={activeView.peerId}
-      view={activeView.view} />
   {:else if activeView.type === "anchors"}
     <AnchorsTab {anchors} />
   {:else}

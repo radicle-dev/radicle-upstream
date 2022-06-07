@@ -21,11 +21,11 @@
 
   import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
   import UserIdentity from "ui/App/SharedComponents/UserIdentity.svelte";
+  import BackButton from "ui/App/ProjectScreen/BackButton.svelte";
+  import History from "ui/App/ProjectScreen/Source/SourceBrowser/History.svelte";
 
-  import BackButton from "../BackButton.svelte";
-  import History from "./SourceBrowser/History.svelte";
-  import PatchIcon from "./PatchIcon.svelte";
-  import PatchDiscussion from "./PatchDiscussion.svelte";
+  import PatchIcon from "../PatchIcon.svelte";
+  import PatchDiscussion from "./Discussion.svelte";
 
   export let project: Project;
   export let patch: Patch.Patch;

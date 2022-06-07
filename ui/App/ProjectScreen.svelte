@@ -38,6 +38,7 @@
   import ProjectHeader from "./ProjectScreen/ProjectHeader.svelte";
   import Source from "./ProjectScreen/Source.svelte";
   import type * as projectRoute from "./ProjectScreen/route";
+  import Patch from "./ProjectScreen/Patch.svelte";
 
   export let urn: string;
   export let anchors: ConfirmedAnchor[];
@@ -157,12 +158,23 @@
     {/if}
   </div>
   {#if $store.status === remote.Status.Success}
-    <Source
-      {activeView}
-      project={$store.data.project}
-      selectedPeer={$store.data.selectedPeer}
-      patches={$store.data.patches}
-      {anchors}
-      isContributor={isContributor($store.data.peerSelection)} />
+    {#if activeView.type === "patch"}
+      <Patch
+        project={$store.data.project}
+        id={activeView.id}
+        peerId={activeView.peerId}
+        view={activeView.view}
+        patchCount={$store.data.patches.filter(
+          patch => patch.status.current === "open"
+        ).length} />
+    {:else}
+      <Source
+        {activeView}
+        project={$store.data.project}
+        selectedPeer={$store.data.selectedPeer}
+        patches={$store.data.patches}
+        {anchors}
+        isContributor={isContributor($store.data.peerSelection)} />
+    {/if}
   {/if}
 </ScreenLayout>
