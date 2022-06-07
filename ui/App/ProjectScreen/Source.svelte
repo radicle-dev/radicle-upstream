@@ -9,6 +9,7 @@
   import type { Project, User, ConfirmedAnchor } from "ui/src/project";
   import type { Screen } from "ui/src/screen/project/source";
   import type { Branch, Tag } from "ui/src/source";
+  import { Patch } from "ui/src/project/patch";
   import type * as projectRoute from "./route";
 
   import { unreachable } from "ui/src/unreachable";
@@ -50,7 +51,7 @@
   export let selectedPeer: User;
   export let isContributor: boolean;
   export let anchors: ConfirmedAnchor[];
-
+  export let patches: Patch[];
   export let activeView: projectRoute.ProjectView;
 
   function tabs(active: projectRoute.ProjectView, screen: Screen): Tab[] {
@@ -92,7 +93,7 @@
         title: "Patches",
         active: active.type === "patches",
         icon: RevisionIcon,
-        counter: screen.patches.filter(patch => patch.status.current === "open")
+        counter: patches.filter(patch => patch.status.current === "open")
           .length,
         onClick: () => {
           router.push({
@@ -246,7 +247,7 @@
   {:else if activeView.type === "patches"}
     <PatchListTab
       project={$store.data.project}
-      patches={$store.data.patches}
+      {patches}
       filter={activeView.filter} />
   {:else if activeView.type === "patch"}
     <PatchTab

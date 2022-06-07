@@ -161,6 +161,7 @@
       {activeView}
       project={$store.data.project}
       selectedPeer={$store.data.selectedPeer}
+      patches={$store.data.patches}
       {anchors}
       isContributor={isContributor($store.data.peerSelection)} />
   {/if}

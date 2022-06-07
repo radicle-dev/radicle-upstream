@@ -12,7 +12,6 @@ import { derived, get, writable } from "svelte/store";
 import * as appearance from "ui/src/appearance";
 import * as error from "ui/src/error";
 import * as mutexExecutor from "ui/src/mutexExecutor";
-import * as patch from "ui/src/project/patch";
 import * as proxy from "ui/src/proxy";
 import * as remote from "ui/src/remote";
 import * as source from "ui/src/source";
@@ -54,7 +53,6 @@ export interface Code {
 export interface Screen {
   code: Writable<Code>;
   history: source.GroupedCommitsHistory;
-  patches: patch.Patch[];
   peer: User;
   project: Project;
   revisions: Array<source.Branch | source.Tag>;
@@ -100,7 +98,6 @@ export async function fetch(project: Project, peer: User): Promise<void> {
         { abort }
       );
       const revisions = [...branches, ...tags];
-      const patches = await patch.getAll(project, { abort });
       const defaultBranch = branches.find(
         (branch: source.Branch) =>
           branch.name === project.metadata.defaultBranch
@@ -119,7 +116,6 @@ export async function fetch(project: Project, peer: User): Promise<void> {
       return {
         code: writable<Code>(root),
         history: groupedHistory,
-        patches,
         peer,
         project,
         revisions,

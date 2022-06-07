@@ -10,6 +10,7 @@ import { get } from "svelte/store";
 import lodash from "lodash";
 
 import * as Project from "ui/src/project";
+import * as Patch from "ui/src/project/patch";
 import * as error from "ui/src/error";
 import * as localPeer from "ui/src/localPeer";
 import * as mutexExecutor from "ui/src/mutexExecutor";
@@ -22,6 +23,7 @@ interface Screen {
   peerSelection: Project.User[];
   project: Project.Project;
   selectedPeer: Project.User;
+  patches: Patch.Patch[];
 }
 
 export const VALID_PEER_MATCH = /^[1-9A-HJ-NP-Za-km-z]{54}$/;
@@ -41,7 +43,8 @@ export async function fetch(projectUrn: string): Promise<void> {
     const response = await fetchExecutor.run(async abort => {
       const project = await proxy.client.project.get(projectUrn, { abort });
       const peers = await proxy.client.project.listPeers(projectUrn, { abort });
-      return { project, peers };
+      const patches = await Patch.getAll(project, { abort });
+      return { project, peers, patches };
     });
 
     if (response) {
@@ -53,6 +56,7 @@ export async function fetch(projectUrn: string): Promise<void> {
         peerSelection,
         project: response.project,
         selectedPeer: peerSelection[0],
+        patches: response.patches,
       });
     }
   } catch (err: unknown) {
