@@ -238,3 +238,8 @@ p,
 .typo-enable-calt {
   font-feature-settings: "calt";
 }
+
+.typo-wrap {
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
