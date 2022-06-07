@@ -16,7 +16,7 @@
 </script>
 
 <style>
-  .wrapper {
+  .notifications {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -25,14 +25,17 @@
     z-index: 1001;
     left: var(--sidebar-width);
     width: calc(100vw - var(--sidebar-width));
+    /* notifications container spans the whole width of the screen. We
+       don’t want it to intercept clicks. */
+    pointer-events: none;
   }
 </style>
 
-<div class="wrapper" {style}>
+<div class="notifications" {style}>
   {#each $notificationStore as notification (notification.id)}
     <div
       data-cy="notification"
-      style="max-width: 95%;"
+      style="max-width: 95%; pointer-events: auto"
       animate:flip
       in:fly={{ y: 1000, duration: 300 }}
       out:fade>
