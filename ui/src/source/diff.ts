@@ -5,13 +5,15 @@
 // LICENSE file.
 
 import {
+  CreatedFile,
+  DeletedFile,
+  Diff,
   LineDiff,
   LineDiffType,
   ModifiedFile,
-  Diff,
 } from "proxy-client/commit";
 
-export type { ModifiedFile, Diff };
+export type { CreatedFile, DeletedFile, ModifiedFile, Diff };
 
 export const lineNumberR = (line: LineDiff): string | number => {
   switch (line.type) {

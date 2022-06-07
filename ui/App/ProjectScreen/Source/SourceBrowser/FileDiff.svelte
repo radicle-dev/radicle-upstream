@@ -6,14 +6,19 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { ModifiedFile } from "ui/src/source/diff";
+  import type {
+    ModifiedFile,
+    CreatedFile,
+    DeletedFile,
+  } from "ui/src/source/diff";
   import { lineNumberL, lineNumberR, lineSign } from "ui/src/source/diff";
 
   import ChevronDownIcon from "design-system/icons/ChevronDown.svelte";
   import ChevronRightIcon from "design-system/icons/ChevronRight.svelte";
   import FileIcon from "design-system/icons/File.svelte";
 
-  export let file: ModifiedFile;
+  export let file: ModifiedFile | CreatedFile | DeletedFile;
+  export let label: "created" | "deleted" | undefined = undefined;
 
   let collapsed: boolean = false;
 </script>
@@ -107,6 +112,20 @@
   .collapse-button:hover :global(svg) {
     fill: var(--color-foreground-level-6);
   }
+  .created {
+    color: var(--color-positive);
+    background-color: var(--color-positive-level-1);
+  }
+
+  .deleted {
+    color: var(--color-negative);
+    background-color: var(--color-negative-level-1);
+  }
+  .diff-type {
+    margin-left: 1rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
 </style>
 
 <article class="changeset-file">
@@ -123,6 +142,12 @@
     </div>
     <FileIcon style="margin-right: 0.5rem;" />
     <p class="typo-text-bold">{file.path}</p>
+    {#if label}
+      <span
+        class="diff-type"
+        class:created={label === "created"}
+        class:deleted={label === "deleted"}>{label}</span>
+    {/if}
   </header>
   {#if !collapsed}
     <main>

@@ -81,6 +81,16 @@ export interface CopiedFile {
   oldPath: string;
 }
 
+export interface CreatedFile {
+  diff: FileDiff;
+  path: string;
+}
+
+export interface DeletedFile {
+  diff: FileDiff;
+  path: string;
+}
+
 export interface ModifiedFile {
   diff: FileDiff;
   path: string;
@@ -93,8 +103,8 @@ export interface MovedFile {
 
 export interface Diff {
   copied: CopiedFile[];
-  created: string[];
-  deleted: string[];
+  created: CreatedFile[];
+  deleted: DeletedFile[];
   modified: ModifiedFile[];
   moved: MovedFile[];
 }
@@ -106,8 +116,8 @@ const diffSchema: zod.Schema<Diff> = zod.object({
       oldPath: zod.string(),
     })
   ),
-  created: zod.array(zod.string()),
-  deleted: zod.array(zod.string()),
+  created: zod.array(zod.object({ path: zod.string(), diff: fileDiffSchema })),
+  deleted: zod.array(zod.object({ path: zod.string(), diff: fileDiffSchema })),
   modified: zod.array(
     zod.object({
       path: zod.string(),
