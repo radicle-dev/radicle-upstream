@@ -13,6 +13,7 @@ const config: PlaywrightTestConfig = {
   // he default for the number of workers is half the number of cores.
   // We want to make use of all cores on Github CI.
   workers: process.env.CI ? 2 : undefined,
+  reporter: process.env.CI ? "github" : undefined,
   use: {
     trace: "retain-on-failure",
     actionTimeout: process.env.CI ? 30000 : 5000,
