@@ -6,18 +6,11 @@
  LICENSE file.
 -->
 <script lang="ts" context="module">
-  export interface Tab {
-    title: string;
-    active: boolean;
-    icon: typeof SvelteComponent;
-    counter?: number;
-    onClick: () => void;
-  }
+  import { type Tab } from "./TabBar";
+  export { type Tab };
 </script>
 
 <script lang="ts">
-  import type { SvelteComponent } from "svelte";
-
   import Counter from "design-system/Counter.svelte";
 
   export let tabs: Tab[];

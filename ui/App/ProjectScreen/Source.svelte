@@ -7,28 +7,17 @@
 -->
 <script lang="ts">
   import type { Project, User, ConfirmedAnchor } from "ui/src/project";
-  import type { Screen } from "ui/src/screen/project/source";
   import type { Branch, Tag } from "ui/src/source";
   import { Patch } from "ui/src/project/patch";
   import type * as projectRoute from "./route";
 
   import { unreachable } from "ui/src/unreachable";
-  import {
-    fetch,
-    selectPath,
-    selectRevision,
-    store,
-  } from "ui/src/screen/project/source";
+  import { fetch, selectRevision, store } from "ui/src/screen/project/source";
   import * as notification from "ui/src/notification";
   import * as remote from "ui/src/remote";
-  import * as router from "ui/src/router";
-  import * as wallet from "ui/src/wallet";
 
-  import AnchorIcon from "design-system/icons/Anchor.svelte";
   import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
   import Button from "design-system/Button.svelte";
-  import CommitIcon from "design-system/icons/Commit.svelte";
-  import FileIcon from "design-system/icons/File.svelte";
   import ForkIcon from "design-system/icons/Fork.svelte";
   import RevisionIcon from "design-system/icons/Revision.svelte";
 
@@ -36,7 +25,9 @@
   import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
   import Loading from "ui/App/SharedComponents/Loading.svelte";
   import RevisionSelector from "ui/App/SharedComponents/RevisionSelector.svelte";
-  import TabBar, { Tab } from "ui/App/ScreenLayout/TabBar.svelte";
+  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
+
+  import { makeTabs } from "./tabs";
 
   import History from "./Source/SourceBrowser/History.svelte";
 
@@ -53,83 +44,6 @@
   export let anchors: ConfirmedAnchor[];
   export let patches: Patch[];
   export let activeView: projectRoute.ProjectView;
-
-  function tabs(active: projectRoute.ProjectView, screen: Screen): Tab[] {
-    const items = [
-      {
-        title: "Files",
-        active: active.type === "files",
-        icon: FileIcon,
-        onClick: () => {
-          if (activeView.type === "files") {
-            selectPath("");
-          } else {
-            router.push({
-              type: "project",
-              params: {
-                urn: project.urn,
-                activeView: { type: "files" },
-              },
-            });
-          }
-        },
-      },
-      {
-        title: "Commits",
-        active: active.type === "commits",
-        icon: CommitIcon,
-        counter: screen.history.stats.commits,
-        onClick: () => {
-          router.push({
-            type: "project",
-            params: {
-              urn: project.urn,
-              activeView: { type: "commits" },
-            },
-          });
-        },
-      },
-      {
-        title: "Patches",
-        active: active.type === "patches",
-        icon: RevisionIcon,
-        counter: patches.filter(patch => patch.status.current === "open")
-          .length,
-        onClick: () => {
-          router.push({
-            type: "project",
-            params: {
-              urn: project.urn,
-              activeView: { type: "patches", filter: "open" },
-            },
-          });
-        },
-      },
-    ];
-
-    if (wallet.isConnected()) {
-      return [
-        ...items,
-        {
-          title: "Anchors",
-          active: active.type === "anchors",
-          icon: AnchorIcon,
-          counter: anchors.length,
-          onClick: () => {
-            router.push({
-              type: "project",
-              params: {
-                urn: project.urn,
-                activeView: { type: "anchors" },
-              },
-            });
-          },
-        },
-      ];
-    } else {
-      return items;
-    }
-  }
 
   const onSelectRevision = ({
     detail: revision,
@@ -169,7 +83,14 @@
         revisions={$store.data.revisions} />
     {/if}
 
-    <TabBar tabs={tabs(activeView, $store.data)} />
+    <TabBar
+      tabs={makeTabs({
+        projectUrn: project.urn,
+        activeViewType: activeView.type,
+        commitCount: $store.data.history.stats.commits,
+        patchCount: patches.filter(patch => patch.status.current === "open")
+          .length,
+      })} />
 
     <div style="margin-left: auto" />
 
