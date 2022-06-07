@@ -34,52 +34,6 @@ test.describe("source browsing with a single peer", () => {
     );
   });
 
-  test("project tab navigation", async ({ app }) => {
-    // The Files tab is selected by default.
-    {
-      await expect(app.projectScreen.filesTabButton.locator("p")).toHaveClass(
-        /active/
-      );
-      await expect(
-        app.projectScreen.commitsTabButton.locator("p")
-      ).not.toHaveClass(/active/);
-      await expect(
-        app.projectScreen.patchesTabButton.locator("p")
-      ).not.toHaveClass(/active/);
-    }
-
-    // Clicking the project title navigates back to the Files tab.
-    {
-      await app.projectScreen.goToCommitsTab();
-      await expect(app.projectScreen.commitsTabButton.locator("p")).toHaveClass(
-        /active/
-      );
-
-      await app.projectScreen.header.locator(`text=${projectName}`).click();
-      await expect(app.projectScreen.filesTabButton.locator("p")).toHaveClass(
-        /active/
-      );
-      await expect(
-        app.projectScreen.commitsTabButton.locator("p")
-      ).not.toHaveClass(/active/);
-    }
-
-    // Clicking source tree items does not mess with the tab bar active state.
-    {
-      await app.projectScreen.goToFilesTab();
-      await expect(app.projectScreen.filesTabButton.locator("p")).toHaveClass(
-        /active/
-      );
-
-      await app.projectScreen.sourceTree.locator("text=bin").click();
-      await app.projectScreen.sourceTree.locator("text=cat").click();
-
-      await expect(app.projectScreen.filesTabButton.locator("p")).toHaveClass(
-        /active/
-      );
-    }
-  });
-
   test("Files tab", async ({ app }) => {
     // Initial state.
     {

@@ -19,35 +19,20 @@
 
 <style>
   .tab-bar {
-    align-items: center;
     display: flex;
-    flex-direction: row;
-  }
-
-  .tab-bar :global(.tab:hover p) {
-    color: var(--color-primary) !important;
-  }
-
-  .tab-bar :global(.tab:hover .icon svg) {
-    fill: var(--color-primary);
-  }
-
-  .tab:first-child {
-    margin-left: 0px;
+    align-items: center;
+    gap: 2rem;
   }
 
   .tab {
-    margin-left: 24px;
-    margin-right: 8px;
+    display: flex;
     align-items: center;
     line-height: 100%;
-    display: flex;
     cursor: pointer;
   }
 
   .icon {
     margin-right: 0.5rem;
-    align-items: center;
     padding-top: 2px;
   }
 
@@ -55,18 +40,23 @@
     color: var(--color-foreground-level-6);
   }
 
-  .title.active {
+  .tab.active .title,
+  .tab:hover .title {
     color: var(--color-primary);
+  }
+
+  .tab.active .icon :global(svg),
+  .tab:hover .icon :global(svg) {
+    fill: var(--color-primary);
   }
 </style>
 
-<ul data-cy="tab-bar" class="tab-bar" {style}>
+<div class="tab-bar" {style}>
   {#each tabs as tab}
-    <li
+    <div
       role="button"
-      aria-label={`${tab.title.toLowerCase()} tab`}
       class="tab"
-      data-cy={`${tab.title.toLowerCase()}-tab`}
+      class:active={tab.active}
       on:click={tab.onClick}>
       <div class="icon">
         <svelte:component
@@ -74,11 +64,11 @@
           style={tab.active ? "fill: var(--color-primary)" : ""} />
       </div>
 
-      <p class="title typo-text-bold" class:active={tab.active}>
+      <div class="title typo-text-bold">
         {tab.title}
-      </p>
+      </div>
 
       <Counter count={tab.counter} style="margin-left: 0.5rem;" />
-    </li>
+    </div>
   {/each}
-</ul>
+</div>

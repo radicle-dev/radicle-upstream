@@ -36,19 +36,19 @@ export class ProjectScreen {
     this.commitList = page.locator('[data-cy="history"]');
     this.commitPage = page.locator("[data-cy=commit-page]");
     this.commitTeaser = page.locator("[data-cy=commit-teaser]");
-    this.commitsTabButton = page.locator('role=button[name="commits tab"]');
+    this.commitsTabButton = page.locator("role=button[name=/^Commits/]");
     this.editRemotePeersButton = page.locator(
       'role=button[name="edit remote peers"]'
     );
     this.fileView = page.locator("[data-cy=file-view]");
-    this.filesTabButton = page.locator('role=button[name="files tab"]');
+    this.filesTabButton = page.locator("role=button[name=/^Files/]");
     this.header = page.locator("[data-cy=header]");
     this.patchDiscussionTabButton = page.locator(
-      '[data-cy=patch-page] >> role=button[name="discussion tab"]'
+      "[data-cy=patch-page] >> role=button[name=/^Discussion/]"
     );
     this.patchList = page.locator("[data-cy=patch-list]");
     this.patchPage = page.locator("[data-cy=patch-page]");
-    this.patchesTabButton = page.locator('role=button[name="patches tab"]');
+    this.patchesTabButton = page.locator("role=button[name=/^Patches/]");
     this.selectBranchButton = page.locator('role=button[name="select branch"]');
     this.selectPeerButton = page.locator('role=button[name="select peer"]');
     this.sourceTree = page.locator('[data-cy="source-tree"]');
