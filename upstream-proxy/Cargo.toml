@@ -39,7 +39,6 @@ parking_lot = "0.12.0"
 percent-encoding = "2.1"
 rand = "0.8"
 radicle-keystore = "0.2"
-radicle-source = { version = "^0.3.0", features = ["syntax"] }
 serde = { version = "1.0", features = [ "derive" ] }
 serde_json = "1.0"
 serde_qs = "0.8"
@@ -68,6 +67,7 @@ lnk-identities = "0.1"
 radicle-data = "0.1"
 radicle-git-ext = "0.1"
 radicle-git-helpers = "0.1"
+radicle-source = { version = "^0.3.0", features = ["syntax"] }
 
 rad-common = "0"
 
