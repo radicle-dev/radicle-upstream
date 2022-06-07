@@ -28,9 +28,14 @@ export const VALID_PEER_MATCH = /^[1-9A-HJ-NP-Za-km-z]{54}$/;
 export const screenRemoteStore = remote.createStore<Screen>();
 export const store = screenRemoteStore.readable;
 
+let currentUrn: string = "";
+
 const fetchExecutor = mutexExecutor.create();
 export async function fetch(projectUrn: string): Promise<void> {
-  screenRemoteStore.loading();
+  if (currentUrn !== projectUrn) {
+    screenRemoteStore.loading();
+  }
+  currentUrn = projectUrn;
 
   try {
     const response = await fetchExecutor.run(async abort => {
