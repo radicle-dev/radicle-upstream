@@ -503,6 +503,8 @@ test("patch statuses", async ({ app, page, peerManager }) => {
 });
 
 test("patch discussions", async ({ app, page, peerManager }) => {
+  test.setTimeout(60_000);
+
   const maintainer = await peerManager.startPeer({ name: "maintainer" });
 
   const projectName = "foo";
