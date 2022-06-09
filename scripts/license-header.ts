@@ -121,7 +121,11 @@ const EXTENSIONS = [".js", ".rs", ".sh", ".ts", ".svelte"];
 // Returns true if the file at path requires a license header. This is
 // `true` if the path has one of `EXTENSIONS`.
 function requireLicenseHeader(path: string): boolean {
-  return EXTENSIONS.includes(Path.extname(path));
+  if (path.endsWith("typings/node-fetch.d.ts")) {
+    return false;
+  } else {
+    return EXTENSIONS.includes(Path.extname(path));
+  }
 }
 
 // Returns the list of file paths that should include license headers.
