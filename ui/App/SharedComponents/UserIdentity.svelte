@@ -147,11 +147,6 @@
               {handle || user.metadata.handle}
             </h2>
           </div>
-          {#if user.metadata.ethereum}
-            <CopyableIdentifier
-              kind="ethAddress"
-              value={user.metadata.ethereum.address} />
-          {/if}
           {#each user.peerIds as peerId}
             <CopyableIdentifier kind="peerId" value={peerId} />
           {/each}
