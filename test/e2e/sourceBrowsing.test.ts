@@ -427,7 +427,7 @@ test("view project from another peer's perspective", async ({
     await app.trackProject(urn);
     await app.goToProjectByName(projectName);
 
-    // The maintainer is pre-selected, and has a "maintainer" badge.
+    // The maintainer is pre-selected, and has a "delegate" badge.
     await expect(app.projectScreen.selectPeerButton).toContainText(
       `${maintainer.userHandle} delegate`
     );

@@ -113,7 +113,7 @@
 <Hovercard
   disabled={disableHovercard}
   {modalStyle}
-  onHover={() => fetchUser(urn)}>
+  onShow={() => fetchUser(urn)}>
   <svelte:fragment slot="trigger">
     <div class="user" data-peer-handle={handle} style={triggerStyle}>
       <Avatar

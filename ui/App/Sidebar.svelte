@@ -69,7 +69,7 @@
 
 <nav aria-label="main" class="wrapper" data-cy="sidebar">
   <div class="top">
-    <Tooltip value={session.identity.metadata.handle}>
+    <Tooltip value={session.identity.metadata.handle} showDelay={0}>
       <SidebarItem
         dataCy="profile"
         indicator
@@ -85,7 +85,7 @@
     </Tooltip>
   </div>
   <div class="bottom">
-    <Tooltip value="Navigate to a project">
+    <Tooltip value="Navigate to a project" showDelay={0}>
       <SidebarItem
         dataCy="search"
         ariaLabel="Navigate to a project"
@@ -94,7 +94,7 @@
         <MagnifyingGlassIcon />
       </SidebarItem>
     </Tooltip>
-    <Tooltip value="Network">
+    <Tooltip value="Network" showDelay={0}>
       <SidebarItem
         dataCy="network"
         ariaLabel="Network"
@@ -104,7 +104,7 @@
         <NetworkIcon />
       </SidebarItem>
     </Tooltip>
-    <Tooltip value="Settings">
+    <Tooltip value="Settings" showDelay={0}>
       <SidebarItem
         dataCy="settings"
         ariaLabel="Settings"

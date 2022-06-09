@@ -6,21 +6,24 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  import Hoverable from "./Hoverable.svelte";
+  import { debounce } from "lodash";
 
-  export let onHover: () => void = () => {};
-  export let style: string | undefined = undefined;
-  export let modalStyle: string | undefined = undefined;
   export let disabled: boolean = false;
+  export let modalStyle: string | undefined = undefined;
+  export let style: string | undefined = undefined;
 
-  let hover: boolean = false;
+  export let onShow: () => void = () => {};
 
-  $: {
-    if (!disabled && hover) {
-      onHover();
+  let visible: boolean = false;
+
+  const setVisible = debounce((value: boolean) => {
+    if (!disabled) {
+      visible = value;
+      if (visible) {
+        onShow();
+      }
     }
-  }
+  }, 50);
 </script>
 
 <style>
@@ -39,21 +42,21 @@
   }
 </style>
 
-<Hoverable bind:hovering={hover} {style}>
+<div
+  {style}
+  on:mouseenter={() => setVisible(true)}
+  on:mouseleave={() => setVisible(false)}>
   <slot name="trigger" />
 
-  <!-- The `stopPropagation` is necessary in case the `<Hovercard>` is ontop of
+  {#if visible}
+    <!-- The `stopPropagation` is necessary in case the `<Hovercard>` is ontop of
        another element which itself is clickable. Otherwise any click within
-       the hover card would also trigger the click handler from the element
+       the `<Hovercard>` would also trigger the click handler from the element
        underneath it. -->
-  <div class="container" on:click|stopPropagation>
-    {#if !disabled && hover}
-      <div
-        class="modal"
-        style={modalStyle}
-        out:fade|local={{ duration: 100, delay: 250 }}>
+    <div class="container" on:click|stopPropagation>
+      <div class="modal" style={modalStyle}>
         <slot name="card" />
       </div>
-    {/if}
-  </div>
-</Hoverable>
+    </div>
+  {/if}
+</div>

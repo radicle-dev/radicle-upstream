@@ -6,40 +6,24 @@
  LICENSE file.
 -->
 <script lang="ts">
+  type Offset = { top: number; left: number };
   import type { Position } from "./Tooltip";
+
+  import { debounce } from "lodash";
 
   export let style: string | undefined = undefined;
   export let value: string | undefined = undefined;
   export let position: Position = "right";
-
-  type Offset = { top: number; left: number };
+  export let showDelay = 50; // ms
 
   let container: Element | null = null;
   let message: Element | null = null;
+  let offset: Offset = { top: 0, left: 0 };
+  let visible: boolean = false;
 
-  let visibility: "hidden" | "visible" = "hidden";
-  let offset: Offset = {
-    top: 0,
-    left: 0,
-  };
-
-  function hide() {
-    visibility = "hidden";
-  }
-
-  function show() {
-    if (!container || !message) {
-      // This can never happen: `show` can only be triggered if
-      // `container` and `message` have been bound.
-      throw new Error("Unreachable: Component DOM nodes not properly bound");
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const messageRect = message.getBoundingClientRect();
-
-    visibility = "visible";
-    offset = calculateOffset(position, containerRect, messageRect);
-  }
+  const setVisible = debounce((value: boolean) => {
+    visible = value;
+  }, showDelay);
 
   function calculateOffset(
     position: Position,
@@ -72,6 +56,14 @@
         };
     }
   }
+
+  $: if (container && message) {
+    offset = calculateOffset(
+      position,
+      container.getBoundingClientRect(),
+      message.getBoundingClientRect()
+    );
+  }
 </script>
 
 <style>
@@ -98,16 +90,19 @@
   <div
     {style}
     bind:this={container}
-    data-cy="tooltip"
-    on:mouseenter={show}
-    on:mouseleave={hide}>
+    on:mouseenter={() => setVisible(true)}
+    on:mouseleave={() => setVisible(false)}>
     <slot />
-    <div
-      bind:this={message}
-      class={`tooltip ${position}`}
-      style={`top: ${offset.top}px; left: ${offset.left}px; visibility: ${visibility}`}>
-      <p>{value}</p>
-    </div>
+
+    {#if visible}
+      <div
+        bind:this={message}
+        class={`typo-text tooltip ${position}`}
+        style:top={`${offset.top}px`}
+        style:left={`${offset.left}px`}>
+        {value}
+      </div>
+    {/if}
   </div>
 {:else}
   <slot />
