@@ -31,6 +31,10 @@
   export let view: "commits" | "discussion";
   export let patchCount: number;
 
+  let previousProject = project;
+  let previousId = id;
+  let previousPeerId = peerId;
+
   type PatchStatus =
     | { type: "loading" }
     | { type: "notReplicated" }
@@ -42,13 +46,27 @@
 
   let patchStatus: PatchStatus = { type: "loading" };
 
+  $: {
+    // Show loading indicator if we wanna show a different patch.
+    if (
+      project.urn !== previousProject.urn ||
+      previousId !== id ||
+      previousPeerId !== peerId
+    ) {
+      patchStatus = { type: "loading" };
+      previousProject = project;
+      previousId = id;
+      previousPeerId = peerId;
+    }
+    fetch(project, peerId, id);
+  }
+
   const fetchExecutor = mutexExecutor.create();
   async function fetch(
     project: Project,
     peerId: string,
     id: string
   ): Promise<void> {
-    patchStatus = { type: "loading" };
     try {
       const result = await fetchExecutor.run(async () => {
         return await patch.getDetails(project, peerId, id);
@@ -79,8 +97,6 @@
 
   const unwatchPatchUpdates = watchPatchUpdates();
   onDestroy(unwatchPatchUpdates);
-
-  $: fetch(project, peerId, id);
 </script>
 
 <ActionBar>

@@ -37,11 +37,7 @@
   let addCommentInProgress = false;
   let preview = false;
 
-  async function addComment(
-    comment: string,
-    projectUrn: string,
-    patch: Patch.Patch
-  ) {
+  async function addComment() {
     addCommentInProgress = true;
     try {
       await Patch.publishEvent(
@@ -54,6 +50,7 @@
           },
         }
       );
+      comment = "";
     } catch (err: unknown) {
       Error.showNotification(
         new Error.Error({
@@ -204,7 +201,7 @@
       on:keydown={event => {
         const modifierKey = Hotkeys.isMac ? event.metaKey : event.ctrlKey;
         if (event.key === "Enter" && modifierKey && !addCommentDisabled) {
-          addComment(comment, projectUrn, patch);
+          addComment();
         }
       }}
       bind:value={comment}
@@ -223,6 +220,6 @@
   <Button
     disabled={addCommentDisabled}
     on:click={() => {
-      addComment(comment, projectUrn, patch);
+      addComment();
     }}>Comment</Button>
 </div>
