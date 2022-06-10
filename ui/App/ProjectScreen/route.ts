@@ -36,8 +36,7 @@ export type ProjectView =
       id: string;
       peerId: string;
       view: PatchView;
-    }
-  | { type: "anchors" };
+    };
 
 export async function load(params: Params): Promise<LoadedRoute> {
   let anchors: project.ConfirmedAnchor[] = [];
@@ -48,10 +47,7 @@ export async function load(params: Params): Promise<LoadedRoute> {
       "timestamp"
     );
 
-    if (
-      params.activeView.type === "anchors" ||
-      params.activeView.type === "commit"
-    ) {
+    if (params.activeView.type === "commit") {
       await Promise.all(
         anchors.map(async anchor => {
           const registration = await ensResolver.getCachedRegistrationByAddress(

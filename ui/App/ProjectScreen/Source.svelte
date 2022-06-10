@@ -29,7 +29,6 @@
   import { makeTabs } from "./tabs";
 
   import History from "./Source/SourceBrowser/History.svelte";
-  import AnchorsTab from "./Source/Anchors.svelte";
   import CommitTab from "./Source/Commit.svelte";
   import FilesTab from "./Source/Code.svelte";
 
@@ -124,7 +123,7 @@
           </Button>
         </CommandModal>
       {/if}
-    {:else if activeView.type === "commits" || activeView.type === "commit" || activeView.type === "anchors"}
+    {:else if activeView.type === "commits" || activeView.type === "commit"}
       <!-- Don't show any actions. -->
     {:else}
       {unreachable(activeView)}
@@ -147,8 +146,6 @@
           anchor.commitHash === activeView.commitHash
         );
       })} />
-  {:else if activeView.type === "anchors"}
-    <AnchorsTab {anchors} />
   {:else}
     {unreachable(activeView)}
   {/if}
