@@ -19,7 +19,6 @@
   import ArrowBoxUpRightIcon from "design-system/icons/ArrowBoxUpRight.svelte";
   import Button from "design-system/Button.svelte";
   import ForkIcon from "design-system/icons/Fork.svelte";
-  import RevisionIcon from "design-system/icons/Revision.svelte";
 
   import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
   import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
@@ -33,7 +32,6 @@
   import AnchorsTab from "./Source/Anchors.svelte";
   import CommitTab from "./Source/Commit.svelte";
   import FilesTab from "./Source/Code.svelte";
-  import PatchListTab from "./Source/PatchList.svelte";
 
   export let project: Project;
   export let selectedPeer: User;
@@ -68,7 +66,7 @@
   }
 </style>
 
-{#if activeView.type === "patch"}
+{#if activeView.type === "patch" || activeView.type === "patches"}
   <!-- this is rendered in `ProjectScreen` -->
 {:else if $store.status === remote.Status.Success}
   <ActionBar>
@@ -93,18 +91,7 @@
 
     <div style="margin-left: auto" />
 
-    {#if activeView.type === "patches"}
-      <CommandModal
-        let:prop={toggleDropdown}
-        command={"upstream patch create"}
-        description="To create a patch in your working copy, check out the branch that contains the changes and run the following command:">
-        <Button
-          variant="transparent"
-          icon={RevisionIcon}
-          on:click={toggleDropdown}
-          dataCy="patch-modal-toggle">Create patch</Button>
-      </CommandModal>
-    {:else if activeView.type === "files"}
+    {#if activeView.type === "files"}
       {#if isContributor}
         <CommandModal
           let:prop={toggleDropdown}
@@ -160,11 +147,6 @@
           anchor.commitHash === activeView.commitHash
         );
       })} />
-  {:else if activeView.type === "patches"}
-    <PatchListTab
-      project={$store.data.project}
-      {patches}
-      filter={activeView.filter} />
   {:else if activeView.type === "anchors"}
     <AnchorsTab {anchors} />
   {:else}

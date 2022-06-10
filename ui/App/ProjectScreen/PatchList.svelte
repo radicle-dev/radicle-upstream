@@ -12,14 +12,20 @@
   import * as Patch from "ui/src/project/patch";
   import { unreachable } from "ui/src/unreachable";
 
+  import Button from "design-system/Button.svelte";
   import List from "design-system/List.svelte";
   import SegmentedControl from "design-system/SegmentedControl.svelte";
-
-  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
-  import PatchCard from "./PatchCard.svelte";
   import RevisionIcon from "design-system/icons/Revision.svelte";
   import MergeIcon from "design-system/icons/Merge.svelte";
   import CrossIcon from "design-system/icons/Cross.svelte";
+
+  import ActionBar from "ui/App/ScreenLayout/ActionBar.svelte";
+  import CommandModal from "ui/App/SharedComponents/CommandModal.svelte";
+  import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
+  import TabBar from "ui/App/ScreenLayout/TabBar.svelte";
+
+  import { makeTabs } from "./tabs";
+  import PatchCard from "./PatchCard.svelte";
 
   export let patches: Patch.Patch[];
   export let project: Project;
@@ -103,6 +109,28 @@
     padding: 0 var(--content-padding);
   }
 </style>
+
+<ActionBar>
+  <TabBar
+    tabs={makeTabs({
+      projectUrn: project.urn,
+      activeViewType: "patches",
+      patchCount: patches.filter(patch => patch.status.current === "open")
+        .length,
+      commitCount: project.stats.commits,
+    })} />
+  <div style="margin-left: auto" />
+  <CommandModal
+    let:prop={toggleDropdown}
+    command={"upstream patch create"}
+    description="To create a patch in your working copy, check out the branch that contains the changes and run the following command:">
+    <Button
+      variant="transparent"
+      icon={RevisionIcon}
+      on:click={toggleDropdown}
+      dataCy="patch-modal-toggle">Create patch</Button>
+  </CommandModal>
+</ActionBar>
 
 <div class="container">
   <div class="filters" data-cy="patch-filter-tabs">

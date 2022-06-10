@@ -39,6 +39,7 @@
   import Source from "./ProjectScreen/Source.svelte";
   import type * as projectRoute from "./ProjectScreen/route";
   import Patch from "./ProjectScreen/Patch.svelte";
+  import PatchList from "./ProjectScreen/PatchList.svelte";
 
   export let urn: string;
   export let anchors: ConfirmedAnchor[];
@@ -167,6 +168,11 @@
         patchCount={$store.data.patches.filter(
           patch => patch.status.current === "open"
         ).length} />
+    {:else if activeView.type === "patches"}
+      <PatchList
+        project={$store.data.project}
+        patches={$store.data.patches}
+        filter={activeView.filter} />
     {:else}
       <Source
         {activeView}
