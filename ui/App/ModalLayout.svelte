@@ -13,8 +13,9 @@
   };
 
   const modalStore = modal.store;
-  // Hack to make svelte typecheck in the markup section.
-  $: store = $modalStore;
+  $: modalLayout = $modalStore;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  $: componentProps = modalLayout?.modalComponentProps as any;
 </script>
 
 <style>
@@ -47,13 +48,14 @@
   }
 </style>
 
-<div class="modal-layout" class:hide={store === null} data-cy="modal-layout">
+<div
+  class="modal-layout"
+  class:hide={modalLayout === null}
+  data-cy="modal-layout">
   <div class="overlay" on:click={clickOutside} />
   <div class="content">
-    {#if store !== null}
-      <svelte:component
-        this={store.modalComponent}
-        {...store.modalComponentProps} />
+    {#if modalLayout !== null}
+      <svelte:component this={modalLayout.modalComponent} {...componentProps} />
     {/if}
   </div>
 </div>
