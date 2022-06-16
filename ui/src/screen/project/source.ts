@@ -61,7 +61,7 @@ export interface Screen {
   tree: Writable<source.Tree>;
 }
 
-const pathStore = writable<source.SelectedPath>({
+export const pathStore = writable<source.SelectedPath>({
   request: null,
   selected: "",
 });

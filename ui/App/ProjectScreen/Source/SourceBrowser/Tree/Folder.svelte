@@ -6,37 +6,41 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-  import type { Readable } from "svelte/store";
-
   import { ObjectType } from "ui/src/source";
   import type { SelectedPath, SelectedRevision, Tree } from "ui/src/source";
+  import * as Proxy from "ui/src/proxy";
 
   import ChevronDownIcon from "design-system/icons/ChevronDown.svelte";
   import ChevronRightIcon from "design-system/icons/ChevronRight.svelte";
 
   import File from "./File.svelte";
 
-  export let fetchTree: (path: string) => Promise<Tree>;
   export let name: string;
-  export let prefix: string;
-  export let selectedPath: Readable<SelectedPath>;
+  export let path: string;
+  export let projectUrn: string;
+  export let peerId: string;
   export let selectedRevision: SelectedRevision;
+  export let selectedPath: SelectedPath;
+  export let selectPath: (path: string) => void;
 
   let expanded = false;
 
-  const dispatch = createEventDispatcher();
-  const onSelectPath = ({ detail: path }: { detail: string }): void => {
-    dispatch("select", path);
-  };
   const toggle = (): void => {
     expanded = !expanded;
   };
 
   let current: Promise<Tree>;
 
-  $: if (selectedRevision.request === null) {
-    current = fetchTree(prefix);
+  $: {
+    const prefix = `${path}/`;
+    if (!selectedRevision.request) {
+      current = Proxy.client.source.treeGet({
+        projectUrn,
+        peerId,
+        revision: selectedRevision.selected,
+        prefix,
+      });
+    }
   }
 </script>
 
@@ -81,22 +85,21 @@
       {#each tree.entries as entry (entry.path)}
         {#if entry.info.objectType === ObjectType.Tree}
           <svelte:self
-            {fetchTree}
             name={entry.info.name}
-            prefix={`${entry.path}/`}
-            on:select={onSelectPath}
+            path={entry.path}
+            {projectUrn}
+            {peerId}
+            {selectedRevision}
             {selectedPath}
-            {selectedRevision} />
+            {selectPath} />
         {:else}
           <File
-            active={entry.path === $selectedPath.selected}
+            active={entry.path === selectedPath.selected}
             dataCy={`file-${entry.path}`}
-            loading={entry.path === $selectedPath.selected &&
-              $selectedPath.request !== null}
+            loading={entry.path === selectedPath.selected &&
+              selectedPath.request !== null}
             name={entry.info.name}
-            on:click={() => {
-              onSelectPath({ detail: entry.path });
-            }} />
+            on:click={() => selectPath(entry.path)} />
         {/if}
       {/each}
     {/if}
