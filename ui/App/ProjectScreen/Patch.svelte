@@ -55,13 +55,16 @@
   async function fetch(): Promise<void> {
     try {
       const result = await fetchExecutor.run(async () => {
-        return await patch.getDetails(project, peerId, id);
+        const details = await patch.getDetails(project, peerId, id);
+        return { details };
       });
 
-      if (!result) {
-        patchStatus = { type: "notReplicated" };
-      } else {
-        patchStatus = { type: "ok", ...result };
+      if (result) {
+        if (result.details) {
+          patchStatus = { type: "ok", ...result.details };
+        } else {
+          patchStatus = { type: "notReplicated" };
+        }
       }
     } catch (err: unknown) {
       notification.showException(
