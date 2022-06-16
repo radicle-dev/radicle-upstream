@@ -51,6 +51,7 @@
         }
       );
       comment = "";
+      preview = false;
     } catch (err: unknown) {
       Error.showNotification(
         new Error.Error({
