@@ -6,7 +6,8 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import { ObjectType } from "ui/src/source";
+  import Lodash from "lodash";
+  import { Branch, ObjectType, Tag } from "ui/src/source";
   import type { SelectedPath, SelectedRevision, Tree } from "ui/src/source";
   import * as Proxy from "ui/src/proxy";
 
@@ -31,9 +32,14 @@
 
   let current: Promise<Tree>;
 
+  let previousRevision: Tag | Branch | undefined;
+
   $: {
     const prefix = `${path}/`;
-    if (!selectedRevision.request) {
+    if (
+      !selectedRevision.loading &&
+      !Lodash.isEqual(previousRevision, selectedRevision.selected)
+    ) {
       current = Proxy.client.source.treeGet({
         projectUrn,
         peerId,
@@ -41,6 +47,7 @@
         prefix,
       });
     }
+    previousRevision = selectedRevision.selected;
   }
 </script>
 
@@ -97,7 +104,7 @@
             active={entry.path === selectedPath.selected}
             dataCy={`file-${entry.path}`}
             loading={entry.path === selectedPath.selected &&
-              selectedPath.request !== null}
+              selectedPath.loading}
             name={entry.info.name}
             on:click={() => selectPath(entry.path)} />
         {/if}

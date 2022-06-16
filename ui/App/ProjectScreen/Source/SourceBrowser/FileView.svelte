@@ -7,10 +7,8 @@
 -->
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { Readable } from "svelte/store";
 
-  import { ViewKind } from "ui/src/screen/project/source";
-  import type { Code, View } from "ui/src/screen/project/source";
+  import { ViewKind, type Code } from "ui/src/screen/project/source";
   import type { Tree } from "ui/src/source";
 
   import EmptyState from "ui/App/SharedComponents/EmptyState.svelte";
@@ -18,8 +16,8 @@
   import FileSource from "./FileSource.svelte";
   import Root from "./FileView/Root.svelte";
 
-  export let code: Readable<Code>;
-  export let tree: Readable<Tree>;
+  export let code: Code;
+  export let tree: Tree;
 
   const dispatch = createEventDispatcher();
   const onSelectCommit = ({ detail: sha1 }: { detail: string }): void => {
@@ -28,28 +26,25 @@
   const onSelectRoot = (): void => {
     dispatch("root");
   };
-
-  let view: View;
-  $: view = $code.view;
 </script>
 
 <div data-cy="file-view">
-  {#if view.kind === ViewKind.Blob}
+  {#if code.view.kind === ViewKind.Blob}
     <FileSource
-      blob={view.blob}
-      commit={view.blob.info.lastCommit}
+      blob={code.view.blob}
+      commit={code.view.blob.info.lastCommit}
       on:root={onSelectRoot}
       on:select={onSelectCommit} />
-  {:else if view.kind === ViewKind.Root}
+  {:else if code.view.kind === ViewKind.Root}
     <Root
-      emptyRepo={$tree.entries.length === 0}
-      commit={$code.lastCommit}
-      {view}
+      emptyRepo={tree.entries.length === 0}
+      commit={code.lastCommit}
+      view={code.view}
       on:select={onSelectCommit} />
-  {:else if view.kind === ViewKind.Error}
+  {:else if code.view.kind === ViewKind.Error}
     <EmptyState
       emoji="👀"
-      headerText={view.error.message}
+      headerText={code.view.error.message}
       on:primaryAction={onSelectRoot}
       primaryActionText="Back to files"
       style="height: 320px;"

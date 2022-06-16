@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
   import * as router from "ui/src/router";
-  import { selectPath, store, pathStore } from "ui/src/screen/project/source";
+  import { selectPath, store } from "ui/src/screen/project/source";
 
   import FileView from "./SourceBrowser/FileView.svelte";
   import Remote from "ui/App/SharedComponents/Remote.svelte";
@@ -52,14 +52,16 @@
 </style>
 
 <div class="container">
-  <Remote {store} let:data={{ code, peer, project, selectedRevision, tree }}>
+  <Remote
+    {store}
+    let:data={{ code, peer, project, selectedRevision, selectedPath, tree }}>
     <div class="source-tree" data-cy="source-tree">
       <Tree
         projectUrn={project.urn}
         peerId={peer.peerId}
         {selectedRevision}
         {tree}
-        selectedPath={$pathStore}
+        {selectedPath}
         {selectPath} />
     </div>
     <div class="file-content">

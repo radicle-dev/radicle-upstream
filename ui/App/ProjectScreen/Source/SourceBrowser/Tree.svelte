@@ -6,8 +6,6 @@
  LICENSE file.
 -->
 <script lang="ts">
-  import type { Readable } from "svelte/store";
-
   import { ObjectType } from "ui/src/source";
   import type { SelectedPath, Tree, SelectedRevision } from "ui/src/source";
 
@@ -17,12 +15,12 @@
   export let projectUrn: string;
   export let peerId: string;
   export let selectedRevision: SelectedRevision;
-  export let tree: Readable<Tree>;
+  export let tree: Tree;
   export let selectedPath: SelectedPath;
   export let selectPath: (path: string) => void;
 </script>
 
-{#each $tree.entries as entry (entry.path)}
+{#each tree.entries as entry (entry.path)}
   {#if entry.info.objectType === ObjectType.Tree}
     <Folder
       name={entry.info.name}
@@ -36,8 +34,7 @@
     <File
       active={entry.path === selectedPath.selected}
       dataCy={`file-${entry.path}`}
-      loading={entry.path === selectedPath.selected &&
-        selectedPath.request !== null}
+      loading={entry.path === selectedPath.selected && selectedPath.loading}
       name={entry.info.name}
       on:click={() => {
         selectPath(entry.path);

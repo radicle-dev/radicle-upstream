@@ -63,13 +63,13 @@ interface Revisions {
 }
 
 export interface SelectedPath {
-  request: AbortController | null;
   selected: string;
+  loading: boolean;
 }
 
 export interface SelectedRevision {
-  request: AbortController | null;
   selected: Branch | Tag;
+  loading: boolean;
 }
 
 export const fetchBlob = async (

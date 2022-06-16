@@ -5,9 +5,8 @@
 // LICENSE file.
 
 import type { Project, User } from "ui/src/project";
-import type { Readable, Writable } from "svelte/store";
 
-import { derived, get, writable } from "svelte/store";
+import { get } from "svelte/store";
 
 import * as appearance from "ui/src/appearance";
 import * as error from "ui/src/error";
@@ -17,14 +16,9 @@ import * as remote from "ui/src/remote";
 import * as source from "ui/src/source";
 
 export enum ViewKind {
-  Aborted = "ABORTED",
   Blob = "BLOB",
   Error = "ERROR",
   Root = "ROOT",
-}
-
-export interface Aborted {
-  kind: ViewKind.Aborted;
 }
 
 export interface Blob {
@@ -42,7 +36,7 @@ export interface Root {
   readme: source.Readme | null;
 }
 
-export type View = Aborted | Blob | Error | Root;
+export type View = Blob | Error | Root;
 
 export interface Code {
   lastCommit: source.CommitHeader | null;
@@ -51,51 +45,36 @@ export interface Code {
 }
 
 export interface Screen {
-  code: Writable<Code>;
+  code: Code;
   history: source.GroupedCommitsHistory;
   peer: User;
   project: Project;
   revisions: Array<source.Branch | source.Tag>;
-  selectedPath: Readable<source.SelectedPath>;
+  selectedPath: source.SelectedPath;
   selectedRevision: source.SelectedRevision;
-  tree: Writable<source.Tree>;
+  tree: source.Tree;
 }
-
-export const pathStore = writable<source.SelectedPath>({
-  request: null,
-  selected: "",
-});
 
 const screenStore = remote.createStore<Screen>();
 export const store = screenStore.readable;
 
-async function fetchTreeRoot(
-  selectedRevision: source.RevisionSelector,
-  project: Project,
-  peer: User
-): Promise<[source.Tree, Code]> {
-  const tree = await proxy.client.source.treeGet({
-    projectUrn: project.urn,
-    peerId: peer.peerId,
-    revision: selectedRevision,
-    prefix: "",
-  });
-  const root = await fetchCode(project, peer, selectedRevision, tree, "");
-  return [tree, root];
-}
+const screenExecutor = mutexExecutor.create();
 
-const fetchProjectExecutor = mutexExecutor.create();
 export async function fetch(project: Project, peer: User): Promise<void> {
-  if (!screenStore.is(remote.Status.Success)) {
+  const screen = get(screenStore);
+  if (
+    screen.status !== remote.Status.Success ||
+    screen.data.project.urn !== project.urn
+  ) {
     screenStore.loading();
   }
 
   try {
-    const newScreenData = await fetchProjectExecutor.run(async abort => {
+    const newScreenData = await screenExecutor.run(async abortSignal => {
       const { branches, tags } = await source.fetchRevisions(
         project.urn,
         peer.peerId,
-        { abort }
+        { abort: abortSignal }
       );
       const revisions = [...branches, ...tags];
       const defaultBranch = branches.find(
@@ -103,29 +82,30 @@ export async function fetch(project: Project, peer: User): Promise<void> {
           branch.name === project.metadata.defaultBranch
       );
       const selectedRevision = defaultBranch || branches[0];
-      const [history, [tree, root]] = await Promise.all([
-        source.fetchCommits(project.urn, peer.peerId, selectedRevision, {
-          abort,
-        }),
-        // FIXME(rudolfs): convert the following function to accept an
-        // abort signal.
-        fetchTreeRoot(selectedRevision, project, peer),
-      ]);
-      const groupedHistory = source.groupCommitHistory(history);
+      const [history, tree, view] = await fetchRevisionRootData(
+        project.urn,
+        peer.peerId,
+        selectedRevision,
+        abortSignal
+      );
 
       return {
-        code: writable<Code>(root),
-        history: groupedHistory,
+        code: {
+          path: "",
+          lastCommit: tree.info.lastCommit,
+          view,
+        },
+        history,
         peer,
         project,
         revisions,
-        selectedPath: derived(pathStore, store => store),
+        selectedPath: { selected: "", loading: false },
         selectedRevision: {
-          request: null,
           selected: selectedRevision,
+          loading: false,
         },
-        tree: writable<source.Tree>(tree),
-      };
+        tree,
+      } as Screen;
     });
 
     if (newScreenData) {
@@ -138,21 +118,71 @@ export async function fetch(project: Project, peer: User): Promise<void> {
 
 export async function selectPath(path: string): Promise<void> {
   const screen = get(screenStore);
-  const current = get(pathStore);
 
-  if (current.selected !== path && screen.status === remote.Status.Success) {
-    const {
-      data: {
-        peer,
-        project,
-        selectedRevision: { selected: revision },
-        tree,
+  if (
+    screen.status === remote.Status.Success &&
+    screen.data.selectedPath.selected !== path
+  ) {
+    const { peer, project, selectedRevision, tree } = screen.data;
+
+    screenStore.success({
+      ...screen.data,
+      selectedPath: {
+        selected: path,
+        loading: true,
       },
-    } = screen;
+    });
 
-    const code = await fetchCode(project, peer, revision, get(tree), path);
-    if (code.view.kind !== ViewKind.Aborted) {
-      screen.data.code.set(code);
+    const result = await screenExecutor.run(
+      async (abortSignal): Promise<View> => {
+        try {
+          if (path === "") {
+            const readme = await source.fetchReadme(
+              project.urn,
+              peer.peerId,
+              selectedRevision.selected,
+              tree,
+              abortSignal
+            );
+            return {
+              kind: ViewKind.Root,
+              readme,
+            };
+          } else {
+            const blob = await source.fetchBlob(
+              project.urn,
+              peer.peerId,
+              path,
+              selectedRevision.selected,
+              get(appearance.theme),
+              abortSignal
+            );
+            return {
+              kind: ViewKind.Blob,
+              blob,
+            };
+          }
+        } catch (err: unknown) {
+          return {
+            kind: ViewKind.Error,
+            error: error.fromUnknown(err),
+          };
+        }
+      }
+    );
+    if (result) {
+      screenStore.success({
+        ...screen.data,
+        code: {
+          lastCommit: tree.info.lastCommit,
+          path,
+          view: result,
+        },
+        selectedPath: {
+          selected: path,
+          loading: false,
+        },
+      });
     }
   }
 }
@@ -163,172 +193,104 @@ export async function selectRevision(
   const screen = get(screenStore);
 
   if (screen.status === remote.Status.Success) {
-    const {
-      data: { code, peer, project, selectedRevision: current, tree },
-    } = screen;
+    const { peer, project, selectedRevision: revisionState } = screen.data;
 
     if (
-      current.selected.type === revision.type &&
-      current.selected.name === revision.name
+      revisionState.selected.type === revision.type &&
+      revisionState.selected.name === revision.name
     ) {
       return;
     }
 
-    if (current.request) {
-      current.request.abort();
-    }
-
-    const request = new AbortController();
-    const fetchTreeCode = async (): Promise<[source.Tree, Code]> => {
-      const tree = await proxy.client.source.treeGet(
-        {
-          projectUrn: project.urn,
-          peerId: peer.peerId,
-          revision,
-          prefix: "",
-        },
-        {
-          abort: request.signal,
-        }
-      );
-
-      const newCode = await fetchCode(
-        project,
-        peer,
-        revision,
-        tree,
-        get(pathStore).selected
-      );
-
-      return [tree, newCode];
-    };
-
     screenStore.success({
       ...screen.data,
       selectedRevision: {
-        request,
         selected: revision,
+        loading: true,
+      },
+      selectedPath: {
+        selected: "",
+        loading: true,
       },
     });
 
     try {
-      const [history, [newTree, newCode]] = await Promise.all([
-        source.fetchCommits(project.urn, peer.peerId, revision),
-        fetchTreeCode(),
-      ]);
-      const groupedHistory = source.groupCommitHistory(history);
-      code.set(newCode);
-      tree.set(newTree);
-
-      screenStore.success({
-        ...screen.data,
-        history: groupedHistory,
-        selectedRevision: {
-          request: null,
-          selected: revision,
-        },
+      const result = await screenExecutor.run(abortSignal => {
+        return fetchRevisionRootData(
+          project.urn,
+          peer.peerId,
+          revision,
+          abortSignal
+        );
       });
+      if (result) {
+        const [history, tree, view] = result;
+
+        screenStore.success({
+          ...screen.data,
+          code: {
+            path: "",
+            lastCommit: tree.info.lastCommit,
+            view,
+          },
+          tree,
+          history,
+          selectedRevision: {
+            selected: revision,
+            loading: false,
+          },
+        });
+      }
     } catch (err: unknown) {
       screenStore.error(error.fromUnknown(err));
     }
   }
 }
 
-async function fetchBlob(
-  project: Project,
-  peer: User,
+async function fetchRevisionRootData(
+  projectUrn: string,
+  peerId: string,
   revision: source.RevisionSelector,
-  path: string,
-  signal: AbortSignal
-): Promise<Code> {
-  const blob = await source.fetchBlob(
-    project.urn,
-    peer.peerId,
-    path,
-    revision,
-    get(appearance.theme),
-    signal
-  );
-  return {
-    lastCommit: blob.info.lastCommit,
-    path,
-    view: {
-      kind: ViewKind.Blob,
-      blob,
-    },
-  };
-}
-
-async function fetchCode(
-  project: Project,
-  peer: User,
-  revision: source.RevisionSelector,
-  tree: source.Tree,
-  path: string
-): Promise<Code> {
-  const currentPath = get(pathStore);
-  if (currentPath.request) {
-    currentPath.request.abort();
-  }
-
-  const request = new AbortController();
-  pathStore.set({ request, selected: path });
-
-  let code: Code;
-  try {
-    if (path === "") {
-      code = await fetchRoot(project, peer, revision, tree, request.signal);
-    } else {
-      code = await fetchBlob(project, peer, revision, path, request.signal);
-    }
-  } catch (err: unknown) {
-    // An in-flight request was aborted, we wait for the next one to arrive.
-    if (err instanceof globalThis.Error && err.name === "AbortError") {
-      code = {
-        lastCommit: tree.info.lastCommit,
-        path,
-        view: {
-          kind: ViewKind.Aborted,
+  abortSignal: AbortSignal
+): Promise<[source.GroupedCommitsHistory, source.Tree, View]> {
+  const [commits, [tree, view]] = await Promise.all([
+    source.fetchCommits(projectUrn, peerId, revision),
+    (async () => {
+      const tree = await proxy.client.source.treeGet(
+        {
+          projectUrn,
+          peerId,
+          revision,
+          prefix: "",
         },
-      };
-    } else {
-      code = {
-        lastCommit: tree.info.lastCommit,
-        path,
-        view: {
+        {
+          abort: abortSignal,
+        }
+      );
+
+      let view: View;
+      try {
+        const readme = await source.fetchReadme(
+          projectUrn,
+          peerId,
+          revision,
+          tree,
+          abortSignal
+        );
+        view = {
+          kind: ViewKind.Root,
+          readme,
+        };
+      } catch (err: unknown) {
+        view = {
           kind: ViewKind.Error,
           error: error.fromUnknown(err),
-        },
-      };
-    }
-  }
+        };
+      }
+      return [tree, view];
+    })(),
+  ]);
 
-  if (code.view.kind !== ViewKind.Aborted) {
-    pathStore.set({ request: null, selected: path });
-  }
-
-  return code;
-}
-
-async function fetchRoot(
-  project: Project,
-  peer: User,
-  revision: source.RevisionSelector,
-  tree: source.Tree,
-  signal: AbortSignal
-): Promise<Code> {
-  return {
-    lastCommit: tree.info.lastCommit,
-    path: "",
-    view: {
-      kind: ViewKind.Root,
-      readme: await source.fetchReadme(
-        project.urn,
-        peer.peerId,
-        revision,
-        tree,
-        signal
-      ),
-    },
-  };
+  const groupedHistory = source.groupCommitHistory(commits);
+  return [groupedHistory, tree, view];
 }

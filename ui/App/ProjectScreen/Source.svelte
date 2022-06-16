@@ -75,7 +75,7 @@
     {#if activeView.type === "files" || activeView.type === "commits"}
       <RevisionSelector
         style="width: 18rem; margin-right: 2rem;"
-        loading={$store.data.selectedRevision.request !== null}
+        loading={$store.data.selectedRevision.loading}
         on:select={onSelectRevision}
         selected={$store.data.selectedRevision.selected}
         defaultBranch={project.metadata.defaultBranch}
