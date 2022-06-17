@@ -26,7 +26,9 @@ directories = "4.0"
 eip55 = "0.1.1"
 either = "1"
 futures = { version = "0.3", features = [ "compat" ] }
-futures-delay-queue = "0.5"
+# v0.5.2 has compatibility issues with futures-intrusive v0.4.0 due to
+# differing versions of parking_lot.
+futures-delay-queue = "=0.5.1"
 futures-intrusive = "0.4"
 git2 = { version = ">= 0.13.23", default-features = false, features = [ "vendored-libgit2" ] }
 headers = "0.3.7"
