@@ -37,7 +37,9 @@
   onDestroy(unwatchProjectUpdates);
 
   // Initialise the screen by fetching the project and associated data.
-  fetch(urn);
+  // This has to be a reactive statement for routing to work properly when
+  // navigating between different projects.
+  $: fetch(urn);
 
   $: if ($store.status === remote.Status.Error) {
     notification.showException($store.error);
