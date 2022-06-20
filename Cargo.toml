@@ -52,7 +52,7 @@ tag = "cycle/2022-04-05"
 
 [patch.crates-io.radicle-source]
 git = "https://github.com/radicle-dev/radicle-surf.git"
-commit = "77b1905ba38fc9c95c01c0ed09d4d495548eacc2"
+rev = "77b1905ba38fc9c95c01c0ed09d4d495548eacc2"
 
 # Uncomment the following lines and comment out the radicle-link patches above
 # to develop against a local copy of `radicle-link`.

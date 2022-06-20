@@ -3874,7 +3874,7 @@ dependencies = [
 [[package]]
 name = "radicle-source"
 version = "0.3.0"
-source = "git+https://github.com/radicle-dev/radicle-surf.git#77b1905ba38fc9c95c01c0ed09d4d495548eacc2"
+source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=77b1905ba38fc9c95c01c0ed09d4d495548eacc2#77b1905ba38fc9c95c01c0ed09d4d495548eacc2"
 dependencies = [
  "base64",
  "git2",
@@ -3895,7 +3895,7 @@ source = "git+https://github.com/radicle-dev/radicle-link.git?tag=cycle/2022-04-
 [[package]]
 name = "radicle-surf"
 version = "0.7.0"
-source = "git+https://github.com/radicle-dev/radicle-surf.git#77b1905ba38fc9c95c01c0ed09d4d495548eacc2"
+source = "git+https://github.com/radicle-dev/radicle-surf.git?rev=77b1905ba38fc9c95c01c0ed09d4d495548eacc2#77b1905ba38fc9c95c01c0ed09d4d495548eacc2"
 dependencies = [
  "anyhow",
  "either",
