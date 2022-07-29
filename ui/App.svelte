@@ -127,6 +127,24 @@
     }
   }
 
+  async function showDeprecationNotification(): Promise<void> {
+    notification.show({
+      type: "error",
+      message: "Upstream is being sunsetted",
+      persist: true,
+      actions: [
+        {
+          label: "Read more",
+          handler: () => {
+            ipc.openUrl(
+              "https://radicle.community/t/upstream-july-2022-community-update"
+            );
+          },
+        },
+      ],
+    });
+  }
+
   sessionStore.subscribe(session => {
     // We’re not using a reactive statement here to prevent this code from
     // running when `activeRouteStore` is updated.
@@ -136,6 +154,7 @@
         break;
 
       case remote.Status.Success:
+        showDeprecationNotification();
         if (session.data.status === Session.Status.NoSession) {
           hotkeys.disable();
           router.replace({ type: "onboarding" });
