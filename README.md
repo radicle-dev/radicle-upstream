@@ -46,17 +46,6 @@ yarn run dist
 This command will create an application package in the `./dist` folder which
 you can then run.
 
-## Development Builds
-
-You can download the latest development build here
-
-* <https://storage.googleapis.com/radicle-upstream-build-artifacts/v1/main/radicle-upstream.AppImage>
-* <https://storage.googleapis.com/radicle-upstream-build-artifacts/v1/main/radicle-upstream.dmg>
-
-The development builds for macOS are unsigned. See [this
-article](https://support.apple.com/en-gb/guide/mac-help/mh40616/mac) on how to
-run unsigned apps on macOS.
-
 ## Attribution
 
 Upstream uses:
