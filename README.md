@@ -1,7 +1,11 @@
-# Upstream
+⚠️ Upstream has been sunsetted ⚠️
 
-[![Is the "build" Action succeeding?][bb]][bu]
-[![Is the "dist" Action succeeding?][db]][dd]
+Read more about it [here](https://radicle.community/t/upstream-july-2022-community-update).
+To discover and interact with projects on the Radicle protocol, please use the
+[web app](https://app.radicle.network) and [Radicle CLI](https://radicle.network)
+tooling.
+
+# Upstream
 
 Upstream is a cross-platform desktop client for the Radicle code collaboration
 protocol.
