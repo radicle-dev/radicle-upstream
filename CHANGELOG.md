@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.2](https://github.com/radicle-dev/radicle-upstream/compare/v0.3.1...v0.3.2) (2022-07-29)
+
+### 🌇 Upstream has been sunsetted
+
+Read more about it [here](https://radicle.community/t/upstream-july-2022-community-update).
+To discover and interact with projects on the Radicle protocol, please use the
+[web app](https://app.radicle.network) and [Radicle CLI](https://radicle.network)
+tooling.
+
+This release adds a deprecation notification upon startup.
+
+
 ## [0.3.1](https://github.com/radicle-dev/radicle-upstream/compare/v0.3.0...v0.3.1) (2022-05-24)
 
 ### 💡 General Notes
